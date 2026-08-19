@@ -1,6 +1,9 @@
 // Locale wiring. One switch changes four things at once: the message catalog,
 // `<html lang>`, `<html dir>`, and the font stack (Assistant/Heebo for Hebrew,
-// Inter for English). The choice is persisted so a reload keeps it.
+// Inter for English).
+//
+// Hebrew is the console's first language and its default. The choice is persisted,
+// so an agent who switches to English keeps it across reloads.
 import { createI18n } from 'vue-i18n';
 
 import en from '@/locales/en';
@@ -30,32 +33,28 @@ function readStoredLocale() {
     return null;
 }
 
-function detectLocale() {
-    const stored = readStoredLocale();
-
-    if (stored) {
-        return stored;
-    }
-
-    const preferred = (globalThis.navigator?.languages || []).concat(
-        globalThis.navigator?.language || [],
-    );
-
-    for (const tag of preferred) {
-        const base = String(tag).toLowerCase().split('-')[0];
-
-        if (SUPPORTED_LOCALES.includes(base)) {
-            return base;
-        }
-    }
-
-    return 'he';
+/**
+ * The locale the console opens in.
+ *
+ * Hebrew, unless this browser has been switched to English before. The pharmacy
+ * runs in Hebrew: it is the language the copy is written in, the language the
+ * records are authored in, and the language the staff work in. English is a
+ * translation for the people who need it, not a competing default — so the
+ * browser's `Accept-Language` is deliberately not consulted. Sniffing it meant an
+ * agent on an English-configured Windows install got an English console on their
+ * first visit, which is not the console they were asking for.
+ *
+ * A stored choice always wins, in both directions: switching to English keeps
+ * English across reloads, and switching back keeps Hebrew.
+ */
+function initialLocale() {
+    return readStoredLocale() || 'he';
 }
 
 export const i18n = createI18n({
     legacy: false,
     globalInjection: true,
-    locale: detectLocale(),
+    locale: initialLocale(),
     fallbackLocale: 'he',
     // Hebrew copy uses `{{var}}`-style placeholders inside message templates
     // that are displayed verbatim (WhatsApp templates); keep interpolation to
