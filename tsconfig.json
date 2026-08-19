@@ -1,0 +1,45 @@
+{
+    "compilerOptions": {
+        /* Language and Environment */
+        "target": "ESNext",
+        "useDefineForClassFields": true,
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+
+        /* Modules */
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "paths": {
+            "@/*": ["./resources/js/*"],
+            "@css/*": ["./resources/css/*"],
+            "@img/*": ["./resources/img/*"]
+        },
+        "types": ["vite/client"],
+        "resolveJsonModule": true,
+
+        /* JavaScript Support — the console is plain-JS SFCs, matching the
+           practitioner-facing repo. TypeScript is available for new files. */
+        "allowJs": true,
+        "checkJs": false,
+
+        /* Emit */
+        "noEmit": true,
+
+        /* Interop Constraints */
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+
+        /* Type Checking */
+        "strict": true,
+
+        /* Completeness */
+        "skipLibCheck": true
+    },
+    "include": [
+        "resources/js/**/*.js",
+        "resources/js/**/*.ts",
+        "resources/js/**/*.d.ts",
+        "resources/js/**/*.vue"
+    ],
+    "exclude": ["node_modules", "dist"]
+}

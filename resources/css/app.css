@@ -1,0 +1,53 @@
+/* Stylesheet entry point — the only file the app imports (see resources/js/app.js).
+   Order matters: Tailwind first, the ported component layer second, so `admin.css`
+   wins over preflight. */
+@import 'tailwindcss';
+@import './admin.css';
+
+/* The design palette, re-exposed as Tailwind 4 theme tokens.
+   Every token points at the custom property that already defines it in the
+   `:root` block of admin.css — the hex codes are authored once, so a utility
+   (`bg-surface`) and a component class (`.a-card`) cannot drift apart.
+   `inline` resolves the reference at the usage site, which keeps the responsive
+   redefinitions working: `--a-r` becomes 11px above 1800px, and `rounded-a`
+   follows it. */
+@theme inline {
+    --color-surface: var(--a-surface);
+    --color-ink: var(--a-ink);
+    --color-accent: var(--a-accent);
+    --color-line: var(--a-line);
+
+    /* the seven chip tones — ink + tint per tone, the pair `.a-chip` uses.
+       (`.c-slate` is an eighth tone with literal values in admin.css and no
+       `:root` variables to reference, so it stays out of the theme.) */
+    --color-amber: var(--a-amber);
+    --color-amber-bg: var(--a-amber-bg);
+    --color-blue: var(--a-blue);
+    --color-blue-bg: var(--a-blue-bg);
+    --color-teal: var(--a-teal);
+    --color-teal-bg: var(--a-teal-bg);
+    --color-green: var(--a-green);
+    --color-green-bg: var(--a-green-bg);
+    --color-red: var(--a-red);
+    --color-red-bg: var(--a-red-bg);
+    --color-gray: var(--a-gray);
+    --color-gray-bg: var(--a-gray-bg);
+    --color-purple: var(--a-purple);
+    --color-purple-bg: var(--a-purple-bg);
+
+    /* Named after the locale codes rather than after `--font-heb` /
+       `--font-latin`: a theme token that reuses one of those names would
+       resolve to itself. `font-he` is the Hebrew stack, `font-en` the Latin one;
+       the body font follows `<html lang>` in admin.css, so these are for the
+       rare element that must pin a stack regardless of locale. */
+    --font-he: var(--font-heb);
+    --font-en: var(--font-latin);
+
+    --radius-a: var(--a-r);
+}
+
+/* Note for anyone reading preflight diffs: admin.css sets
+   `border-collapse: separate` (with `border-spacing: 0`) on `table.a-table` on
+   purpose, overriding Tailwind preflight's `border-collapse: collapse`. The
+   sticky `thead th` cells need their own borders, and collapsed borders are
+   dropped when the header scrolls. Do not "fix" it back. */

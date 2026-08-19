@@ -1,0 +1,77 @@
+name: Deploy the test environment
+
+# Publishes a DEMO build of the console to GitHub Pages, so the screens can be
+# reviewed without standing up a backend.
+#
+# This is a review environment, not a production deploy. It is built with
+# VITE_DATA_SOURCE=demo, so every record on it comes from the fixture in
+# resources/js/demo/ and every action writes to memory that a refresh discards.
+#
+# That is also why this job runs `verify` and not `verify:prod`: `verify:prod`
+# ends in `check:build`, which exists to reject a bundle carrying the fixture —
+# exactly what this build is meant to carry. A real deployment runs `verify:prod`
+# and builds with VITE_DATA_SOURCE=api; see the README.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push waits rather than cancelling a live rollout.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Lint, both locale catalogs, and the build itself.
+      - run: npm run verify
+        env:
+          VITE_DATA_SOURCE: demo
+
+      # Pages serves from a repository sub-path, and asset URLs are baked in at
+      # build time, so the base has to be set before the bundle is written.
+      - name: Build the demo bundle
+        run: npm run build
+        env:
+          VITE_DATA_SOURCE: demo
+          BASE_PATH: /${{ github.event.repository.name }}/
+
+      # Vue Router runs in history mode and Pages has no rewrite rules, so a
+      # refresh on /orders/TF-2851 would 404. Pages serves 404.html for any
+      # unmatched path; making it a copy of index.html hands the route back to
+      # the router, which is the closest thing Pages has to `try_files`.
+      - name: Serve unmatched routes through the app
+        run: cp dist/index.html dist/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

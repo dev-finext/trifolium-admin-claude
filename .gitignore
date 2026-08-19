@@ -1,0 +1,16 @@
+node_modules
+dist
+.DS_Store
+*.local
+.idea
+.vscode
+# Personal overrides stay out. The three committed files carry no secrets and are
+# what decide whether a build ships the demo fixture, so they belong in the repo.
+.env
+.env.*
+!.env.example
+!.env.development
+!.env.production
+
+# local smoke-test scratch
+.smoke

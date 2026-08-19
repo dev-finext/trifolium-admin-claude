@@ -1,0 +1,39 @@
+// Navigation labels. Keyed by the ids in resources/js/config/nav.js: a group's
+// heading is `nav.group.<id>`, an item's label is `nav.item.<id>`. Adding a
+// screen means adding one entry to the config and one line to each of the two
+// nav catalogs — nothing else names the screen.
+export default {
+    group: {
+        daily_ops: 'תפעול יומי',
+        customers: 'לקוחות',
+        operations: 'ניהול שוטף',
+        knowledge: 'ידע ותוכן',
+        system: 'הגדרות מערכת',
+    },
+    item: {
+        orders: 'הזמנות',
+        deliveries: 'משלוחים',
+        messaging: 'הודעות ו-WhatsApp',
+        users: 'משתמשים ואישורים',
+        finance: 'כספים',
+        wallet: 'ארנק ונקודות',
+        products: 'מוצרי מדף',
+        pricing: 'מחירונים מדורגים',
+        ingredients: 'רכיבי פורמולה',
+        lab: 'מעבדה',
+        inventory: 'מלאי ואצוות',
+        safety: 'אינטראקציות תרופתיות',
+        libraries: 'ספריות פורמולות',
+        content: 'תוכן — מאמרים והרצאות',
+        videos: 'סרטוני מערכת',
+        integrations: 'אינטגרציות ומערכות חוץ',
+        admins: 'ניהול משתמשי אדמין',
+        systemContacts: 'אנשי קשר למערכות צד ג׳',
+        log: 'יומן מערכת',
+    },
+    inDevelopment: 'בפיתוח',
+    collapse: 'סגירת התפריט',
+    expand: 'פתיחת התפריט',
+    brand: 'Trifolium',
+    brandSub: 'מערכת ניהול · אדמין',
+};
