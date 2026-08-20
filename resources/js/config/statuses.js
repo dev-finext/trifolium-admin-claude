@@ -78,6 +78,41 @@ export const ORDER_TO_ITEM_STAGE = {
     cancelled: 'cancelled',
 };
 
+/**
+ * The status an order takes from the stage its items are at — the inverse of
+ * ORDER_TO_ITEM_STAGE, and deliberately written out rather than computed from it.
+ *
+ * The mapping is not one-to-one, so an inversion in code would have to pick a
+ * winner arbitrarily:
+ *
+ *   awaiting_prep  ← both `credit` and `paid`
+ *   delivered      ← both `delivered` and `completed`
+ *   packed         → has no status of its own; a packed order is still waiting
+ *                    to leave, which is `ready_for_delivery`
+ *
+ * `statusOf()` resolves the first two by keeping the recorded status whenever it
+ * already agrees with the stage, and reaches this table only once the two have
+ * diverged — which is what happens while the lab works one formula ahead of
+ * another. These values are what such a divergence settles on.
+ */
+export const STAGE_TO_STATUS = {
+    pending_payment: 'pending_payment',
+    awaiting_prep: 'paid',
+    in_lab: 'in_production',
+    ready_pack: 'ready_for_delivery',
+    packed: 'ready_for_delivery',
+    shipped: 'shipped',
+    delivered: 'delivered',
+    cancelled: 'cancelled',
+};
+
+/**
+ * The statuses at which an order's money is settled — paid outright, or approved
+ * for credit terms with the balance collected later. Either one clears the order
+ * for work.
+ */
+export const SETTLED_STATUS_IDS = ['paid', 'credit'];
+
 /** Position of a stage along the lab progression; `-1` when cancelled. */
 export function itemStageIndex(id) {
     return ITEM_STAGE_IDS.indexOf(id);

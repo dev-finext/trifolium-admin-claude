@@ -48,6 +48,12 @@ export default defineConfigWithVueTs(
             // catching it when the bundler gives up.
             'no-redeclare': 'error',
             'no-dupe-class-members': 'error',
+            // `STAGE_TO_STATUS` was referenced in stores/orders.js and declared
+            // nowhere. It never threw because the branch reaching it only runs
+            // when an order's status disagrees with its items, which the fixture
+            // never does — so the rule that branch implements had never once
+            // executed. A build cannot catch this; a linter can.
+            'no-undef': 'error',
             'vue/multi-word-component-names': 'off',
             // The codebase is plain-JS SFCs (allowJs) — same as the base
             // repo's migrated components; new components may use lang="ts".
@@ -92,14 +98,20 @@ export default defineConfigWithVueTs(
         },
     },
     {
-        ignores: [
-            'node_modules',
-            'public',
-            'dist',
-            'vite.config.js',
-            
-            
-        ],
+        // The check scripts run under Node, not in a browser, so `process` and
+        // friends are real globals there rather than the typos `no-undef` would
+        // otherwise call them.
+        files: ['scripts/**/*.mjs', 'scripts/**/*.js'],
+        languageOptions: {
+            globals: {
+                process: 'readonly',
+                console: 'readonly',
+                URL: 'readonly',
+            },
+        },
+    },
+    {
+        ignores: ['node_modules', 'public', 'dist', 'vite.config.js'],
     },
     prettier, // Turn off all rules that might conflict with Prettier
     {

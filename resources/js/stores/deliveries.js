@@ -30,6 +30,7 @@ import { persist } from '@/data/source';
 import { isoDaysAgo, stamp } from '@/lib/dates';
 import { FALLBACK_LOCALE, loc, searchHaystack } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
+import { statusOf } from '@/stores/orders';
 
 /** The status at which an order joins the deliveries desk. */
 const DESK_ENTRY_STATUS = 'in_production';
@@ -63,27 +64,27 @@ export const DELIVERY_STAGES = [
     {
         id: 'assign',
         match: (order) =>
-            order.status === 'ready_for_delivery' &&
+            statusOf(order) === 'ready_for_delivery' &&
             order.deliveryType === 'courier' &&
             !order.courier,
     },
     {
         id: 'handed',
         match: (order) =>
-            order.status === 'ready_for_delivery' &&
+            statusOf(order) === 'ready_for_delivery' &&
             order.deliveryType === 'courier' &&
             Boolean(order.courier),
     },
-    { id: 'transit', match: (order) => order.status === 'shipped' },
+    { id: 'transit', match: (order) => statusOf(order) === 'shipped' },
     {
         id: 'pickup',
         match: (order) =>
             order.deliveryType === 'pickup' &&
-            ['in_production', 'ready_for_delivery'].includes(order.status),
+            ['in_production', 'ready_for_delivery'].includes(statusOf(order)),
     },
     {
         id: 'done',
-        match: (order) => ['delivered', 'completed'].includes(order.status),
+        match: (order) => ['delivered', 'completed'].includes(statusOf(order)),
     },
 ];
 
@@ -145,7 +146,7 @@ export function matchesFilters(order, filters) {
         return false;
     }
 
-    if (filters.status && order.status !== filters.status) {
+    if (filters.status && statusOf(order) !== filters.status) {
         return false;
     }
 
@@ -213,7 +214,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
     /** Every order the deliveries desk is responsible for. */
     const deskOrders = computed(() =>
         dataset.orders.filter((order) =>
-            DESK_STATUS_IDS.includes(order.status),
+            DESK_STATUS_IDS.includes(statusOf(order)),
         ),
     );
 
@@ -232,7 +233,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
      */
     const poaOrders = computed(() =>
         courierOrders.value.filter((order) =>
-            PRE_DISPATCH_STATUS_IDS.includes(order.status),
+            PRE_DISPATCH_STATUS_IDS.includes(statusOf(order)),
         ),
     );
 

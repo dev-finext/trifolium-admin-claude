@@ -24,6 +24,8 @@ import {
     CREDIT,
     ORDER_TO_ITEM_STAGE,
     PAY_LINK,
+    SETTLED_STATUS_IDS,
+    STAGE_TO_STATUS,
     itemStageIndex,
 } from '@/config';
 import { persist } from '@/data/source';
@@ -56,6 +58,17 @@ export function shelfItems(order) {
     return (order.items || []).filter((item) => item.kind === 'shelf');
 }
 
+/**
+ * The items still running. A shelf line carries no stage at all — it is picked,
+ * not made — with one exception: cancelling a line writes `cancelled` onto it,
+ * whatever its kind, so that is the only stage a shelf line ever holds.
+ */
+function liveItems(order, kind) {
+    return (order.items || []).filter(
+        (item) => item.kind === kind && item.stage !== 'cancelled',
+    );
+}
+
 /** The least advanced stage among the items still running, or null. */
 export function lowestStage(order) {
     const live = trackedItems(order).filter(
@@ -76,28 +89,46 @@ export function lowestStage(order) {
 /**
  * The order's real status.
  *
- * An order with no compounded items has nothing to track, so its recorded status
- * stands. Otherwise the lowest live stage decides. The recorded status is kept
- * whenever it agrees with that stage, because two statuses map onto one stage and
- * only the record knows which: `credit` and `paid` both sit at `awaiting_prep`,
- * `delivered` and `completed` both at `delivered`.
+ * Only compounded formulas carry a stage, so only they can move an order along.
+ * Three cases, in the order they are decided:
+ *
+ * 1. Nothing live at all — every line cancelled — and the order is cancelled.
+ *
+ * 2. Live lines, but no formula among them. Either the order was shelf products
+ *    from the start (a third of them are) or its formula was cancelled and the
+ *    shelf lines carry on, which is the rule: cancelling one line never moves the
+ *    others. There is no lab step here — the lines are picked off the shelf, and
+ *    picking IS the packing — so once the money is settled the order reads as
+ *    `ready_for_delivery` and lands on the deliveries desk, instead of sitting at
+ *    `paid` waiting for a step that does not exist. Before payment and after
+ *    dispatch the recorded status stands.
+ *
+ * 3. A live formula exists, and the lowest stage among them decides. Shelf lines
+ *    on the same order ride along: no split orders and no partial shipment, so the
+ *    packer takes them when the formula is ready. The recorded status is kept
+ *    whenever it already agrees with that stage, because two statuses map onto one
+ *    stage and only the record knows which — `credit` and `paid` both sit at
+ *    `awaiting_prep`, `delivered` and `completed` both at `delivered`.
  */
 export function statusOf(order) {
     if (!order) {
         return '';
     }
 
-    const tracked = trackedItems(order);
+    const formulas = liveItems(order, 'formula');
+    const shelf = liveItems(order, 'shelf');
 
-    if (!tracked.length) {
-        return order.status;
+    if (!formulas.length && !shelf.length) {
+        return (order.items || []).length ? 'cancelled' : order.status;
+    }
+
+    if (!formulas.length) {
+        return SETTLED_STATUS_IDS.includes(order.status)
+            ? 'ready_for_delivery'
+            : order.status;
     }
 
     const lowest = lowestStage(order);
-
-    if (!lowest) {
-        return 'cancelled';
-    }
 
     if (ORDER_TO_ITEM_STAGE[order.status] === lowest) {
         return order.status;
@@ -122,7 +153,7 @@ export function statusOf(order) {
  * products only, and those have no lab step at all.
  */
 export function canSendToLab(order) {
-    if (!['paid', 'credit'].includes(statusOf(order))) {
+    if (!SETTLED_STATUS_IDS.includes(statusOf(order))) {
         return false;
     }
 
