@@ -38,6 +38,13 @@ export const LOG_ACTION_IDS = [
     // files
     'attachment_add',
     'attachment_remove',
+    // purchasing
+    'po_create',
+    'po_update',
+    'po_cancel',
+    'po_receive',
+    'supplier_note_close',
+    'inventory_settings_update',
     // people
     'registration_approve',
     'registration_reject',

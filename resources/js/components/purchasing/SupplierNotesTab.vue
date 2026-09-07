@@ -1,0 +1,238 @@
+<script setup>
+// Supplier delivery notes: open until the invoice for them arrives. The list
+// answers the bookkeeper's two questions — which deliveries are not yet billed,
+// and which invoice covered which delivery.
+import { computed, reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+
+import AButton from '@/components/ui/AButton.vue';
+import AChip from '@/components/ui/AChip.vue';
+import ADataTable from '@/components/ui/ADataTable.vue';
+import AInput from '@/components/ui/AInput.vue';
+import AModal from '@/components/ui/AModal.vue';
+import ANum from '@/components/ui/ANum.vue';
+import ASelect from '@/components/ui/ASelect.vue';
+import FilterBar from '@/components/ui/FilterBar.vue';
+import { useLocalized } from '@/composables/useLocalized';
+import { useToast } from '@/composables/useToast';
+import { useUrlState } from '@/composables/useUrlState';
+import { SUPPLIER_NOTE_STATE_IDS } from '@/config';
+import { isoDaysAgo } from '@/lib/dates';
+import { usePurchasingStore } from '@/stores/purchasing';
+
+const emit = defineEmits(['open-po']);
+
+const { t } = useI18n();
+const { loc, searchHaystack } = useLocalized();
+const { push } = useToast();
+const router = useRouter();
+const store = usePurchasingStore();
+
+const state = useUrlState({ nq: '', nstate: '' });
+
+const closing = ref(null);
+const invoice = reactive({ num: '', date: isoDaysAgo(0) });
+
+const rows = computed(() => {
+    const term = state.nq.trim().toLowerCase();
+
+    return store.supplierNotes.filter(
+        (note) =>
+            (!state.nstate || note.state === state.nstate) &&
+            (!term ||
+                searchHaystack(
+                    note.id,
+                    note.po,
+                    note.supplier,
+                    note.docNum,
+                    note.invoice?.num,
+                ).includes(term)),
+    );
+});
+
+const stateOptions = computed(() => [
+    { value: '', label: t('purchasing.notes.filter.state') },
+    ...SUPPLIER_NOTE_STATE_IDS.map((id) => ({
+        value: id,
+        label: `${t(`purchasing.noteState.${id}`)} (${store.supplierNotes.filter((note) => note.state === id).length})`,
+    })),
+]);
+
+const cols = computed(() => [
+    {
+        k: 'id',
+        label: t('purchasing.notes.col.id'),
+        nowrap: true,
+        sortable: true,
+    },
+    { k: 'po', label: t('purchasing.notes.col.po'), nowrap: true },
+    { k: 'supplier', label: t('purchasing.notes.col.supplier') },
+    { k: 'docNum', label: t('purchasing.notes.col.docNum'), nowrap: true },
+    {
+        k: 'when',
+        label: t('purchasing.notes.col.when'),
+        nowrap: true,
+        sortable: true,
+        sortValue: (row) => row.when.iso,
+    },
+    { k: 'lines', label: t('purchasing.notes.col.lines'), nowrap: true },
+    { k: 'receipt', label: t('purchasing.notes.col.receipt'), nowrap: true },
+    { k: 'state', label: t('purchasing.notes.col.state'), nowrap: true },
+    { k: 'invoice', label: t('purchasing.notes.col.invoice'), nowrap: true },
+]);
+
+function openReceipt(id) {
+    router.push({ name: 'inventory', query: { tab: 'receipts', receipt: id } });
+}
+
+function startClose(note) {
+    closing.value = note;
+    invoice.num = '';
+    invoice.date = isoDaysAgo(0);
+}
+
+async function confirmClose() {
+    if (!invoice.num.trim()) {
+        return;
+    }
+
+    const note = closing.value;
+
+    await store.closeNote(note.id, invoice.num, invoice.date);
+    push({
+        title: t('purchasing.notes.closed'),
+        body: t('purchasing.notes.closedBody', {
+            id: note.id,
+            num: invoice.num,
+        }),
+    });
+    closing.value = null;
+}
+</script>
+
+<template>
+    <div class="a-grid a-tabbody">
+        <div class="a-note a-note--info">{{ t('purchasing.notes.note') }}</div>
+
+        <FilterBar
+            :count="rows.length"
+            :label="
+                t('purchasing.notes.count', {
+                    total: store.supplierNotes.length,
+                })
+            "
+            :dirty="Boolean(state.nq || state.nstate)"
+            @clear="((state.nq = ''), (state.nstate = ''))"
+        >
+            <AInput
+                v-model="state.nq"
+                class="search"
+                :placeholder="t('purchasing.notes.search')"
+            />
+            <ASelect v-model="state.nstate" :options="stateOptions" />
+        </FilterBar>
+
+        <ADataTable :cols="cols" :rows="rows" row-key="id">
+            <template #cell-id="{ row }"
+                ><span class="t-strong num">{{ row.id }}</span></template
+            >
+            <template #cell-po="{ row }">
+                <button
+                    type="button"
+                    class="a-linkbtn"
+                    @click="emit('open-po', row.po)"
+                >
+                    <ANum>{{ row.po }}</ANum>
+                </button>
+            </template>
+            <template #cell-supplier="{ row }">{{
+                loc(row.supplier)
+            }}</template>
+            <template #cell-docNum="{ row }"
+                ><ANum>{{ row.docNum }}</ANum></template
+            >
+            <template #cell-when="{ row }"
+                ><ANum>{{ row.when.stamp }}</ANum></template
+            >
+            <template #cell-lines="{ row }"
+                ><ANum>{{ row.lines.length }}</ANum></template
+            >
+            <template #cell-receipt="{ row }">
+                <button
+                    v-if="row.receipt"
+                    type="button"
+                    class="a-linkbtn"
+                    @click="openReceipt(row.receipt)"
+                >
+                    <ANum>{{ row.receipt }}</ANum>
+                </button>
+                <span v-else class="t-sub">—</span>
+            </template>
+            <template #cell-state="{ row }">
+                <AChip :tone="row.state === 'closed' ? 'green' : 'amber'">
+                    {{ t(`purchasing.noteState.${row.state}`) }}
+                </AChip>
+            </template>
+            <template #cell-invoice="{ row }">
+                <template v-if="row.invoice">
+                    <ANum>{{ row.invoice.num }}</ANum>
+                    <div class="t-sub">{{ row.invoice.when.stamp }}</div>
+                </template>
+                <AButton v-else sm icon="check" @click.stop="startClose(row)">
+                    {{ t('purchasing.action.closeNote') }}
+                </AButton>
+            </template>
+        </ADataTable>
+
+        <AModal
+            :open="Boolean(closing)"
+            :title="
+                closing
+                    ? t('purchasing.notes.closeTitle', { id: closing.id })
+                    : ''
+            "
+            :width="520"
+            @close="closing = null"
+        >
+            <div class="a-2col">
+                <div>
+                    <label class="a-lbl">{{
+                        t('purchasing.notes.invoiceNum')
+                    }}</label>
+                    <AInput v-model="invoice.num" ltr class="a-w100" />
+                </div>
+                <div>
+                    <label class="a-lbl">{{
+                        t('purchasing.notes.invoiceDate')
+                    }}</label>
+                    <AInput v-model="invoice.date" type="date" class="a-w100" />
+                </div>
+            </div>
+            <template #footer>
+                <AButton
+                    kind="p"
+                    icon="check"
+                    :disabled="!invoice.num.trim()"
+                    @click="confirmClose"
+                >
+                    {{ t('purchasing.notes.closeConfirm') }}
+                </AButton>
+                <AButton @click="closing = null">{{
+                    t('actions.cancel')
+                }}</AButton>
+            </template>
+        </AModal>
+    </div>
+</template>
+
+<style scoped>
+.a-tabbody {
+    margin-top: 20px;
+}
+
+.search {
+    width: 320px;
+    max-width: 100%;
+}
+</style>

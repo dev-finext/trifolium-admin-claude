@@ -105,8 +105,9 @@ while the console is in English.
 - **Stock adjustments have three reasons with two behaviours.** A count *sets*
   the quantity to what was physically found and records the variance; damage and
   rejection *deduct* from a named batch.
-- **Batch selection is FIFO by expiry, with pharmacist approval** before stock is
-  deducted.
+- **Batch selection is FEFO — first expired, first out — with pharmacist
+  approval** before stock is deducted. Since V2 the rule is a setting; FIFO by
+  receipt is the alternative.
 - **Courier delivery requires a signed power of attorney.** Pickup does not.
 - **Loyalty is a credit-points wallet** where 1 point = ₪1.
 

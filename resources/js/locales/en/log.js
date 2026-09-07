@@ -50,6 +50,7 @@ export default {
         catalog_item: 'Catalogue item',
         product: 'Product',
         product_label: 'Product label',
+        purchase_order: 'Purchase order',
     },
 
     loadMore: 'Load {n} more entries',

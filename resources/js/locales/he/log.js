@@ -54,6 +54,7 @@ export default {
         catalog_item: 'פריט קטלוג',
         product: 'מוצר',
         product_label: 'תווית מוצר',
+        purchase_order: 'הזמנת רכש',
     },
 
     loadMore: 'טען עוד {n} רשומות',

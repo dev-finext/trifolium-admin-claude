@@ -14,7 +14,7 @@
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
-import { ADJUST_REASON, BATCH_EXPIRY_WARN_DAYS } from '@/config';
+import { ADJUST_REASON, BATCH_EXPIRY_WARN_DAYS, BATCH_PICK } from '@/config';
 import { persist } from '@/data/source';
 import { daysSince, fmtISO, hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { isLocalized } from '@/lib/localized';
@@ -90,13 +90,27 @@ export const useInventoryStore = defineStore('inventory', () => {
     const batchesOf = (sku) =>
         batches.value.filter((batch) => batch.sku === sku);
 
-    /** Batches of one item that may still be drawn from, nearest expiry first. */
+    /**
+     * FEFO by expiry — the pharmacy's rule — or FIFO by receipt date. A setting
+     * the console edits since V2 (inventorySettings.pickMode); config is the default.
+     */
+    const pickMode = computed(
+        () => dataset.data.inventorySettings?.pickMode || BATCH_PICK.mode,
+    );
+
+    /** Batches of one item that may still be drawn from, in pick order. */
     const openBatchesOf = (sku) =>
         batchesOf(sku)
             .filter(
                 (batch) => batch.remaining > 0 && batch.state !== 'rejected',
             )
-            .sort((a, b) => a.daysToExp - b.daysToExp);
+            .sort((a, b) =>
+                pickMode.value === 'fifo'
+                    ? String(a.received?.iso || '').localeCompare(
+                          String(b.received?.iso || ''),
+                      )
+                    : a.daysToExp - b.daysToExp,
+            );
 
     const useOfBatch = (id) => batchUse.value.filter((row) => row.batch === id);
 
@@ -104,11 +118,22 @@ export const useInventoryStore = defineStore('inventory', () => {
     const liveBatchCount = (sku) =>
         batchesOf(sku).filter((batch) => batch.remaining > 0).length;
 
+    /** The prefix supplier batches are numbered under — a setting since V2. */
+    const batchSeries = computed(
+        () =>
+            dataset.data.inventorySettings?.batchSeries?.supplier ||
+            BATCH_SERIES,
+    );
+
     /** The batch number the next receipt line would open. */
     const nextBatchNo = computed(() =>
         nextSerial(
-            batches.value.map((batch) => batch.id),
-            BATCH_SERIES,
+            batches.value
+                .map((batch) => batch.id)
+                .filter((batchId) =>
+                    String(batchId).startsWith(batchSeries.value),
+                ),
+            batchSeries.value,
         ),
     );
 
@@ -254,12 +279,20 @@ export const useInventoryStore = defineStore('inventory', () => {
         const when = moment(form.date);
         const by = dataset.me?.name || null;
         const known = dataset.suppliers.find(
-            (supplier) => optionKey(supplier.name) === optionKey(form.supplier),
+            (supplier) =>
+                (form.supplierCode && supplier.code === form.supplierCode) ||
+                optionKey(supplier.name) === optionKey(form.supplier),
         );
         const supplier = known ? known.name : form.supplier;
+        const supplierCode = known ? known.code : form.supplierCode || null;
 
         const lines = form.lines.map((line) => {
             const item = itemBySku(line.sku);
+            // V2: a line may top up an existing batch instead of opening one; it
+            // then takes that batch's number, expiry and supplier batch.
+            const existing = line.existingBatch
+                ? batchById(line.existingBatch)
+                : null;
 
             return {
                 sku: line.sku,
@@ -267,17 +300,31 @@ export const useInventoryStore = defineStore('inventory', () => {
                 unit: item ? item.unit : null,
                 qty: Number(line.qty),
                 wh: line.wh,
-                batch: line.batch.trim(),
-                expiry: line.expiry,
-                supplierBatch: line.supplierBatch.trim() || null,
+                batch: existing ? existing.id : String(line.batch || '').trim(),
+                expiry: existing ? existing.expiry : line.expiry,
+                supplierBatch: existing
+                    ? existing.supplierBatch
+                    : String(line.supplierBatch || '').trim() || null,
+                existing: Boolean(existing),
+                // V2: the price becomes the item card's last purchase price,
+                // and the label count feeds the labels module.
+                price:
+                    line.price === '' ||
+                    line.price === null ||
+                    line.price === undefined
+                        ? null
+                        : Number(line.price),
+                currency: line.currency || null,
+                labels: Number(line.labels) || 0,
             };
         });
 
         bag('receipts').unshift({
             id,
             supplier,
-            supplierCode: known ? known.code : null,
-            docNum: form.docNum.trim(),
+            supplierCode,
+            po: form.po || null,
+            docNum: String(form.docNum).trim(),
             when,
             by,
             note: form.note.trim() || null,
@@ -286,26 +333,36 @@ export const useInventoryStore = defineStore('inventory', () => {
         });
 
         lines.forEach((line) => {
-            const batch = {
-                id: line.batch,
-                sku: line.sku,
-                name: line.name,
-                unit: line.unit,
-                wh: line.wh,
-                receipt: id,
-                supplier,
-                supplierBatch: line.supplierBatch,
-                received: when,
-                qty: line.qty,
-                remaining: line.qty,
-                expiry: line.expiry,
-                daysToExp: -daysSince(line.expiry),
-                state: 'active',
-                by,
-            };
+            if (line.existing) {
+                // Topping up: the batch grows, keeps its expiry, and this
+                // receipt is one more document behind it.
+                const batch = batchById(line.batch);
 
-            syncBatch(batch);
-            bag('batches').unshift(batch);
+                batch.qty += line.qty;
+                batch.remaining += line.qty;
+                syncBatch(batch);
+            } else {
+                const batch = {
+                    id: line.batch,
+                    sku: line.sku,
+                    name: line.name,
+                    unit: line.unit,
+                    wh: line.wh,
+                    receipt: id,
+                    supplier,
+                    supplierBatch: line.supplierBatch,
+                    received: when,
+                    qty: line.qty,
+                    remaining: line.qty,
+                    expiry: line.expiry,
+                    daysToExp: -daysSince(line.expiry),
+                    state: 'active',
+                    by,
+                };
+
+                syncBatch(batch);
+                bag('batches').unshift(batch);
+            }
 
             const item = itemBySku(line.sku);
 
@@ -337,9 +394,36 @@ export const useInventoryStore = defineStore('inventory', () => {
             });
         });
 
+        // V2: the receipt writes the item card's "last purchase" — price,
+        // currency, date — and its last supplier.
+        const cards = Array.isArray(dataset.data.items)
+            ? dataset.data.items
+            : [];
+
+        lines.forEach((line) => {
+            const card = cards.find((row) => row.sku === line.sku);
+
+            if (!card) {
+                return;
+            }
+
+            if (line.price !== null) {
+                card.price = {
+                    ...card.price,
+                    lastPurchase: line.price,
+                    currency: line.currency || card.price?.currency || 'ILS',
+                    lastPurchaseOn: when.iso,
+                };
+            }
+
+            if (supplierCode) {
+                card.suppliers = { ...card.suppliers, last: supplierCode };
+            }
+        });
+
         await persist('inventory/receipts', {
             id,
-            docNum: form.docNum.trim(),
+            docNum: String(form.docNum).trim(),
             lines,
         });
 
@@ -640,6 +724,8 @@ export const useInventoryStore = defineStore('inventory', () => {
         receiptReceivers,
         supplierHints,
         nextBatchNo,
+        batchSeries,
+        pickMode,
 
         itemBySku,
         batchById,

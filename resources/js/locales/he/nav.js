@@ -24,6 +24,7 @@ export default {
         items: 'פריטים',
         lab: 'מעבדה',
         inventory: 'מלאי ואצוות',
+        purchasing: 'רכש',
         safety: 'אינטראקציות תרופתיות',
         libraries: 'ספריות פורמולות',
         content: 'תוכן — מאמרים והרצאות',

@@ -44,10 +44,12 @@ export const ADJUST_REASON = Object.fromEntries(
 );
 
 /**
- * Batch selection for compounding is automatic by expiry (FIFO). The pharmacist
- * approves the pick before stock is deducted and may override it in the lab.
+ * Batch selection for compounding is automatic, nearest expiry first — FEFO,
+ * first expired, first out. The pharmacist approves the pick before stock is
+ * deducted and may override it in the lab. Since V2 the mode is a setting the
+ * console edits (inventorySettings.pickMode); this is the default.
  */
-export const BATCH_PICK = { mode: 'fifo', requiresPharmacistApproval: true };
+export const BATCH_PICK = { mode: 'fefo', requiresPharmacistApproval: true };
 
 /** Units stock is held in. */
 export const STOCK_UNITS = ['g', 'kg', 'ml', 'l', 'unit'];

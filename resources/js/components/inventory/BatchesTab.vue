@@ -9,6 +9,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BatchPickPanel from '@/components/inventory/BatchPickPanel.vue';
+import BatchSettingsCard from '@/components/inventory/BatchSettingsCard.vue';
 import SearchBox from '@/components/inventory/SearchBox.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
@@ -362,6 +363,8 @@ function onWindow(value) {
             controls
             approval
         />
+
+        <BatchSettingsCard />
     </div>
 </template>
 

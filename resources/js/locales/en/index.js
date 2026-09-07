@@ -19,6 +19,7 @@ import nav from '@/locales/en/nav';
 import orders from '@/locales/en/orders';
 import pricing from '@/locales/en/pricing';
 import products from '@/locales/en/products';
+import purchasing from '@/locales/en/purchasing';
 import safety from '@/locales/en/safety';
 import shell from '@/locales/en/shell';
 import systemContacts from '@/locales/en/systemContacts';
@@ -48,6 +49,7 @@ export default {
     orders,
     pricing,
     products,
+    purchasing,
     safety,
     shell,
     ui,

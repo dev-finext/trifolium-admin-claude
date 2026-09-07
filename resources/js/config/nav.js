@@ -32,6 +32,8 @@ export const NAV_GROUPS = [
             { id: 'items', icon: 'tag', v2: 'item-card' },
             { id: 'lab', icon: 'zoom', inDevelopment: true },
             { id: 'inventory', icon: 'grid' },
+            // V2 — purchase orders, supplier delivery notes, consumption report
+            { id: 'purchasing', icon: 'inbox', v2: 'purchase-orders' },
         ],
     },
     {

@@ -97,6 +97,11 @@ import {
     PRODUCT_STATUS_IDS,
     SHELF_ITEMS,
 } from '@/demo/products';
+import {
+    buildPurchaseOrders,
+    buildSupplierNotes,
+    INVENTORY_SETTINGS,
+} from '@/demo/purchasing';
 import { buildServices, SERVICE_STATES } from '@/demo/services';
 import {
     BUSINESS_TYPE_IDS,
@@ -140,6 +145,8 @@ export function buildDataset() {
     const batchUse = buildBatchUse(orders, batches);
     const priceGroups = buildPriceGroups();
     const products = buildProducts();
+    const items = buildItems(stock, products, DEMO_SUPPLIERS);
+    const purchaseOrders = buildPurchaseOrders(items, DEMO_SUPPLIERS);
 
     return {
         // people
@@ -184,11 +191,16 @@ export function buildDataset() {
 
         // items (V2): the unified card over stock rows and products, the
         // managed preparation types, the bills of materials, the files
-        items: buildItems(stock, products, DEMO_SUPPLIERS),
+        items,
         prepTypes: PREP_TYPES,
         boms: buildBoms(stock, products),
         attachments: buildAttachments(stock, batches),
         siteCategories: SITE_CATEGORIES,
+
+        // purchasing (V2)
+        purchaseOrders,
+        supplierNotes: buildSupplierNotes(purchaseOrders, receipts),
+        inventorySettings: INVENTORY_SETTINGS,
 
         // inventory
         stock,

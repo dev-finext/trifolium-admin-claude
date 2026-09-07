@@ -63,7 +63,7 @@ const onOrder = computed(() =>
     props.row ? store.onOrderOf(props.row.sku) : [],
 );
 const onOrderQty = computed(() =>
-    onOrder.value.reduce((sum, line) => sum + line.qty, 0),
+    onOrder.value.reduce((sum, line) => sum + (line.qtySales ?? line.qty), 0),
 );
 const batches = computed(() =>
     props.row ? inventory.openBatchesOf(props.row.sku) : [],

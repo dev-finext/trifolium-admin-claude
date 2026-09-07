@@ -21,6 +21,7 @@ export default {
         items: 'Items',
         lab: 'Lab',
         inventory: 'Stock & batches',
+        purchasing: 'Purchasing',
         safety: 'Drug interactions',
         libraries: 'Formula libraries',
         content: 'Content — articles & lectures',

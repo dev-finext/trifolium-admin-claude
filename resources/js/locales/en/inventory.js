@@ -53,6 +53,34 @@ export default {
         },
     },
 
+    // V2 — the batch-handling settings
+    pickMode: {
+        fefo: 'FEFO — by expiry',
+        fifo: 'FIFO — by receipt order',
+    },
+    batchSource: {
+        supplier: 'Goods receipt',
+        production: 'In-house production',
+        waste: 'Waste',
+    },
+    settings: {
+        title: 'Batch settings',
+        updated: 'Updated {when} · {by}',
+        saved: 'Setting saved',
+        pickTitle: 'Batch selection rule',
+        pickHint:
+            'FEFO is how the pharmacy works — the batch nearest to expiry goes first. FIFO is kept as an option, as the specification asked.',
+        expiryTitle: 'Default shelf life by item family',
+        expiryHint:
+            'Calculated automatically on receipt and on return from production, by the item’s family · can be overridden per batch',
+        months: 'months',
+        none: 'None',
+        seriesTitle: 'Batch numbering',
+        seriesHint:
+            'A prefix per batch source, and a running number — instead of the spreadsheet',
+        next: 'Next: {id}',
+    },
+
     stock: {
         lowTitle: '{n} items below their minimum',
         lowNames: '— {names}.',
@@ -146,7 +174,10 @@ export default {
                 supplierBatch: "Supplier's batch",
                 expiry: 'Expiry',
                 wh: 'Warehouse',
+                price: 'Price per purchase unit',
+                labels: 'Labels',
             },
+            po: 'Against purchase order {id}',
         },
     },
 
@@ -273,8 +304,17 @@ export default {
             expiry: 'Expiry',
             wh: 'Warehouse',
             after: 'Stock after',
+            existing: 'Existing batch',
+            price: 'Price per purchase unit',
+            labels: 'Labels',
         },
         supplierBatchPh: "Batch number at the supplier's",
+        // V2
+        supplierPick: 'Choose a supplier from the list…',
+        supplierOther: 'Other supplier — type the name',
+        existingNew: 'New batch',
+        existingOption: '{id} · expires {expiry}',
+        expiryAuto: 'Family default — {n} months · can be changed',
         addLine: 'Add a line',
         hint: 'Each line opens a separate batch with its own batch number and expiry date, and enters stock the moment it is received',
         submit: 'Receive into stock · 1 batch | Receive into stock · {n} batches',
@@ -286,6 +326,9 @@ export default {
             expiry: 'Expiry on line {n}',
             wh: 'Warehouse on line {n}',
             remove: 'Remove line {n}',
+            existing: 'Existing batch on line {n}',
+            price: 'Price on line {n}',
+            labels: 'Labels on line {n}',
         },
     },
 
@@ -312,7 +355,7 @@ export default {
         noBatches:
             'This item has no open batch in stock, so breakage or rejection cannot be recorded against it. If the quantity is wrong, choose a stock count instead.',
         shortfall:
-            'The variance — {qty} {unit} — is deducted from the batches nearest to expiry first (FIFO), spilling over to the next batch when it exceeds what is left.',
+            'The variance — {qty} {unit} — is deducted from the batches nearest to expiry first (FEFO), spilling over to the next batch when it exceeds what is left.',
         shortfallNone:
             'This item has no batch with quantity left, so only the item total is updated.',
         surplus:
@@ -325,7 +368,10 @@ export default {
 
     pick: {
         title: 'Batch selection for compounding',
-        fifo: 'The selection is automatic, nearest expiry first (FIFO).',
+        rule: {
+            fefo: 'The selection is automatic, nearest expiry first — FEFO, first expired, first out.',
+            fifo: 'The selection is automatic, in order of receipt — FIFO, first in, first out.',
+        },
         approval: 'The pharmacist approves the pick before stock is deducted.',
         item: 'Item',
         qty: 'Quantity needed',

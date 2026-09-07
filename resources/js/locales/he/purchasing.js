@@ -1,0 +1,205 @@
+// רכש — purchase orders, supplier delivery notes and the consumption report (V2).
+export default {
+    title: 'רכש',
+    sub: '{open} הזמנות פתוחות · {partial} בקבלה חלקית · {notes} תעודות משלוח ממתינות לחשבונית',
+
+    tab: {
+        pos: 'הזמנות רכש',
+        notes: 'תעודות משלוח ספק',
+        consumption: 'דוח צריכה',
+    },
+
+    action: {
+        newPo: 'הזמנת רכש חדשה',
+        edit: 'עריכה',
+        receive: 'קבלת סחורה מול ההזמנה',
+        cancel: 'ביטול הזמנה',
+        closeNote: 'סגירה בחשבונית',
+    },
+
+    state: {
+        open: 'פתוחה',
+        partial: 'קבלה חלקית',
+        closed: 'סגורה',
+        cancelled: 'בוטלה',
+    },
+
+    noteState: {
+        open: 'ממתינה לחשבונית',
+        closed: 'נסגרה בחשבונית',
+    },
+
+    kpi: {
+        open: 'פתוחות',
+        openSub: 'טרם נקלט דבר',
+        partial: 'בקבלה חלקית',
+        partialSub: 'נקלט חלק מהשורות',
+        closed: 'סגורות',
+        closedSub: 'נקלטו במלואן',
+        value: 'שווי פתוח',
+        valueSub: 'שורות שטרם נקלטו · בשקלים',
+    },
+
+    filter: {
+        count: 'הזמנות · מתוך {total}',
+        search: 'מספר · ספק · פריט',
+        state: 'מצב — הכל',
+        supplier: 'ספק — הכל',
+    },
+
+    col: {
+        id: 'הזמנה',
+        supplier: 'ספק',
+        state: 'מצב',
+        lines: 'שורות',
+        linesN: '{n} שורות',
+        value: 'שווי',
+        openValue: 'פתוח: {value}',
+        eta: 'צפי אספקה',
+        created: 'נוצרה',
+        progress: '{received} / {total} יח׳ קנייה',
+    },
+
+    drawer: {
+        title: 'הזמנת רכש',
+        eta: 'צפי אספקה {date}',
+        noEta: 'ללא צפי אספקה',
+        created: 'נוצרה {when} · {by}',
+        lines: 'שורות ההזמנה',
+        col: {
+            item: 'פריט',
+            ordered: 'הוזמן',
+            received: 'נקלט',
+            open: 'פתוח',
+            price: 'מחיר ליח׳',
+            value: 'שווי',
+        },
+        map: 'מפת קשרים',
+        mapHint:
+            'הזמנה → תעודות משלוח → תעודות קליטה → חשבונית ספק. כל צומת נפתח.',
+        mapNotes: 'תעודות משלוח',
+        mapReceipts: 'תעודות קליטה',
+        mapInvoice: 'חשבונית ספק',
+        mapNone: 'עדיין אין',
+        files: 'קבצים על ההזמנה',
+        cancelTitle: 'ביטול הזמנת רכש',
+        cancelBody:
+            'הזמנה {id} לספק {supplier} תבוטל. שורות שכבר נקלטו נשארות במלאי.',
+        cancelConfirm: 'בטל הזמנה',
+    },
+
+    editor: {
+        newTitle: 'הזמנת רכש חדשה',
+        editTitle: 'עריכת הזמנת רכש · {id}',
+        supplier: 'ספק',
+        pickSupplier: 'בחירת ספק…',
+        eta: 'צפי אספקה',
+        currency: 'מטבע',
+        notes: 'הערות להזמנה',
+        lines: 'שורות',
+        allItems: 'הצגת כל פריטי הרכש, לא רק של הספק',
+        col: {
+            item: 'פריט',
+            qty: 'כמות',
+            uom: 'יחידת קנייה',
+            price: 'מחיר ליח׳',
+        },
+        pickItem: 'בחירת פריט…',
+        addLine: 'הוספת שורה',
+        createConfirm: 'הקם הזמנה',
+        saveConfirm: 'שמור שינויים',
+        validate: {
+            supplier: 'נא לבחור ספק',
+            lines: 'לפחות שורה אחת עם פריט וכמות חיובית',
+            duplicate: 'פריט מופיע פעמיים',
+        },
+    },
+
+    receive: {
+        title: 'קבלת סחורה מול הזמנה {id}',
+        hint: 'השורות מולאו מההזמנה — הכמות הפתוחה, ביחידות מלאי. אפשר לקלוט חלקית; ההזמנה תיסגר כשכל השורות ייקלטו. המחיר נרשם ככמחיר קניה אחרון בכרטיס הפריט, ותעודת משלוח ספק נפתחת עד שתגיע החשבונית.',
+        docNum: 'תעודת משלוח ספק',
+        date: 'תאריך קליטה',
+        note: 'הערה',
+        col: {
+            item: 'פריט',
+            open: 'פתוח בהזמנה',
+            qty: 'כמות נקלטת',
+            existing: 'אצווה קיימת',
+            batch: 'אצווה',
+            supplierBatch: 'אצווה של הספק',
+            expiry: 'תוקף',
+            price: 'מחיר ליח׳ קנייה',
+            labels: 'מדבקות',
+        },
+        existingNew: 'אצווה חדשה',
+        submit: 'קלוט למלאי · {n} שורות',
+        need: 'נדרשים: מספר תעודת משלוח ולפחות שורה אחת עם כמות, אצווה ותוקף',
+        toast: 'נקלט מול {id}',
+        toastBody:
+            '{receipt} · {n} אצוות · תעודת משלוח {note} נפתחה · ההזמנה: {state}',
+    },
+
+    notes: {
+        note: 'תעודת משלוח של ספק נפתחת בכל קליטה ונשארת פתוחה עד שמגיעה החשבונית. כך מוודאים שכל תעודה חויבה — ושכל חשבונית מגובה בסחורה שנקלטה.',
+        count: 'תעודות · מתוך {total}',
+        search: 'תעודה · הזמנה · ספק · מספר תעודה · חשבונית',
+        filter: {
+            state: 'מצב — הכל',
+        },
+        col: {
+            id: 'תעודת משלוח',
+            po: 'הזמנה',
+            supplier: 'ספק',
+            docNum: 'מס׳ תעודה',
+            when: 'תאריך',
+            lines: 'שורות',
+            receipt: 'קליטה',
+            state: 'מצב',
+            invoice: 'חשבונית',
+        },
+        closeTitle: 'סגירת תעודת משלוח · {id}',
+        invoiceNum: 'מספר חשבונית ספק',
+        invoiceDate: 'תאריך חשבונית',
+        closeConfirm: 'סגור תעודה',
+        closed: 'התעודה נסגרה',
+        closedBody: '{id} · חשבונית {num}',
+    },
+
+    consumption: {
+        note: 'ייצור ומכירה בלבד — ללא יישורי מלאי, פחת ופסילות, שאינם אומרים דבר על הביקוש. הממוצע החודשי מחושב על הטווח שנבחר, והכיסוי — המלאי הזמין חלקי הממוצע.',
+        inRange: '{n} פריטים בטווח',
+        kpi: {
+            production: 'ייצור',
+            productionSub: 'הוקצה לרקיחות',
+            sales: 'מכירה',
+            salesSub: 'שורות מדף שנשלחו',
+            months: 'חודשים בטווח',
+            monthsSub: 'בסיס הממוצע',
+        },
+        col: {
+            item: 'פריט',
+            family: 'משפחה',
+            production: 'ייצור',
+            sales: 'מכירה',
+            total: 'סה״כ',
+            monthly: 'ממוצע חודשי',
+            avail: 'זמין',
+            cover: 'כיסוי',
+        },
+        months: '{n} חודשים',
+        coverLow: 'פחות מחודש',
+        coverNone: '—',
+        empty: 'אין צריכה בטווח שנבחר',
+        emptyHint: 'הרחב את טווח התאריכים',
+        export: 'ייצוא CSV',
+        exported: 'הייצוא הוכן',
+        exportedBody: '{n} שורות · {file}',
+    },
+
+    toast: {
+        created: 'הזמנת הרכש הוקמה',
+        updated: 'הזמנת הרכש עודכנה',
+        cancelled: 'הזמנת הרכש בוטלה',
+    },
+};

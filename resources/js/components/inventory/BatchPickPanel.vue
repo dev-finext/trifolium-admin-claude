@@ -15,6 +15,7 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { BATCH_PICK } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { num } from '@/lib/money';
@@ -76,7 +77,8 @@ const hasOpenBatches = computed(
     <ACard :title="t('inventory.pick.title')" icon="layers" :pad="false">
         <template #right>
             <span class="a-pick-rule">
-                {{ t('inventory.pick.fifo') }}
+                <V2Badge id="batches" size="sm" />
+                {{ t(`inventory.pick.rule.${inventory.pickMode}`) }}
                 <template
                     v-if="approval && BATCH_PICK.requiresPharmacistApproval"
                 >

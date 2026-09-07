@@ -267,6 +267,12 @@ export const useItemsStore = defineStore('items', () => {
                         po: po.id,
                         supplier: po.supplier,
                         qty: line.qty - (line.received || 0),
+                        // the same quantity in stock units, for the card's tile
+                        qtySales:
+                            (line.qty - (line.received || 0)) *
+                            (line.uom === itemBySku(sku)?.uom?.purchase
+                                ? itemBySku(sku)?.uom?.factor || 1
+                                : 1),
                         uom: line.uom,
                         eta: po.eta,
                     })),

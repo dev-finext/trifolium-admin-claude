@@ -10,7 +10,9 @@ import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import ANum from '@/components/ui/ANum.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { CURRENCY_SYMBOL } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { num } from '@/lib/money';
 
@@ -43,6 +45,17 @@ const cols = computed(() => [
         nowrap: true,
     },
     { k: 'wh', label: t('inventory.receipts.drawer.col.wh'), nowrap: true },
+    // V2
+    {
+        k: 'price',
+        label: t('inventory.receipts.drawer.col.price'),
+        nowrap: true,
+    },
+    {
+        k: 'labels',
+        label: t('inventory.receipts.drawer.col.labels'),
+        nowrap: true,
+    },
 ]);
 
 const lines = computed(() => props.receipt?.lines || []);
@@ -85,6 +98,22 @@ const lines = computed(() => props.receipt?.lines || []);
                                         name: loc(receipt.by),
                                     })
                                 }}
+                            </span>
+                            <span v-if="receipt.po">
+                                <V2Badge id="purchase-orders" size="sm" />
+                                <RouterLink
+                                    class="a-linkbtn"
+                                    :to="{
+                                        name: 'purchasing',
+                                        query: { po: receipt.po },
+                                    }"
+                                >
+                                    {{
+                                        t('inventory.receipts.drawer.po', {
+                                            id: receipt.po,
+                                        })
+                                    }}
+                                </RouterLink>
                             </span>
                         </div>
                     </div>
@@ -134,6 +163,25 @@ const lines = computed(() => props.receipt?.lines || []);
                     </template>
                     <template #cell-wh="{ row }">
                         {{ t(`warehouse.${row.wh}.name`) }}
+                    </template>
+                    <template #head-price="{ col }">
+                        {{ col.label }}
+                        <V2Badge id="receiving" size="sm" />
+                    </template>
+                    <template #cell-price="{ row }">
+                        <ANum v-if="row.price != null">
+                            {{ CURRENCY_SYMBOL[row.currency] || ''
+                            }}{{ num(row.price, 2) }}
+                        </ANum>
+                        <span v-else class="a-muted">—</span>
+                    </template>
+                    <template #head-labels="{ col }">
+                        {{ col.label }}
+                        <V2Badge id="receiving" size="sm" />
+                    </template>
+                    <template #cell-labels="{ row }">
+                        <ANum v-if="row.labels">{{ row.labels }}</ANum>
+                        <span v-else class="a-muted">—</span>
                     </template>
                 </ADataTable>
             </ACard>

@@ -1,0 +1,205 @@
+// English mirror of he/purchasing.js.
+export default {
+    title: 'Purchasing',
+    sub: '{open} open orders · {partial} partially received · {notes} delivery notes awaiting an invoice',
+
+    tab: {
+        pos: 'Purchase orders',
+        notes: 'Supplier delivery notes',
+        consumption: 'Consumption report',
+    },
+
+    action: {
+        newPo: 'New purchase order',
+        edit: 'Edit',
+        receive: 'Receive goods against the order',
+        cancel: 'Cancel order',
+        closeNote: 'Close with invoice',
+    },
+
+    state: {
+        open: 'Open',
+        partial: 'Partially received',
+        closed: 'Closed',
+        cancelled: 'Cancelled',
+    },
+
+    noteState: {
+        open: 'Awaiting invoice',
+        closed: 'Closed by invoice',
+    },
+
+    kpi: {
+        open: 'Open',
+        openSub: 'Nothing received yet',
+        partial: 'Partially received',
+        partialSub: 'Some lines received',
+        closed: 'Closed',
+        closedSub: 'Received in full',
+        value: 'Open value',
+        valueSub: 'Lines not yet received · in shekels',
+    },
+
+    filter: {
+        count: 'orders · of {total}',
+        search: 'Number · supplier · item',
+        state: 'State — all',
+        supplier: 'Supplier — all',
+    },
+
+    col: {
+        id: 'Order',
+        supplier: 'Supplier',
+        state: 'State',
+        lines: 'Lines',
+        linesN: '{n} lines',
+        value: 'Value',
+        openValue: 'open: {value}',
+        eta: 'Expected',
+        created: 'Created',
+        progress: '{received} / {total} purchase units',
+    },
+
+    drawer: {
+        title: 'Purchase order',
+        eta: 'Expected {date}',
+        noEta: 'No expected date',
+        created: 'Created {when} · {by}',
+        lines: 'Order lines',
+        col: {
+            item: 'Item',
+            ordered: 'Ordered',
+            received: 'Received',
+            open: 'Open',
+            price: 'Unit price',
+            value: 'Value',
+        },
+        map: 'Relationship map',
+        mapHint:
+            'Order → delivery notes → goods receipts → supplier invoice. Every node opens.',
+        mapNotes: 'Delivery notes',
+        mapReceipts: 'Goods receipts',
+        mapInvoice: 'Supplier invoice',
+        mapNone: 'None yet',
+        files: 'Files on the order',
+        cancelTitle: 'Cancel purchase order',
+        cancelBody:
+            'Order {id} to {supplier} will be cancelled. Lines already received stay in stock.',
+        cancelConfirm: 'Cancel order',
+    },
+
+    editor: {
+        newTitle: 'New purchase order',
+        editTitle: 'Edit purchase order · {id}',
+        supplier: 'Supplier',
+        pickSupplier: 'Choose a supplier…',
+        eta: 'Expected',
+        currency: 'Currency',
+        notes: 'Order notes',
+        lines: 'Lines',
+        allItems: 'Show every purchase item, not only the supplier’s',
+        col: {
+            item: 'Item',
+            qty: 'Quantity',
+            uom: 'Purchase unit',
+            price: 'Unit price',
+        },
+        pickItem: 'Choose an item…',
+        addLine: 'Add a line',
+        createConfirm: 'Create order',
+        saveConfirm: 'Save changes',
+        validate: {
+            supplier: 'Choose a supplier',
+            lines: 'At least one line with an item and a positive quantity',
+            duplicate: 'An item appears twice',
+        },
+    },
+
+    receive: {
+        title: 'Receive goods against order {id}',
+        hint: 'The lines are prefilled from the order — the open quantity, in stock units. Partial receipts are fine; the order closes when its last line is in. The price becomes the item’s last purchase price, and a supplier delivery note opens until the invoice arrives.',
+        docNum: 'Supplier delivery note',
+        date: 'Receipt date',
+        note: 'Note',
+        col: {
+            item: 'Item',
+            open: 'Open on order',
+            qty: 'Quantity received',
+            existing: 'Existing batch',
+            batch: 'Batch',
+            supplierBatch: "Supplier's batch",
+            expiry: 'Expiry',
+            price: 'Price per purchase unit',
+            labels: 'Labels',
+        },
+        existingNew: 'New batch',
+        submit: 'Receive into stock · {n} lines',
+        need: 'Required: a delivery-note number and at least one line with a quantity, a batch and an expiry',
+        toast: 'Received against {id}',
+        toastBody:
+            '{receipt} · {n} batches · delivery note {note} opened · order: {state}',
+    },
+
+    notes: {
+        note: 'A supplier delivery note opens on every receipt and stays open until the invoice arrives. That is how every delivery is proven billed — and every invoice proven backed by goods received.',
+        count: 'notes · of {total}',
+        search: 'Note · order · supplier · document number · invoice',
+        filter: {
+            state: 'State — all',
+        },
+        col: {
+            id: 'Delivery note',
+            po: 'Order',
+            supplier: 'Supplier',
+            docNum: 'Document no.',
+            when: 'Date',
+            lines: 'Lines',
+            receipt: 'Receipt',
+            state: 'State',
+            invoice: 'Invoice',
+        },
+        closeTitle: 'Close delivery note · {id}',
+        invoiceNum: 'Supplier invoice number',
+        invoiceDate: 'Invoice date',
+        closeConfirm: 'Close note',
+        closed: 'Delivery note closed',
+        closedBody: '{id} · invoice {num}',
+    },
+
+    consumption: {
+        note: 'Production and sales only — no stock adjustments, waste or rejections, which say nothing about demand. The monthly average is over the chosen range; cover is available stock divided by that average.',
+        inRange: '{n} items in range',
+        kpi: {
+            production: 'Production',
+            productionSub: 'Allocated to compounding',
+            sales: 'Sales',
+            salesSub: 'Shelf lines shipped',
+            months: 'Months in range',
+            monthsSub: 'Basis of the average',
+        },
+        col: {
+            item: 'Item',
+            family: 'Family',
+            production: 'Production',
+            sales: 'Sales',
+            total: 'Total',
+            monthly: 'Monthly average',
+            avail: 'Available',
+            cover: 'Cover',
+        },
+        months: '{n} months',
+        coverLow: 'Under a month',
+        coverNone: '—',
+        empty: 'No consumption in the chosen range',
+        emptyHint: 'Widen the date range',
+        export: 'Export CSV',
+        exported: 'Export ready',
+        exportedBody: '{n} rows · {file}',
+    },
+
+    toast: {
+        created: 'Purchase order created',
+        updated: 'Purchase order updated',
+        cancelled: 'Purchase order cancelled',
+    },
+};

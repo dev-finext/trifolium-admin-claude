@@ -91,6 +91,12 @@ const routes = [
         component: () => import('@/views/InventoryView.vue'),
     },
     {
+        path: '/purchasing',
+        name: 'purchasing',
+        meta: { titleKey: 'nav.item.purchasing' },
+        component: () => import('@/views/PurchasingView.vue'),
+    },
+    {
         path: '/safety',
         name: 'safety',
         meta: { titleKey: 'nav.item.safety' },

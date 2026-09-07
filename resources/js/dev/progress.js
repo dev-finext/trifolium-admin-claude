@@ -143,7 +143,7 @@ export const SECTIONS = [
         id: 'batches',
         part: 'built',
         title: 'אצוות — FEFO, תוקף אוטומטי, מספור',
-        status: 'planned',
+        status: 'built',
         basis: 'אפיון ״ניהול אצוות״',
         body: [
             ul([
@@ -159,7 +159,7 @@ export const SECTIONS = [
         id: 'receiving',
         part: 'built',
         title: 'קליטה למלאי — התוספות של 07.09.26',
-        status: 'planned',
+        status: 'built',
         basis: 'אפיון ״הזמנות רכש וקבלת סחורה״, תוספות 07.09.26',
         body: [
             ul([
@@ -176,7 +176,7 @@ export const SECTIONS = [
         id: 'purchase-orders',
         part: 'built',
         title: 'הזמנות רכש',
-        status: 'planned',
+        status: 'built',
         basis: 'אפיון ״הזמנות רכש וקבלת סחורה״ · OPOR/POR1/OPDN ב-SAP',
         body: [
             ul([
@@ -196,7 +196,7 @@ export const SECTIONS = [
         id: 'consumption-report',
         part: 'built',
         title: 'דוח צריכה לתכנון',
-        status: 'planned',
+        status: 'built',
         basis: 'אפיון ״הזמנות רכש וקבלת סחורה״ (הפסקה על ניתוח המלאי)',
         body: [
             p(
