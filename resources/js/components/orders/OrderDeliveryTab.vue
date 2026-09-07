@@ -16,9 +16,11 @@ import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import ANum from '@/components/ui/ANum.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { ORG } from '@/config';
+import { useDeliveriesStore } from '@/stores/deliveries';
 import { statusOf, useOrdersStore } from '@/stores/orders';
 
 const props = defineProps({
@@ -35,6 +37,25 @@ const orders = useOrdersStore();
 // The fulfilment ids are the ones in config/org.js FULFILMENT_IDS — 'pickup',
 // not the React prototype's 'self_pickup'.
 const isPickup = computed(() => props.order.deliveryType === 'pickup');
+
+/** V2: the pickup point the order is bound for — a partner shop or a practitioner. */
+const deliveries = useDeliveriesStore();
+const point = computed(() =>
+    props.order.pickupPoint
+        ? deliveries.pointById(props.order.pickupPoint)
+        : null,
+);
+const pickupPointText = computed(() =>
+    point.value
+        ? t('orders.delivery.pickupPointNamed', {
+              name: loc(point.value.name),
+              address: point.value.address
+                  ? loc(point.value.address)
+                  : loc(point.value.city) ||
+                    t('orders.delivery.pickupAtPharmacy'),
+          })
+        : `${loc(ORG.name)} · ${loc(ORG.address)}`,
+);
 
 /** Whoever physically receives the order — the payer, whichever that is. */
 const recipient = computed(() =>
@@ -69,7 +90,9 @@ const awaitingAddress = computed(
  * counter. Telling somebody to come and collect an order still in the lab is the
  * kind of message that costs a wasted trip.
  */
-const atCounter = computed(() => statusOf(props.order) === 'ready_for_delivery');
+const atCounter = computed(
+    () => statusOf(props.order) === 'ready_for_delivery',
+);
 
 // Readiness is not set here: the lab reports it by finishing the order, and this
 // button's job is to tell the customer about it. It used to claim a status change
@@ -114,13 +137,13 @@ function askDelivered() {
             :title="t('orders.delivery.pickupCard')"
             icon="map_pin"
         >
+            <template v-if="point" #right>
+                <V2Badge id="pickup-points" size="sm" />
+            </template>
             <AKeyValue
                 :rows="[
                     [t('orders.delivery.method'), null],
-                    [
-                        t('orders.delivery.pickupPoint'),
-                        `${loc(ORG.name)} · ${loc(ORG.address)}`,
-                    ],
+                    [t('orders.delivery.pickupPoint'), pickupPointText],
                     [t('orders.delivery.hours'), loc(ORG.hours)],
                     [t('orders.delivery.collector'), recipient.name],
                     [t('orders.delivery.phone'), null],

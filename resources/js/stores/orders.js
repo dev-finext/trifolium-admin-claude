@@ -22,6 +22,7 @@ import { computed } from 'vue';
 
 import {
     CREDIT,
+    LAB_ROLE_IDS,
     ORDER_TO_ITEM_STAGE,
     PAY_LINK,
     SETTLED_STATUS_IDS,
@@ -34,7 +35,6 @@ import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { applyFilters } from '@/lib/facets';
 import { locDeep, searchHaystack } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
-
 
 /** Fields the free-text search covers, in both languages. */
 export function orderHaystack(order) {
@@ -346,6 +346,9 @@ export const useOrdersStore = defineStore('orders', () => {
 
     /** The pinned internal note the fixture carries on the order rail. */
     const pinnedNote = computed(() => dataset.data.orderNote || null);
+
+    /** V2: the managed texts every preparation carries — instructions default, regulatory text. */
+    const labSettings = computed(() => dataset.data.labSettings || null);
 
     /** The agent every action in this session is attributed to. */
     const actor = computed(
@@ -682,6 +685,99 @@ export const useOrdersStore = defineStore('orders', () => {
         return order;
     }
 
+    /** V2: flag an order as urgent, or clear the flag. The lab works it first. */
+    async function setUrgent(id, on, reason = '') {
+        const order = byId(id);
+
+        if (!order) {
+            return null;
+        }
+
+        order.urgent = Boolean(on);
+
+        logEntry(order, {
+            actionId: 'order_urgent_set',
+            detail: {
+                key: on ? 'orders.doc.urgentOn' : 'orders.doc.urgentOff',
+                params: { reason },
+            },
+        });
+
+        await persist(
+            `orders/${id}/urgent`,
+            { urgent: order.urgent, reason },
+            'PUT',
+        );
+
+        return order;
+    }
+
+    /**
+     * V2: record who filled a lab role on this order, or clear it. By hand until
+     * the station scan of phase B takes over.
+     */
+    async function setLabRole(id, role, on = true) {
+        const order = byId(id);
+
+        if (!order || !LAB_ROLE_IDS.includes(role)) {
+            return null;
+        }
+
+        if (!order.lab) {
+            order.lab = {};
+        }
+
+        order.lab[role] = on ? { by: actor.value, when: moment() } : null;
+
+        logEntry(order, {
+            actionId: 'lab_role_set',
+            detail: {
+                key: `orders.doc.labRole.${role}${on ? 'Set' : 'Cleared'}`,
+                params: {},
+            },
+        });
+
+        await persist(`orders/${id}/lab/${role}`, { on }, 'PUT');
+
+        return order;
+    }
+
+    /** V2: the preparation fields on one formula — concentration and patient instructions. */
+    async function setItemFields(orderId, itemId, fields) {
+        const order = byId(orderId);
+        const item = (order?.items || []).find((row) => row.id === itemId);
+
+        if (!order || !item) {
+            return null;
+        }
+
+        const instructions = String(fields.patientInstructions || '').trim();
+
+        item.concentration = fields.concentration || null;
+        item.patientInstructions = instructions
+            ? { he: instructions, en: instructions }
+            : null;
+
+        logEntry(order, {
+            actionId: 'order_item_fields_update',
+            detail: {
+                key: 'orders.doc.itemFields',
+                params: { name: item.name?.he || item.id },
+            },
+        });
+
+        await persist(
+            `orders/${orderId}/items/${itemId}/fields`,
+            {
+                concentration: item.concentration,
+                patientInstructions: instructions || null,
+            },
+            'PUT',
+        );
+
+        return item;
+    }
+
     /** Record a payment that arrived outside the payment link. */
     async function recordPayment(id, reason = '') {
         const order = byId(id);
@@ -935,6 +1031,10 @@ export const useOrdersStore = defineStore('orders', () => {
         cancelOrder,
         cancelItem,
         assignCourier,
+        setUrgent,
+        setLabRole,
+        setItemFields,
+        labSettings,
         recordPayment,
         moveToCredit,
         reissueDocument,

@@ -31,6 +31,7 @@ import {
     DEMO_VIDEOS,
     EVENT_KIND_IDS,
 } from '@/demo/content';
+import { buildPickupPoints } from '@/demo/deliveries';
 import {
     buildBatchUse,
     buildBatches,
@@ -47,6 +48,7 @@ import {
     PREP_TYPES,
     SITE_CATEGORIES,
 } from '@/demo/items';
+import { LAB_SETTINGS } from '@/demo/lab';
 import {
     buildSystemLog,
     DEMO_LOG_AGENTS,
@@ -201,6 +203,10 @@ export function buildDataset() {
         purchaseOrders,
         supplierNotes: buildSupplierNotes(purchaseOrders, receipts),
         inventorySettings: INVENTORY_SETTINGS,
+
+        // deliveries & lab (V2)
+        pickupPoints: buildPickupPoints(practitioners),
+        labSettings: LAB_SETTINGS,
 
         // inventory
         stock,

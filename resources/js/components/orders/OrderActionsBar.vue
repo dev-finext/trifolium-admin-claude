@@ -19,6 +19,7 @@ import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useDatasetStore } from '@/stores/dataset';
@@ -50,6 +51,22 @@ const labItems = computed(
             .length,
 );
 const cancellable = computed(() => isCancellable(props.order));
+
+/** V2: urgency can be flagged on any order still in the pharmacy's hands. */
+const urgentToggle = computed(
+    () => !['cancelled', 'completed', 'delivered'].includes(status.value),
+);
+
+async function toggleUrgent() {
+    const on = !props.order.urgent;
+
+    await orders.setUrgent(props.order.id, on);
+    toast.push({
+        title: on
+            ? t('orders.actions.urgentOnToast')
+            : t('orders.actions.urgentOffToast'),
+    });
+}
 
 const patientName = computed(() => loc(props.order.patient.name));
 
@@ -125,6 +142,20 @@ async function confirmCancel(reason) {
         <AButton v-if="toLab" kind="p" icon="beaker" @click="ask = 'lab'">
             {{ t('orders.actions.toLab') }}
         </AButton>
+
+        <AButton
+            v-if="urgentToggle"
+            :kind="order.urgent ? 'ghost' : ''"
+            icon="alert"
+            @click="toggleUrgent"
+        >
+            {{
+                order.urgent
+                    ? t('orders.actions.urgentOff')
+                    : t('orders.actions.urgentOn')
+            }}
+        </AButton>
+        <V2Badge v-if="urgentToggle" id="order-flags" size="sm" />
 
         <AButton
             v-if="cancellable"

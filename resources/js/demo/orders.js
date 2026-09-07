@@ -9,8 +9,8 @@
 //   2. A failed issue attempt leaves no document and no allocation number —
 //      only the provider's request id, so an agent can chase it.
 import {
+    ACTIVE_COURIER_IDS,
     COURIER,
-    COURIER_IDS,
     CREDIT,
     EXCEPTION_THRESHOLDS,
     HOLD_REASON_IDS,
@@ -24,6 +24,7 @@ import {
     EVAPORATION_IDS,
     DEMO_HERB_BY_ID,
 } from '@/demo/catalog';
+import { PICKUP_POINT_IDS } from '@/demo/deliveries';
 import { at, chance, pickFrom, rareChance, spread } from '@/demo/fixture';
 import {
     DEMO_ACTORS,
@@ -290,6 +291,12 @@ function formulaBody(template, slot) {
                 ? pickFrom(`${slot}:evap`, EVAPORATION_IDS)
                 : null,
         packages: spread(`${slot}:packages`, 1, 2),
+        // V2: the preparation fields SAP kept as user fields on the order
+        concentration:
+            template.typeId === 'tincture'
+                ? pickFrom(`${slot}:conc`, ['1:1', '1:3', '1:3', '1:5'])
+                : null,
+        patientInstructions: null,
         internalNotes: pickFrom(`${slot}:internal`, INTERNAL_NOTES),
         externalNotes: pickFrom(`${slot}:external`, EXTERNAL_NOTES),
     };
@@ -322,6 +329,8 @@ function buildItems(order) {
             timing: formula.timing,
             evap: formula.evap,
             packages: formula.packages,
+            concentration: formula.concentration,
+            patientInstructions: formula.patientInstructions,
             internalNotes: formula.internalNotes,
             externalNotes: formula.externalNotes,
             stage:
@@ -545,6 +554,50 @@ function buildDocumentation(order, audit) {
     return rows;
 }
 
+/**
+ * V2: who filled each lab role, as far as an order's status implies it. Marked
+ * by hand in phase A, so an order on the bench has a picker and perhaps a
+ * checker; a finished one has all four.
+ */
+function labRoles(status, slot, daysAgo) {
+    const when = (hh) =>
+        at(Math.max(0, daysAgo - 1), hh, spread(`${slot}:lab:${hh}`, 0, 59));
+    const none = {
+        picker: null,
+        checker: null,
+        pharmacist: null,
+        packer: null,
+    };
+
+    if (status === 'in_production') {
+        return {
+            ...none,
+            picker: { by: DEMO_ACTORS.aviLab, when: when(9) },
+            checker: chance(`${slot}:lab:checker`, 0.5)
+                ? { by: DEMO_ACTORS.shaySupport, when: when(10) }
+                : null,
+        };
+    }
+
+    if (
+        ['ready_for_delivery', 'shipped', 'delivered', 'completed'].includes(
+            status,
+        )
+    ) {
+        return {
+            picker: { by: DEMO_ACTORS.aviLab, when: when(9) },
+            checker: { by: DEMO_ACTORS.shaySupport, when: when(10) },
+            pharmacist: {
+                by: pickFrom(`${slot}:lab:pharm`, PHARMACIST_ACTORS),
+                when: when(11),
+            },
+            packer: { by: DEMO_ACTORS.noaSupport, when: when(13) },
+        };
+    }
+
+    return none;
+}
+
 /** Build the order book. Practitioner cards are embedded by reference. */
 export function buildOrders(practitioners, patients) {
     const orders = [];
@@ -639,7 +692,7 @@ export function buildOrders(practitioners, patients) {
                 (status === 'ready_for_delivery' &&
                     chance(`${slot}:courier:maybe`, 0.5)));
         const courierId = needsCourier
-            ? pickFrom(`${slot}:courier`, COURIER_IDS)
+            ? pickFrom(`${slot}:courier`, ACTIVE_COURIER_IDS)
             : null;
 
         orders.push({
@@ -722,6 +775,15 @@ export function buildOrders(practitioners, patients) {
             documentation: [],
             docsExtra: [],
             flags: [],
+            // V2
+            urgent:
+                !['cancelled', 'completed', 'delivered'].includes(status) &&
+                chance(`${slot}:urgent`, 0.12),
+            pickupPoint:
+                deliveryType === 'pickup' && chance(`${slot}:point`, 0.55)
+                    ? pickFrom(`${slot}:point:id`, PICKUP_POINT_IDS)
+                    : null,
+            lab: labRoles(status, slot, daysAgo),
         });
     }
 

@@ -250,9 +250,25 @@ export default {
     },
     courier: {
         tapuz: 'Tapuz Couriers',
-        fedex_il: 'FedEx Israel',
-        yaad: 'Yaad Couriers',
-        israel_post: 'Israel Post Couriers',
+        special_delivery: 'Special Delivery',
+        focus: 'Focus Couriers',
+        yarden: 'Yarden Couriers',
+        deliver: 'Deliver',
+        sosna: 'Sosna (historical)',
+    },
+    // V2 — config/org.js WEEKDAY_IDS / PICKUP_POINT_KIND_IDS
+    weekday: {
+        sun: 'Sunday',
+        mon: 'Monday',
+        tue: 'Tuesday',
+        wed: 'Wednesday',
+        thu: 'Thursday',
+        fri: 'Friday',
+        sat: 'Saturday',
+    },
+    pickupKind: {
+        shop: 'Partner shop',
+        practitioner: 'Practitioner',
     },
 
     // ── system log ── config/log.js. The taxonomy is closed: a screen picks an
@@ -294,6 +310,11 @@ export default {
         po_receive: 'Goods received against a purchase order',
         supplier_note_close: 'Supplier delivery note closed by invoice',
         inventory_settings_update: 'Batch settings updated',
+        order_urgent_set: 'Order urgency set',
+        lab_role_set: 'Lab role marked',
+        order_item_fields_update: 'Preparation fields updated on an item',
+        pickup_point_create: 'Pickup point created',
+        pickup_point_update: 'Pickup point updated',
         registration_approve: 'Registration approved',
         registration_reject: 'Registration rejected',
         practitioner_update: 'Practitioner card updated',

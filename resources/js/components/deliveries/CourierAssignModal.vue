@@ -15,7 +15,7 @@ import AButton from '@/components/ui/AButton.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ASelect from '@/components/ui/ASelect.vue';
-import { COURIER, COURIERS } from '@/config';
+import { ACTIVE_COURIERS, COURIER } from '@/config';
 import { isoDaysAgo } from '@/lib/dates';
 import { isTracking, useDeliveriesStore } from '@/stores/deliveries';
 
@@ -104,7 +104,7 @@ function save() {
                             {{ t('deliveries.assign.courierPick') }}
                         </option>
                         <option
-                            v-for="item in COURIERS"
+                            v-for="item in ACTIVE_COURIERS"
                             :key="item.id"
                             :value="item.id"
                         >

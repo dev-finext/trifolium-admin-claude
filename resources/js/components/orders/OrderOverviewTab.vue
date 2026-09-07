@@ -15,6 +15,7 @@ import AKeyValue from '@/components/ui/AKeyValue.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { pct } from '@/lib/money';
 
@@ -209,6 +210,15 @@ function openPractitioner() {
                             {{ t('orders.value.none') }}
                         </template>
                     </dd>
+                    <template v-if="order.practitioner.specialTerms">
+                        <dt>
+                            {{ t('orders.overview.specialTerms') }}
+                            <V2Badge id="order-flags" size="sm" />
+                        </dt>
+                        <dd class="a-special">
+                            {{ loc(order.practitioner.specialTerms) }}
+                        </dd>
+                    </template>
                 </AKeyValue>
             </ACard>
 
@@ -337,6 +347,11 @@ function openPractitioner() {
 </template>
 
 <style scoped>
+.a-special {
+    color: var(--a-amber);
+    font-weight: 600;
+}
+
 .a-debt-open {
     color: var(--a-red);
     font-weight: 600;

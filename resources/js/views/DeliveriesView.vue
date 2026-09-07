@@ -16,6 +16,7 @@ import CourierAssignModal from '@/components/deliveries/CourierAssignModal.vue';
 import CourierMap from '@/components/deliveries/CourierMap.vue';
 import DeliveryFilters from '@/components/deliveries/DeliveryFilters.vue';
 import DeliveryQueue from '@/components/deliveries/DeliveryQueue.vue';
+import PickupPointsPanel from '@/components/deliveries/PickupPointsPanel.vue';
 import PowerOfAttorneyPanel from '@/components/deliveries/PowerOfAttorneyPanel.vue';
 import { useDeliveryActions } from '@/components/deliveries/useDeliveryActions';
 import { useDeliveryExport } from '@/components/deliveries/useDeliveryExport';
@@ -24,6 +25,7 @@ import AButton from '@/components/ui/AButton.vue';
 import ATabs from '@/components/ui/ATabs.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import DateRangeBar from '@/components/ui/DateRangeBar.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
 import { COURIER_IDS } from '@/config';
@@ -40,6 +42,7 @@ import {
 const PANES = [
     { id: 'queue', icon: 'list' },
     { id: 'poa', icon: 'signature' },
+    { id: 'points', icon: 'map_pin' },
     { id: 'codes', icon: 'settings' },
 ];
 
@@ -221,7 +224,9 @@ const paneTabs = computed(() =>
                 ? deliveries.deskOrders.length
                 : pane.id === 'poa'
                   ? deliveries.poaPending.length || undefined
-                  : COURIER_IDS.length,
+                  : pane.id === 'points'
+                    ? deliveries.todayAlert.points || undefined
+                    : COURIER_IDS.length,
     })),
 );
 </script>
@@ -247,6 +252,11 @@ const paneTabs = computed(() =>
 
     <CourierMap v-if="state.view === 'codes'" />
 
+    <PickupPointsPanel
+        v-else-if="state.view === 'points'"
+        @open="((state.view = 'queue'), (state.type = 'pickup'))"
+    />
+
     <PowerOfAttorneyPanel
         v-else-if="state.view === 'poa'"
         :orders="deliveries.poaOrders"
@@ -256,6 +266,22 @@ const paneTabs = computed(() =>
     />
 
     <template v-else>
+        <!-- V2: the daily dispatch alert for the pickup points -->
+        <div
+            v-if="deliveries.todayAlert.points"
+            class="a-note a-note--warn a-note--btn dv-alert"
+            role="button"
+            tabindex="0"
+            @click="state.view = 'points'"
+            @keydown.enter.prevent="state.view = 'points'"
+        >
+            <V2Badge id="pickup-points" size="sm" />
+            <strong>{{
+                t('deliveries.alert.title', deliveries.todayAlert)
+            }}</strong>
+            <span class="a-note-a">{{ t('deliveries.alert.open') }}</span>
+        </div>
+
         <DateRangeBar v-model="range" :note="rangeNote" />
 
         <ATabs
@@ -315,4 +341,7 @@ const paneTabs = computed(() =>
 </template>
 
 <style scoped>
+.dv-alert {
+    margin-bottom: 14px;
+}
 </style>

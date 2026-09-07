@@ -254,9 +254,25 @@ export default {
     },
     courier: {
         tapuz: 'תפוז שליחויות',
-        fedex_il: 'פדקס ישראל',
-        yaad: 'יעד שליחויות',
-        israel_post: 'דואר שליחים',
+        special_delivery: 'Special Delivery',
+        focus: 'פוקוס שליחויות',
+        yarden: 'ירדן שליחויות',
+        deliver: 'דליבר',
+        sosna: 'סוסנה (היסטורי)',
+    },
+    // V2 — config/org.js WEEKDAY_IDS / PICKUP_POINT_KIND_IDS
+    weekday: {
+        sun: 'ראשון',
+        mon: 'שני',
+        tue: 'שלישי',
+        wed: 'רביעי',
+        thu: 'חמישי',
+        fri: 'שישי',
+        sat: 'שבת',
+    },
+    pickupKind: {
+        shop: 'חנות שותפה',
+        practitioner: 'מטפל',
     },
 
     // ── system log ── config/log.js. The taxonomy is closed: a screen picks an
@@ -298,6 +314,11 @@ export default {
         po_receive: 'קבלת סחורה מול הזמנת רכש',
         supplier_note_close: 'סגירת תעודת משלוח ספק בחשבונית',
         inventory_settings_update: 'עדכון הגדרות אצוות',
+        order_urgent_set: 'סימון דחיפות בהזמנה',
+        lab_role_set: 'סימון תפקיד מעבדה',
+        order_item_fields_update: 'עדכון שדות הכנה בפריט',
+        pickup_point_create: 'הקמת נקודת איסוף',
+        pickup_point_update: 'עדכון נקודת איסוף',
         registration_approve: 'אישור הרשמה',
         registration_reject: 'דחיית הרשמה',
         practitioner_update: 'עדכון כרטיס מטפל',

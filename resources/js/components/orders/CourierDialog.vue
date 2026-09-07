@@ -11,7 +11,7 @@ import AButton from '@/components/ui/AButton.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ASelect from '@/components/ui/ASelect.vue';
-import { COURIERS } from '@/config';
+import { ACTIVE_COURIERS } from '@/config';
 import { isoDaysAgo } from '@/lib/dates';
 
 const props = defineProps({
@@ -79,7 +79,7 @@ function save() {
                         {{ t('orders.courierDialog.companyPlaceholder') }}
                     </option>
                     <option
-                        v-for="row in COURIERS"
+                        v-for="row in ACTIVE_COURIERS"
                         :key="row.id"
                         :value="row.id"
                     >

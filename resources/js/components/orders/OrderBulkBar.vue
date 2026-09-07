@@ -24,13 +24,7 @@ const props = defineProps({
     sendableCount: { type: Number, default: 0 },
 });
 
-const emit = defineEmits([
-    'to-lab',
-    'assign',
-    'remind',
-    'export',
-    'clear',
-]);
+const emit = defineEmits(['to-lab', 'assign', 'remind', 'export', 'clear']);
 
 const { t } = useI18n();
 

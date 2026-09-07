@@ -172,7 +172,8 @@ export default {
         export: 'Export selected',
         clear: 'Clear selection',
         toLabTitle: 'Send the selected orders to the lab',
-        toLabBody: 'One order will go to the lab and enter the compounding queue. | {n} orders will go to the lab and enter the compounding queue.',
+        toLabBody:
+            'One order will go to the lab and enter the compounding queue. | {n} orders will go to the lab and enter the compounding queue.',
         toLabSkipped:
             'One selected order will be skipped — not settled, or with no formula to compound | {n} selected orders will be skipped — not settled, or with no formula to compound',
         toLabDone: 'The orders were sent to the lab',
@@ -210,6 +211,9 @@ export default {
     },
 
     detail: {
+        // V2
+        urgent: 'Urgent',
+        specialTerms: 'Special terms',
         fullScreen: 'Open full screen',
         exitFull: 'Back to the list',
         created: 'Created {stamp}',
@@ -236,6 +240,7 @@ export default {
     },
 
     overview: {
+        specialTerms: 'Special terms',
         practitioner: 'The practitioner',
         customer: 'The customer',
         price: 'Price breakdown — as the practitioner sees it',
@@ -267,6 +272,10 @@ export default {
     },
 
     field: {
+        // V2
+        content: 'Content',
+        concentration: 'Preparation concentration',
+        instructions: 'Patient instructions',
         name: 'Name',
         customerNumber: 'Customer number',
         therapy: 'Discipline',
@@ -322,6 +331,11 @@ export default {
     },
 
     value: {
+        // V2
+        content: '{total} {unit} · {packages} units × {size} {unit}',
+        contentOne: '{total} {unit} · one unit',
+        noConcentration: '—',
+        instructionsDefault: '{text} (default)',
         none: '—',
         notYet: '— not received yet',
         notIssued: '— not issued yet',
@@ -446,6 +460,9 @@ export default {
     },
 
     delivery: {
+        // V2
+        pickupPointNamed: '{name} · {address}',
+        pickupAtPharmacy: 'The pharmacy',
         method: 'Fulfilment',
         pickupPoint: 'Pickup point',
         hours: 'Opening hours',
@@ -563,6 +580,10 @@ export default {
     },
 
     itemsTab: {
+        // V2
+        editFields: 'Preparation fields',
+        regulatoryTitle: 'Regulatory warning — printed on every label: ',
+        regulatoryFrom: 'managed text, edited on the lab screen',
         progress: 'Formula preparation status',
         progressNote:
             "Each formula carries its own preparation stage · it does not change the order's status",
@@ -602,6 +623,41 @@ export default {
             'The item "{name}" will be cancelled on order {id}. Refund: {refund}.',
         cancelDone: 'Item cancelled and refunded',
         cancelDoneBody: '{name} · {refund}',
+    },
+
+    // V2 — config/org.js LAB_ROLE_IDS
+    labRole: {
+        picker: 'Picker',
+        checker: 'Checker',
+        pharmacist: 'Compounding pharmacist',
+        packer: 'Packer',
+    },
+
+    lab: {
+        title: 'Lab — roles and barcodes',
+        notSet: 'Not yet marked',
+        markMe: 'Mark me',
+        clear: 'Clear',
+        markedToast: 'Role marked',
+        clearedToast: 'Role cleared',
+        rolesNote:
+            'In phase A the roles are marked by hand — who and when. In phase B the station scan fills them.',
+        readOnly:
+            'Roles can be marked while the order is in the lab or ready to pack.',
+        barcodes: 'Barcode values',
+        barcodeOrder: 'Order',
+        barcodeItem: 'Order item',
+        barcodeBatch: 'Batch',
+        barcodeNote:
+            'Stable identifiers — the values printed as barcodes on the prep sheet and the labels. The graphic encoding is decided in the labels module.',
+    },
+
+    fieldsEditor: {
+        title: 'Preparation fields · {name}',
+        noConcentration: 'No concentration',
+        instructionsHint: 'Empty — the default text is printed: “{text}”',
+        save: 'Save',
+        saved: 'Preparation fields updated',
     },
 
     rail: {
@@ -672,6 +728,20 @@ export default {
     },
 
     doc: {
+        // V2
+        urgentOn: 'The order was marked urgent {reason}',
+        urgentOff: 'Urgency cleared {reason}',
+        itemFields: 'Preparation fields of “{name}” updated',
+        labRole: {
+            pickerSet: 'Picker — marked',
+            pickerCleared: 'Picker — cleared',
+            checkerSet: 'Checker — marked',
+            checkerCleared: 'Checker — cleared',
+            pharmacistSet: 'Compounding pharmacist — marked',
+            pharmacistCleared: 'Compounding pharmacist — cleared',
+            packerSet: 'Packer — marked',
+            packerCleared: 'Packer — cleared',
+        },
         status: 'Status written to the database · messages sent by the active triggers',
         statusReason: 'Status written to the database · reason: {reason}',
         itemCancelled: 'Refund {refund} · reason: {reason}',
@@ -690,6 +760,11 @@ export default {
 
     // Header controls in the order-detail drawer that drive a status change.
     actions: {
+        // V2
+        urgentOn: 'Mark urgent',
+        urgentOff: 'Clear urgency',
+        urgentOnToast: 'The order is marked urgent — the lab sees it first',
+        urgentOffToast: 'Urgency cleared',
         toLab: 'Send to the lab',
         toLabTitle: 'Send the order to the lab',
         toLabBody:

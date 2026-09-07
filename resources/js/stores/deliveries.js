@@ -25,9 +25,14 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
-import { COURIER, ORDER_FLOW, ORDER_TO_ITEM_STAGE } from '@/config';
+import {
+    COURIER,
+    ORDER_FLOW,
+    ORDER_TO_ITEM_STAGE,
+    WEEKDAY_IDS,
+} from '@/config';
 import { persist } from '@/data/source';
-import { isoDaysAgo, stamp } from '@/lib/dates';
+import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { FALLBACK_LOCALE, loc, searchHaystack } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
 import { statusOf } from '@/stores/orders';
@@ -245,6 +250,168 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         poaOrders.value.filter((order) => !order.poaSigned),
     );
 
+    // ---- pickup points (V2) ---------------------------------------------------
+
+    /** Partner shops and practitioners collecting for their patients. */
+    const pickupPoints = computed(() =>
+        Array.isArray(dataset.data.pickupPoints)
+            ? dataset.data.pickupPoints
+            : [],
+    );
+
+    const pointById = (id) =>
+        pickupPoints.value.find((point) => point.id === id) || null;
+
+    /** Today's weekday id, off the pinned clock. */
+    const todayId = computed(() => WEEKDAY_IDS[now().getDay()]);
+
+    /** Pickup orders bound for a point that are still in the pharmacy. */
+    const ordersAtPoint = (id) =>
+        deskOrders.value.filter(
+            (order) =>
+                order.pickupPoint === id &&
+                ['in_production', 'ready_for_delivery'].includes(
+                    statusOf(order),
+                ),
+        );
+
+    /** The points whose dispatch day is today, with what is waiting for each. */
+    const pointsDueToday = computed(() =>
+        pickupPoints.value
+            .filter(
+                (point) => point.active && point.days.includes(todayId.value),
+            )
+            .map((point) => {
+                const waiting = ordersAtPoint(point.id);
+
+                return {
+                    point,
+                    orders: waiting,
+                    ready: waiting.filter(
+                        (order) => statusOf(order) === 'ready_for_delivery',
+                    ),
+                };
+            }),
+    );
+
+    /** The daily alert: how many points go out today and what is waiting for them. */
+    const todayAlert = computed(() => ({
+        points: pointsDueToday.value.length,
+        orders: pointsDueToday.value.reduce(
+            (sum, row) => sum + row.orders.length,
+            0,
+        ),
+        ready: pointsDueToday.value.reduce(
+            (sum, row) => sum + row.ready.length,
+            0,
+        ),
+    }));
+
+    /** Parcels handed to one courier and not yet dispatched — its pickup list. */
+    const courierPickupList = (courierId) =>
+        deskOrders.value.filter(
+            (order) =>
+                order.deliveryType === 'courier' &&
+                order.courier === courierId &&
+                statusOf(order) === 'ready_for_delivery',
+        );
+
+    function bag(name) {
+        if (!Array.isArray(dataset.data[name])) {
+            dataset.data[name] = [];
+        }
+
+        return dataset.data[name];
+    }
+
+    function writeLog(row) {
+        const log = bag('log');
+
+        log.unshift({
+            id: `lg-${row.act}-${row.ent}-${log.length}`,
+            when: {
+                daysAgo: 0,
+                iso: isoDaysAgo(0),
+                time: hm(now()),
+                stamp: stamp(0),
+            },
+            actorType: 'agent',
+            actor: dataset.me?.name || null,
+            valueType: 'plain',
+            from: null,
+            to: null,
+            src: 'manual',
+            ip: null,
+            ...row,
+        });
+    }
+
+    /** Create or update a pickup point. */
+    async function savePickupPoint(form, existingId = null) {
+        const rows = bag('pickupPoints');
+        const card =
+            form.kind === 'practitioner'
+                ? dataset.practitioners.find(
+                      (row) => row.code === form.practitionerCode,
+                  )
+                : null;
+        const text = (value) =>
+            value?.trim() ? { he: value.trim(), en: value.trim() } : null;
+        const record = {
+            kind: form.kind,
+            practitionerCode: card ? card.code : null,
+            name: card
+                ? card.name
+                : {
+                      he: form.name.he.trim(),
+                      en: form.name.en.trim() || form.name.he.trim(),
+                  },
+            city: card ? card.city || null : text(form.city),
+            address: card ? card.clinic || null : text(form.address),
+            days: [...form.days],
+            courier: form.courier || null,
+            notes: text(form.notes),
+            active: form.active !== false,
+        };
+
+        if (!existingId) {
+            const highest = rows.reduce((top, row) => {
+                const digits = String(row.id).match(/(\d+)$/);
+
+                return digits ? Math.max(top, Number(digits[1])) : top;
+            }, 0);
+            const point = { id: `pp-${highest + 1}`, ...record };
+
+            rows.push(point);
+            writeLog({
+                act: 'pickup_point_create',
+                entType: 'system',
+                ent: point.id,
+                to: point.name.he,
+            });
+            await persist('pickup-points', point);
+
+            return { created: true, point };
+        }
+
+        const point = rows.find((row) => row.id === existingId);
+
+        if (!point) {
+            return { created: false, point: null };
+        }
+
+        Object.assign(point, record);
+        writeLog({
+            act: 'pickup_point_update',
+            entType: 'system',
+            ent: point.id,
+            to: point.name.he,
+        });
+        await persist(`pickup-points/${point.id}`, point, 'PUT');
+
+        return { created: false, point };
+    }
+
     /** The name the pharmacy typed for a courier, or null while the catalog's stands. */
     function courierNameEdit(id) {
         return courierEdits.value[id]?.name || null;
@@ -378,6 +545,14 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         pickupOrders,
         poaOrders,
         poaPending,
+        pickupPoints,
+        pointById,
+        todayId,
+        ordersAtPoint,
+        pointsDueToday,
+        todayAlert,
+        courierPickupList,
+        savePickupPoint,
         courierNameEdit,
         courierPhone,
         assignCourier,

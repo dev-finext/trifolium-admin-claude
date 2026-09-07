@@ -7,6 +7,7 @@ export default {
         queue: 'Deliveries',
         poa: 'Powers of attorney',
         codes: 'Courier codes',
+        points: 'Pickup points',
     },
 
     export: {
@@ -75,6 +76,8 @@ export default {
         sentOn: 'Dispatched {date}',
         notified: 'Notified {stamp}',
         none: '—',
+        point: 'Pickup point: {name}',
+        urgent: 'Urgent',
     },
 
     action: {
@@ -211,6 +214,83 @@ export default {
         },
     },
 
+    // V2 — pickup points and the daily dispatch alert
+    alert: {
+        title: '{points} pickup points go out today · {orders} orders waiting ({ready} ready)',
+        none: 'No pickup points go out today',
+        open: 'To the pickup points',
+    },
+
+    points: {
+        note: 'A pickup point is a partner shop or a practitioner collecting for their patients: dispatch days, a regular courier and consolidation notes. The order chooses a point; the daily alert says what goes out today.',
+        add: 'New pickup point',
+        pickupList: 'Courier pickup list',
+        today: 'Goes out today',
+        inactive: 'Inactive',
+        waiting: '{n} waiting · {ready} ready',
+        col: {
+            name: 'Pickup point',
+            kind: 'Kind',
+            address: 'Address',
+            days: 'Dispatch days',
+            courier: 'Courier',
+            notes: 'Consolidation notes',
+            waiting: 'Orders waiting',
+        },
+        editor: {
+            newTitle: 'New pickup point',
+            editTitle: 'Edit pickup point · {name}',
+            kind: 'Kind of point',
+            practitioner: 'Practitioner',
+            pickPractitioner: 'Choose a practitioner…',
+            nameHe: 'Name (Hebrew)',
+            nameEn: 'Name (English)',
+            city: 'City',
+            address: 'Address',
+            days: 'Dispatch days',
+            courier: 'Regular courier',
+            noCourier: 'No regular courier',
+            notes: 'Consolidation notes',
+            notesPh: 'For example: every 4 orders go out as one shipment',
+            active: 'Active',
+            activeOn: 'Offered on new orders',
+            activeOff: 'Not offered on new orders',
+            createConfirm: 'Create point',
+            saveConfirm: 'Save changes',
+            validate: {
+                name: 'Enter a name',
+                practitioner: 'Choose a practitioner',
+                days: 'At least one dispatch day',
+            },
+        },
+        toast: {
+            created: 'Pickup point created',
+            updated: 'Pickup point updated',
+        },
+    },
+
+    pickupList: {
+        title: 'Courier pickup list',
+        note: 'Parcels handed to the courier and not yet dispatched — ready to pack with a courier assigned. Today this is the “orders for Tapuz” query.',
+        courier: 'Courier',
+        col: {
+            order: 'Order',
+            recipient: 'Recipient',
+            address: 'Address',
+            phone: 'Phone',
+            tracking: 'Tracking',
+            items: 'Items',
+        },
+        empty: 'No parcels waiting for this courier',
+        print: 'Print the list',
+        printed: 'The list opened for printing',
+        blocked: 'The browser blocked the print window',
+        header: 'Pickup list · {courier} · {date}',
+        total: '{n} parcels in total',
+        signPharmacy: 'Pharmacy signature',
+        signCourier: 'Courier signature',
+    },
+
     codes: {
         title: 'Courier code mapping',
         note: 'Every courier company is identified by a single letter code, printed on the shipping label and opening the tracking number. The code itself is fixed; the company name and phone behind it are set here and are used by every new order.',
@@ -228,6 +308,8 @@ export default {
             off: 'In preparation',
         },
         save: 'Save the mapping',
+        historical: 'Historical — not offered for new assignments',
+        tp: 'TP number + shipment number',
         confirm: {
             title: 'Save the courier company mapping',
             body: 'The courier company names and their phone numbers will be updated.',

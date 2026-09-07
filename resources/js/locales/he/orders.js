@@ -178,7 +178,8 @@ export default {
         export: 'ייצוא נבחרות',
         clear: 'נקה בחירה',
         toLabTitle: 'העברת ההזמנות שנבחרו למעבדה',
-        toLabBody: 'הזמנה אחת תועבר למעבדה ותיכנס לתור הרקיחה. | {n} הזמנות יועברו למעבדה וייכנסו לתור הרקיחה.',
+        toLabBody:
+            'הזמנה אחת תועבר למעבדה ותיכנס לתור הרקיחה. | {n} הזמנות יועברו למעבדה וייכנסו לתור הרקיחה.',
         toLabSkipped:
             'הזמנה אחת שנבחרה תדולג — טרם שולמה, או שאין בה פורמולה לרקיחה | {n} הזמנות שנבחרו ידולגו — טרם שולמו, או שאין בהן פורמולה לרקיחה',
         toLabDone: 'ההזמנות הועברו למעבדה',
@@ -215,6 +216,9 @@ export default {
     },
 
     detail: {
+        // V2
+        urgent: 'דחוף',
+        specialTerms: 'תנאים מיוחדים',
         fullScreen: 'פתח במסך מלא',
         exitFull: 'חזרה לרשימה',
         created: 'נוצרה {stamp}',
@@ -241,6 +245,7 @@ export default {
     },
 
     overview: {
+        specialTerms: 'תנאים מיוחדים',
         practitioner: 'המטפל',
         customer: 'הלקוח',
         price: 'פירוט מחיר — כפי שהמטפל רואה',
@@ -272,6 +277,10 @@ export default {
     },
 
     field: {
+        // V2
+        content: 'תכולה',
+        concentration: 'ריכוז הכנה',
+        instructions: 'הוראות למטופל',
         name: 'שם',
         customerNumber: 'מספר לקוח',
         therapy: 'תחום טיפול',
@@ -327,6 +336,11 @@ export default {
     },
 
     value: {
+        // V2
+        content: '{total} {unit} · {packages} יחידות × {size} {unit}',
+        contentOne: '{total} {unit} · יחידה אחת',
+        noConcentration: '—',
+        instructionsDefault: '{text} (ברירת מחדל)',
         none: '—',
         notYet: '— טרם התקבל',
         notIssued: '— טרם הופק',
@@ -445,6 +459,9 @@ export default {
     },
 
     delivery: {
+        // V2
+        pickupPointNamed: '{name} · {address}',
+        pickupAtPharmacy: 'בית המרקחת',
         method: 'אופן מסירה',
         pickupPoint: 'נקודת איסוף',
         hours: 'שעות פעילות',
@@ -557,6 +574,10 @@ export default {
     },
 
     itemsTab: {
+        // V2
+        editFields: 'שדות הכנה',
+        regulatoryTitle: 'אזהרה רגולטורית — מודפסת על כל מדבקה: ',
+        regulatoryFrom: 'טקסט מנוהל, נערך במסך המעבדה',
         progress: 'סטטוס הכנת הפורמולות',
         progressNote:
             'לכל פורמולה סטטוס הכנה משלה · אינו משפיע על סטטוס ההזמנה',
@@ -594,6 +615,40 @@ export default {
         cancelBody: 'הפריט ״{name}״ יבוטל בהזמנה {id}. סכום הזיכוי: {refund}.',
         cancelDone: 'הפריט בוטל וזוכה',
         cancelDoneBody: '{name} · {refund}',
+    },
+
+    // V2 — config/org.js LAB_ROLE_IDS
+    labRole: {
+        picker: 'מלקט',
+        checker: 'בודק',
+        pharmacist: 'רוקח מכין',
+        packer: 'אורז',
+    },
+
+    lab: {
+        title: 'מעבדה — תפקידים וברקודים',
+        notSet: 'טרם סומן',
+        markMe: 'סמן אותי',
+        clear: 'נקה',
+        markedToast: 'התפקיד סומן',
+        clearedToast: 'התפקיד נוקה',
+        rolesNote:
+            'בשלב א׳ התפקידים מסומנים ידנית — מי ומתי. בשלב ב׳ הסריקה בתחנה תמלא אותם.',
+        readOnly: 'סימון תפקידים אפשרי כשההזמנה במעבדה או מוכנה לאריזה.',
+        barcodes: 'ערכי ברקוד',
+        barcodeOrder: 'הזמנה',
+        barcodeItem: 'פריט בהזמנה',
+        barcodeBatch: 'אצווה',
+        barcodeNote:
+            'מזהים יציבים — הערכים שיודפסו כברקוד בדף ההכנה ובמדבקות. הקידוד הגרפי נקבע במודול המדבקות.',
+    },
+
+    fieldsEditor: {
+        title: 'שדות הכנה · {name}',
+        noConcentration: 'ללא ריכוז',
+        instructionsHint: 'ריק — יודפס טקסט ברירת המחדל: ״{text}״',
+        save: 'שמור',
+        saved: 'שדות ההכנה עודכנו',
     },
 
     rail: {
@@ -664,6 +719,20 @@ export default {
     // Documentation entries this console writes. The store stores the key and its
     // parameters, so an entry written in Hebrew reads correctly in English.
     doc: {
+        // V2
+        urgentOn: 'ההזמנה סומנה כדחופה {reason}',
+        urgentOff: 'הדחיפות בוטלה {reason}',
+        itemFields: 'שדות ההכנה של ״{name}״ עודכנו',
+        labRole: {
+            pickerSet: 'מלקט — סומן',
+            pickerCleared: 'מלקט — נוקה',
+            checkerSet: 'בודק — סומן',
+            checkerCleared: 'בודק — נוקה',
+            pharmacistSet: 'רוקח מכין — סומן',
+            pharmacistCleared: 'רוקח מכין — נוקה',
+            packerSet: 'אורז — סומן',
+            packerCleared: 'אורז — נוקה',
+        },
         status: 'הסטטוס עודכן במסד הנתונים · הודעות נשלחו לפי הטריגרים הפעילים',
         statusReason: 'הסטטוס עודכן במסד הנתונים · סיבה: {reason}',
         itemCancelled: 'זיכוי {refund} · סיבה: {reason}',
@@ -680,6 +749,11 @@ export default {
 
     // Header controls in the order-detail drawer that drive a status change.
     actions: {
+        // V2
+        urgentOn: 'סימון כדחוף',
+        urgentOff: 'ביטול דחיפות',
+        urgentOnToast: 'ההזמנה סומנה כדחופה — המעבדה תראה אותה ראשונה',
+        urgentOffToast: 'הדחיפות בוטלה',
         toLab: 'העבר למעבדה',
         toLabTitle: 'העברת ההזמנה למעבדה',
         toLabBody:

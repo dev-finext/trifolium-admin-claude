@@ -45,6 +45,12 @@ export const LOG_ACTION_IDS = [
     'po_receive',
     'supplier_note_close',
     'inventory_settings_update',
+    // orders & deliveries (V2)
+    'order_urgent_set',
+    'lab_role_set',
+    'order_item_fields_update',
+    'pickup_point_create',
+    'pickup_point_update',
     // people
     'registration_approve',
     'registration_reject',

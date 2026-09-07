@@ -12,7 +12,9 @@ import AIcon from '@/components/ui/AIcon.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ItemStageChip from '@/components/ui/ItemStageChip.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { useOrdersStore } from '@/stores/orders';
 
 /** A ratio bar's fill, scaled so the largest realistic share fills it. */
 const RATIO_BAR_SCALE = 2.6;
@@ -23,10 +25,37 @@ const props = defineProps({
     open: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['toggle', 'cancel']);
+const emit = defineEmits(['toggle', 'cancel', 'edit-fields']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
+const orders = useOrdersStore();
+
+/** V2: total content, as units × unit size — what decides how many labels print. */
+const contentText = computed(() => {
+    const unit = t(`orders.unit.${props.item.unit}`);
+    const packages = props.item.packages || 1;
+
+    return packages > 1
+        ? t('orders.value.content', {
+              total: props.item.vol,
+              unit,
+              packages,
+              size: Math.round(props.item.vol / packages),
+          })
+        : t('orders.value.contentOne', { total: props.item.vol, unit });
+});
+
+/** V2: the patient's instructions, or the managed default when none were written. */
+const instructionsText = computed(() =>
+    props.item.patientInstructions
+        ? loc(props.item.patientInstructions)
+        : t('orders.value.instructionsDefault', {
+              text: orders.labSettings
+                  ? loc(orders.labSettings.instructionsDefault)
+                  : '',
+          }),
+);
 
 const cancelled = computed(() => props.item.stage === 'cancelled');
 
@@ -59,6 +88,13 @@ const detailRows = computed(() => [
         t('orders.field.evaporation'),
         t(`orders.evaporation.${props.item.evap}`),
     ],
+    // V2
+    [t('orders.field.content'), contentText.value],
+    [
+        t('orders.field.concentration'),
+        props.item.concentration || t('orders.value.noConcentration'),
+    ],
+    [t('orders.field.instructions'), instructionsText.value],
 ]);
 
 const doseRows = computed(() => [
@@ -115,6 +151,19 @@ function barWidth(share) {
                 </AChip>
             </div>
             <div class="a-push a-icard-act">
+                <AButton
+                    v-if="!cancelled && !done"
+                    sm
+                    icon="edit"
+                    @click="emit('edit-fields', item)"
+                >
+                    {{ t('orders.itemsTab.editFields') }}
+                </AButton>
+                <V2Badge
+                    v-if="!cancelled && !done"
+                    id="order-fields"
+                    size="sm"
+                />
                 <AButton
                     v-if="!cancelled && !done"
                     sm

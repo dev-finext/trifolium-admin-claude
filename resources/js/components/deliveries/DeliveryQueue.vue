@@ -14,9 +14,11 @@ import AEmpty from '@/components/ui/AEmpty.vue';
 import AIcon from '@/components/ui/AIcon.vue';
 import ANum from '@/components/ui/ANum.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { COURIER, ORDER_STATUS_IDS, ORG } from '@/config';
 import { fmtISO } from '@/lib/dates';
+import { useDeliveriesStore } from '@/stores/deliveries';
 
 defineProps({
     /** The deliveries that survived the screen's filters. */
@@ -30,6 +32,11 @@ const emit = defineEmits(['update:sort', 'assign', 'ship', 'notify', 'open']);
 const { t } = useI18n();
 const { loc } = useLocalized();
 const { courierName } = useCourierName();
+const deliveries = useDeliveriesStore();
+
+/** V2: the pickup point an order is bound for, when it is not the pharmacy. */
+const pointOf = (order) =>
+    order.pickupPoint ? deliveries.pointById(order.pickupPoint) : null;
 
 const cols = computed(() => [
     {
@@ -137,6 +144,12 @@ function addressDetail(order) {
 
         <template #cell-id="{ row }">
             <div class="t-strong num id">{{ row.id }}</div>
+            <div v-if="row.urgent" class="mark">
+                <AChip tone="red" size="sm" :dot="false">
+                    {{ t('deliveries.row.urgent') }}
+                </AChip>
+                <V2Badge id="order-flags" size="sm" />
+            </div>
             <div v-if="row.credit && !row.creditPaid" class="mark">
                 <AChip tone="purple" size="sm" :dot="false">
                     {{ t('status.credit') }}
@@ -171,7 +184,15 @@ function addressDetail(order) {
 
         <template #cell-addr="{ row }">
             <template v-if="row.deliveryType === 'pickup'">
-                <div class="muted">{{ loc(ORG.address) }}</div>
+                <div v-if="pointOf(row)" class="muted">
+                    {{
+                        t('deliveries.row.point', {
+                            name: loc(pointOf(row).name),
+                        })
+                    }}
+                    <V2Badge id="pickup-points" size="sm" />
+                </div>
+                <div v-else class="muted">{{ loc(ORG.address) }}</div>
                 <div v-if="row.pickupNotifiedAt" class="t-sub">
                     {{
                         t('deliveries.row.notified', {

@@ -246,7 +246,7 @@ export const SECTIONS = [
         id: 'order-fields',
         part: 'built',
         title: 'שדות ההכנה על פריט בהזמנה',
-        status: 'planned',
+        status: 'built',
         basis: 'שדות ה-UDF של ORDR ב-SAP (שיעורי מילוי 54%–100%)',
         body: [
             ul([
@@ -262,7 +262,7 @@ export const SECTIONS = [
         id: 'order-flags',
         part: 'built',
         title: 'דחיפות ו״מטפל עם תנאים מיוחדים״',
-        status: 'planned',
+        status: 'built',
         basis: 'אפיון ״דף הכנה״',
         body: [
             ul([
@@ -275,7 +275,7 @@ export const SECTIONS = [
         id: 'lab-roles',
         part: 'built',
         title: 'תפקידי מעבדה וברקודים — תשתית לשלב ב׳',
-        status: 'planned',
+        status: 'built',
         basis: 'אפיון ״דף הכנה״ · תחנות TR1–TR9 ב-SAP',
         body: [
             p(
@@ -305,7 +305,7 @@ export const SECTIONS = [
         id: 'couriers',
         part: 'built',
         title: 'רשימת השליחים האמיתית',
-        status: 'planned',
+        status: 'built',
         basis: 'U_SendTo ב-SAP — 35.8 אלף משלוחים בתפוז, 28.4 אלף ב-Special Delivery…',
         body: [
             p(
@@ -317,7 +317,7 @@ export const SECTIONS = [
         id: 'pickup-points',
         part: 'built',
         title: 'נקודות איסוף',
-        status: 'planned',
+        status: 'built',
         basis: 'אפיון ״סוגי משתמשים״ ו״דף הכנה״ · @DELIVERYPOINT ב-SAP (10 חנויות שותפות)',
         body: [
             ul([

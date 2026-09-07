@@ -17,6 +17,7 @@ import ANum from '@/components/ui/ANum.vue';
 import ExceptionChip from '@/components/ui/ExceptionChip.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { ORDER_STATUS_IDS } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -94,8 +95,7 @@ const isTicked = (order) => props.selection.includes(order.id);
 
 /** Every row the filter left is ticked — the header checkbox's state. */
 const allTicked = computed(
-    () =>
-        props.rows.length > 0 && props.rows.every((order) => isTicked(order)),
+    () => props.rows.length > 0 && props.rows.every((order) => isTicked(order)),
 );
 
 /** "First formula +2", then how the items break down by kind. */
@@ -172,6 +172,12 @@ function itemSummary(order) {
         <template #cell-id="{ row }">
             <div class="t-strong a-orderid">
                 <ANum>{{ row.id }}</ANum>
+            </div>
+            <div v-if="row.urgent" class="a-chipwrap a-orderflags">
+                <AChip tone="red" size="sm" :dot="false">
+                    {{ t('orders.detail.urgent') }}
+                </AChip>
+                <V2Badge id="order-flags" size="sm" />
             </div>
             <div v-if="row.flags?.length" class="a-chipwrap a-orderflags">
                 <ExceptionChip

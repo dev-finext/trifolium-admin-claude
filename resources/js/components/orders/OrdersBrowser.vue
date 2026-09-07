@@ -424,11 +424,7 @@ function newOrder() {
 function exportOrders(list, suffix = '') {
     const file = `orders${suffix}-${isoDaysAgo(0)}.csv`;
 
-    downloadCsv(
-        file,
-        EXPORT_HEADERS(),
-        orders.exportRows(list, locale.value),
-    );
+    downloadCsv(file, EXPORT_HEADERS(), orders.exportRows(list, locale.value));
     toast.push({
         title: t('orders.export.done'),
         body: t('orders.export.doneBody', { n: list.length, file }),
@@ -522,7 +518,6 @@ function exportOrders(list, suffix = '') {
                 @assign="assigning = $event"
                 @clear="clearFilters"
             />
-
         </template>
 
         <OrderFilterDrawer

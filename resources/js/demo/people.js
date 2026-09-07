@@ -164,6 +164,11 @@ const PRACTITIONERS = [
         creditRevokedDaysAgo: null,
         legacyNum: true,
         since: '2021-09-02',
+        // V2: special terms the office must see on every one of his orders
+        specialTerms: L(
+            'משלם בסוף חודש — לא לעכב שחרור למעבדה · שולח חשבונית להנה״ח',
+            'Pays at month end — do not hold the lab release · invoice goes to his bookkeeper',
+        ),
         tz: '031928475',
     },
     {
@@ -233,6 +238,11 @@ const PRACTITIONERS = [
         creditRevokedDaysAgo: null,
         legacyNum: true,
         since: '2022-04-05',
+        // V2
+        specialTerms: L(
+            'לצרף חשבונית מודפסת לחבילה · מתקשרת לפני משלוח · נקודת איסוף למטופליה',
+            'Attach a printed invoice to the parcel · calls before dispatch · pickup point for her patients',
+        ),
         tz: '063748291',
     },
     {

@@ -9,7 +9,9 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import OrderItemCard from '@/components/orders/OrderItemCard.vue';
+import OrderItemFieldsEditor from '@/components/orders/OrderItemFieldsEditor.vue';
 import OrderItemStages from '@/components/orders/OrderItemStages.vue';
+import OrderLabCard from '@/components/orders/OrderLabCard.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
@@ -17,6 +19,7 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { ils } from '@/lib/money';
@@ -54,6 +57,14 @@ const open = ref(
 );
 
 const cancelling = ref(null);
+
+/** V2: the formula whose preparation fields are being edited. */
+const editingFields = ref(null);
+
+function onFieldsSaved() {
+    editingFields.value = null;
+    toast.push({ title: t('orders.fieldsEditor.saved') });
+}
 
 const shelfCols = computed(() => [
     { k: 'sku', label: t('orders.itemsTab.skuCol'), nowrap: true },
@@ -106,6 +117,8 @@ async function confirmCancel(reason) {
     <div class="a-grid">
         <OrderItemStages :order="order" />
 
+        <OrderLabCard v-if="formulas.length" :order="order" />
+
         <ACard
             v-if="formulas.length"
             :title="t('orders.itemsTab.formulas', { n: formulas.length })"
@@ -126,6 +139,7 @@ async function confirmCancel(reason) {
                     :open="open.includes(item.id)"
                     @toggle="toggle(item.id)"
                     @cancel="cancelling = $event"
+                    @edit-fields="editingFields = $event"
                 />
             </div>
         </ACard>
@@ -162,6 +176,27 @@ async function confirmCancel(reason) {
                 </template>
             </ADataTable>
         </ACard>
+
+        <!-- V2: the regulatory text every label carries, managed on the lab screen -->
+        <div
+            v-if="formulas.length && orders.labSettings"
+            class="a-note a-note--info"
+        >
+            <V2Badge id="order-fields" size="sm" />
+            <strong>{{ t('orders.itemsTab.regulatoryTitle') }}</strong>
+            {{ loc(orders.labSettings.regulatoryText) }}
+            <span class="t-sub">
+                · {{ t('orders.itemsTab.regulatoryFrom') }}</span
+            >
+        </div>
+
+        <OrderItemFieldsEditor
+            v-if="editingFields"
+            :order="order"
+            :item="editingFields"
+            @close="editingFields = null"
+            @saved="onFieldsSaved"
+        />
 
         <ConfirmDialog
             :open="Boolean(cancelling)"
