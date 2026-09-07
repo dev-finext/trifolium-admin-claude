@@ -595,10 +595,7 @@ export default {
         formulas: 'Personal formulas · {n}',
         shelf: 'Shelf products · {n}',
         shelfNoTracking: 'No separate tracking stage',
-        print: 'Print labels / preparation sheets',
-        printDone: 'Sent to the printer',
-        printDoneBody:
-            'A preparation sheet and a label for every formula on the order',
+        print: 'Print the prep sheet',
         expand: 'Expand the item',
         collapse: 'Collapse the item',
         pharmApproved: 'Pharmacist approved the preparation',
@@ -728,6 +725,7 @@ export default {
     },
 
     doc: {
+        prepSheetPrinted: 'Prep sheet printed',
         // V2
         urgentOn: 'The order was marked urgent {reason}',
         urgentOff: 'Urgency cleared {reason}',

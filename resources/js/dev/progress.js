@@ -287,7 +287,7 @@ export const SECTIONS = [
         id: 'prep-sheet',
         part: 'built',
         title: 'דף הכנה',
-        status: 'planned',
+        status: 'built',
         basis: 'אפיון ״דף הכנה / הוראות ייצור״ · SBOM_OrderPrepare ב-SAP',
         body: [
             ul([

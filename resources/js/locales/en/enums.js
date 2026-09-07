@@ -315,6 +315,8 @@ export default {
         order_item_fields_update: 'Preparation fields updated on an item',
         pickup_point_create: 'Pickup point created',
         pickup_point_update: 'Pickup point updated',
+        lab_settings_update: 'Lab managed texts updated',
+        prep_sheet_print: 'Prep sheet printed',
         registration_approve: 'Registration approved',
         registration_reject: 'Registration rejected',
         practitioner_update: 'Practitioner card updated',

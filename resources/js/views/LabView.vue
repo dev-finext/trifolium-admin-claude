@@ -1,104 +1,96 @@
 <script setup>
-// Lab — deliberately not built yet. The nav marks this area `inDevelopment`,
-// and this screen keeps that honest: it says what the area will cover and where
-// the work lives meanwhile. No mock queue, no sample rows, no control that is
-// wired to nothing.
+// מעבדה — the lab's own screen, second version.
+//
+// Phase A of the lab: the queue of orders on the bench, urgent ones first, with
+// the four roles marked by hand and a prep sheet a click away; and the managed
+// texts every preparation carries. Phase B — scanning stations and a live queue
+// on a screen — was deferred by decision; what is here is its groundwork.
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
+import LabQueueTab from '@/components/lab/LabQueueTab.vue';
+import LabSettingsTab from '@/components/lab/LabSettingsTab.vue';
 import PageHead from '@/components/layout/PageHead.vue';
-import AButton from '@/components/ui/AButton.vue';
-import ACard from '@/components/ui/ACard.vue';
-import AEmpty from '@/components/ui/AEmpty.vue';
-import AIcon from '@/components/ui/AIcon.vue';
+import AErrorState from '@/components/ui/AErrorState.vue';
+import ASkeleton from '@/components/ui/ASkeleton.vue';
+import ATabs from '@/components/ui/ATabs.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
+import { useUrlState } from '@/composables/useUrlState';
+import { useDatasetStore } from '@/stores/dataset';
+import { statusOf, trackedItems, useOrdersStore } from '@/stores/orders';
+
+/** The statuses that put an order on the lab's bench or its packing table. */
+const BENCH_STATUS_IDS = ['in_production', 'ready_for_delivery'];
 
 const { t } = useI18n();
 const router = useRouter();
+const dataset = useDatasetStore();
+const orders = useOrdersStore();
 
-/** What the area will cover when it is built, each with the icon it will wear. */
-const SCOPE = [
-    { id: 'queue', icon: 'clipboard_list' },
-    { id: 'labels', icon: 'printer' },
-    { id: 'types', icon: 'beaker' },
-    { id: 'validity', icon: 'clock' },
-];
+const view = useUrlState({ tab: 'queue' });
+
+/** Orders with at least one live formula, urgent first, then oldest first. */
+const queue = computed(() =>
+    orders.all
+        .filter(
+            (order) =>
+                BENCH_STATUS_IDS.includes(statusOf(order)) &&
+                trackedItems(order).some((item) => item.stage !== 'cancelled'),
+        )
+        .sort((a, b) => {
+            if (Boolean(a.urgent) !== Boolean(b.urgent)) {
+                return a.urgent ? -1 : 1;
+            }
+
+            return String(a.iso).localeCompare(String(b.iso));
+        }),
+);
+
+const urgentCount = computed(
+    () => queue.value.filter((order) => order.urgent).length,
+);
+
+const tabs = computed(() => [
+    {
+        id: 'queue',
+        label: t('lab.tab.queue'),
+        icon: 'clipboard_list',
+        n: queue.value.length,
+    },
+    { id: 'settings', label: t('lab.tab.settings'), icon: 'settings' },
+]);
+
+function openOrder(order) {
+    router.push({
+        name: 'order',
+        params: { id: order.id },
+        query: { tab: 'items' },
+    });
+}
 </script>
 
 <template>
-    <div>
-        <PageHead
-            :crumbs="[t('nav.group.operations'), t('nav.item.lab')]"
-            :title="t('lab.title')"
-            :sub="t('lab.sub')"
+    <PageHead
+        :crumbs="[t('nav.group.operations'), t('nav.item.lab')]"
+        :title="t('lab.title')"
+        :sub="t('lab.sub', { queue: queue.length, urgent: urgentCount })"
+    >
+        <template #badge>
+            <V2Badge id="prep-sheet" />
+        </template>
+    </PageHead>
+
+    <ATabs v-model="view.tab" :tabs="tabs" />
+
+    <ASkeleton v-if="dataset.isBusy" />
+    <AErrorState v-else-if="dataset.isError" @retry="dataset.load(true)" />
+    <template v-else>
+        <LabQueueTab
+            v-if="view.tab === 'queue'"
+            :queue="queue"
+            @open="openOrder"
         />
-
-        <div class="a-grid">
-            <ACard>
-                <AEmpty
-                    icon="zoom"
-                    :title="t('lab.empty.title')"
-                    :sub="t('lab.empty.sub')"
-                >
-                    <template #action>
-                        <AButton
-                            icon="clipboard_list"
-                            @click="router.push({ name: 'orders' })"
-                        >
-                            {{ t('lab.toOrders') }}
-                        </AButton>
-                    </template>
-                </AEmpty>
-            </ACard>
-
-            <ACard :title="t('lab.scopeTitle')" icon="list">
-                <ul class="lab-scope">
-                    <li
-                        v-for="item in SCOPE"
-                        :key="item.id"
-                        class="lab-scope-row"
-                    >
-                        <AIcon
-                            :name="item.icon"
-                            :size="18"
-                            class="lab-scope-ic"
-                        />
-                        <span>{{ t(`lab.scope.${item.id}`) }}</span>
-                    </li>
-                </ul>
-
-                <div class="lab-where">{{ t('lab.where') }}</div>
-            </ACard>
-        </div>
-    </div>
+        <LabSettingsTab v-else-if="view.tab === 'settings'" />
+    </template>
 </template>
-
-<style scoped>
-.lab-scope {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 12px;
-}
-
-.lab-scope-row {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    line-height: 1.55;
-    font-size: 14.5px;
-    color: var(--a-ink-2);
-}
-
-.lab-scope-ic {
-    color: var(--a-ink-4);
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-.lab-where {
-    margin-top: 16px;
-    color: var(--a-ink-4);
-    font-size: 13.5px;
-}
-</style>

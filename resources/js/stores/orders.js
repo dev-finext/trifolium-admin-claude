@@ -778,6 +778,55 @@ export const useOrdersStore = defineStore('orders', () => {
         return item;
     }
 
+    /** V2: change the lab's managed texts — the instructions default and the regulatory warning. */
+    async function updateLabSettings(patch) {
+        if (!dataset.data.labSettings) {
+            dataset.data.labSettings = {};
+        }
+
+        Object.assign(dataset.data.labSettings, patch, {
+            updated: moment(),
+            updatedBy: actor.value,
+        });
+
+        const log = Array.isArray(dataset.data.log) ? dataset.data.log : null;
+
+        if (log) {
+            log.unshift({
+                id: `lg-lab_settings_update-${log.length}`,
+                when: moment(),
+                actorType: 'agent',
+                actor: actor.value,
+                act: 'lab_settings_update',
+                entType: 'system',
+                ent: 'lab-settings',
+                valueType: 'plain',
+                from: null,
+                to: null,
+                src: 'manual',
+                ip: null,
+            });
+        }
+
+        await persist('lab/settings', patch, 'PATCH');
+    }
+
+    /** V2: a prep sheet was printed for this order — one line in its documentation. */
+    async function logPrepSheet(id) {
+        const order = byId(id);
+
+        if (!order) {
+            return;
+        }
+
+        logEntry(order, {
+            actionId: 'prep_sheet_print',
+            detail: { key: 'orders.doc.prepSheetPrinted', params: {} },
+        });
+
+        await persist(`orders/${id}/prep-sheet-print`, {});
+    }
+
     /** Record a payment that arrived outside the payment link. */
     async function recordPayment(id, reason = '') {
         const order = byId(id);
@@ -1035,6 +1084,8 @@ export const useOrdersStore = defineStore('orders', () => {
         setLabRole,
         setItemFields,
         labSettings,
+        updateLabSettings,
+        logPrepSheet,
         recordPayment,
         moveToCredit,
         reissueDocument,

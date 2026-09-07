@@ -589,9 +589,7 @@ export default {
         formulas: 'פורמולות אישיות · {n}',
         shelf: 'מוצרי מדף · {n}',
         shelfNoTracking: 'ללא סטטוס מעקב נפרד',
-        print: 'הדפסת תוויות / דפי רקיחה',
-        printDone: 'נשלח להדפסה',
-        printDoneBody: 'דף רקיחה + תווית לכל פורמולה בהזמנה',
+        print: 'דף הכנה להדפסה',
         expand: 'הרחבת הפריט',
         collapse: 'כיווץ הפריט',
         pharmApproved: 'אישור הכנה רוקחית',
@@ -719,6 +717,7 @@ export default {
     // Documentation entries this console writes. The store stores the key and its
     // parameters, so an entry written in Hebrew reads correctly in English.
     doc: {
+        prepSheetPrinted: 'דף ההכנה הודפס',
         // V2
         urgentOn: 'ההזמנה סומנה כדחופה {reason}',
         urgentOff: 'הדחיפות בוטלה {reason}',

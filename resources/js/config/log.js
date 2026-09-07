@@ -51,6 +51,8 @@ export const LOG_ACTION_IDS = [
     'order_item_fields_update',
     'pickup_point_create',
     'pickup_point_update',
+    'lab_settings_update',
+    'prep_sheet_print',
     // people
     'registration_approve',
     'registration_reject',

@@ -844,6 +844,14 @@ export function buildOrders(practitioners, patients) {
         last.tracking = null;
     }
 
+    // One order on the lab bench is always urgent, so the queue's ordering and
+    // the urgency marks are on screen whatever the rest of the fixture does.
+    const bench = orders.find((order) => order.status === 'in_production');
+
+    if (bench) {
+        bench.urgent = true;
+    }
+
     return orders;
 }
 

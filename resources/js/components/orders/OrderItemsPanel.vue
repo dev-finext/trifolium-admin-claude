@@ -21,6 +21,7 @@ import ANum from '@/components/ui/ANum.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { usePrepSheet } from '@/composables/usePrepSheet';
 import { useToast } from '@/composables/useToast';
 import { ils } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
@@ -40,6 +41,7 @@ const { loc } = useLocalized();
 const toast = useToast();
 const dataset = useDatasetStore();
 const orders = useOrdersStore();
+const { printPrepSheet } = usePrepSheet();
 
 const formulas = computed(() => trackedItems(props.order));
 const shelf = computed(() => shelfItems(props.order));
@@ -84,11 +86,15 @@ function toggle(id) {
         : [...open.value, id];
 }
 
-function print() {
-    toast.push({
-        title: t('orders.itemsTab.printDone'),
-        body: t('orders.itemsTab.printDoneBody'),
-    });
+/** V2: the real prep sheet, in the browser's print dialog. */
+async function print() {
+    const ok = await printPrepSheet(props.order);
+
+    toast.push(
+        ok
+            ? { title: t('lab.sheet.printed'), body: props.order.id }
+            : { title: t('lab.sheet.blocked'), bad: true },
+    );
 }
 
 async function confirmCancel(reason) {
@@ -126,6 +132,7 @@ async function confirmCancel(reason) {
             :pad="false"
         >
             <template #right>
+                <V2Badge id="prep-sheet" size="sm" />
                 <AButton sm kind="p" icon="printer" @click="print">
                     {{ t('orders.itemsTab.print') }}
                 </AButton>
