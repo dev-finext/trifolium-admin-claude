@@ -49,6 +49,14 @@ export const NAV_GROUPS = [
             { id: 'log', icon: 'list' },
         ],
     },
+    // Development-only. Shown against the demo fixture and nowhere else; the
+    // route behind it is folded out of a production build (see router/index.js).
+    {
+        id: 'dev',
+        separated: true,
+        devOnly: true,
+        items: [{ id: 'devProgress', icon: 'file_text' }],
+    },
 ];
 
 /** Every nav item, flattened — used by the router and the command palette. */

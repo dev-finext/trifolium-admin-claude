@@ -6,6 +6,17 @@
 // group's heading is `nav.group.<id>`, both in locales/he/nav.js, keyed by the
 // ids in config/nav.js.
 export default {
+    // The V2 review markers — demo only. `badge` is the literal on the red pill.
+    v2: {
+        badge: 'V2',
+        tip: 'חדש בגרסה 2 — לחיצה פותחת את ההסבר בעמוד ״התקדמות אפיון״',
+        tipPlain: 'חדש בגרסה 2',
+        show: 'הצגת סימוני V2',
+        hide: 'הסתרת סימוני V2',
+        on: 'מוצג',
+        off: 'מוסתר',
+    },
+
     landmark: {
         nav: 'ניווט ראשי',
         main: 'תוכן המסך',

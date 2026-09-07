@@ -6,6 +6,7 @@ export default {
         operations: 'Ongoing management',
         knowledge: 'Knowledge & content',
         system: 'System settings',
+        dev: 'Development',
     },
     item: {
         orders: 'Orders',
@@ -27,6 +28,7 @@ export default {
         admins: 'Admin users',
         systemContacts: 'Third-party system contacts',
         log: 'System log',
+        devProgress: 'Spec progress',
     },
     inDevelopment: 'In development',
     collapse: 'Collapse menu',

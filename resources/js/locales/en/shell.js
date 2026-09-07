@@ -1,5 +1,16 @@
 // English mirror of he/shell.js — same keys, real translations.
 export default {
+    // The V2 review markers — demo only. `badge` is the literal on the red pill.
+    v2: {
+        badge: 'V2',
+        tip: 'New in version 2 — click for the explanation in “Spec progress”',
+        tipPlain: 'New in version 2',
+        show: 'Show V2 markers',
+        hide: 'Hide V2 markers',
+        on: 'shown',
+        off: 'hidden',
+    },
+
     landmark: {
         nav: 'Main navigation',
         main: 'Screen content',

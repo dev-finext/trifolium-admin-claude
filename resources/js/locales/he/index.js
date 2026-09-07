@@ -7,6 +7,7 @@ import admins from '@/locales/he/admins';
 import common from '@/locales/he/common';
 import content from '@/locales/he/content';
 import deliveries from '@/locales/he/deliveries';
+import dev from '@/locales/he/dev';
 import enums from '@/locales/he/enums';
 import finance from '@/locales/he/finance';
 import ingredients from '@/locales/he/ingredients';
@@ -34,6 +35,7 @@ export default {
     admins,
     content,
     deliveries,
+    dev,
     finance,
     ingredients,
     integrations,

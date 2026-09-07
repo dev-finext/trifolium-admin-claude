@@ -11,13 +11,18 @@ import { onBeforeUnmount, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AIcon from '@/components/ui/AIcon.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { NAV_GROUPS, NAV_STORAGE_KEY, NAV_TOGGLE_KEY } from '@/config';
+import { isDemoData } from '@/data/source';
 import { useDatasetStore } from '@/stores/dataset';
 
 const collapsed = defineModel('collapsed', { type: Boolean, default: false });
 
 const { t } = useI18n();
 const dataset = useDatasetStore();
+
+/** The groups this deployment shows — the development group only against the fixture. */
+const groups = NAV_GROUPS.filter((group) => !group.devOnly || isDemoData);
 
 /** The value localStorage holds when the sidebar is collapsed. */
 const STORED_OFF = 'off';
@@ -96,13 +101,14 @@ function itemTitle(groupId, itemId) {
 
         <div class="a-side-scroll">
             <div
-                v-for="group in NAV_GROUPS"
+                v-for="group in groups"
                 :key="group.id"
                 class="a-navgroup"
                 :class="{ 'is-sep': group.separated }"
             >
                 <div class="a-navgroup-t">
                     {{ t(`nav.group.${group.id}`) }}
+                    <V2Badge v-if="group.devOnly" id="v2-intro" size="sm" />
                 </div>
 
                 <RouterLink

@@ -9,6 +9,7 @@ export default {
         operations: 'ניהול שוטף',
         knowledge: 'ידע ותוכן',
         system: 'הגדרות מערכת',
+        dev: 'פיתוח',
     },
     item: {
         orders: 'הזמנות',
@@ -30,6 +31,7 @@ export default {
         admins: 'ניהול משתמשי אדמין',
         systemContacts: 'אנשי קשר למערכות צד ג׳',
         log: 'יומן מערכת',
+        devProgress: 'התקדמות אפיון',
     },
     inDevelopment: 'בפיתוח',
     collapse: 'סגירת התפריט',

@@ -15,6 +15,7 @@ import AIcon from '@/components/ui/AIcon.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useDatasetStore } from '@/stores/dataset';
 import { useLocaleStore } from '@/stores/locale';
+import { useV2Store } from '@/stores/v2';
 
 const props = defineProps({
     /** Mirrors the sidebar's collapsed state; the button here flips it. */
@@ -27,6 +28,7 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const dataset = useDatasetStore();
 const localeStore = useLocaleStore();
+const v2 = useV2Store();
 
 // The chevron points the way the sidebar will move, which is mirrored with the
 // writing direction: the sidebar sits on the right in Hebrew, on the left in
@@ -73,6 +75,21 @@ const initials = computed(() =>
 
         <div class="a-top-r">
             <LocaleToggle />
+            <!-- Review aid, demo only: shows or hides every V2 marker at once. -->
+            <button
+                v-if="v2.available"
+                type="button"
+                class="a-v2toggle"
+                :class="{ 'is-on': v2.shown }"
+                :aria-pressed="v2.shown"
+                :title="v2.shown ? t('shell.v2.hide') : t('shell.v2.show')"
+                @click="v2.toggle()"
+            >
+                <span class="a-v2 is-static">{{ t('shell.v2.badge') }}</span>
+                <span class="a-v2toggle-t">
+                    {{ v2.shown ? t('shell.v2.on') : t('shell.v2.off') }}
+                </span>
+            </button>
             <ServiceHealthPill />
             <NotificationBell />
 

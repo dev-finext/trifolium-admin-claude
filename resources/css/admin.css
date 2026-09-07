@@ -3292,3 +3292,69 @@ table.a-table.tp-table-lg thead th {
 .a-newlabel .a-btn {
     margin-top: 25px;
 }
+
+/* ---- V2 review markers (demo only) --------------------------------------
+   A small red pill beside anything that did not exist in the first version of
+   the console. As a link it lands on the matching section of the development
+   progress article; the top-bar toggle hides every pill at once. */
+.a-v2 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    height: 16px;
+    padding: 0 5px;
+    border-radius: 4px;
+    background: #c62828;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-decoration: none;
+    vertical-align: middle;
+    margin-inline-start: 6px;
+    direction: ltr;
+}
+
+a.a-v2:hover,
+a.a-v2:focus-visible {
+    background: #a61f1f;
+    color: #fff;
+    text-decoration: none;
+}
+
+.a-v2.is-sm {
+    height: 14px;
+    padding: 0 4px;
+    font-size: 9px;
+    margin-inline-start: 4px;
+}
+
+.a-v2.is-static {
+    margin-inline-start: 0;
+}
+
+.a-v2toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 9px;
+    border: 1px solid var(--a-line);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--a-ink-3);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.a-v2toggle:hover {
+    border-color: var(--a-ink-4);
+}
+
+/* Switched off, the sample pill goes grey so the state reads without the word. */
+.a-v2toggle:not(.is-on) .a-v2 {
+    background: #9aa39a;
+}

@@ -29,6 +29,9 @@ const FIXTURE_MARKERS = [
     ['a national ID', '029384756'],
     ['a company number', '513874902'],
     ['a practitioner email', 'dan@ether.co.il'],
+    // Not personal data, but demo-only all the same: the development progress
+    // article, whose route is folded out of an api build in router/index.js.
+    ['the development article', 'dev-progress-article-v2'],
 ];
 
 async function walk(dir, out = []) {
@@ -74,7 +77,7 @@ for (const [label, marker] of FIXTURE_MARKERS) {
 console.log(`checked ${texts.length} built files in ${path.relative(root, dist)}\n`);
 
 if (found.length) {
-    console.log('✗ the demo fixture is in the production bundle');
+    console.log('✗ demo-only content is in the production bundle');
     found.forEach((row) => console.log(`    ${row}`));
     console.log(
         '\nBuild with VITE_DATA_SOURCE=api. If it is already set, the fold in' +

@@ -3,6 +3,7 @@ import admins from '@/locales/en/admins';
 import common from '@/locales/en/common';
 import content from '@/locales/en/content';
 import deliveries from '@/locales/en/deliveries';
+import dev from '@/locales/en/dev';
 import enums from '@/locales/en/enums';
 import finance from '@/locales/en/finance';
 import ingredients from '@/locales/en/ingredients';
@@ -30,6 +31,7 @@ export default {
     admins,
     content,
     deliveries,
+    dev,
     finance,
     ingredients,
     integrations,
