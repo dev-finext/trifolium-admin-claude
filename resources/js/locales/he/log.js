@@ -51,6 +51,9 @@ export default {
         batch: 'אצווה',
         admin_user: 'משתמש אדמין',
         system: 'מערכת',
+        catalog_item: 'פריט קטלוג',
+        product: 'מוצר',
+        product_label: 'תווית מוצר',
     },
 
     loadMore: 'טען עוד {n} רשומות',

@@ -29,6 +29,15 @@ export const LOG_ACTION_IDS = [
     'ingredient_create',
     'ingredient_update',
     'ingredient_delete',
+    'item_create',
+    'item_update',
+    'prep_type_create',
+    'bom_create',
+    'bom_update',
+    'bom_delete',
+    // files
+    'attachment_add',
+    'attachment_remove',
     // people
     'registration_approve',
     'registration_reject',

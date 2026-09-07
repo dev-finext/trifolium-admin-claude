@@ -21,6 +21,7 @@ export default {
         products: 'מוצרי מדף',
         pricing: 'מחירונים מדורגים',
         ingredients: 'רכיבי פורמולה',
+        items: 'פריטים',
         lab: 'מעבדה',
         inventory: 'מלאי ואצוות',
         safety: 'אינטראקציות תרופתיות',

@@ -73,6 +73,12 @@ const routes = [
         component: () => import('@/views/IngredientsView.vue'),
     },
     {
+        path: '/items',
+        name: 'items',
+        meta: { titleKey: 'nav.item.items' },
+        component: () => import('@/views/ItemsView.vue'),
+    },
+    {
         path: '/lab',
         name: 'lab',
         meta: { titleKey: 'nav.item.lab' },

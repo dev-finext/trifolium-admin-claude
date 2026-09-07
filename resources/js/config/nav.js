@@ -27,6 +27,9 @@ export const NAV_GROUPS = [
             { id: 'products', icon: 'package' },
             { id: 'pricing', icon: 'layers' },
             { id: 'ingredients', icon: 'beaker' },
+            // V2 — the unified item card, alongside the three screens above
+            // until one replaces the other. `v2` names its progress section.
+            { id: 'items', icon: 'tag', v2: 'item-card' },
             { id: 'lab', icon: 'zoom', inDevelopment: true },
             { id: 'inventory', icon: 'grid' },
         ],

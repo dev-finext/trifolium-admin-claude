@@ -37,7 +37,7 @@ const separator = computed(() =>
                 </template>
             </div>
 
-            <h1 class="a-h1">{{ title }}</h1>
+            <h1 class="a-h1">{{ title }}<slot name="badge" /></h1>
             <div v-if="sub" class="a-sub">{{ sub }}</div>
         </div>
 

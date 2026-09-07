@@ -4,6 +4,7 @@
 // `en/index.js` must list exactly the same namespaces — a key present in one
 // language and missing in the other is a bug, not a fallback.
 import admins from '@/locales/he/admins';
+import attachments from '@/locales/he/attachments';
 import common from '@/locales/he/common';
 import content from '@/locales/he/content';
 import deliveries from '@/locales/he/deliveries';
@@ -13,6 +14,7 @@ import finance from '@/locales/he/finance';
 import ingredients from '@/locales/he/ingredients';
 import integrations from '@/locales/he/integrations';
 import inventory from '@/locales/he/inventory';
+import items from '@/locales/he/items';
 import lab from '@/locales/he/lab';
 import libraries from '@/locales/he/libraries';
 import log from '@/locales/he/log';
@@ -33,6 +35,7 @@ export default {
     ...common,
     ...enums,
     admins,
+    attachments,
     content,
     deliveries,
     dev,
@@ -40,6 +43,7 @@ export default {
     ingredients,
     integrations,
     inventory,
+    items,
     lab,
     libraries,
     log,

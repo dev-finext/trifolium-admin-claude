@@ -47,6 +47,9 @@ export default {
         batch: 'Batch',
         admin_user: 'Admin user',
         system: 'System',
+        catalog_item: 'Catalogue item',
+        product: 'Product',
+        product_label: 'Product label',
     },
 
     loadMore: 'Load {n} more entries',

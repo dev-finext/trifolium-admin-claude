@@ -9,6 +9,7 @@ export * from '@/config/customers';
 export * from '@/config/exceptions';
 export * from '@/config/finance';
 export * from '@/config/inventory';
+export * from '@/config/items';
 export * from '@/config/log';
 export * from '@/config/messaging';
 export * from '@/config/nav';

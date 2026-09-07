@@ -18,6 +18,7 @@ export default {
         products: 'Shelf products',
         pricing: 'Tiered price lists',
         ingredients: 'Formula ingredients',
+        items: 'Items',
         lab: 'Lab',
         inventory: 'Stock & batches',
         safety: 'Drug interactions',

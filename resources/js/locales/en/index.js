@@ -1,5 +1,6 @@
 // English catalog. Mirrors he/index.js namespace for namespace.
 import admins from '@/locales/en/admins';
+import attachments from '@/locales/en/attachments';
 import common from '@/locales/en/common';
 import content from '@/locales/en/content';
 import deliveries from '@/locales/en/deliveries';
@@ -9,6 +10,7 @@ import finance from '@/locales/en/finance';
 import ingredients from '@/locales/en/ingredients';
 import integrations from '@/locales/en/integrations';
 import inventory from '@/locales/en/inventory';
+import items from '@/locales/en/items';
 import lab from '@/locales/en/lab';
 import libraries from '@/locales/en/libraries';
 import log from '@/locales/en/log';
@@ -29,6 +31,7 @@ export default {
     ...common,
     ...enums,
     admins,
+    attachments,
     content,
     deliveries,
     dev,
@@ -36,6 +39,7 @@ export default {
     ingredients,
     integrations,
     inventory,
+    items,
     lab,
     libraries,
     log,

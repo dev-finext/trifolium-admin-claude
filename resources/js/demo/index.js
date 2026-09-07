@@ -41,6 +41,13 @@ import {
     STOCK_KINDS,
 } from '@/demo/inventory';
 import {
+    buildAttachments,
+    buildBoms,
+    buildItems,
+    PREP_TYPES,
+    SITE_CATEGORIES,
+} from '@/demo/items';
+import {
     buildSystemLog,
     DEMO_LOG_AGENTS,
     LOG_ENTITY_TYPE_IDS,
@@ -132,6 +139,7 @@ export function buildDataset() {
     const batches = buildBatches(receipts);
     const batchUse = buildBatchUse(orders, batches);
     const priceGroups = buildPriceGroups();
+    const products = buildProducts();
 
     return {
         // people
@@ -161,7 +169,7 @@ export function buildDataset() {
         herbWarnings: HERB_WARNINGS,
 
         // products
-        products: buildProducts(),
+        products,
         productLabels: buildProductLabels(),
         shelfItems: SHELF_ITEMS,
         productStatuses: PRODUCT_STATUS_IDS,
@@ -173,6 +181,14 @@ export function buildDataset() {
         priceUoms: PRICE_UOM_IDS,
         ingredientSkus: DEMO_INGREDIENT_SKUS,
         priceImport: buildPriceImport(priceGroups),
+
+        // items (V2): the unified card over stock rows and products, the
+        // managed preparation types, the bills of materials, the files
+        items: buildItems(stock, products, DEMO_SUPPLIERS),
+        prepTypes: PREP_TYPES,
+        boms: buildBoms(stock, products),
+        attachments: buildAttachments(stock, batches),
+        siteCategories: SITE_CATEGORIES,
 
         // inventory
         stock,
