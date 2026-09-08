@@ -148,7 +148,7 @@ function parentName(bom) {
 </script>
 
 <template>
-    <ADrawer :open="Boolean(row)" full @close="emit('close')">
+    <ADrawer :open="Boolean(row)" @close="emit('close')">
         <template v-if="row">
             <div class="a-dhead a-dhead--line">
                 <div class="a-dhead-top">

@@ -278,6 +278,11 @@ textarea {
 /* nav items whose screen is not built yet */
 .a-navitem.is-soon {
     color: #94a48d;
+    cursor: default;
+}
+.a-navitem.is-soon:hover {
+    background: transparent;
+    color: #94a48d;
 }
 .a-navitem.is-soon .a-soon {
     flex: none;
@@ -288,14 +293,6 @@ textarea {
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.09);
     color: #9fb098;
-}
-.a-navitem.is-soon.is-on {
-    background: #33472f;
-    color: #dbe4d6;
-}
-.a-navitem.is-soon.is-on .a-soon {
-    background: rgba(255, 255, 255, 0.16);
-    color: #e6ecdf;
 }
 
 .a-main {

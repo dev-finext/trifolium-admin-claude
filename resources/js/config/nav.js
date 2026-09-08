@@ -30,7 +30,8 @@ export const NAV_GROUPS = [
             // V2 — the unified item card, alongside the three screens above
             // until one replaces the other. `v2` names its progress section.
             { id: 'items', icon: 'tag', v2: 'item-card' },
-            { id: 'lab', icon: 'zoom', v2: 'prep-sheet' },
+            // Still being built: shown, greyed, and not a link.
+            { id: 'lab', icon: 'zoom', v2: 'prep-sheet', inDevelopment: true },
             // V2 — the stickers module: template editor, print run, notes pool, log
             { id: 'stickers', icon: 'printer', v2: 'labels' },
             { id: 'inventory', icon: 'grid' },

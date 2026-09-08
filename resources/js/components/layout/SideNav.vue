@@ -111,14 +111,21 @@ function itemTitle(groupId, itemId) {
                     <V2Badge v-if="group.devOnly" id="v2-intro" size="sm" />
                 </div>
 
-                <RouterLink
+                <!-- A screen still being built keeps its place in the nav so the
+                     shape of the console is honest, but it is not a link: it
+                     renders as plain text, out of the tab order. -->
+                <component
+                    :is="item.inDevelopment ? 'div' : 'RouterLink'"
                     v-for="item in group.items"
                     :key="item.id"
                     class="a-navitem"
-                    active-class="is-on"
                     :class="{ 'is-soon': item.inDevelopment }"
-                    :to="{ name: item.id }"
                     :title="itemTitle(group.id, item.id)"
+                    v-bind="
+                        item.inDevelopment
+                            ? { 'aria-disabled': 'true' }
+                            : { to: { name: item.id }, activeClass: 'is-on' }
+                    "
                 >
                     <AIcon :name="item.icon" :size="19" />
                     <span>{{ t(`nav.item.${item.id}`) }}</span>
@@ -134,7 +141,7 @@ function itemTitle(groupId, itemId) {
                     >
                         {{ countFor(item.id).n }}
                     </span>
-                </RouterLink>
+                </component>
             </div>
         </div>
     </nav>
