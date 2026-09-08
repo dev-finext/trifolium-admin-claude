@@ -106,9 +106,6 @@ export function paymentStateOf(order) {
 /** An order whose money is settled — paid outright, or cleared on credit. */
 export const isSettled = (order) => paymentStateOf(order) !== 'unpaid';
 
-/** Reasons an order can sit on hold before it goes to the lab. */
-export const HOLD_REASON_IDS = ['unpaid', 'awaiting_customer', 'draft'];
-
 /**
  * Statuses that mean the order is finished and needs no further action.
  *

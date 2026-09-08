@@ -7,5 +7,6 @@
 //
 // resources/js/data/source.js hands this to setClock() before it calls
 // buildDataset(); against a real API the clock is never pinned. Stated once,
-// here, and nowhere else.
-export const DEMO_CLOCK = new Date(2026, 6, 27, 14, 5);
+// here, and nowhere else. It is the day the SAP backup the order book was read
+// from was taken, so the newest real document in the fixture is 'today'.
+export const DEMO_CLOCK = new Date(2026, 7, 5, 14, 5);

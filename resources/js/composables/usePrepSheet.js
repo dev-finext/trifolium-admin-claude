@@ -19,11 +19,7 @@ import { esc, printHtml } from '@/lib/print';
 import { useDeliveriesStore } from '@/stores/deliveries';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
-import {
-    shelfItems,
-    trackedItems,
-    useOrdersStore,
-} from '@/stores/orders';
+import { shelfItems, trackedItems, useOrdersStore } from '@/stores/orders';
 
 export function usePrepSheet() {
     const { t, locale } = useI18n();
@@ -71,7 +67,7 @@ export function usePrepSheet() {
             code: card?.code || stock?.sku || '—',
             name: loc(herb.name),
             lat: herb.lat || '',
-            qty: `${herb.qty} ${t(`orders.unit.${unit}`)}`,
+            qty: `${herb.qty} ${t(`orders.unit.${herb.unit || unit}`)}`,
             batches: batches || t('lab.sheet.noBatch'),
             short:
                 plan.short > 0 ? t('lab.sheet.short', { n: plan.short }) : '',
@@ -91,9 +87,7 @@ export function usePrepSheet() {
         }
 
         const paid = (order.audit || []).find(
-            (row) =>
-                row.valueType === 'status' &&
-                row.to === 'new',
+            (row) => row.valueType === 'status' && row.to === 'new',
         );
 
         return paid?.when?.stamp
@@ -207,9 +201,7 @@ export function usePrepSheet() {
 
     /** The whole document for one order, as body markup. */
     function build(order) {
-        const formulas = trackedItems(order).filter(
-            (item) => !item.cancelled,
-        );
+        const formulas = trackedItems(order).filter((item) => !item.cancelled);
         const shelf = shelfItems(order);
         const patient = order.patient;
         const practitioner = order.practitioner;

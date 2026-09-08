@@ -14,3 +14,7 @@ dist
 
 # local smoke-test scratch
 .smoke
+
+# Python bytecode from scripts/extract-sap.
+__pycache__/
+*.pyc

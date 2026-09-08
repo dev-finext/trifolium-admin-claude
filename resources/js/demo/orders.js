@@ -1,5 +1,15 @@
-// The order book: 52 orders across every status the console has a screen for,
-// with their compounded items, their audit trail and their exception flags.
+// The order book: the 50 orders read out of SAP, with their compounded items,
+// their audit trail and their exception flags.
+//
+// Every order here is a real `ORDR` document — its number, its date, its state,
+// its money, its delivery and its lines. One order is one formula, and the
+// formula's herbs are that document's `RDR1` lines, at the quantities the
+// pharmacy actually weighed. The sample covers all eight states.
+//
+// Four things on an order are the console's own, because SAP does not hold
+// them, and each says so where it is built: the tax document (Green Invoice,
+// a separate system), the lab's four hands, the urgency mark, and the street
+// address behind the real city.
 //
 // Two rules from the business drive most of what looks arbitrary here:
 //
@@ -9,19 +19,17 @@
 //   2. A failed issue attempt leaves no document and no allocation number —
 //      only the provider's request id, so an agent can chase it.
 import {
-    ACTIVE_COURIER_IDS,
     COURIER,
+    COURIER_BY_CODE,
     CREDIT,
     EXCEPTION_THRESHOLDS,
-    HOLD_REASON_IDS,
+    ORDER_FLOW,
+    ORDER_STATUS_BY_CODE,
     PAY_LINK,
+    PREPARATION_FORM,
     SETTINGS,
 } from '@/config';
-import {
-    DOSE_TIMING_IDS,
-    EVAPORATION_IDS,
-    DEMO_HERB_BY_ID,
-} from '@/demo/catalog';
+import { DOSE_TIMING_IDS, EVAPORATION_IDS } from '@/demo/catalog';
 import { PICKUP_POINT_IDS } from '@/demo/deliveries';
 import { at, chance, pickFrom, rareChance, spread } from '@/demo/fixture';
 import {
@@ -30,78 +38,41 @@ import {
     PHARMACIST_ACTORS,
     SUPPORT_ACTORS,
 } from '@/demo/people';
-import { SHELF_ITEMS } from '@/demo/products';
+import REAL_ORDERS from '@/demo/real/orders.json';
+import { daysSince } from '@/lib/dates';
 import { L } from '@/lib/localized';
 
-/** How many orders the fixture carries, and the id the series counts down from. */
-const ORDER_COUNT = 52;
-const FIRST_ORDER_NUMBER = 2860;
+/**
+ * Item codes that are a charge, not a thing: SAP bills delivery and the
+ * compounding fee as ordinary order lines in the 999xxx block.
+ */
+const FEE_CODE_PREFIX = '999';
+
+const isFeeLine = (line) => String(line.code || '').startsWith(FEE_CODE_PREFIX);
 
 /**
- * Fees the demo pricing was authored against. Real deployments read these from
- * the fee settings; they are stated here so no screen has to know them.
+ * What an order line is, read off SAP's item numbering — the warehouse is
+ * physically arranged by it, so it is the most reliable thing on the line.
+ *
+ *   10–29  what goes into the preparation: herbs, 1:1s, extracts, tinctures
+ *   30, 4x what it is made and packed with: capsules, glycerin, jars, pads
+ *   5x     finished goods off the shelf
+ *   999xxx a charge — delivery, or the compounding fee
  */
-const COMPOUNDING_FEE = 35;
-const SHIPPING_FEE = 39;
-const FREE_SHIPPING_OVER = 400;
-const SHELF_TRADE_DISCOUNT = 0.4;
-const PATIENT_DISCOUNT = 0.1;
-const POINTS_EARN_RATE = 0.1;
+const INGREDIENT_CODE = /^[12]\d/;
+const MATERIAL_CODE = /^(30|4\d)/;
 
-/**
- * The status spread the screens were designed against — eight orders awaiting
- * confirmation, seven in the lab, three cancelled, and so on. Read modulo the order
- * index, so the mix holds whatever the order count is.
- */
-const STATUS_MIX = [
-    'new',
-    'new',
-    'new',
-    'new',
-    'new',
-    'new',
-    'new',
-    'new',
-    'new',
-    'new',
-    'new',
-    'new',
-    'new',
-    'lab',
-    'lab',
-    'lab',
-    'lab',
-    'lab',
-    'lab',
-    'lab',
-    'packed',
-    'packed',
-    'packed',
-    'packed',
-    'packed',
-    'sent',
-    'sent',
-    'sent',
-    'sent',
-    'sent',
-    'sent',
-    'closed',
-    'closed',
-    'closed',
-    'closed',
-    'closed',
-    'closed',
-    'closed',
-    'closed',
-    'closed',
-    'closed',
-    'closed',
-    'closed',
-    'closed',
-    'cancelled',
-    'cancelled',
-    'cancelled',
-];
+const isIngredientLine = (line) =>
+    INGREDIENT_CODE.test(String(line.code || ''));
+const isMaterialLine = (line) => MATERIAL_CODE.test(String(line.code || ''));
+
+/** SAP's line units, as the console names them. */
+const LINE_UNIT = { gr: 'g', ml: 'ml', unit: 'unit', kg: 'kg' };
+
+const lineUnit = (line) => LINE_UNIT[line.unit] || 'unit';
+
+/** VAT, as SAP's own `DocTotal`/`VatSum` pair implies it. */
+const VAT_RATE = SETTINGS.vatRate;
 
 /** Formulas the demo orders are compounded from. */
 export const FORMULA_TEMPLATES = [
@@ -177,45 +148,6 @@ export const FORMULA_TEMPLATES = [
     },
 ];
 
-const INTERNAL_NOTES = [
-    L(
-        'לרקוח בבקבוק זכוכית כהה. לסנן פעמיים. תווית עם תאריך תפוגה 24 חודשים.',
-        'Compound in an amber glass bottle. Filter twice. Label with a 24-month expiry.',
-    ),
-    L(
-        'נידוף אלכוהול חלקי לפני הוספת הגליצרין. לערבב 3 דקות.',
-        'Partial alcohol evaporation before the glycerin goes in. Stir for 3 minutes.',
-    ),
-    L(
-        'לחלק לשתי מנות של 50 מ״ל. לסמן מנה ראשונה/שנייה.',
-        'Split into two 50 ml portions. Mark them first and second.',
-    ),
-];
-
-const EXTERNAL_NOTES = [
-    L(
-        'לנער לפני כל שימוש. לשמור במקום קריר וחשוך, מחוץ להישג ידם של ילדים.',
-        'Shake before each use. Store somewhere cool and dark, out of reach of children.',
-    ),
-    L(
-        'ליטול עם מעט מים. במקרה של אי נוחות בבטן — ליטול לאחר האוכל.',
-        'Take with a little water. If it unsettles your stomach, take it after food.',
-    ),
-    L(
-        'ניתן למהול בכוס תה חם. לא ליטול יחד עם קפה.',
-        'May be diluted in a cup of hot tea. Do not take together with coffee.',
-    ),
-];
-
-const DELIVERY_CITIES = [
-    L('תל אביב', 'Tel Aviv'),
-    L('רמת גן', 'Ramat Gan'),
-    L('חיפה', 'Haifa'),
-    L('ירושלים', 'Jerusalem'),
-    L('נתניה', 'Netanya'),
-    L('באר שבע', 'Beer Sheva'),
-];
-
 const DELIVERY_STREETS = [
     L('ארלוזורוב', 'Arlozorov'),
     L('הרצל', 'Herzl'),
@@ -243,61 +175,160 @@ export function buildOrderNote() {
     };
 }
 
-function shelfLine(slot, minQty, maxQty) {
-    const item = pickFrom(slot, SHELF_ITEMS);
+/**
+ * Which preparation form an order was compounded into.
+ *
+ * SAP does not name the form on the order — it names the dosage unit
+ * (`U_DosageUnit`) and, in most cases, spells the form out in the order's own
+ * title. Both are read here, the title first because it is the more specific of
+ * the two. Nothing in this mapping changes the console's list of forms.
+ */
+const FORM_BY_WORD = [
+    ['tincture', 'tincture'],
+    ['tang', 'decoction'],
+    ['טינקטורה', 'tincture'],
+    ['תמיסה', 'tincture'],
+    ['קפסול', 'capsule'],
+    ['אבקה', 'powder'],
+    ['חליטה', 'tea'],
+    ['משחה', 'cream'],
+    ['קרם', 'cream'],
+    ["ג'ל", 'gel'],
+    ['ג׳ל', 'gel'],
+    ['שמן', 'infused_oil'],
+];
 
-    return { ...item, qty: spread(`${slot}:qty`, minQty, maxQty) };
+const FORM_BY_DOSAGE_UNIT = {
+    קפסולות: 'capsule',
+    'מ"ל': 'tincture',
+    גרם: 'powder',
+};
+
+const FORM_BY_LINE_UNIT = { ml: 'tincture', gr: 'powder', unit: 'capsule' };
+
+function formOf(source, herbLines) {
+    const title = String(source.orderType || '').toLowerCase();
+    const word = FORM_BY_WORD.find(([needle]) => title.includes(needle));
+
+    return (
+        (word && word[1]) ||
+        FORM_BY_DOSAGE_UNIT[source.dosageUnit] ||
+        FORM_BY_LINE_UNIT[herbLines[0]?.unit] ||
+        'tincture'
+    );
 }
 
-/** One compounded formula, as it sits on an order. */
-function formulaBody(template, slot) {
-    const herbs = template.herbs.map((id) => {
-        const herb = DEMO_HERB_BY_ID[id];
+/** The dose's own unit — capsules are counted, a powder is spooned. */
+const DOSE_UNIT_BY_FORM = {
+    capsule: 'capsule',
+    powder: 'tsp',
+    tea: 'tsp',
+};
 
-        return {
-            id,
-            name: herb.name,
-            lat: herb.lat,
-            cn: herb.cn,
-            qty: spread(`${slot}:${id}`, 6, 26),
-        };
-    });
-    const total = herbs.reduce((sum, herb) => sum + herb.qty, 0);
+/** `U_Instructions` reads onto the console's four timings; `בחר` is unanswered. */
+const TIMING_BY_INSTRUCTION = {
+    'לפני ארוחה': 'before_meal',
+    'עם הארוחה': 'with_meal',
+    'אחרי ארוחה': 'after_meal',
+    'על בטן ריקה': 'empty_stomach',
+    'על בטן ריק': 'empty_stomach',
+};
+
+/** A tincture's evaporation, where the order's own title spells it out. */
+const EVAPORATION_BY_WORD = [
+    ['גליצרין ודבש', 'glycerin_honey'],
+    ['דבש', 'glycerin_honey'],
+    ['גליצרין', 'glycerin'],
+    ['חרוב', 'carob'],
+    ['מולסה', 'molasses'],
+];
+
+/** A number SAP stored as text, or null. */
+function num(value) {
+    const n = Number(String(value ?? '').replace(/[^\d.-]/g, ''));
+
+    return Number.isFinite(n) && String(value ?? '').trim() !== '' ? n : null;
+}
+
+/** SAP writes `אין` and `-.-` where a field was answered with nothing. */
+const EMPTY_ANSWERS = ['', 'אין', '-.-', '-,-', "'-'", 'בחר'];
+
+function text(value) {
+    const clean = String(value ?? '').trim();
+
+    return clean && !EMPTY_ANSWERS.includes(clean) ? clean : null;
+}
+
+/**
+ * One compounded formula, as SAP holds it: the order's title is its name, the
+ * order's lines are its herbs at the weights that were dispensed, and the
+ * content / units / size trio on the header is what came out the other end.
+ *
+ * The form (`typeId`) is the one field read rather than stored — see
+ * `formOf`. The preparation-type list itself is untouched.
+ */
+function realFormula(source, herbLines, materialLines, slot) {
+    const form = formOf(source, herbLines);
+    const title = String(source.orderType || '');
+    const evaporation = EVAPORATION_BY_WORD.find(([word]) =>
+        title.includes(word),
+    );
+    const weighed = herbLines.reduce(
+        (sum, line) => sum + (line.quantity || 0),
+        0,
+    );
 
     return {
-        id: template.id,
-        name: template.name,
-        typeId: template.typeId,
-        unit: template.unit,
-        vol: template.vol,
-        herbs: herbs.map((herb) => ({
-            ...herb,
-            pct: Math.round((herb.qty / total) * 1000) / 10,
+        id: `F-${source.docEntry}`,
+        name: text(title)
+            ? L(title)
+            : L('פורמולה מותאמת', 'Compounded formula'),
+        typeId: form,
+        unit: PREPARATION_FORM[form].unit,
+        vol: num(source.contentSizeEach) ?? num(source.contentTotal) ?? 0,
+        herbs: herbLines.map((line) => ({
+            id: line.code,
+            name: L(line.name),
+            lat: null,
+            cn: line.foreignName || null,
+            qty: line.quantity,
+            unit: lineUnit(line),
+            pct: weighed
+                ? Math.round((line.quantity / weighed) * 1000) / 10
+                : 0,
+        })),
+        // What the preparation is packed and made up with — real lines on the
+        // same document, kept apart from the formula so a jar is never 70% of
+        // a patient's medicine.
+        materials: materialLines.map((line) => ({
+            id: line.code,
+            name: L(line.name),
+            qty: line.quantity,
+            unit: lineUnit(line),
         })),
         dose: {
-            qty: template.unit === 'ml' ? spread(`${slot}:dose`, 2, 5) : 1,
-            unit:
-                template.unit === 'ml'
-                    ? 'ml'
-                    : template.unit === 'g'
-                      ? 'tsp'
-                      : 'capsule',
-            times: spread(`${slot}:times`, 1, 3),
+            qty: source.dosageQuantity || 1,
+            unit: DOSE_UNIT_BY_FORM[form] || 'ml',
+            times: source.dosePerDay || 1,
         },
-        timing: pickFrom(`${slot}:timing`, DOSE_TIMING_IDS),
+        // Where SAP was left on its `בחר` placeholder the timing is the
+        // fixture's, so the dosage line on the card is never half-written.
+        timing:
+            TIMING_BY_INSTRUCTION[String(source.instructions || '').trim()] ||
+            pickFrom(`${slot}:timing`, DOSE_TIMING_IDS),
         evap:
-            template.typeId === 'tincture'
-                ? pickFrom(`${slot}:evap`, EVAPORATION_IDS)
+            form === 'tincture'
+                ? evaporation
+                    ? evaporation[1]
+                    : pickFrom(`${slot}:evap`, EVAPORATION_IDS)
                 : null,
-        packages: spread(`${slot}:packages`, 1, 2),
-        // V2: the preparation fields SAP kept as user fields on the order
-        concentration:
-            template.typeId === 'tincture'
-                ? pickFrom(`${slot}:conc`, ['1:1', '1:3', '1:3', '1:5'])
-                : null,
-        patientInstructions: null,
-        internalNotes: pickFrom(`${slot}:internal`, INTERNAL_NOTES),
-        externalNotes: pickFrom(`${slot}:external`, EXTERNAL_NOTES),
+        packages: num(source.unitCount) || 1,
+        concentration: text(source.concentration),
+        patientInstructions: text(source.patientInstructions),
+        internalNotes: text(source.internalNotes)
+            ? L(text(source.internalNotes))
+            : null,
+        externalNotes: text(source.comments) ? L(text(source.comments)) : null,
     };
 }
 
@@ -307,9 +338,7 @@ function formulaBody(template, slot) {
  */
 function buildItems(order) {
     const items = [];
-    const inLab = ['lab', 'packed', 'sent', 'closed'].includes(
-        order.status,
-    );
+    const inLab = ['lab', 'packed', 'sent', 'closed'].includes(order.status);
 
     [order.formula, order.formula2].filter(Boolean).forEach((formula, k) => {
         const slot = `${order.id}:item:${k}`;
@@ -325,6 +354,7 @@ function buildItems(order) {
             vol: formula.vol,
             unit: formula.unit,
             herbs: formula.herbs,
+            materials: formula.materials,
             dose: formula.dose,
             timing: formula.timing,
             evap: formula.evap,
@@ -415,13 +445,7 @@ function buildAudit(order) {
         });
     }
 
-    const sequence = [
-        'new',
-        'lab',
-        'packed',
-        'sent',
-        'closed',
-    ];
+    const sequence = ORDER_FLOW;
     const reached = sequence.indexOf(order.status);
 
     sequence.slice(0, reached + 1).forEach((status, k) => {
@@ -588,239 +612,243 @@ function labRoles(status, slot, daysAgo) {
     return none;
 }
 
-/** Build the order book. Practitioner cards are embedded by reference. */
-export function buildOrders(practitioners, patients) {
-    const orders = [];
+const round2 = (value) => Math.round(value * 100) / 100;
 
-    for (let i = 0; i < ORDER_COUNT; i += 1) {
-        const slot = `order:${i}`;
-        const id = `TF-${FIRST_ORDER_NUMBER - i}`;
-        const status = STATUS_MIX[i % STATUS_MIX.length];
-        const isShelf = chance(`${slot}:shelf`, 0.32);
-        const practitioner = pickFrom(`${slot}:practitioner`, practitioners);
-        const patient = pickFrom(`${slot}:patient`, patients);
-        const payer = chance(`${slot}:payer`, 0.55)
-            ? 'patient'
-            : 'practitioner';
-        const template = pickFrom(`${slot}:formula`, FORMULA_TEMPLATES);
-        const second =
-            !isShelf && chance(`${slot}:second`, 0.42)
-                ? pickFrom(
-                      `${slot}:second:pick`,
-                      FORMULA_TEMPLATES.filter((t) => t.id !== template.id),
-                  )
-                : null;
+const sumOf = (lines) =>
+    round2(lines.reduce((sum, line) => sum + (line.lineTotal || 0), 0));
 
-        const shelfLines = isShelf
-            ? [
-                  shelfLine(`${slot}:line1`, 1, 3),
-                  ...(chance(`${slot}:line2`, 0.4)
-                      ? [shelfLine(`${slot}:line2`, 1, 1)]
-                      : []),
-              ]
-            : chance(`${slot}:extra`, 0.34)
-              ? [shelfLine(`${slot}:extra:line`, 1, 2)]
-              : [];
+/** `U_WhoPays` / `U_WhoGets`, both of which name the person, not a code. */
+const paidBy = (source) =>
+    String(source.whoPays || '').includes('מטופל') ? 'patient' : 'practitioner';
 
-        const shelfSum = shelfLines.reduce(
-            (sum, line) => sum + line.price * line.qty,
-            0,
-        );
-        const base = isShelf
-            ? shelfSum
-            : spread(`${slot}:base`, 150, 420) +
-              (second ? spread(`${slot}:base2`, 120, 300) : 0) +
-              shelfSum;
-        const discPct = practitioner.disc || SETTINGS.defaultDiscountPct;
-        const baseDisc = Math.round(base * (discPct / 100));
-        const shelfDisc =
-            isShelf && payer === 'practitioner'
-                ? Math.round(base * SHELF_TRADE_DISCOUNT)
-                : 0;
-        const patientDisc =
+const collectedInPerson = (source) =>
+    String(source.whoReceives || '').includes('איסוף עצמי');
+
+/**
+ * One `ORDR` document as an order record.
+ *
+ * The money is reconciled rather than copied: SAP holds the gross total and the
+ * VAT on the header and the price on every line, but only one discount figure
+ * for the whole document — not the console's three-way split. So the list price
+ * is the sum of the lines, the discount is whatever separates that from the
+ * net, and the total is SAP's own. The three rows add up on screen because they
+ * are derived from each other.
+ */
+function realOrder(source, practitioners, patients) {
+    const slot = `order:${source.docEntry}`;
+    const id = `TF-${source.docNum}`;
+    const status = ORDER_STATUS_BY_CODE[Number(source.state)] || 'new';
+    const daysAgo = Math.max(0, daysSince(source.docDate));
+    // SAP stores the document's date but not its hour; the clock time is the
+    // fixture's, so the audit trail reads in a sensible order.
+    const placed = at(
+        daysAgo,
+        spread(`${slot}:hh`, 8, 19),
+        spread(`${slot}:mm`, 0, 59),
+    );
+
+    const feeLines = source.lines.filter(isFeeLine);
+    const herbLines = source.lines.filter(isIngredientLine);
+    const materialLines = source.lines.filter(isMaterialLine);
+    const shelfSource = source.lines.filter(
+        (line) =>
+            !isFeeLine(line) &&
+            !isIngredientLine(line) &&
+            !isMaterialLine(line),
+    );
+    // A document billing a delivery on its own still has to say what it is, so
+    // there the charge is the order's one line rather than a fee beneath it.
+    const chargeOnly =
+        !herbLines.length && !materialLines.length && !shelfSource.length;
+    const contentLines = chargeOnly ? feeLines : shelfSource;
+
+    const shelfLines = contentLines.map((line) => ({
+        sku: line.code,
+        name: L(line.name),
+        size: null,
+        unit: line.unit === 'gr' ? 'g' : line.unit || 'unit',
+        qty: line.quantity,
+        price: line.price,
+    }));
+
+    const base = sumOf(
+        chargeOnly
+            ? feeLines
+            : [...herbLines, ...materialLines, ...shelfSource],
+    );
+    const shipFee = chargeOnly ? 0 : sumOf(feeLines);
+    const vat =
+        source.vat ?? round2(source.total - source.total / (1 + VAT_RATE));
+    const net = round2(source.total - vat);
+    const pointsUsed = source.pointsUsed || 0;
+    const baseDisc = Math.max(0, round2(base + shipFee - pointsUsed - net));
+
+    const practitioner = pickFrom(`${slot}:practitioner`, practitioners);
+    const theirs = patients.filter((one) => one.prCode === practitioner.code);
+    const patient = pickFrom(
+        `${slot}:patient`,
+        theirs.length ? theirs : patients,
+    );
+
+    const payer = paidBy(source);
+    const deliveryType = collectedInPerson(source) ? 'pickup' : 'courier';
+    const courierId = COURIER_BY_CODE[source.courier] || null;
+    const credit =
+        payer === 'practitioner' &&
+        practitioner.credit &&
+        !['new', 'cancelled'].includes(status);
+
+    const order = {
+        id,
+        ...placed,
+        placed,
+        practitioner,
+        patient,
+        payer,
+        status,
+        type: herbLines.length ? 'formula' : 'shelf',
+        formula: herbLines.length
+            ? realFormula(source, herbLines, materialLines, slot)
+            : null,
+        // One SAP order is one formula. The second slot stays open because the
+        // console's screens read it, not because a document ever fills it.
+        formula2: null,
+        shelfLines,
+        discPct: base > 0 ? Math.round((baseDisc / base) * 100) : 0,
+        pricing: {
+            base,
+            baseDisc,
+            // SAP carries one discount per document. The console's trade and
+            // customer discounts have no field of their own to read.
+            shelfDisc: 0,
+            patientDisc: 0,
+            pointsUsed,
+            pointsEarn: source.pointsEarned || 0,
+            // Billed as a line in the 999xxx block, never as a header field.
+            compFee: 0,
+            shipFee,
+            vat,
+            total: source.total,
+            promo: false,
+        },
+        deliveryType,
+        courier: courierId,
+        // The courier's own tracking number is not in the extract.
+        tracking: courierId
+            ? `${COURIER[courierId].code}${spread(`${slot}:tracking`, 100000, 999999)}IL`
+            : null,
+        // `U_PoaSigned` is filled on one document in the sample and empty on
+        // the rest — empty means unrecorded, not unsigned, so only the answer
+        // SAP actually holds overrides the fixture's.
+        poaSigned:
+            source.poaSigned === 'כן'
+                ? true
+                : deliveryType === 'courier'
+                  ? !chance(`${slot}:poa`, 0.22)
+                  : true,
+        addressProvided:
+            payer === 'patient' ? !chance(`${slot}:addr`, 0.25) : true,
+        // The city is the document's. The rest of the address is not in the
+        // extract — it identifies a person.
+        address: {
+            city: source.city ? L(source.city) : patient.city,
+            street: pickFrom(`${slot}:street`, DELIVERY_STREETS),
+            num: String(spread(`${slot}:num`, 1, 120)),
+            apt: String(spread(`${slot}:apt`, 1, 24)),
+            floor: String(spread(`${slot}:floor`, 0, 8)),
+            entry: pickFrom(`${slot}:entry`, ENTRY_LETTERS),
+        },
+        payMethod:
+            source.paidOnline === 'Y'
+                ? 'card'
+                : pickFrom(`${slot}:pay`, PAY_METHODS),
+        // The tax document lives in Green Invoice, not in SAP.
+        docNum: String(spread(`${slot}:doc`, 20250, 20999)),
+        docType: 'invrec',
+        docAlloc: String(spread(`${slot}:alloc`, 10000000, 99999999)),
+        docStatus: rareChance(`${slot}:docfail`, 0.06) ? 'failed' : 'issued',
+        docReq: null,
+        credit,
+        creditPaid: credit && daysAgo >= 18 && daysAgo % 3 !== 0,
+        // U_PayedSite is "paid on the site": a practitioner billed at month end
+        // never sets it, so an order past the counter counts as settled too.
+        paid:
+            source.paidOnline === 'Y' ||
+            (!credit && !['new', 'cancelled', 'on_hold'].includes(status)),
+        linkExpires: null,
+        gcSession: `gc_sess_${spread(`${slot}:gcs`, 100000, 999999)}`,
+        gcTxn:
+            status === 'new'
+                ? null
+                : `gc_txn_${spread(`${slot}:gct`, 1000000, 9999999)}`,
+        payToken: `pl_${spread(`${slot}:tok`, 100000, 999999).toString(36)}${spread(`${slot}:tok2`, 1000, 9999)}`,
+        linkState:
             payer === 'patient'
-                ? Math.round((base - baseDisc) * PATIENT_DISCOUNT)
-                : 0;
-        const pointsEarn =
-            payer === 'practitioner'
-                ? Math.round((base - baseDisc) * POINTS_EARN_RATE)
-                : 0;
-        const compFee = isShelf ? 0 : COMPOUNDING_FEE;
-        const deliveryType = chance(`${slot}:delivery`, 0.72)
-            ? 'courier'
-            : 'pickup';
-        const shipFee =
-            deliveryType === 'courier'
-                ? base > FREE_SHIPPING_OVER
-                    ? 0
-                    : SHIPPING_FEE
-                : 0;
-        const pointsUsed = chance(`${slot}:points`, 0.18)
-            ? spread(`${slot}:points:n`, 20, 120)
-            : 0;
-        const total = Math.max(
-            0,
-            base -
-                baseDisc -
-                shelfDisc -
-                patientDisc +
-                compFee +
-                shipFee -
-                pointsUsed,
-        );
-
-        const daysAgo = Math.floor(i * 0.6);
-        const placed = at(
-            daysAgo,
-            spread(`${slot}:hh`, 8, 19),
-            spread(`${slot}:mm`, 0, 59),
-        );
-
-        const needsCourier =
-            deliveryType === 'courier' &&
-            (['sent', 'closed'].includes(status) ||
-                (status === 'packed' && chance(`${slot}:courier:maybe`, 0.5)));
-        const courierId = needsCourier
-            ? pickFrom(`${slot}:courier`, ACTIVE_COURIER_IDS)
-            : null;
-
-        orders.push({
-            id,
-            ...placed,
-            placed,
-            practitioner,
-            patient,
-            payer,
-            status,
-            hold:
-                status === 'new' && chance(`${slot}:hold`, 0.3)
-                    ? pickFrom(`${slot}:hold:reason`, HOLD_REASON_IDS)
-                    : null,
-            type: isShelf ? 'shelf' : 'formula',
-            formula: isShelf ? null : formulaBody(template, `${slot}:f1`),
-            formula2: second ? formulaBody(second, `${slot}:f2`) : null,
-            shelfLines,
-            discPct,
-            pricing: {
-                base,
-                baseDisc,
-                shelfDisc,
-                patientDisc,
-                pointsUsed,
-                pointsEarn,
-                compFee,
-                shipFee,
-                total,
-                promo: isShelf && shelfLines.some((line) => line.qty >= 3),
-            },
-            deliveryType,
-            courier: courierId,
-            tracking: courierId
-                ? `${COURIER[courierId].code}${spread(`${slot}:tracking`, 100000, 999999)}IL`
+                ? status === 'new'
+                    ? pickFrom(`${slot}:link`, LINK_STATES)
+                    : 'paid'
                 : null,
-            poaSigned:
-                deliveryType === 'courier'
-                    ? !chance(`${slot}:poa`, 0.22)
-                    : true,
-            addressProvided:
-                payer === 'patient' ? !chance(`${slot}:addr`, 0.25) : true,
-            address: {
-                city: pickFrom(`${slot}:city`, DELIVERY_CITIES),
-                street: pickFrom(`${slot}:street`, DELIVERY_STREETS),
-                num: String(spread(`${slot}:num`, 1, 120)),
-                apt: String(spread(`${slot}:apt`, 1, 24)),
-                floor: String(spread(`${slot}:floor`, 0, 8)),
-                entry: pickFrom(`${slot}:entry`, ENTRY_LETTERS),
-            },
-            payMethod: pickFrom(`${slot}:pay`, PAY_METHODS),
-            docNum: String(spread(`${slot}:doc`, 20250, 20999)),
-            docType: 'invrec',
-            docAlloc: String(spread(`${slot}:alloc`, 10000000, 99999999)),
-            docStatus: rareChance(`${slot}:docfail`, 0.06)
-                ? 'failed'
-                : 'issued',
-            docReq: null,
-            credit: false,
-            creditPaid: false,
-            linkExpires: null,
-            gcSession: `gc_sess_${spread(`${slot}:gcs`, 100000, 999999)}`,
-            gcTxn:
-                status === 'new'
-                    ? null
-                    : `gc_txn_${spread(`${slot}:gct`, 1000000, 9999999)}`,
-            payToken: `pl_${spread(`${slot}:tok`, 100000, 999999).toString(36)}${spread(`${slot}:tok2`, 1000, 9999)}`,
-            linkState:
-                payer === 'patient'
-                    ? status === 'new'
-                        ? pickFrom(`${slot}:link`, LINK_STATES)
-                        : 'paid'
-                    : null,
-            interactionFlag:
-                patient.meds.length > 0 &&
-                !isShelf &&
-                chance(`${slot}:interaction`, 0.55),
-            items: [],
-            audit: [],
-            documentation: [],
-            docsExtra: [],
-            flags: [],
-            // V2
-            urgent:
-                !['cancelled', 'closed'].includes(status) &&
-                chance(`${slot}:urgent`, 0.12),
-            pickupPoint:
-                deliveryType === 'pickup' && chance(`${slot}:point`, 0.55)
-                    ? pickFrom(`${slot}:point:id`, PICKUP_POINT_IDS)
-                    : null,
-            lab: labRoles(status, slot, daysAgo),
-            cancelCause:
-                status === 'cancelled'
-                    ? pickFrom(`${slot}:cause`, [
-                          'practitioner_request',
-                          'patient_request',
-                          'payment_failed',
-                      ])
-                    : null,
-        });
+        interactionFlag:
+            patient.meds.length > 0 &&
+            herbLines.length > 0 &&
+            chance(`${slot}:interaction`, 0.55),
+        items: [],
+        audit: [],
+        documentation: [],
+        docsExtra: [],
+        flags: [],
+        // The urgency mark and the four hands in the lab are the console's own
+        // — SAP has neither field.
+        urgent:
+            !['cancelled', 'closed'].includes(status) &&
+            chance(`${slot}:urgent`, 0.12),
+        // `U_IsufName` held an unsubstituted template token in every sampled
+        // row, so which point an order is collected from is the fixture's;
+        // whether it is collected at all is SAP's.
+        pickupPoint:
+            deliveryType === 'pickup'
+                ? pickFrom(`${slot}:point:id`, PICKUP_POINT_IDS)
+                : null,
+        lab: labRoles(status, slot, daysAgo),
+        cancelCause:
+            status === 'cancelled'
+                ? pickFrom(`${slot}:cause`, [
+                      'practitioner_request',
+                      'patient_request',
+                      'payment_failed',
+                  ])
+                : null,
+    };
+
+    const unpaidCredit = order.credit && !order.creditPaid;
+
+    if (status === 'new' || status === 'cancelled' || unpaidCredit) {
+        order.docNum = null;
+        order.docAlloc = null;
+        order.docStatus = unpaidCredit ? 'awaiting_credit' : 'none';
     }
 
+    if (order.docStatus === 'failed') {
+        order.docNum = null;
+        order.docAlloc = null;
+        order.docReq = `req_${spread(`${id}:req`, 100000, 999999).toString(36)}`;
+    }
+
+    order.linkExpires =
+        payer === 'patient' && status === 'new'
+            ? Math.max(0, PAY_LINK.days - daysAgo)
+            : null;
+
+    return order;
+}
+
+/** Build the order book. Practitioner cards are embedded by reference. */
+export function buildOrders(practitioners, patients) {
+    const orders = REAL_ORDERS.map((source) =>
+        realOrder(source, practitioners, patients),
+    );
+
     orders.forEach((order) => {
-        order.credit =
-            order.payer === 'practitioner' &&
-            order.practitioner.credit &&
-            !['new', 'cancelled'].includes(order.status);
-
-        order.creditPaid =
-            order.credit && order.daysAgo >= 18 && order.daysAgo % 3 !== 0;
-
-        // U_PayedSite: a field of its own, never a step in the flow. An order
-        // past 'new' has been paid unless it went ahead on credit terms.
-        order.paid =
-            !order.credit && !['new', 'cancelled'].includes(order.status);
-
-        const unpaidCredit = order.credit && !order.creditPaid;
-
-        if (
-            order.status === 'new' ||
-            order.status === 'cancelled' ||
-            unpaidCredit
-        ) {
-            order.docNum = null;
-            order.docAlloc = null;
-            order.docStatus = unpaidCredit ? 'awaiting_credit' : 'none';
-        }
-
-        order.linkExpires =
-            order.payer === 'patient' && order.status === 'new'
-                ? Math.max(0, PAY_LINK.days - order.daysAgo)
-                : null;
-
-        if (order.docStatus === 'failed') {
-            order.docNum = null;
-            order.docAlloc = null;
-            order.docReq = `req_${spread(`${order.id}:req`, 100000, 999999).toString(36)}`;
-        }
-
         order.items = buildItems(order);
         order.audit = buildAudit(order);
         order.documentation = buildDocumentation(order, order.audit);
@@ -830,7 +858,8 @@ export function buildOrders(practitioners, patients) {
     // the "ready to pack, no courier" exception is always reachable — the same
     // trick inventory.js uses to keep both batch expiry states on screen.
     const awaitingCourier = orders.filter(
-        (order) => order.status === 'packed' && order.deliveryType === 'courier',
+        (order) =>
+            order.status === 'packed' && order.deliveryType === 'courier',
     );
 
     if (awaitingCourier.length > 1) {

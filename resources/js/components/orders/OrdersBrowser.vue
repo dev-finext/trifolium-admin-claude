@@ -130,11 +130,6 @@ const tabs = computed(() => [
         n: inRange.value.filter((order) => statusOf(order) === status.id)
             .length,
     })),
-    {
-        id: 'hold',
-        label: t('orders.tab.hold'),
-        n: inRange.value.filter((order) => Boolean(order.hold)).length,
-    },
 ]);
 
 /** Which fields are narrowing the list right now. */
@@ -156,12 +151,11 @@ function practitionerLabel(code) {
 }
 
 /**
- * Option text for the three fields whose values are not a plain managed list:
- * a status doubles as the hold marker, a flag has an "any" catch-all, and a
- * courier can be unassigned. Everything else reads through its `prefix`.
+ * Option text for the fields whose values are not a plain managed list: a flag
+ * has an "any" catch-all, and a courier can be unassigned. Everything else
+ * reads through its `prefix`.
  */
 const LABELLERS = {
-    status: (v) => (v === 'hold' ? t('orders.filter.hold') : t(`status.${v}`)),
     flag: (v) =>
         v === 'any'
             ? t('orders.filter.anyException')

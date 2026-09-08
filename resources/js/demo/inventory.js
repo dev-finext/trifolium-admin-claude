@@ -6,21 +6,20 @@
 // who received it. Purchase orders are not managed here, so a receipt records
 // the supplier's name and delivery-note number as plain data.
 import { BATCH_EXPIRY_WARN_DAYS } from '@/config';
-import { DEMO_HERB_BY_ID } from '@/demo/catalog';
 import { at, fraction, pickFrom, spread } from '@/demo/fixture';
-import { FORMULA_TEMPLATES } from '@/demo/orders';
 import { DEMO_ACTORS } from '@/demo/people';
 import { SHELF_ITEMS } from '@/demo/products';
+import REAL_INGREDIENTS from '@/demo/real/ingredients.json';
+import REAL_ORDERS from '@/demo/real/orders.json';
 import { DEMO_SUPPLIERS } from '@/demo/vendors';
-import { daysSince, isoDaysAgo, pad } from '@/lib/dates';
+import { daysSince, isoDaysAgo } from '@/lib/dates';
 import { L } from '@/lib/localized';
 
 /** How many goods receipts the fixture carries, and the batch series they open. */
 const RECEIPT_COUNT = 7;
 const FIRST_BATCH_NUMBER = 2610;
 
-/** Minimum levels the demo stock was authored against. */
-const RAW_MIN = 800;
+/** The minimum the fixture authors its own shelf rows against. */
 const SHELF_MIN = 12;
 
 /** Stock kinds and the chip tone each is shown in. */
@@ -102,41 +101,116 @@ export function syncStockRow(row) {
     return row;
 }
 
+/** SAP's unit names, as they come out of OITM, mapped onto the console's. */
+const UOM_BY_SAP = {
+    'ק"ג': 'kg',
+    גרם: 'g',
+    "יח'": 'unit',
+    ליטר: 'l',
+    'מ"ל': 'ml',
+    gr: 'g',
+    kg: 'kg',
+    ml: 'ml',
+    unit: 'unit',
+};
+
+const uomOf = (name) => UOM_BY_SAP[String(name || '').trim()] || 'g';
+
+/** Which pricing prefix an item's family is priced under. */
+const KIND_BY_FAMILY = {
+    herb: 'raw',
+    herb_1to1: 'raw',
+    extract: 'raw',
+    tincture: 'raw',
+    hydrosol: 'base',
+    essential_oil: 'base',
+    consumable: 'base',
+    packaging: 'pack',
+    shelf: 'shelf',
+};
+
 /**
- * Stock rows. Every raw item is also the catalog record of a formula
- * ingredient: one row carries identity, both codes, its unit, its default
- * warehouse and its minimum level.
+ * One OITM row as a stock row.
+ *
+ * The identity, the quantities, the units, the minimum level and the safety
+ * limits are SAP's own — only the warehouse id is translated, because the
+ * console models two warehouses where SAP numbers seven.
+ */
+function stockRowOf(item) {
+    const kind = KIND_BY_FAMILY[item.family] || 'raw';
+    const onHand = Math.max(0, Math.round((item.onHand || 0) * 100) / 100);
+    // SAP's foreign-name field holds the pinyin where a herb has one, and
+    // repeats the botanical name where it does not. The difference is what
+    // makes a herb part of the Chinese materia medica.
+    const pinyin =
+        item.nameForeign && item.nameForeign !== item.nameHe
+            ? item.nameForeign
+            : null;
+
+    return {
+        sku: item.code,
+        priceSku: item.code,
+        // The item code is the herb's id: a formula line and its stock row are
+        // the same catalogue row in SAP, and they are here too.
+        herbId: item.code,
+        kind,
+        name: { he: item.nameHe, en: item.nameHe },
+        lat: null,
+        cn: pinyin,
+        system: pinyin ? 'chinese' : 'west',
+        wh: kind === 'shelf' ? 'shelf' : 'raw',
+        unit: uomOf(item.stockUom),
+        size: null,
+        sizeUnit: null,
+        price: item.lastPurchasePrice ?? null,
+        onHand,
+        alloc: Math.min(onHand, Math.max(0, item.committed || 0)),
+        min: item.minLevel ?? 0,
+        created: item.createdOn || isoDaysAgo(400),
+    };
+}
+
+/**
+ * Stock rows, straight off the catalogue SAP holds.
+ *
+ * The 200 ingredients were drawn in proportion to the real families, so the
+ * mix on screen is the pharmacy's mix. Any item an order line names but the
+ * sample missed is added from that line, so every formula still resolves to a
+ * stock row and FEFO has something to pick from.
  */
 export function buildStock() {
-    const herbIds = [
-        ...new Set(FORMULA_TEMPLATES.flatMap((template) => template.herbs)),
-    ];
+    const rows = REAL_INGREDIENTS.map(stockRowOf);
+    const seen = new Set(rows.map((row) => row.sku));
 
-    const raw = herbIds.map((id, i) => {
-        const herb = DEMO_HERB_BY_ID[id];
-        const onHand = spread(`stock:${id}:onhand`, 420, 6400);
+    REAL_ORDERS.forEach((order) => {
+        (order.lines || []).forEach((line) => {
+            if (!line.code || seen.has(line.code)) {
+                return;
+            }
 
-        return {
-            sku: `RM-${1000 + i * 7}`,
-            priceSku: `300${pad(10 + i * 3)}`,
-            herbId: id,
-            kind: 'raw',
-            name: herb.name,
-            lat: herb.lat,
-            cn: herb.cn,
-            system: herb.system,
-            wh: 'raw',
-            unit: 'g',
-            size: null,
-            sizeUnit: null,
-            price: null,
-            onHand,
-            alloc: Math.min(onHand, spread(`stock:${id}:alloc`, 0, 900)),
-            min: RAW_MIN,
-            created: isoDaysAgo(spread(`stock:${id}:created`, 60, 700)),
-        };
+            seen.add(line.code);
+            rows.push(
+                stockRowOf({
+                    code: line.code,
+                    nameHe: line.name,
+                    nameForeign: line.foreignName,
+                    family: 'herb',
+                    stockUom: line.unit,
+                    onHand: spread(`stock:${line.code}:onhand`, 400, 6000),
+                    committed: 0,
+                    minLevel: 800,
+                    lastPurchasePrice: line.price ?? null,
+                    createdOn: null,
+                }),
+            );
+        });
     });
 
+    return [...rows, ...buildBasesAndShelf()].map(syncStockRow);
+}
+
+/** The bases, packaging and shelf rows the fixture still authors itself. */
+function buildBasesAndShelf() {
     const bases = BASE_AND_PACK.map(({ createdDaysAgo, ...row }) => ({
         ...row,
         herbId: null,
@@ -172,7 +246,7 @@ export function buildStock() {
         };
     });
 
-    return [...raw, ...bases, ...shelf].map(syncStockRow);
+    return [...bases, ...shelf];
 }
 
 const RECEIPT_NOTES = [
@@ -328,9 +402,7 @@ export function buildBatchUse(orders, batches) {
     // Only an order the lab actually started consumes a batch.
     orders
         .filter((order) =>
-            ['lab', 'packed', 'sent', 'closed'].includes(
-                order.status,
-            ),
+            ['lab', 'packed', 'sent', 'closed'].includes(order.status),
         )
         .forEach((order) => {
             order.items

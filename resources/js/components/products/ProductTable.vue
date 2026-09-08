@@ -108,10 +108,11 @@ const cols = computed(() => [
         </template>
 
         <template #cell-w="{ row }">
-            <span class="a-weight">
+            <span v-if="row.wUom" class="a-weight">
                 <ANum>{{ row.wVal }}</ANum>
                 {{ t(`products.unit.${row.wUom}`) }}
             </span>
+            <span v-else class="t-sub">{{ t('products.noWeight') }}</span>
         </template>
 
         <template #cell-stock="{ row }">

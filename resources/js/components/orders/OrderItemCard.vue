@@ -58,9 +58,7 @@ const instructionsText = computed(() =>
 
 const cancelled = computed(() => Boolean(props.item.cancelled));
 
-const done = computed(() =>
-    ['sent', 'closed'].includes(statusOf(props.order)),
-);
+const done = computed(() => ['sent', 'closed'].includes(statusOf(props.order)));
 
 const meta = computed(() =>
     t('orders.value.itemMeta', {
@@ -114,6 +112,16 @@ const herbCols = computed(() => [
     { k: 'qty', label: t('orders.itemsTab.qtyCol'), nowrap: true },
     { k: 'pct', label: t('orders.itemsTab.ratioCol') },
 ]);
+
+/** What the preparation is made up and packed with, as one readable line. */
+const materials = computed(() =>
+    (props.item.materials || [])
+        .map(
+            (material) =>
+                `${loc(material.name)} ×${material.qty} ${t(`orders.unit.${material.unit}`)}`,
+        )
+        .join(' · '),
+);
 
 function barWidth(share) {
     return `${Math.min(100, share * RATIO_BAR_SCALE)}%`;
@@ -216,7 +224,7 @@ function barWidth(share) {
                     </template>
                     <template #cell-qty="{ row }">
                         <ANum>{{ row.qty }}</ANum>
-                        {{ t(`orders.unit.${item.unit}`) }}
+                        {{ t(`orders.unit.${row.unit || item.unit}`) }}
                     </template>
                     <template #cell-pct="{ row }">
                         <div class="a-ratio">
@@ -230,6 +238,13 @@ function barWidth(share) {
                         </div>
                     </template>
                 </ADataTable>
+
+                <p v-if="materials" class="a-icard-materials">
+                    <span class="a-lbl-soft">
+                        {{ t('orders.itemsTab.materials') }}
+                    </span>
+                    {{ materials }}
+                </p>
             </div>
 
             <div class="a-2col a-icard-notes">
@@ -285,6 +300,12 @@ function barWidth(share) {
 
 .a-icard-herbs {
     margin-top: 18px;
+}
+
+.a-icard-materials {
+    margin: 10px 2px 0;
+    font-size: 13.5px;
+    color: var(--a-ink-3);
 }
 
 .a-icard-cn {

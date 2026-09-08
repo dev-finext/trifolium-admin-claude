@@ -15,7 +15,9 @@ export default {
     },
     unit: {
         g: 'g',
+        kg: 'kg',
         ml: 'ml',
+        l: 'l',
         unit: 'units',
     },
 

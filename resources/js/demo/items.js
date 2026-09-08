@@ -10,114 +10,33 @@
 import { ITEM_FAMILY } from '@/config/items';
 import { at, chance, pickFrom, spread } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
+import REAL_CATEGORIES from '@/demo/real/categories.json';
 import { isoDaysAgo } from '@/lib/dates';
 import { L } from '@/lib/localized';
 
 // ---------------------------------------------------------------- site tree
 
-/**
- * The consumer site's category tree — a sample of the four branches. The real
- * tree (71 values in SAP's @CATEGORIES) is imported at migration; these are
- * enough for the card and the filters to be exercised.
- */
-export const SITE_CATEGORIES = [
-    { id: 'c-sleep', group: 'condition', name: L('שינה', 'Sleep') },
-    {
-        id: 'c-stress',
-        group: 'condition',
-        name: L('מתח וחרדה', 'Stress & anxiety'),
-    },
-    { id: 'c-digest', group: 'condition', name: L('עיכול', 'Digestion') },
-    { id: 'c-immune', group: 'condition', name: L('חיסון', 'Immunity') },
-    { id: 'c-joints', group: 'condition', name: L('מפרקים', 'Joints') },
-    { id: 'c-skin', group: 'condition', name: L('עור', 'Skin') },
-    { id: 'c-resp', group: 'condition', name: L('נשימה', 'Breathing') },
-    { id: 'c-energy', group: 'condition', name: L('אנרגיה', 'Energy') },
-    {
-        id: 'c-women',
-        group: 'condition',
-        name: L('בריאות האישה', "Women's health"),
-    },
-    { id: 'c-liver', group: 'condition', name: L('כבד', 'Liver') },
-    {
-        id: 's-nervous',
-        group: 'system',
-        name: L('מערכת העצבים', 'Nervous system'),
-    },
-    {
-        id: 's-digestive',
-        group: 'system',
-        name: L('מערכת העיכול', 'Digestive system'),
-    },
-    {
-        id: 's-immune',
-        group: 'system',
-        name: L('מערכת החיסון', 'Immune system'),
-    },
-    {
-        id: 's-respiratory',
-        group: 'system',
-        name: L('מערכת הנשימה', 'Respiratory system'),
-    },
-    { id: 's-skin', group: 'system', name: L('עור', 'Skin') },
-    {
-        id: 's-musculo',
-        group: 'system',
-        name: L('שלד ושרירים', 'Musculoskeletal'),
-    },
-    {
-        id: 's-hormonal',
-        group: 'system',
-        name: L('מערכת הורמונלית', 'Hormonal system'),
-    },
-    {
-        id: 'z-classic',
-        group: 'chinese_series',
-        name: L('הרכבים קלאסיים', 'Classic formulas'),
-    },
-    {
-        id: 'z-xiaoyao',
-        group: 'chinese_series',
-        name: L('שיאו יאו סאן', 'Xiao Yao San'),
-    },
-    {
-        id: 'z-guizhi',
-        group: 'chinese_series',
-        name: L('גווי ז׳י טאנג', 'Gui Zhi Tang'),
-    },
-    {
-        id: 'z-winter',
-        group: 'chinese_series',
-        name: L('סדרת חורף', 'Winter series'),
-    },
-    {
-        id: 'z-women',
-        group: 'chinese_series',
-        name: L('סדרת נשים', "Women's series"),
-    },
-    { id: 'm-reishi', group: 'mushroom', name: L('ריישי', 'Reishi') },
-    { id: 'm-shiitake', group: 'mushroom', name: L('שיטאקי', 'Shiitake') },
-    { id: 'm-cordyceps', group: 'mushroom', name: L('קורדיספס', 'Cordyceps') },
-    {
-        id: 'm-turkeytail',
-        group: 'mushroom',
-        name: L('זנב תרנגול', 'Turkey tail'),
-    },
-];
-
-/** Consumer-site labels the products already carry → the site category tree. */
-const LABEL_TO_CATEGORY = {
-    lb_sleep: ['c-sleep', 's-nervous'],
-    lb_belly: ['c-digest', 's-digestive'],
-    lb_immune: ['c-immune', 's-immune'],
-    lb_digest: ['c-digest', 's-digestive'],
-    lb_skin: ['c-skin', 's-skin'],
-    lb_resp: ['c-resp', 's-respiratory'],
-    lb_energy: ['c-energy'],
-    lb_stress: ['c-stress', 's-nervous'],
-    lb_joints: ['c-joints', 's-musculo'],
-    lb_women: ['c-women', 's-hormonal'],
+/** SAP's four top-level categories, in the order `@CATEGORIES` numbers them. */
+const CATEGORY_BRANCH = {
+    1: 'condition',
+    2: 'system',
+    3: 'chinese_series',
+    4: 'mushroom',
 };
+
+/**
+ * The consumer site's category tree, as `@CATEGORIES` holds it: four branches
+ * and the 67 categories under them, keyed by the dotted code the product cards
+ * themselves carry. The branch is the group — a code's own first segment says
+ * which one it belongs to.
+ */
+export const SITE_CATEGORIES = REAL_CATEGORIES.filter((category) =>
+    category.code.includes('.'),
+).map((category) => ({
+    id: category.code,
+    group: CATEGORY_BRANCH[category.code.split('.')[0]],
+    name: L(category.name),
+}));
 
 // ------------------------------------------------------------- prep types
 
@@ -349,18 +268,6 @@ const FAMILY_OF_KIND = {
     shelf: 'formula',
 };
 
-/** Consumer-catalogue products the pharmacy makes itself; the rest are bought in. */
-const HOUSE_PRODUCT_SKUS = [
-    'ECH-100',
-    'TEA-040',
-    'CAL-060',
-    'JUN-030',
-    'GNG-050',
-    'KID-150',
-    'CST-100',
-    'VAL-050',
-];
-
 /** Which supplier category each family buys from. */
 const SUPPLIER_KIND_OF_FAMILY = {
     herb: 'raw_materials',
@@ -572,18 +479,15 @@ export function buildItems(stock, products, suppliers) {
     });
 
     const fromProducts = products.map((product) => {
-        const house = HOUSE_PRODUCT_SKUS.includes(product.sku);
-        const family = house ? 'shelf' : 'bought_shelf';
+        // Family 50 is what the pharmacy makes; 55 and 16 are bought in.
+        const family = product.family || 'bought_shelf';
+        const house = family === 'shelf';
         const preferred = house
             ? null
             : supplierOf(`${product.sku}:supplier`, suppliers, 'raw_materials');
-        const categories = [
-            ...new Set(
-                product.labels.flatMap(
-                    (label) => LABEL_TO_CATEGORY[label] || [],
-                ),
-            ),
-        ].slice(0, 4);
+        // A product's labels are its site categories: SAP files both under
+        // the same `@CATEGORIES` code.
+        const categories = product.labels.slice(0, 4);
 
         return {
             sku: product.sku,
@@ -595,7 +499,9 @@ export function buildItems(stock, products, suppliers) {
                 en: product.name.en,
                 lat: null,
                 cn: null,
-                site: `${product.name.he} · ${product.content.he}`,
+                site: product.content
+                    ? `${product.name.he} · ${product.content.he}`
+                    : product.name.he,
             },
             uom: { purchase: 'unit', sales: 'unit', factor: 1 },
             flags: {
@@ -752,7 +658,7 @@ export function buildBoms(stock, products) {
                 cn: row.sku === 'TRF-119-208' ? '逍遙散 · Xiāo Yáo Sǎn' : null,
             })),
         ...products
-            .filter((product) => HOUSE_PRODUCT_SKUS.includes(product.sku))
+            .filter((product) => product.family === 'shelf')
             .map((product) => ({
                 sku: product.sku,
                 name: product.name,

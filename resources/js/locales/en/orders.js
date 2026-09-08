@@ -26,7 +26,6 @@ export default {
 
     tab: {
         all: 'All',
-        hold: 'On hold',
     },
 
     search: {
@@ -49,7 +48,6 @@ export default {
             no: 'Immediate payment',
         },
         noun: 'orders',
-        hold: 'On hold',
         anyException: 'Any open exception',
         noCourier: 'No courier assigned',
         daysUnit: 'days',
@@ -196,7 +194,6 @@ export default {
         totalLabel: 'Total',
         practitionerCard: 'Practitioner card',
         openCustomerCard: 'Open the practitioner card',
-        holdChip: 'On hold · {reason}',
         creditWarn:
             'Order on credit terms — not yet paid · {name} is approved for deferred payment, so this order reached the lab unpaid. The amount is part of an open balance of {debt} (debt age: {days} days) and is collected with one consolidated link from the Finance screen.',
         docFailed:
@@ -240,6 +237,7 @@ export default {
         pointsRedeemed: 'Points redeemed',
         pointsRedeemedNote: '{n} pts',
         compoundingFee: 'Compounding fee',
+        vat: 'VAT {pct}',
         total: 'Total to pay',
         free: 'Free',
         saved: 'Total discounts on this order: ',
@@ -576,6 +574,7 @@ export default {
         pharmApprovedShort: 'Approved',
         pharmPending: 'Not approved yet',
         cancelItem: 'Cancel item and refund',
+        materials: 'Packing and make-up materials:',
         internalNotes: 'Instructions for the pharmacy',
         internalNotesNote: '· internal, not printed for the customer',
         externalNotes: 'Instructions for the customer',

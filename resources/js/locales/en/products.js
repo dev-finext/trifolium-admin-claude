@@ -43,6 +43,8 @@ export default {
         tagsHas: 'With labels',
     },
 
+    noWeight: 'Not set',
+
     status: {
         published: 'Published',
         archived: 'Archived',

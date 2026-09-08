@@ -45,6 +45,11 @@ export const COURIER = Object.fromEntries(
 
 export const COURIER_IDS = COURIERS.map((courier) => courier.id);
 
+/** `ORDR.U_SendTo` holds the letter; every screen here keys couriers by id. */
+export const COURIER_BY_CODE = Object.fromEntries(
+    COURIERS.map((courier) => [courier.code, courier.id]),
+);
+
 /** The couriers a new shipment may be assigned to. */
 export const ACTIVE_COURIERS = COURIERS.filter(
     (courier) => !courier.historical,

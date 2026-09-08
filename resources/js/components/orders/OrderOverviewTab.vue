@@ -17,7 +17,11 @@ import ANum from '@/components/ui/ANum.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { SETTINGS } from '@/config';
 import { pct } from '@/lib/money';
+
+/** The rate the order's own VAT figure was calculated at. */
+const VAT_PCT = SETTINGS.vatRate * 100;
 
 const props = defineProps({
     order: { type: Object, required: true },
@@ -113,6 +117,11 @@ const priceRows = computed(() => {
         label: t(`fulfilment.${props.order.deliveryType}`),
         amount: p.shipFee,
         free: p.shipFee === 0,
+    });
+    rows.push({
+        key: 'vat',
+        label: t('orders.price.vat', { pct: pct(VAT_PCT) }),
+        amount: p.vat,
     });
     rows.push({
         key: 'total',

@@ -33,7 +33,6 @@ export default {
 
     tab: {
         all: 'הכל',
-        hold: 'בהמתנה',
     },
 
     search: {
@@ -55,7 +54,6 @@ export default {
             no: 'תשלום מיידי',
         },
         noun: 'הזמנות',
-        hold: 'בהמתנה',
         anyException: 'כל חריג פתוח',
         noCourier: 'לא הוקצה שליח',
         daysUnit: 'ימים',
@@ -201,7 +199,6 @@ export default {
         totalLabel: 'סה״כ',
         practitionerCard: 'כרטיס מטפל',
         openCustomerCard: 'פתיחת כרטיס המטפל',
-        holdChip: 'בהמתנה · {reason}',
         creditWarn:
             'הזמנה בהקפה — טרם שולמה · {name} מאושר לתשלום דחוי, ולכן ההזמנה ירדה למעבדה ללא תשלום. הסכום נכלל ביתרת חוב פתוחה של {debt} (גיל החוב: {days} ימים) ונגבה בלינק מרוכז מעמוד כספים.',
         docFailed:
@@ -245,6 +242,7 @@ export default {
         pointsRedeemed: 'מימוש נקודות זכות',
         pointsRedeemedNote: '{n} נק׳',
         compoundingFee: 'דמי רקיחה',
+        vat: 'מע״מ {pct}',
         total: 'סה״כ לתשלום',
         free: 'חינם',
         saved: 'סך ההנחות בהזמנה זו: ',
@@ -570,6 +568,7 @@ export default {
         pharmApprovedShort: 'אושר',
         pharmPending: 'טרם אושר',
         cancelItem: 'ביטול פריט וזיכוי',
+        materials: 'חומרי אריזה והכנה:',
         internalNotes: 'הוראות לבית המרקחת',
         internalNotesNote: '· פנימי, לא מודפס ללקוח',
         externalNotes: 'הנחיות ללקוח',

@@ -414,7 +414,7 @@ function exportCatalog() {
         product.net,
         priceParts(product.net).display,
         product.wVal,
-        t(`products.unit.${product.wUom}`),
+        product.wUom ? t(`products.unit.${product.wUom}`) : '',
         product.stock == null ? 0 : product.stock,
         product.minStock,
         t(`products.status.${product.status}`),

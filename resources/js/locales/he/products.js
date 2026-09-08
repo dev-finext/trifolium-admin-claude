@@ -45,6 +45,8 @@ export default {
         tagsHas: 'עם תוויות',
     },
 
+    noWeight: 'לא הוגדר',
+
     status: {
         published: 'מפורסם',
         archived: 'בארכיון',

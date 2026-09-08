@@ -152,9 +152,8 @@ export function payLink(order) {
  * The fields the order book can be filtered by, declared once.
  *
  * Every `set` field is a multi-select: OR inside the field, AND across fields.
- * Two pseudo-values earn their place because they answer questions the raw data
- * cannot — `status: 'hold'` (an order parked before the lab, whatever its
- * status) and `flag: 'any'` (has some open exception, without naming which).
+ * One pseudo-value earns its place because it answers a question the raw data
+ * cannot — `flag: 'any'` (has some open exception, without naming which).
  *
  * There is no display text here: `group` and every value are ids, and the drawer
  * resolves them through the locale catalogs.
@@ -164,7 +163,7 @@ export const ORDER_FILTER_FIELDS = [
         key: 'status',
         group: 'state',
         kind: 'set',
-        values: (o) => (o.hold ? [statusOf(o), 'hold'] : [statusOf(o)]),
+        values: (o) => [statusOf(o)],
     },
     {
         key: 'flag',

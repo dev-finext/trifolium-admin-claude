@@ -211,13 +211,6 @@ function close() {
                                 <V2Badge id="crm" size="sm" />
                             </template>
                             <PaymentChip :order="order" />
-                            <AChip v-if="order.hold" tone="gray">
-                                {{
-                                    t('orders.detail.holdChip', {
-                                        reason: t(`holdReason.${order.hold}`),
-                                    })
-                                }}
-                            </AChip>
                             <ExceptionChip
                                 v-for="flag in order.flags"
                                 :key="flag"

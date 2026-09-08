@@ -35,12 +35,6 @@ export default {
     },
 
     // Reasons an order sits on hold before it enters the lab.
-    holdReason: {
-        unpaid: 'Not yet paid',
-        awaiting_customer: 'Awaiting customer approval',
-        draft: 'Draft',
-    },
-
     // ── exceptions ── config/exceptions.js EXCEPTION_TYPES.
     // `label` is the full sentence, `short` the chip, `fix` the next action an
     // agent should take. Every exception has all three: there is no generic
