@@ -11,6 +11,7 @@ import crm from '@/locales/he/crm';
 import deliveries from '@/locales/he/deliveries';
 import dev from '@/locales/he/dev';
 import enums from '@/locales/he/enums';
+import filters from '@/locales/he/filters';
 import finance from '@/locales/he/finance';
 import gate from '@/locales/he/gate';
 import ingredients from '@/locales/he/ingredients';
@@ -45,6 +46,7 @@ export default {
     crm,
     deliveries,
     dev,
+    filters,
     finance,
     gate,
     ingredients,

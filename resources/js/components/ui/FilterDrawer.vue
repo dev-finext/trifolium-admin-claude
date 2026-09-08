@@ -1,14 +1,15 @@
 <script setup>
-// The filter builder, in a drawer.
+// The filter builder, in a drawer — for every list in the console.
 //
-// It lives in a drawer rather than in a bar above the table for one reason: the
-// order list is eleven dense columns wide and an agent reads it all day. A
-// permanent filter panel would take that width away every hour of every shift to
-// serve a task that happens a few times an hour.
+// It lives in a drawer rather than in a bar above the table because the tables
+// here are dense and read all day: a permanent filter panel would take that
+// width away every hour to serve a task that happens a few times an hour.
 //
-// Every field is a checkbox multi-select with live counts (see FacetCheckList),
-// and the counts are computed against the *other* active filters, so the drawer
-// tells the reader what each option is worth before they tick it.
+// Every field is a checkbox multi-select with live counts, and the counts are
+// computed against the *other* active filters, so the drawer tells the reader
+// what each option is worth before they tick it.
+//
+// The screen owns the filter state. Every change leaves here as a patch.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -16,90 +17,59 @@ import AButton from '@/components/ui/AButton.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import FacetCheckList from '@/components/ui/FacetCheckList.vue';
 import NumericFilter from '@/components/ui/NumericFilter.vue';
-import { useLocalized } from '@/composables/useLocalized';
 import { activeKeys, facetsOf, isActive, toggleValue } from '@/lib/facets';
 import { num } from '@/lib/money';
-import {
-    ORDER_FILTER_FIELDS,
-    ORDER_FILTER_GROUPS,
-    useOrdersStore,
-} from '@/stores/orders';
 
 const props = defineProps({
     open: { type: Boolean, default: false },
+    /** The screen's filter spec — see composables/useListFilters.js. */
+    spec: { type: Object, required: true },
     /** The filter state — the same reactive URL object the list reads. */
     filters: { type: Object, required: true },
     /** The rows the date range left, before any field filter. */
     rows: { type: Array, default: () => [] },
     /** How many rows survive the whole filter set right now. */
     resultCount: { type: Number, default: 0 },
+    /** Offer "save as a view" in the header. */
+    savable: { type: Boolean, default: true },
 });
 
 const emit = defineEmits(['close', 'clear', 'save', 'patch']);
 
 const { t, locale } = useI18n();
-const { loc } = useLocalized();
-const orders = useOrdersStore();
 
-const active = computed(() => activeKeys(ORDER_FILTER_FIELDS, props.filters));
+const fields = computed(() => props.spec.fields || []);
+
+const active = computed(() => activeKeys(fields.value, props.filters));
 
 const groups = computed(() =>
-    ORDER_FILTER_GROUPS.map((id) => ({
-        id,
-        label: t(`orders.filterGroup.${id}`),
-        fields: ORDER_FILTER_FIELDS.filter((field) => field.group === id),
-    })).filter((group) => group.fields.length),
+    (props.spec.groups || [])
+        .map((id) => ({
+            id,
+            label: t(`${props.spec.ns}.filterGroup.${id}`),
+            fields: fields.value.filter((field) => field.group === id),
+        }))
+        .filter((group) => group.fields.length),
 );
 
+const fieldLabel = (field) => t(`${props.spec.ns}.filter.field.${field.key}`);
+
 /**
- * Option text per field. Ids resolve through the shared enum catalogs; the two
- * fields whose values are record content — the city and the practitioner — are
- * read in the active language, and the practitioner's code is kept beside the
- * name because that is what the pharmacy calls people by.
+ * Option text. A field either names a locale prefix — its values are managed
+ * ids — or brings its own labeller, for values that are record content.
  */
-const LABELLERS = {
-    status: (v) => (v === 'hold' ? t('orders.filter.hold') : t(`status.${v}`)),
-    flag: (v) =>
-        v === 'any'
-            ? t('orders.filter.anyException')
-            : t(`exception.${v}.short`),
-    docStatus: (v) => t(`docState.${v}`),
-    type: (v) => t(`orders.type.${v}`),
-    payer: (v) => t(`payer.${v}`),
-    credit: (v) => t(`orders.filter.credit.${v}`),
-    fulfilment: (v) => t(`fulfilment.${v}`),
-    courier: (v) =>
-        v === 'none' ? t('orders.filter.noCourier') : t(`courier.${v}`),
-    poa: (v) => t(`orders.filter.poa.${v}`),
-    address: (v) => t(`orders.filter.address.${v}`),
-    city: (v) => cityLabel(v),
-    practitioner: (v) => practitionerLabel(v),
-    therapy: (v) => t(`therapy.${v}`),
-};
+function optionLabel(field) {
+    return (value) => {
+        if (typeof field.optionLabel === 'function') {
+            return field.optionLabel(value, props.rows);
+        }
 
-/** The city name in the reader's language, keyed by its Hebrew source text. */
-function cityLabel(he) {
-    const hit = props.rows.find((order) => order.address?.city?.he === he);
-
-    return hit ? loc(hit.address.city) : he;
+        return field.prefix ? t(`${field.prefix}.${value}`) : String(value);
+    };
 }
-
-function practitionerLabel(code) {
-    const one = orders.practitionerByCode?.(code);
-    const hit = props.rows.find((order) => order.practitioner.code === code);
-    const person = one || hit?.practitioner;
-
-    return person
-        ? `${loc(person.first)} ${loc(person.last)} · ${code}`
-        : String(code);
-}
-
-const UNITS = { total: '₪', days: t('orders.filter.daysUnit') };
-
-const fieldLabel = (field) => t(`orders.filter.field.${field.key}`);
 
 function facets(field) {
-    return facetsOf(props.rows, ORDER_FILTER_FIELDS, props.filters, field.key);
+    return facetsOf(props.rows, fields.value, props.filters, field.key);
 }
 
 /** How many values are chosen in one field — shown beside its heading. */
@@ -111,8 +81,6 @@ function chosen(field) {
     return field.kind === 'num' ? 1 : props.filters[field.key].length;
 }
 
-// The filter state belongs to the screen, not to this drawer: every change goes
-// up as a patch so there is one writer and one source of truth.
 function onToggle(field, value) {
     emit('patch', {
         [field.key]: toggleValue(props.filters[field.key], value),
@@ -149,11 +117,12 @@ const localeKey = computed(() => locale.value);
     <ADrawer :open="open" @close="emit('close')">
         <template #header>
             <div class="fd-head">
-                <h2 class="fd-title">{{ t('orders.filterDrawer.title') }}</h2>
+                <h2 class="fd-title">{{ t('filters.title') }}</h2>
                 <span class="fd-count">
                     {{
-                        t('orders.filterDrawer.resultCount', {
+                        t('filters.resultCount', {
                             n: num(resultCount),
+                            noun: spec.noun,
                         })
                     }}
                 </span>
@@ -163,22 +132,21 @@ const localeKey = computed(() => locale.value);
                     :disabled="!active.length"
                     @click="emit('clear')"
                 >
-                    {{ t('orders.filterDrawer.clearAll') }}
+                    {{ t('filters.clearAll') }}
                 </AButton>
                 <AButton
+                    v-if="savable"
                     sm
                     icon="save"
                     :disabled="!active.length"
                     @click="emit('save')"
                 >
-                    {{ t('orders.savedViews.save') }}
+                    {{ t('filters.savedViews.save') }}
                 </AButton>
             </div>
         </template>
 
-        <p class="a-note a-note--info fd-hint">
-            {{ t('orders.filterDrawer.hint') }}
-        </p>
+        <p class="a-note a-note--info fd-hint">{{ t('filters.hint') }}</p>
 
         <div :key="localeKey" class="fd-groups">
             <details
@@ -208,7 +176,7 @@ const localeKey = computed(() => locale.value);
                         <NumericFilter
                             v-if="field.kind === 'num'"
                             :model-value="filters[field.key]"
-                            :unit="UNITS[field.key] || ''"
+                            :unit="(spec.units || {})[field.key] || ''"
                             :name="fieldLabel(field)"
                             @update:model-value="onNum(field, $event)"
                         />
@@ -216,7 +184,7 @@ const localeKey = computed(() => locale.value);
                         <FacetCheckList
                             v-else
                             :facets="facets(field)"
-                            :label="LABELLERS[field.key]"
+                            :label="optionLabel(field)"
                             :name="fieldLabel(field)"
                             @toggle="onToggle(field, $event)"
                             @all="onAll(field, $event)"

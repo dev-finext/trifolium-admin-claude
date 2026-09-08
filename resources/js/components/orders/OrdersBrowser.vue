@@ -16,8 +16,6 @@ import { useRoute, useRouter } from 'vue-router';
 import PageHead from '@/components/layout/PageHead.vue';
 import CourierDialog from '@/components/orders/CourierDialog.vue';
 import OrderBulkBar from '@/components/orders/OrderBulkBar.vue';
-import OrderFilterDrawer from '@/components/orders/OrderFilterDrawer.vue';
-import OrderSavedViews from '@/components/orders/OrderSavedViews.vue';
 import OrderTable from '@/components/orders/OrderTable.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AErrorState from '@/components/ui/AErrorState.vue';
@@ -27,6 +25,9 @@ import ATabs from '@/components/ui/ATabs.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import DateRangeBar from '@/components/ui/DateRangeBar.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
@@ -34,12 +35,13 @@ import { COURIERS, DEFAULT_QUIET_HOURS, ORDER_STATUSES } from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { hasRange } from '@/lib/dateRange';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
-import { activeKeys, emptyFilters } from '@/lib/facets';
+import { activeKeys, emptyFilters, toggleValue } from '@/lib/facets';
 import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import {
     filterOrders,
     ORDER_FILTER_FIELDS,
+    ORDER_FILTER_GROUPS,
     ordersInRange,
     statusOf,
     useOrdersStore,
@@ -137,6 +139,64 @@ const tabs = computed(() => [
 
 /** Which fields are narrowing the list right now. */
 const activeFilters = computed(() => activeKeys(ORDER_FILTER_FIELDS, view));
+
+/** The city name in the reader's language, keyed by its Hebrew source text. */
+function cityLabel(he) {
+    const hit = inRange.value.find((order) => order.address?.city?.he === he);
+
+    return hit ? loc(hit.address.city) : he;
+}
+
+function practitionerLabel(code) {
+    const hit = inRange.value.find((order) => order.practitioner.code === code);
+
+    return hit
+        ? `${loc(hit.practitioner.first)} ${loc(hit.practitioner.last)} · ${code}`
+        : String(code);
+}
+
+/**
+ * Option text for the three fields whose values are not a plain managed list:
+ * a status doubles as the hold marker, a flag has an "any" catch-all, and a
+ * courier can be unassigned. Everything else reads through its `prefix`.
+ */
+const LABELLERS = {
+    status: (v) => (v === 'hold' ? t('orders.filter.hold') : t(`status.${v}`)),
+    flag: (v) =>
+        v === 'any'
+            ? t('orders.filter.anyException')
+            : t(`exception.${v}.short`),
+    courier: (v) =>
+        v === 'none' ? t('orders.filter.noCourier') : t(`courier.${v}`),
+    city: cityLabel,
+    practitioner: practitionerLabel,
+};
+
+/** What the one filter system needs to know about this list. */
+const spec = computed(() => ({
+    id: 'orders',
+    ns: 'orders',
+    noun: t('orders.filter.noun'),
+    groups: ORDER_FILTER_GROUPS,
+    units: { total: '₪', days: t('orders.filter.daysUnit') },
+    fields: ORDER_FILTER_FIELDS.map((field) =>
+        LABELLERS[field.key]
+            ? { ...field, optionLabel: LABELLERS[field.key] }
+            : field,
+    ),
+}));
+
+/** One chip removed: a value out of its field, or a numeric test cleared. */
+function removeChip(chip) {
+    const field = ORDER_FILTER_FIELDS.find((one) => one.key === chip.key);
+
+    patch({
+        [chip.key]:
+            field?.kind === 'num'
+                ? { op: 'gt', v: '' }
+                : toggleValue(view[chip.key], chip.value),
+    });
+}
 
 const activeCount = computed(
     () => activeFilters.value.length + (view.q.trim() ? 1 : 0),
@@ -449,8 +509,9 @@ function exportOrders(list, suffix = '') {
             </template>
         </PageHead>
 
-        <OrderSavedViews
+        <SavedViews
             ref="savedViews"
+            :spec="spec"
             :filters="view"
             :rows="inRange"
             @apply="applyView"
@@ -480,16 +541,22 @@ function exportOrders(list, suffix = '') {
             <AButton icon="layers" @click="drawerOpen = true">
                 {{
                     activeFilters.length
-                        ? t('orders.filterDrawer.openWith', {
-                              n: activeFilters.length,
-                          })
-                        : t('orders.filterDrawer.open')
+                        ? t('filters.openWith', { n: activeFilters.length })
+                        : t('filters.open')
                 }}
             </AButton>
             <span v-if="view.status.length > 1" class="a-count-txt">
                 {{ t('orders.filter.multiStatus', { n: view.status.length }) }}
             </span>
         </FilterBar>
+
+        <FilterChips
+            :spec="spec"
+            :filters="view"
+            :rows="inRange"
+            @remove="removeChip"
+            @clear="clearFilters"
+        />
 
         <ASkeleton v-if="dataset.isBusy" :rows="8" />
         <div v-else-if="dataset.isError" class="a-card">
@@ -520,8 +587,9 @@ function exportOrders(list, suffix = '') {
             />
         </template>
 
-        <OrderFilterDrawer
+        <FilterDrawer
             :open="drawerOpen"
+            :spec="spec"
             :filters="view"
             :rows="inRange"
             :result-count="rows.length"

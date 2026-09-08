@@ -19,35 +19,6 @@ export default {
         time: 'Time',
     },
 
-    filterDrawer: {
-        title: 'Filters',
-        open: 'Filters',
-        openWith: 'Filters · {n}',
-        clearAll: 'Clear all',
-        resultCount: '{n} orders',
-        hint: 'The number beside each option is what you get if you tick it — counted against the other active filters. An option that would return nothing is dimmed.',
-    },
-
-    savedViews: {
-        optional: '(optional)',
-        autoName: 'View {n}',
-        pin: 'Make this my standing filter',
-        unpin: 'Clear the standing filter',
-        pinned: 'My standing filter',
-        empty: 'No saved filter yet. Filter with "Filters", then save — it is kept for you in this browser.',
-        defaultHint:
-            'The standing filter loads every time you open this screen, unless you arrived from a link that carries its own.',
-        label: 'Saved views',
-        save: 'Save view',
-        saveTitle: 'Save this view',
-        nameLabel: 'View name',
-        namePlaceholder: 'e.g. Waiting shipments to Haifa',
-        saveHint:
-            'The view is stored in this browser with the current filters. The date range is not part of it.',
-        saveConfirm: 'Save',
-        remove: 'Delete the view {name}',
-    },
-
     range: {
         note: '{n} orders in range ({from} – {to}) · statuses are counted inside the range',
         hint: 'Pick a date range to get the order count per status',
@@ -77,6 +48,7 @@ export default {
             yes: 'On credit terms',
             no: 'Immediate payment',
         },
+        noun: 'orders',
         hold: 'On hold',
         anyException: 'Any open exception',
         noCourier: 'No courier assigned',
@@ -842,7 +814,8 @@ export default {
             toastBody: 'Stock released · reason: {reason}',
             // V2
             cause: 'Cancellation reason (structured)',
-            causeHint: 'The structured reason is counted in reports; the free text goes to the log and to a CRM activity on the practitioner.',
+            causeHint:
+                'The structured reason is counted in reports; the free text goes to the log and to a CRM activity on the practitioner.',
         },
     },
 

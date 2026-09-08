@@ -38,6 +38,15 @@ export default {
     dateRange: 'Date range',
     from: 'From',
     to: 'To',
+    // Pagination — the shared footer under every table
+    page: {
+        showing: 'Showing',
+        of: 'of',
+        size: 'Rows per page',
+        prev: 'Previous page',
+        next: 'Next page',
+    },
+
     datePreset: {
         all: 'All dates',
         today: 'Today',

@@ -1,5 +1,6 @@
 <script setup>
-// A person's own saved filters, and the one they work from every day.
+// A person's own saved filters, and the one they work from every day — on any
+// list in the console.
 //
 // Nothing is shipped here: an agent's useful filters are theirs, and a row of
 // guesses made by whoever built the screen only takes up space. The strip is
@@ -11,10 +12,11 @@
 // carrying its own filter always beats the star, so a pasted view still opens as
 // its sender saw it.
 //
-// Storage is this browser. A real deployment would keep these on the account so
-// they follow the person between machines, and would let a supervisor publish one
-// to the team; the record shape here is already what that needs.
-import { computed, ref } from 'vue';
+// Storage is this browser, keyed by the spec's id. A real deployment would keep
+// these on the account so they follow the person between machines, and would let
+// a supervisor publish one to the team; the record shape here is already what
+// that needs.
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
@@ -22,12 +24,10 @@ import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import { activeKeys, applyFilters, emptyFilters } from '@/lib/facets';
 import { num } from '@/lib/money';
-import { ORDER_FILTER_FIELDS } from '@/stores/orders';
-
-const STORAGE_KEY = 'trifolium-admin-order-views';
-const PINNED_KEY = 'trifolium-admin-order-view-pinned';
 
 const props = defineProps({
+    /** The screen's filter spec — see composables/useListFilters.js. */
+    spec: { type: Object, required: true },
     /** The live filter state. */
     filters: { type: Object, required: true },
     /** Rows the date range left — the basis every view counts against. */
@@ -37,6 +37,9 @@ const props = defineProps({
 const emit = defineEmits(['apply']);
 
 const { t } = useI18n();
+
+const storageKey = computed(() => `trifolium-admin-views-${props.spec.id}`);
+const pinnedKey = computed(() => `${storageKey.value}-pinned`);
 
 function read(key, fallback) {
     try {
@@ -56,23 +59,32 @@ function write(key, value) {
     }
 }
 
-const own = ref(read(STORAGE_KEY, []));
-const pinnedId = ref(read(PINNED_KEY, null));
+const own = ref(read(storageKey.value, []));
+const pinnedId = ref(read(pinnedKey.value, null));
 const naming = ref(false);
 const draftName = ref('');
+
+// One strip can serve several lists on one screen (a tabbed screen changes its
+// spec), so the store follows the id.
+watch(storageKey, (key) => {
+    own.value = read(key, []);
+    pinnedId.value = read(`${key}-pinned`, null);
+});
 
 /** The filter half of the state — the date range is never part of a view. */
 function filterPatch() {
     const patch = {};
 
-    activeKeys(ORDER_FILTER_FIELDS, props.filters).forEach((key) => {
+    activeKeys(props.spec.fields, props.filters).forEach((key) => {
         const value = props.filters[key];
 
         patch[key] = Array.isArray(value) ? [...value] : { ...value };
     });
 
-    if (props.filters.q?.trim()) {
-        patch.q = props.filters.q;
+    const q = props.spec.queryKey || 'q';
+
+    if (props.filters[q]?.trim?.()) {
+        patch[q] = props.filters[q];
     }
 
     return patch;
@@ -82,10 +94,10 @@ function filterPatch() {
 function countFor(patch) {
     const fields = { ...patch };
 
-    delete fields.q;
+    delete fields[props.spec.queryKey || 'q'];
 
-    return applyFilters(props.rows, ORDER_FILTER_FIELDS, {
-        ...emptyFilters(ORDER_FILTER_FIELDS),
+    return applyFilters(props.rows, props.spec.fields, {
+        ...emptyFilters(props.spec.fields),
         ...fields,
     }).length;
 }
@@ -125,11 +137,11 @@ function autoName() {
     const used = new Set(own.value.map((view) => view.name));
     let n = own.value.length + 1;
 
-    while (used.has(t('orders.savedViews.autoName', { n }))) {
+    while (used.has(t('filters.savedViews.autoName', { n }))) {
         n += 1;
     }
 
-    return t('orders.savedViews.autoName', { n });
+    return t('filters.savedViews.autoName', { n });
 }
 
 // The name is a convenience, not a requirement: someone who just wants this
@@ -141,23 +153,23 @@ function confirmSave() {
         ...own.value,
         { id: `own-${Date.now()}`, name, patch: currentPatch.value },
     ];
-    write(STORAGE_KEY, own.value);
+    write(storageKey.value, own.value);
     naming.value = false;
 }
 
 function remove(id) {
     own.value = own.value.filter((view) => view.id !== id);
-    write(STORAGE_KEY, own.value);
+    write(storageKey.value, own.value);
 
     if (pinnedId.value === id) {
         pinnedId.value = null;
-        write(PINNED_KEY, null);
+        write(pinnedKey.value, null);
     }
 }
 
 function togglePin(id) {
     pinnedId.value = pinnedId.value === id ? null : id;
-    write(PINNED_KEY, pinnedId.value);
+    write(pinnedKey.value, pinnedId.value);
 }
 
 /** The standing filter, for the screen to apply when it opens cold. */
@@ -175,7 +187,7 @@ defineExpose({ openSave, standingPatch });
         <div
             class="sv-strip"
             role="group"
-            :aria-label="t('orders.savedViews.label')"
+            :aria-label="t('filters.savedViews.label')"
         >
             <button
                 v-for="view in views"
@@ -195,13 +207,13 @@ defineExpose({ openSave, standingPatch });
                     tabindex="0"
                     :title="
                         view.pinned
-                            ? t('orders.savedViews.unpin')
-                            : t('orders.savedViews.pin')
+                            ? t('filters.savedViews.unpin')
+                            : t('filters.savedViews.pin')
                     "
                     :aria-label="
                         view.pinned
-                            ? t('orders.savedViews.unpin')
-                            : t('orders.savedViews.pin')
+                            ? t('filters.savedViews.unpin')
+                            : t('filters.savedViews.pin')
                     "
                     @click.stop="togglePin(view.id)"
                     @keydown.enter.stop.prevent="togglePin(view.id)"
@@ -213,7 +225,7 @@ defineExpose({ openSave, standingPatch });
                     role="button"
                     tabindex="0"
                     :aria-label="
-                        t('orders.savedViews.remove', { name: view.name })
+                        t('filters.savedViews.remove', { name: view.name })
                     "
                     @click.stop="remove(view.id)"
                     @keydown.enter.stop.prevent="remove(view.id)"
@@ -223,39 +235,39 @@ defineExpose({ openSave, standingPatch });
             </button>
 
             <AButton sm icon="plus" :disabled="!canSave" @click="openSave">
-                {{ t('orders.savedViews.save') }}
+                {{ t('filters.savedViews.save') }}
             </AButton>
 
             <span v-if="!views.length" class="sv-empty">
-                {{ t('orders.savedViews.empty') }}
+                {{ t('filters.savedViews.empty') }}
             </span>
         </div>
 
         <AModal
             :open="naming"
-            :title="t('orders.savedViews.saveTitle')"
+            :title="t('filters.savedViews.saveTitle')"
             :width="480"
             @close="naming = false"
         >
             <label class="a-lbl" for="sv-name">
-                {{ t('orders.savedViews.nameLabel') }}
+                {{ t('filters.savedViews.nameLabel') }}
                 <span class="sv-optional">
-                    {{ t('orders.savedViews.optional') }}
+                    {{ t('filters.savedViews.optional') }}
                 </span>
             </label>
             <AInput
                 id="sv-name"
                 v-model="draftName"
                 class="a-w100"
-                :placeholder="t('orders.savedViews.namePlaceholder')"
+                :placeholder="t('filters.savedViews.namePlaceholder')"
                 @keydown.enter="confirmSave"
             />
-            <p class="a-hint">{{ t('orders.savedViews.saveHint') }}</p>
-            <p class="a-hint">{{ t('orders.savedViews.defaultHint') }}</p>
+            <p class="a-hint">{{ t('filters.savedViews.saveHint') }}</p>
+            <p class="a-hint">{{ t('filters.savedViews.defaultHint') }}</p>
 
             <template #footer>
                 <AButton kind="p" icon="save" @click="confirmSave">
-                    {{ t('orders.savedViews.saveConfirm') }}
+                    {{ t('filters.savedViews.saveConfirm') }}
                 </AButton>
                 <AButton @click="naming = false">
                     {{ t('actions.cancel') }}
