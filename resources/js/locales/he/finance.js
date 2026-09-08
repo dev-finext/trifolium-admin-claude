@@ -104,6 +104,37 @@ export default {
         stateAll: 'מצב — הכל',
         recipientAll: 'נמען — הכל',
         statusAll: 'סטטוס — הכל',
+
+        daysUnit: 'ימים',
+
+        // Field names in the filter drawers — stores/money.js.
+        field: {
+            bucket: 'גיל החוב',
+            track: 'מסלול תשלום',
+            bdebt: 'גובה החוב',
+            bage: 'ותק החוב',
+            dstate: 'מצב ההפקה',
+            dtype: 'סוג המסמך',
+            dto: 'הנמען',
+            dpr: 'מטפל',
+            damt: 'סכום המסמך',
+            dage: 'לפני כמה ימים הופק',
+            tkind: 'סוג התנועה',
+            tmethod: 'אמצעי תשלום',
+            tcode: 'מטפל',
+            tamt: 'סכום התנועה',
+            tage: 'לפני כמה ימים',
+        },
+    },
+
+    // Filter-drawer groups — stores/money.js.
+    filterGroup: {
+        debt: 'החוב',
+        terms: 'תנאי תשלום',
+        state: 'מצב',
+        who: 'מי',
+        size: 'סכום וזמן',
+        what: 'מה',
     },
 
     track: {

@@ -25,6 +25,15 @@ const emit = defineEmits(['remove', 'clear']);
 
 const { t } = useI18n();
 
+/** A word unit reads with a space before it; ₪ and % do not. */
+function withUnit(value, unit) {
+    if (!unit) {
+        return value;
+    }
+
+    return /^\p{L}/u.test(unit) ? `${value} ${unit}` : `${value}${unit}`;
+}
+
 const OPS = { gt: '>', lt: '<', eq: '=' };
 
 function optionLabel(field, value) {
@@ -53,9 +62,10 @@ const chips = computed(() => {
                 id: field.key,
                 key: field.key,
                 value: null,
-                text: `${name} ${OPS[selection.op] || '>'} ${num(Number(selection.v))}${
-                    (props.spec.units || {})[field.key] || ''
-                }`,
+                text: `${name} ${OPS[selection.op] || '>'} ${withUnit(
+                    num(Number(selection.v)),
+                    (props.spec.units || {})[field.key],
+                )}`,
             });
 
             return;

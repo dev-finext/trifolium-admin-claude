@@ -106,6 +106,37 @@ export default {
         stateAll: 'State — all',
         recipientAll: 'Recipient — all',
         statusAll: 'Status — all',
+
+        daysUnit: 'days',
+
+        // Field names in the filter drawers — stores/money.js.
+        field: {
+            bucket: 'Debt age',
+            track: 'Payment terms',
+            bdebt: 'Balance',
+            bage: 'Days owing',
+            dstate: 'Issue state',
+            dtype: 'Document type',
+            dto: 'Recipient',
+            dpr: 'Practitioner',
+            damt: 'Document amount',
+            dage: 'Issued days ago',
+            tkind: 'Movement',
+            tmethod: 'Payment method',
+            tcode: 'Practitioner',
+            tamt: 'Amount',
+            tage: 'Days ago',
+        },
+    },
+
+    // Filter-drawer groups — stores/money.js.
+    filterGroup: {
+        debt: 'The debt',
+        terms: 'Payment terms',
+        state: 'State',
+        who: 'Who',
+        size: 'Amount and time',
+        what: 'What',
     },
 
     track: {

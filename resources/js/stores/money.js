@@ -77,6 +77,131 @@ export function vatParts(gross) {
     return { net: parts.net, rate, vat: parts.vat, gross: Number(gross) || 0 };
 }
 
+/**
+ * What the three finance lists can be filtered by, declared once beside the
+ * store that holds them.
+ *
+ * A balance is a person and their debt, a document is a thing Green Invoice
+ * either issued or failed to issue, and a transaction is a movement of money —
+ * so the three share nothing but the practitioner they hang off, and each gets
+ * the fields its own list is actually read by.
+ *
+ * There is no display text here: `group` and every value are ids, and the
+ * drawer resolves them through the locale catalogs.
+ */
+export const BALANCE_FILTER_FIELDS = [
+    {
+        key: 'bucket',
+        group: 'debt',
+        kind: 'set',
+        prefix: 'agingBucket',
+        values: (row) => [agingBucket(row.debtDays).id],
+    },
+    {
+        key: 'track',
+        group: 'terms',
+        kind: 'set',
+        prefix: 'finance.track',
+        values: (row) => [row.credit ? 'credit' : 'revoked'],
+    },
+    {
+        key: 'bdebt',
+        group: 'debt',
+        kind: 'num',
+        value: (row) => row.debt,
+    },
+    {
+        key: 'bage',
+        group: 'debt',
+        kind: 'num',
+        value: (row) => row.debtDays,
+    },
+];
+
+export const BALANCE_FILTER_GROUPS = ['debt', 'terms'];
+
+export const DOC_FILTER_FIELDS = [
+    {
+        key: 'dstate',
+        group: 'state',
+        kind: 'set',
+        prefix: 'docState',
+        values: (doc) => [doc.status],
+    },
+    {
+        key: 'dtype',
+        group: 'state',
+        kind: 'set',
+        values: (doc) => [doc.type],
+    },
+    {
+        key: 'dto',
+        group: 'who',
+        kind: 'set',
+        prefix: 'payer',
+        values: (doc) => [doc.toType],
+    },
+    {
+        key: 'dpr',
+        group: 'who',
+        kind: 'set',
+        values: (doc) => [doc.code],
+    },
+    {
+        key: 'damt',
+        group: 'size',
+        kind: 'num',
+        value: (doc) => doc.amt,
+    },
+    {
+        key: 'dage',
+        group: 'size',
+        kind: 'num',
+        value: (doc) => doc.when.daysAgo,
+    },
+];
+
+export const DOC_FILTER_GROUPS = ['state', 'who', 'size'];
+
+export const TXN_FILTER_FIELDS = [
+    {
+        key: 'tkind',
+        group: 'what',
+        kind: 'set',
+        prefix: 'finance.txnKind',
+        values: (row) => [row.kind],
+    },
+    {
+        key: 'tmethod',
+        group: 'what',
+        kind: 'set',
+        prefix: 'paymentMethod',
+        values: (row) => (row.method ? [row.method] : []),
+    },
+    {
+        key: 'tcode',
+        group: 'who',
+        kind: 'set',
+        values: (row) => [row.code],
+    },
+    {
+        key: 'tamt',
+        group: 'size',
+        kind: 'num',
+        // A charge is positive and a payment negative; what a reader means by
+        // "over 300" is the size of the movement, not its direction.
+        value: (row) => Math.abs(row.amt),
+    },
+    {
+        key: 'tage',
+        group: 'size',
+        kind: 'num',
+        value: (row) => row.when.daysAgo,
+    },
+];
+
+export const TXN_FILTER_GROUPS = ['what', 'who', 'size'];
+
 export const useMoneyStore = defineStore('money', () => {
     const dataset = useDatasetStore();
 

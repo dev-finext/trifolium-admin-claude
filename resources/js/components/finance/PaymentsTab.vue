@@ -4,26 +4,37 @@
 // There is no accounting system behind this console, so this is the book of
 // record rather than a report of one. Nothing is aggregated away — the tiles
 // count the same rows the table lists.
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 import SearchField from '@/components/finance/SearchField.vue';
+import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ASelect from '@/components/ui/ASelect.vue';
+import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
 import { TXN_KIND_TONES } from '@/config/finance';
 import { num } from '@/lib/money';
 import {
     COLLECTED_WINDOW_DAYS,
-    TIME_WINDOWS,
+    TXN_FILTER_FIELDS,
+    TXN_FILTER_GROUPS,
     useMoneyStore,
 } from '@/stores/money';
 
@@ -35,65 +46,93 @@ const { loc, searchHaystack } = useLocalized();
 const money = useMoneyStore();
 const router = useRouter();
 
-const view = useUrlState({ tq: '', tkind: '', tcode: '', twin: '' });
+const SPEC = { fields: TXN_FILTER_FIELDS };
 
-const kindOptions = computed(() => [
-    { value: '', label: t('finance.filter.kindAll') },
-    ...money.transactionKinds.map((kind) => ({
-        value: kind,
-        label: t(`finance.txnKind.${kind}`),
-    })),
-]);
+const drawerOpen = ref(false);
+const savedViews = ref(null);
 
-const windowOptions = computed(() => [
-    { value: '', label: t('finance.filter.windowAll') },
-    ...TIME_WINDOWS.map((days) => ({
-        value: String(days),
-        label: t('finance.filter.windowDays', { days }),
-    })),
-]);
-
-const practitionerOptions = computed(() => [
-    { value: '', label: t('finance.filter.practitionerAll') },
-    ...money.practitioners.map((practitioner) => ({
-        value: practitioner.code,
-        label: loc(practitioner.name),
-    })),
-]);
+const view = useUrlState({
+    tq: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
+});
 
 const countOf = (kind) =>
     money.transactions.filter((row) => row.kind === kind).length;
 
-const rows = computed(() =>
-    money.transactions.filter((row) => {
-        if (view.tkind && row.kind !== view.tkind) {
-            return false;
-        }
+const searched = computed(() => {
+    const query = view.tq.trim().toLowerCase();
 
-        if (view.tcode && row.code !== view.tcode) {
-            return false;
-        }
+    if (!query) {
+        return money.transactions;
+    }
 
-        if (view.twin && row.when.daysAgo > Number(view.twin)) {
-            return false;
-        }
+    return money.transactions.filter((row) =>
+        searchHaystack(row.order, row.note, row.doc, row.code).includes(query),
+    );
+});
 
-        const q = view.tq.trim().toLowerCase();
+const filters = useListFilters(SPEC, view, searched);
 
-        if (
-            q &&
-            !searchHaystack(row.order, row.note, row.doc, row.code).includes(q)
-        ) {
-            return false;
-        }
+const rows = computed(() => filters.rows);
 
-        return true;
-    }),
+const { paged, total } = usePaged(rows, view);
+
+const dirty = computed(() => filters.dirty || Boolean(view.tq));
+
+const spec = computed(() => ({
+    id: 'payments',
+    ns: 'finance',
+    noun: t('finance.noun.transactions'),
+    groups: TXN_FILTER_GROUPS,
+    units: { tamt: '₪', tage: t('finance.filter.daysUnit') },
+    fields: TXN_FILTER_FIELDS.map((field) =>
+        field.key === 'tcode'
+            ? {
+                  ...field,
+                  optionLabel: (code) => {
+                      const hit = money.byCode(code);
+
+                      return hit ? `${loc(hit.name)} · ${code}` : String(code);
+                  },
+              }
+            : field,
+    ),
+}));
+
+/** The window tile is the `tage` field with one preset value on it. */
+const windowOn = computed(
+    () =>
+        view.tage.op === 'lt' && view.tage.v === String(COLLECTED_WINDOW_DAYS),
 );
 
-const dirty = computed(() =>
-    Boolean(view.tq || view.tkind || view.tcode || view.twin),
-);
+function toggleWindow() {
+    filters.patch({
+        tage: {
+            op: 'lt',
+            v: windowOn.value ? '' : String(COLLECTED_WINDOW_DAYS),
+        },
+    });
+}
+
+function clear() {
+    view.tq = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(view, filterDefaults(SPEC), { tq: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
 
 const cols = computed(() => [
     {
@@ -121,17 +160,6 @@ const cols = computed(() => [
     },
 ]);
 
-function clear() {
-    view.tq = '';
-    view.tkind = '';
-    view.tcode = '';
-    view.twin = '';
-}
-
-function toggle(key, value) {
-    view[key] = view[key] === value ? '' : value;
-}
-
 function openOrder(id) {
     router.push({ name: 'order', params: { id } });
 }
@@ -151,19 +179,16 @@ function nameOf(code) {
                 :label="t('finance.payments.kpiAll')"
                 :value="num(money.transactions.length)"
                 :sub="t('finance.payments.kpiAllSub')"
-                :active="!view.tkind && !view.twin"
-                @click="
-                    view.tkind = '';
-                    view.twin = '';
-                "
+                :active="!filters.active.length"
+                @click="filters.clear()"
             />
 
             <FilterKpi
                 icon="clipboard_list"
                 :label="t('finance.txnKind.charge')"
                 :value="num(countOf('charge'))"
-                :active="view.tkind === 'charge'"
-                @click="toggle('tkind', 'charge')"
+                :active="view.tkind.includes('charge')"
+                @click="filters.toggle('tkind', 'charge')"
             >
                 <template #sub>
                     <AMoney :value="money.chargeTotal" />
@@ -174,8 +199,8 @@ function nameOf(code) {
                 icon="card"
                 :label="t('finance.txnKind.payment')"
                 :value="num(countOf('payment'))"
-                :active="view.tkind === 'payment'"
-                @click="toggle('tkind', 'payment')"
+                :active="view.tkind.includes('payment')"
+                @click="filters.toggle('tkind', 'payment')"
             >
                 <template #sub>
                     <AMoney :value="money.paymentTotal" />
@@ -197,13 +222,22 @@ function nameOf(code) {
                     )
                 "
                 :sub="t('finance.payments.kpiWindowSub')"
-                :active="view.twin === String(COLLECTED_WINDOW_DAYS)"
-                @click="toggle('twin', String(COLLECTED_WINDOW_DAYS))"
+                :active="windowOn"
+                @click="toggleWindow"
             />
         </div>
 
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @apply="applyView"
+        />
+
         <FilterBar
             :count="rows.length"
+            :total="searched.length"
             :label="t('finance.noun.transactions')"
             :dirty="dirty"
             @clear="clear"
@@ -213,14 +247,26 @@ function nameOf(code) {
                 :placeholder="t('finance.filter.searchTxn')"
                 :width="300"
             />
-            <ASelect v-model="view.tcode" :options="practitionerOptions" />
-            <ASelect v-model="view.tkind" :options="kindOptions" />
-            <ASelect v-model="view.twin" :options="windowOptions" />
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
         </FilterBar>
+
+        <FilterChips
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clear"
+        />
 
         <ADataTable
             :cols="cols"
-            :rows="rows"
+            :rows="paged"
             row-key="id"
             :max-height="MAX_HEIGHT"
         >
@@ -280,6 +326,24 @@ function nameOf(code) {
                 </span>
             </template>
         </ADataTable>
+
+        <APagination
+            v-model:page="view.pg"
+            v-model:size="view.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
     </div>
 </template>
 

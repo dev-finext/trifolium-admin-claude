@@ -166,7 +166,7 @@ const rules = computed(() => [
                     (bucket) =>
                         emit('goto', {
                             tab: 'balances',
-                            patch: { bq: '', track: '', bucket },
+                            patch: { bq: '', track: [], bucket: [bucket] },
                         })
                 "
             >

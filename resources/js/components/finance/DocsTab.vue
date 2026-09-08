@@ -17,9 +17,18 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ASelect from '@/components/ui/ASelect.vue';
+import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
@@ -27,7 +36,11 @@ import { DOC_PROVIDER, DOC_STATES } from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
 import { num } from '@/lib/money';
-import { TIME_WINDOWS, useMoneyStore } from '@/stores/money';
+import {
+    DOC_FILTER_FIELDS,
+    DOC_FILTER_GROUPS,
+    useMoneyStore,
+} from '@/stores/money';
 
 /** How tall the document list grows before it scrolls inside its own pane. */
 const MAX_HEIGHT = 560;
@@ -38,64 +51,89 @@ const { push } = useToast();
 const money = useMoneyStore();
 const router = useRouter();
 
-const view = useUrlState({ dq: '', dstate: '', dto: '', dwin: '' });
+const SPEC = { fields: DOC_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
+const view = useUrlState({
+    dq: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
+});
+
 const reissuing = ref(null);
-
-const stateOptions = computed(() => [
-    { value: '', label: t('finance.filter.stateAll') },
-    ...money.documentStates.map((state) => ({
-        value: state,
-        label: t(`docState.${state}`),
-    })),
-]);
-
-const recipientOptions = computed(() => [
-    { value: '', label: t('finance.filter.recipientAll') },
-    { value: 'patient', label: t('finance.docs.toCustomer') },
-    { value: 'practitioner', label: t('finance.docs.toPractitioner') },
-]);
-
-const windowOptions = computed(() => [
-    { value: '', label: t('finance.filter.windowAll') },
-    ...TIME_WINDOWS.map((days) => ({
-        value: String(days),
-        label: t('finance.filter.windowDays', { days }),
-    })),
-]);
 
 const countTo = (toType) =>
     money.documents.filter((doc) => doc.toType === toType).length;
 
-const rows = computed(() =>
-    money.documents.filter((doc) => {
-        if (view.dstate && doc.status !== view.dstate) {
-            return false;
+const searched = computed(() => {
+    const query = view.dq.trim().toLowerCase();
+
+    if (!query) {
+        return money.documents;
+    }
+
+    return money.documents.filter((doc) =>
+        searchHaystack(doc.num, doc.alloc, doc.to, doc.order).includes(query),
+    );
+});
+
+const filters = useListFilters(SPEC, view, searched);
+
+const rows = computed(() => filters.rows);
+
+const { paged, total } = usePaged(rows, view);
+
+const dirty = computed(() => filters.dirty || Boolean(view.dq));
+
+const spec = computed(() => ({
+    id: 'docs',
+    ns: 'finance',
+    noun: t('finance.noun.documents'),
+    groups: DOC_FILTER_GROUPS,
+    units: { damt: '₪', dage: t('finance.filter.daysUnit') },
+    fields: DOC_FILTER_FIELDS.map((field) => {
+        if (field.key === 'dtype') {
+            return {
+                ...field,
+                optionLabel: (value) => t(`docType.${value}.name`),
+            };
         }
 
-        if (view.dto && doc.toType !== view.dto) {
-            return false;
+        if (field.key === 'dpr') {
+            return {
+                ...field,
+                optionLabel: (code) => {
+                    const hit = money.byCode(code);
+
+                    return hit ? `${loc(hit.name)} · ${code}` : String(code);
+                },
+            };
         }
 
-        if (view.dwin && doc.when.daysAgo > Number(view.dwin)) {
-            return false;
-        }
-
-        const q = view.dq.trim().toLowerCase();
-
-        if (
-            q &&
-            !searchHaystack(doc.num, doc.alloc, doc.to, doc.order).includes(q)
-        ) {
-            return false;
-        }
-
-        return true;
+        return field;
     }),
-);
+}));
 
-const dirty = computed(() =>
-    Boolean(view.dq || view.dstate || view.dto || view.dwin),
-);
+function clear() {
+    view.dq = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(view, filterDefaults(SPEC), { dq: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
 
 const cols = computed(() => [
     {
@@ -131,17 +169,6 @@ const cols = computed(() => [
     { k: 'status', label: t('finance.docs.state'), nowrap: true },
     { k: 'act', label: '', nowrap: true },
 ]);
-
-function clear() {
-    view.dq = '';
-    view.dstate = '';
-    view.dto = '';
-    view.dwin = '';
-}
-
-function toggle(key, value) {
-    view[key] = view[key] === value ? '' : value;
-}
 
 function openOrder(id) {
     router.push({ name: 'order', params: { id } });
@@ -212,11 +239,8 @@ function exportRows() {
                 :label="t('finance.docs.kpiAll')"
                 :value="num(money.documents.length)"
                 :sub="t('finance.docs.kpiAllSub')"
-                :active="!view.dstate && !view.dto"
-                @click="
-                    view.dstate = '';
-                    view.dto = '';
-                "
+                :active="!filters.active.length"
+                @click="filters.clear()"
             />
 
             <FilterKpi
@@ -224,8 +248,8 @@ function exportRows() {
                 :label="t('docState.failed')"
                 :value="num(money.failedDocuments.length)"
                 :sub="t('finance.docs.kpiFailedSub')"
-                :active="view.dstate === 'failed'"
-                @click="toggle('dstate', 'failed')"
+                :active="view.dstate.includes('failed')"
+                @click="filters.toggle('dstate', 'failed')"
             />
 
             <FilterKpi
@@ -233,8 +257,8 @@ function exportRows() {
                 :label="t('finance.docs.toCustomer')"
                 :value="num(countTo('patient'))"
                 :sub="t('finance.docs.toCustomerSub')"
-                :active="view.dto === 'patient'"
-                @click="toggle('dto', 'patient')"
+                :active="view.dto.includes('patient')"
+                @click="filters.toggle('dto', 'patient')"
             />
 
             <FilterKpi
@@ -242,13 +266,22 @@ function exportRows() {
                 :label="t('finance.docs.toPractitioner')"
                 :value="num(countTo('practitioner'))"
                 :sub="t('finance.docs.toPractitionerSub')"
-                :active="view.dto === 'practitioner'"
-                @click="toggle('dto', 'practitioner')"
+                :active="view.dto.includes('practitioner')"
+                @click="filters.toggle('dto', 'practitioner')"
             />
         </div>
 
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @apply="applyView"
+        />
+
         <FilterBar
             :count="rows.length"
+            :total="searched.length"
             :label="t('finance.noun.documents')"
             :dirty="dirty"
             @clear="clear"
@@ -258,9 +291,13 @@ function exportRows() {
                 :placeholder="t('finance.filter.searchDoc')"
                 :width="340"
             />
-            <ASelect v-model="view.dstate" :options="stateOptions" />
-            <ASelect v-model="view.dto" :options="recipientOptions" />
-            <ASelect v-model="view.dwin" :options="windowOptions" />
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
             <AButton
                 sm
                 icon="download"
@@ -271,9 +308,17 @@ function exportRows() {
             </AButton>
         </FilterBar>
 
+        <FilterChips
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clear"
+        />
+
         <ADataTable
             :cols="cols"
-            :rows="rows"
+            :rows="paged"
             row-key="id"
             :max-height="MAX_HEIGHT"
         >
@@ -350,6 +395,24 @@ function exportRows() {
                 </div>
             </template>
         </ADataTable>
+
+        <APagination
+            v-model:page="view.pg"
+            v-model:size="view.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
 
         <DocReissuePanel :doc="reissuing" @close="reissuing = null" />
     </div>

@@ -73,16 +73,23 @@ const statement = computed(() =>
 /**
  * Jump to another tab carrying its filter with it. An empty value clears the
  * key instead of writing it, so "all balances" and "balances aged 90+" are two
- * different addresses and neither inherits the other's leftovers.
+ * different addresses and neither inherits the other's leftovers. A facet
+ * arrives as an array and goes into the query the way the lists write it.
  */
 function goto({ tab, patch }) {
     const query = { ...route.query, tab };
 
     Object.entries(patch || {}).forEach(([key, value]) => {
-        if (value === '' || value === null || value === undefined) {
+        const empty =
+            value === '' ||
+            value === null ||
+            value === undefined ||
+            (Array.isArray(value) && !value.length);
+
+        if (empty) {
             delete query[key];
         } else {
-            query[key] = value;
+            query[key] = Array.isArray(value) ? value.join(',') : value;
         }
     });
 

@@ -5,7 +5,7 @@
 // why the action lives on the practitioner row and not on the order rows below
 // it. The filters are the URL's, so a bucket picked from the aging table arrives
 // here as `?bucket=b3` and the list opens already narrowed.
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import OpenCreditTable from '@/components/finance/OpenCreditTable.vue';
@@ -17,14 +17,27 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ASelect from '@/components/ui/ASelect.vue';
+import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
-import { AGING_BUCKETS, agingBucket, LINK_STATES } from '@/config';
+import { agingBucket, LINK_STATES } from '@/config';
 import { num } from '@/lib/money';
-import { useMoneyStore } from '@/stores/money';
+import {
+    BALANCE_FILTER_FIELDS,
+    BALANCE_FILTER_GROUPS,
+    useMoneyStore,
+} from '@/stores/money';
 
 const emit = defineEmits(['statement', 'link', 'payment']);
 
@@ -32,22 +45,17 @@ const { t } = useI18n();
 const { loc, searchHaystack } = useLocalized();
 const money = useMoneyStore();
 
+const SPEC = { fields: BALANCE_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
 /** This tab's slice of the query string. */
-const view = useUrlState({ bq: '', bucket: '', track: '' });
-
-const trackOptions = computed(() => [
-    { value: '', label: t('finance.filter.trackAll') },
-    { value: 'credit', label: t('finance.track.credit') },
-    { value: 'revoked', label: t('finance.track.revoked') },
-]);
-
-const bucketOptions = computed(() => [
-    { value: '', label: t('finance.filter.bucketAll') },
-    ...AGING_BUCKETS.map((bucket) => ({
-        value: bucket.id,
-        label: t(`agingBucket.${bucket.id}`),
-    })),
-]);
+const view = useUrlState({
+    bq: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
+});
 
 /** The oldest bucket the config defines — the one the KPI tile watches. */
 const oldest = computed(
@@ -62,43 +70,57 @@ const revoked = computed(() =>
     money.debtors.filter((practitioner) => !practitioner.credit),
 );
 
-const rows = computed(() =>
-    money.debtors.filter((practitioner) => {
-        if (
-            view.bucket &&
-            agingBucket(practitioner.debtDays).id !== view.bucket
-        ) {
-            return false;
-        }
+const searched = computed(() => {
+    const query = view.bq.trim().toLowerCase();
 
-        if (view.track === 'credit' && !practitioner.credit) {
-            return false;
-        }
+    if (!query) {
+        return money.debtors;
+    }
 
-        if (view.track === 'revoked' && practitioner.credit) {
-            return false;
-        }
+    return money.debtors.filter((practitioner) =>
+        searchHaystack(
+            practitioner.code,
+            practitioner.name,
+            practitioner.phone,
+        ).includes(query),
+    );
+});
 
-        const q = view.bq.trim().toLowerCase();
+const filters = useListFilters(SPEC, view, searched);
 
-        if (
-            q &&
-            !searchHaystack(
-                practitioner.code,
-                practitioner.name,
-                practitioner.phone,
-            ).includes(q)
-        ) {
-            return false;
-        }
+const rows = computed(() => filters.rows);
 
-        return true;
-    }),
-);
+const { paged, total } = usePaged(rows, view);
 
-const dirty = computed(
-    () => Boolean(view.bq) || Boolean(view.bucket) || Boolean(view.track),
-);
+const dirty = computed(() => filters.dirty || Boolean(view.bq));
+
+const spec = computed(() => ({
+    id: 'balances',
+    ns: 'finance',
+    noun: t('finance.noun.practitioners'),
+    groups: BALANCE_FILTER_GROUPS,
+    units: { bdebt: '₪', bage: t('finance.filter.daysUnit') },
+    fields: BALANCE_FILTER_FIELDS,
+}));
+
+function clear() {
+    view.bq = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(view, filterDefaults(SPEC), { bq: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
 
 const cols = computed(() => [
     {
@@ -133,16 +155,6 @@ const cols = computed(() => [
     { k: 'act', label: '', nowrap: true },
 ]);
 
-function clear() {
-    view.bq = '';
-    view.bucket = '';
-    view.track = '';
-}
-
-function toggle(key, value) {
-    view[key] = view[key] === value ? '' : value;
-}
-
 function linkOf(code) {
     return money.collectionLinkOf(code);
 }
@@ -165,11 +177,8 @@ function linkTone(code) {
                 icon="coin"
                 :label="t('finance.balances.kpiAll')"
                 :value="num(money.debtors.length)"
-                :active="!view.bucket && !view.track"
-                @click="
-                    view.bucket = '';
-                    view.track = '';
-                "
+                :active="!filters.active.length"
+                @click="filters.clear()"
             >
                 <template #sub>
                     <AMoney :value="money.totalDebt" />
@@ -181,8 +190,8 @@ function linkTone(code) {
                 :label="t('finance.balances.kpiCredit')"
                 :value="num(onCredit.length)"
                 :sub="t('finance.balances.kpiCreditSub')"
-                :active="view.track === 'credit'"
-                @click="toggle('track', 'credit')"
+                :active="view.track.includes('credit')"
+                @click="filters.toggle('track', 'credit')"
             />
 
             <FilterKpi
@@ -194,8 +203,8 @@ function linkTone(code) {
                     })
                 "
                 :value="num(oldest.n)"
-                :active="view.bucket === oldest.id"
-                @click="toggle('bucket', oldest.id)"
+                :active="view.bucket.includes(oldest.id)"
+                @click="filters.toggle('bucket', oldest.id)"
             >
                 <template #sub>
                     <AMoney :value="oldest.amt" />
@@ -207,13 +216,22 @@ function linkTone(code) {
                 :label="t('finance.balances.kpiRevoked')"
                 :value="num(revoked.length)"
                 :sub="t('finance.balances.kpiRevokedSub')"
-                :active="view.track === 'revoked'"
-                @click="toggle('track', 'revoked')"
+                :active="view.track.includes('revoked')"
+                @click="filters.toggle('track', 'revoked')"
             />
         </div>
 
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @apply="applyView"
+        />
+
         <FilterBar
             :count="rows.length"
+            :total="searched.length"
             :label="t('finance.noun.practitioners')"
             :dirty="dirty"
             @clear="clear"
@@ -223,9 +241,22 @@ function linkTone(code) {
                 :placeholder="t('finance.filter.searchPractitioner')"
                 :width="320"
             />
-            <ASelect v-model="view.track" :options="trackOptions" />
-            <ASelect v-model="view.bucket" :options="bucketOptions" />
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
         </FilterBar>
+
+        <FilterChips
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clear"
+        />
 
         <ACard :title="t('finance.balances.title')" icon="coin" :pad="false">
             <template #right>
@@ -234,7 +265,7 @@ function linkTone(code) {
 
             <ADataTable
                 :cols="cols"
-                :rows="rows"
+                :rows="paged"
                 row-key="code"
                 @row="(row) => emit('statement', row.code)"
             >
@@ -330,6 +361,24 @@ function linkTone(code) {
                 </template>
             </ADataTable>
         </ACard>
+
+        <APagination
+            v-model:page="view.pg"
+            v-model:size="view.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
 
         <OpenCreditTable />
     </div>
