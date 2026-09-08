@@ -36,6 +36,8 @@ export const NAV_GROUPS = [
             { id: 'inventory', icon: 'grid' },
             // V2 — purchase orders, supplier delivery notes, consumption report
             { id: 'purchasing', icon: 'inbox', v2: 'purchase-orders' },
+            // V2 — the reports whose data is already in the console
+            { id: 'reports', icon: 'chart', v2: 'reports' },
         ],
     },
     {

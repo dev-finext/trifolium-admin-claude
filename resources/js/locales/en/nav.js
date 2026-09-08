@@ -23,6 +23,7 @@ export default {
         stickers: 'Stickers',
         inventory: 'Stock & batches',
         purchasing: 'Purchasing',
+        reports: 'Reports',
         safety: 'Drug interactions',
         libraries: 'Formula libraries',
         content: 'Content — articles & lectures',

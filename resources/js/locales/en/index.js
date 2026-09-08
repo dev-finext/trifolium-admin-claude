@@ -22,6 +22,7 @@ import orders from '@/locales/en/orders';
 import pricing from '@/locales/en/pricing';
 import products from '@/locales/en/products';
 import purchasing from '@/locales/en/purchasing';
+import reports from '@/locales/en/reports';
 import safety from '@/locales/en/safety';
 import shell from '@/locales/en/shell';
 import stickers from '@/locales/en/stickers';
@@ -55,6 +56,7 @@ export default {
     pricing,
     products,
     purchasing,
+    reports,
     safety,
     shell,
     stickers,

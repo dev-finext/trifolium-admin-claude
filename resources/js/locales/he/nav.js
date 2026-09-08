@@ -26,6 +26,7 @@ export default {
         stickers: 'מדבקות',
         inventory: 'מלאי ואצוות',
         purchasing: 'רכש',
+        reports: 'דוחות',
         safety: 'אינטראקציות תרופתיות',
         libraries: 'ספריות פורמולות',
         content: 'תוכן — מאמרים והרצאות',

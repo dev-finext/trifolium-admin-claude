@@ -103,6 +103,12 @@ const routes = [
         component: () => import('@/views/PurchasingView.vue'),
     },
     {
+        path: '/reports',
+        name: 'reports',
+        meta: { titleKey: 'nav.item.reports' },
+        component: () => import('@/views/ReportsView.vue'),
+    },
+    {
         path: '/safety',
         name: 'safety',
         meta: { titleKey: 'nav.item.safety' },

@@ -13,6 +13,7 @@ export * from '@/config/gates';
 export * from '@/config/inventory';
 export * from '@/config/items';
 export * from '@/config/purchasing';
+export * from '@/config/reports';
 export * from '@/config/log';
 export * from '@/config/messaging';
 export * from '@/config/nav';
