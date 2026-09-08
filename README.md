@@ -106,7 +106,7 @@ version, so each feature can be discussed and kept or dropped on its own:
 ## Domain notes that are easy to get wrong
 
 - **Order status is derived, not stored per order.** Every compounded formula
-  carries its own stage; an order's status is always the *lowest* stage among its
+  carries its own stage; an order's status is always the _lowest_ stage among its
   non-cancelled items. There are no split orders and no partial shipments.
 - **`credit` (בהקפה) is a paid-equivalent state.** An order that reached the lab
   unpaid under approved credit terms: the money is owed, the work goes ahead.
@@ -120,9 +120,9 @@ version, so each feature can be discussed and kept or dropped on its own:
 - **Patient personal data stays local.** It is never sent to an external system.
 - **Payment links live 7 days.** On expiry the order is cancelled automatically
   and the stock allocated to it is released.
-- **Stock adjustments have three reasons with two behaviours.** A count *sets*
+- **Stock adjustments have three reasons with two behaviours.** A count _sets_
   the quantity to what was physically found and records the variance; damage and
-  rejection *deduct* from a named batch.
+  rejection _deduct_ from a named batch.
 - **Batch selection is FEFO — first expired, first out — with pharmacist
   approval** before stock is deducted. Since V2 the rule is a setting; FIFO by
   receipt is the alternative.
@@ -150,7 +150,7 @@ VITE_DATA_SOURCE=api VITE_API_BASE=/api/admin npm run build
   refresh on `/orders/TF-2851` returns a 404 from the web server itself. On nginx
   that is `try_files $uri $uri/ /index.html;`.
 - **A sub-path deploy needs `BASE_PATH` at build time** — `BASE_PATH=/admin/ npm
-  run build` — because asset URLs are baked into the bundle.
+run build` — because asset URLs are baked into the bundle.
 - **`VITE_DATA_SOURCE=api` is what keeps the fixture out of the build.** Not only
   at runtime: the branch in `data/source.js` folds at compile time, so the
   fabricated records are absent from the output rather than merely unreachable.
