@@ -148,6 +148,8 @@ export default {
         title: 'Print log',
         note: 'Every run is logged: what was printed, for what, how many, who and when.',
         all: 'All runs',
+        noun: 'prints',
+        search: 'Order number · document · printed by',
         empty: 'No labels printed yet',
         col: {
             when: 'When',
