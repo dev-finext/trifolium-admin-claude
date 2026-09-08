@@ -103,7 +103,8 @@ export default {
         clinicEmpty: 'Empty = not listed as a practitioner on the website',
         defaultDisc: 'System default: {n}%',
         // V2
-        shelfDisc: 'The discount on shelf products, separate from the base discount · default 40%',
+        shelfDisc:
+            'The discount on shelf products, separate from the base discount · default 40%',
         accountingEmail: 'Invoices and receipts are sent to it',
         payMethod: 'Empty = per order',
     },
@@ -224,6 +225,62 @@ export default {
         },
         rejectedTitle: 'Registration rejected',
         rejectedBody: 'A message was sent with the reason: {reason}',
+    },
+
+    filterGroup: {
+        who: 'Who they are',
+        money: 'Money',
+        safety: 'Safety',
+        site: 'Site & payment',
+    },
+
+    filter: {
+        practitionerNoun: 'practitioners',
+        patientNoun: 'customers',
+        field: {
+            th: 'Field',
+            status: 'Status',
+            city: 'City',
+            cr: 'Payment terms',
+            dbt: 'Debt',
+            debt: 'Debt amount',
+            points: 'Points',
+            site: 'Listed on the site',
+            pay: 'Payment method',
+            cpr: 'Practitioner',
+            ccity: 'City',
+            cst: 'Status',
+            csafe: 'Safety markers',
+            csite: 'Site account',
+            cspent: 'Total spend',
+        },
+        statusState: {
+            active: 'Active',
+            inactive: 'Inactive',
+        },
+        creditState: {
+            credit: 'On credit terms',
+            now: 'Immediate payment',
+        },
+        debtState: {
+            late: 'Debt overdue',
+            open: 'Open debt',
+            none: 'No debt',
+        },
+        siteState: {
+            yes: 'Listed',
+            no: 'Not listed',
+        },
+        siteAccountState: {
+            yes: 'Has an account',
+            no: 'No account',
+        },
+        safetyState: {
+            meds: 'On medication',
+            preg: 'Pregnancy or breastfeeding',
+            allerg: 'Allergies',
+            consent: 'No signed consent',
+        },
     },
 
     directory: {
@@ -566,11 +623,13 @@ export default {
         site: 'Consumer site',
         siteAccount: 'Site account',
         siteAccountOn: 'Yes — the customer also orders alone',
-        siteAccountOff: 'None — the customer exists only through the practitioner',
+        siteAccountOff:
+            'None — the customer exists only through the practitioner',
         clubSince: 'Club member since',
         sitePoints: 'Consumer points',
         birthday: 'Birthday',
-        siteNote: 'The fields the consumer site needs from the customer card — club, points and birthday — are kept here, not on the site.',
+        siteNote:
+            'The fields the consumer site needs from the customer card — club, points and birthday — are kept here, not on the site.',
         codeChip: 'Customer no. {code}',
         practitionerChip: 'Practitioner: {name}',
         inactive: 'Inactive',

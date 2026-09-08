@@ -147,6 +147,17 @@ export default {
             status: 'סטטוס',
             statusAll: 'סטטוס — הכל',
             docs: 'אישורים',
+            noun: 'ספקים',
+            field: {
+                kind: 'קטגוריה',
+                status: 'סטטוס',
+                docs: 'אישורים',
+                pay: 'אמצעי תשלום',
+            },
+            docsState: {
+                ok: 'אישורים תקינים',
+                bad: 'חסר או פג תוקף',
+            },
             docsAll: 'אישורים — הכל',
             docsBad: 'חסר או פג תוקף',
             docsOk: 'הכל בתוקף',
@@ -190,6 +201,12 @@ export default {
             purchasing: 'הזמנות רכש',
             activities: 'פעילויות',
         },
+
+        filterGroup: {
+            who: 'מי הספק',
+            papers: 'מסמכים ותשלום',
+        },
+
 
         // V2
         items: {

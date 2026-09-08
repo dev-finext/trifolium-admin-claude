@@ -16,17 +16,30 @@ import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ASelect from '@/components/ui/ASelect.vue';
+import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
 import { cityKey } from '@/components/users/address';
 import DuplicatesNote from '@/components/users/DuplicatesNote.vue';
 import { patientFields } from '@/components/users/personFields';
 import SearchField from '@/components/users/SearchField.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { fmtISO } from '@/lib/dates';
-import { usePeopleStore } from '@/stores/people';
+import {
+    PATIENT_FILTER_FIELDS,
+    PATIENT_FILTER_GROUPS,
+    usePeopleStore,
+} from '@/stores/people';
 
 /** Wide enough for the two-column field grid without the card scrolling. */
 const NEW_WIDTH = 780;
@@ -43,12 +56,15 @@ const { loc, searchHaystack } = useLocalized();
 const { push } = useToast();
 const people = usePeopleStore();
 
+const SPEC = { fields: PATIENT_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
 const view = useUrlState({
     cq: '',
-    cpr: '',
-    ccity: '',
-    csafe: '',
-    cst: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
 });
 
 const adding = ref(false);
@@ -59,86 +75,88 @@ const createFields = computed(() => patientFields(t));
 
 const all = computed(() => people.patients);
 
-const countBy = (predicate) => all.value.filter(predicate).length;
-
 const practitioners = computed(() => people.practitioners);
 
-const cities = computed(() => {
-    const seen = new Map();
 
-    all.value.forEach((one) => {
-        const key = cityKey(one.city);
+const searched = computed(() => {
+    const query = view.cq.trim().toLowerCase();
 
-        if (key && !seen.has(key)) {
-            seen.set(key, one.city);
-        }
-    });
+    if (!query) {
+        return all.value;
+    }
 
-    return [...seen.entries()]
-        .map(([key, city]) => ({ key, label: loc(city) }))
-        .sort((a, b) => a.label.localeCompare(b.label));
+    return all.value.filter((one) =>
+        searchHaystack(
+            one.code,
+            one.name,
+            one.tz,
+            one.phone,
+            one.prName,
+            one.city,
+        ).includes(query),
+    );
 });
 
-const rows = computed(() =>
-    all.value.filter((one) => {
-        if (view.cpr && one.prCode !== view.cpr) {
-            return false;
+const filters = useListFilters(SPEC, view, searched);
+
+const rows = computed(() => filters.rows);
+
+const { paged, total } = usePaged(rows, view);
+
+const dirty = computed(() => filters.dirty || Boolean(view.cq));
+
+const spec = computed(() => ({
+    id: 'patients',
+    ns: 'users',
+    noun: t('users.filter.patientNoun'),
+    groups: PATIENT_FILTER_GROUPS,
+    units: { cspent: '₪' },
+    fields: PATIENT_FILTER_FIELDS.map((field) => {
+        if (field.key === 'ccity') {
+            return {
+                ...field,
+                optionLabel: (he) => {
+                    const hit = all.value.find(
+                        (one) => cityKey(one.city) === he,
+                    );
+
+                    return hit ? loc(hit.city) : he;
+                },
+            };
         }
 
-        if (view.ccity && cityKey(one.city) !== view.ccity) {
-            return false;
+        if (field.key === 'cpr') {
+            return {
+                ...field,
+                optionLabel: (code) => {
+                    const hit = all.value.find((one) => one.prCode === code);
+
+                    return hit ? `${loc(hit.prName)} · ${code}` : String(code);
+                },
+            };
         }
 
-        if (view.cst && one.status !== view.cst) {
-            return false;
-        }
-
-        if (view.csafe === 'meds' && !one.meds.length) {
-            return false;
-        }
-
-        if (view.csafe === 'preg' && !(one.preg || one.bf)) {
-            return false;
-        }
-
-        if (view.csafe === 'allerg' && !one.allerg) {
-            return false;
-        }
-
-        if (view.csafe === 'consent' && one.consent) {
-            return false;
-        }
-
-        const query = view.cq.trim().toLowerCase();
-
-        if (
-            query &&
-            !searchHaystack(
-                one.code,
-                one.name,
-                one.tz,
-                one.phone,
-                one.prName,
-                one.city,
-            ).includes(query)
-        ) {
-            return false;
-        }
-
-        return true;
+        return field;
     }),
-);
-
-const dirty = computed(() =>
-    Boolean(view.cq || view.cpr || view.ccity || view.csafe || view.cst),
-);
+}));
 
 function clear() {
     view.cq = '';
-    view.cpr = '';
-    view.ccity = '';
-    view.csafe = '';
-    view.cst = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(view, filterDefaults(SPEC), { cq: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
 }
 
 const cols = computed(() => [
@@ -260,6 +278,14 @@ function create() {
 
 <template>
     <div>
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @apply="applyView"
+        />
+
         <FilterBar
             :count="rows.length"
             :label="t('users.customers.count', { n: all.length })"
@@ -270,113 +296,29 @@ function create() {
                 v-model="view.cq"
                 :placeholder="t('users.customers.search')"
             />
-
-            <ASelect
-                v-model="view.cpr"
-                :aria-label="t('users.customers.practitionerAria')"
-            >
-                <option value="">
-                    {{ t('users.customers.allPractitioners') }}
-                </option>
-                <option
-                    v-for="one in practitioners"
-                    :key="one.code"
-                    :value="one.code"
-                >
-                    {{
-                        t('users.customers.option', {
-                            label: loc(one.name),
-                            n: countBy((row) => row.prCode === one.code),
-                        })
-                    }}
-                </option>
-            </ASelect>
-
-            <ASelect
-                v-model="view.ccity"
-                :aria-label="t('users.customers.cityAria')"
-            >
-                <option value="">{{ t('users.customers.allCities') }}</option>
-                <option
-                    v-for="city in cities"
-                    :key="city.key"
-                    :value="city.key"
-                >
-                    {{
-                        t('users.customers.option', {
-                            label: city.label,
-                            n: countBy((row) => cityKey(row.city) === city.key),
-                        })
-                    }}
-                </option>
-            </ASelect>
-
-            <ASelect
-                v-model="view.csafe"
-                :aria-label="t('users.customers.safetyAria')"
-            >
-                <option value="">{{ t('users.customers.allSafety') }}</option>
-                <option value="meds">
-                    {{
-                        t('users.customers.safetyMeds', {
-                            n: countBy((row) => row.meds.length),
-                        })
-                    }}
-                </option>
-                <option value="preg">
-                    {{
-                        t('users.customers.safetyPreg', {
-                            n: countBy((row) => row.preg || row.bf),
-                        })
-                    }}
-                </option>
-                <option value="allerg">
-                    {{
-                        t('users.customers.safetyAllerg', {
-                            n: countBy((row) => row.allerg),
-                        })
-                    }}
-                </option>
-                <option value="consent">
-                    {{
-                        t('users.customers.safetyNoConsent', {
-                            n: countBy((row) => !row.consent),
-                        })
-                    }}
-                </option>
-            </ASelect>
-
-            <ASelect
-                v-model="view.cst"
-                :aria-label="t('users.customers.statusAria')"
-            >
-                <option value="">{{ t('users.customers.allStatuses') }}</option>
-                <option value="active">
-                    {{
-                        t('users.customers.option', {
-                            label: t('users.customers.active'),
-                            n: countBy((row) => row.status === 'active'),
-                        })
-                    }}
-                </option>
-                <option value="inactive">
-                    {{
-                        t('users.customers.option', {
-                            label: t('users.customers.inactive'),
-                            n: countBy((row) => row.status !== 'active'),
-                        })
-                    }}
-                </option>
-            </ASelect>
-
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
             <AButton sm kind="p" icon="plus" @click="adding = true">
                 {{ t('users.customers.add') }}
             </AButton>
         </FilterBar>
 
+        <FilterChips
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clear"
+        />
+
         <ADataTable
             :cols="cols"
-            :rows="rows"
+            :rows="paged"
             row-key="code"
             :selected="props.selected || null"
             @row="(row) => emit('open', row.code)"
@@ -453,6 +395,24 @@ function create() {
                 />
             </template>
         </ADataTable>
+
+        <APagination
+            v-model:page="view.pg"
+            v-model:size="view.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
 
         <AModal
             :open="adding"

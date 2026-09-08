@@ -13,10 +13,10 @@
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
-import { NUMBERING, SETTINGS } from '@/config';
+import { CREDIT, NUMBERING, SETTINGS } from '@/config';
 import { persist } from '@/data/source';
 import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
-import { LOCALES, loc } from '@/lib/localized';
+import { isLocalized, LOCALES, loc } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
 
 /**
@@ -57,6 +57,134 @@ function codeNumber(code) {
 
     return digits ? Number(digits) : 0;
 }
+
+/**
+ * A city as a stable key: the Hebrew source text, so a filtered link opens on
+ * the same city whichever language the reader is in.
+ */
+function cityOf(one) {
+    const city = one.city;
+
+    return isLocalized(city) ? city.he : String(city ?? '');
+}
+
+/** Whether a practitioner's debt has passed the warning window. */
+export function practitionerLate(one) {
+    return one.debt > 0 && one.debtDays > CREDIT.warnDays;
+}
+
+/** What the practitioner directory may be narrowed by. */
+export const PRACTITIONER_FILTER_FIELDS = [
+    {
+        key: 'th',
+        group: 'who',
+        kind: 'set',
+        prefix: 'therapy',
+        values: (one) => [one.therapy],
+    },
+    {
+        key: 'status',
+        group: 'who',
+        kind: 'set',
+        prefix: 'users.filter.statusState',
+        values: (one) => [one.status],
+    },
+    { key: 'city', group: 'who', kind: 'set', values: (one) => [cityOf(one)] },
+    {
+        key: 'cr',
+        group: 'money',
+        kind: 'set',
+        prefix: 'users.filter.creditState',
+        values: (one) => [one.credit ? 'credit' : 'now'],
+    },
+    {
+        key: 'dbt',
+        group: 'money',
+        kind: 'set',
+        prefix: 'users.filter.debtState',
+        values: (one) => [
+            one.debt > 0 ? (practitionerLate(one) ? 'late' : 'open') : 'none',
+        ],
+    },
+    { key: 'debt', group: 'money', kind: 'num', value: (one) => one.debt || 0 },
+    {
+        key: 'points',
+        group: 'money',
+        kind: 'num',
+        value: (one) => one.points || 0,
+    },
+    {
+        key: 'site',
+        group: 'site',
+        kind: 'set',
+        prefix: 'users.filter.siteState',
+        values: (one) => [one.clinic ? 'yes' : 'no'],
+    },
+    {
+        key: 'pay',
+        group: 'site',
+        kind: 'set',
+        prefix: 'paymentMethod',
+        values: (one) => (one.payMethod ? [one.payMethod] : []),
+    },
+];
+
+export const PRACTITIONER_FILTER_GROUPS = ['who', 'money', 'site'];
+
+/** What the customer list may be narrowed by. */
+export const PATIENT_FILTER_FIELDS = [
+    { key: 'cpr', group: 'who', kind: 'set', values: (one) => [one.prCode] },
+    { key: 'ccity', group: 'who', kind: 'set', values: (one) => [cityOf(one)] },
+    {
+        key: 'cst',
+        group: 'who',
+        kind: 'set',
+        prefix: 'users.filter.statusState',
+        values: (one) => [one.status],
+    },
+    {
+        key: 'csafe',
+        group: 'safety',
+        kind: 'set',
+        prefix: 'users.filter.safetyState',
+        values: (one) => {
+            const out = [];
+
+            if (one.meds?.length) {
+                out.push('meds');
+            }
+
+            if (one.preg || one.bf) {
+                out.push('preg');
+            }
+
+            if (one.allerg) {
+                out.push('allerg');
+            }
+
+            if (!one.consent) {
+                out.push('consent');
+            }
+
+            return out;
+        },
+    },
+    {
+        key: 'csite',
+        group: 'site',
+        kind: 'set',
+        prefix: 'users.filter.siteAccountState',
+        values: (one) => [one.siteAccount ? 'yes' : 'no'],
+    },
+    {
+        key: 'cspent',
+        group: 'site',
+        kind: 'num',
+        value: (one) => one.spent || 0,
+    },
+];
+
+export const PATIENT_FILTER_GROUPS = ['who', 'safety', 'site'];
 
 export const usePeopleStore = defineStore('people', () => {
     const dataset = useDatasetStore();

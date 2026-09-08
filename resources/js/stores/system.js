@@ -144,6 +144,40 @@ function nextId(rows, prefix) {
     return `${prefix}${highest + 1}`;
 }
 
+/** What the supplier list may be narrowed by. */
+export const SUPPLIER_FILTER_FIELDS = [
+    {
+        key: 'kind',
+        group: 'who',
+        kind: 'set',
+        prefix: 'systemContacts.kind',
+        values: (one) => [one.kind],
+    },
+    {
+        key: 'status',
+        group: 'who',
+        kind: 'set',
+        prefix: 'systemContacts.status',
+        values: (one) => [one.status],
+    },
+    {
+        key: 'docs',
+        group: 'papers',
+        kind: 'set',
+        prefix: 'systemContacts.suppliers.filter.docsState',
+        values: (one) => [supplierDocsOk(one) ? 'ok' : 'bad'],
+    },
+    {
+        key: 'pay',
+        group: 'papers',
+        kind: 'set',
+        prefix: 'systemContacts.payMethod',
+        values: (one) => (one.payMethod ? [one.payMethod] : []),
+    },
+];
+
+export const SUPPLIER_FILTER_GROUPS = ['who', 'papers'];
+
 export const useSystemStore = defineStore('system', () => {
     const dataset = useDatasetStore();
 

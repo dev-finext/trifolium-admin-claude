@@ -141,6 +141,17 @@ export default {
             status: 'Status',
             statusAll: 'Status — all',
             docs: 'Certificates',
+            noun: 'suppliers',
+            field: {
+                kind: 'Category',
+                status: 'Status',
+                docs: 'Certificates',
+                pay: 'Payment method',
+            },
+            docsState: {
+                ok: 'Certificates in order',
+                bad: 'Missing or expired',
+            },
             docsAll: 'Certificates — all',
             docsBad: 'Missing or expired',
             docsOk: 'All valid',
@@ -184,6 +195,12 @@ export default {
             purchasing: 'Purchase orders',
             activities: 'Activities',
         },
+
+        filterGroup: {
+            who: 'The supplier',
+            papers: 'Documents & payment',
+        },
+
 
         // V2
         items: {

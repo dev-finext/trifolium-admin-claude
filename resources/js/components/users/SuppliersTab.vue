@@ -8,7 +8,7 @@
 //
 // Every filter and the open supplier live in the query string, so a filtered
 // view can be pasted to a colleague and opens the same way.
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import SearchField from '@/components/system/SearchField.vue';
@@ -17,13 +17,25 @@ import SupplierTable from '@/components/system/SupplierTable.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import AIcon from '@/components/ui/AIcon.vue';
-import ASelect from '@/components/ui/ASelect.vue';
+import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { num } from '@/lib/money';
-import { supplierDocsOk, useSystemStore } from '@/stores/system';
+import {
+    SUPPLIER_FILTER_FIELDS,
+    SUPPLIER_FILTER_GROUPS,
+    useSystemStore,
+} from '@/stores/system';
 
 const emit = defineEmits(['ask']);
 
@@ -32,91 +44,67 @@ const { searchHaystack } = useLocalized();
 const { push } = useToast();
 const system = useSystemStore();
 
+const SPEC = { fields: SUPPLIER_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
 const view = useUrlState({
     sq: '',
-    kind: '',
-    status: '',
-    docs: '',
     supplier: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
 });
 
 const term = computed(() => view.sq.trim().toLowerCase());
 
-const kindOptions = computed(() => [
-    { value: '', label: t('systemContacts.suppliers.filter.kindAll') },
-    ...system.supplierKindIds.map((id) => ({
-        value: id,
-        label: `${t(`systemContacts.kind.${id}`)} (${num(
-            system.suppliers.filter((supplier) => supplier.kind === id).length,
-        )})`,
-    })),
-]);
-
-const statusOptions = computed(() => [
-    { value: '', label: t('systemContacts.suppliers.filter.statusAll') },
-    { value: 'active', label: t('systemContacts.status.active') },
-    { value: 'suspended', label: t('systemContacts.status.suspended') },
-]);
-
-const docsOptions = computed(() => [
-    { value: '', label: t('systemContacts.suppliers.filter.docsAll') },
-    { value: 'bad', label: t('systemContacts.suppliers.filter.docsBad') },
-    { value: 'ok', label: t('systemContacts.suppliers.filter.docsOk') },
-]);
-
-const rows = computed(() =>
-    system.suppliers.filter((supplier) => {
-        if (view.kind && supplier.kind !== view.kind) {
-            return false;
-        }
-
-        if (view.status && supplier.status !== view.status) {
-            return false;
-        }
-
-        const ok = supplierDocsOk(supplier);
-
-        if (view.docs === 'ok' && !ok) {
-            return false;
-        }
-
-        if (view.docs === 'bad' && ok) {
-            return false;
-        }
-
-        if (
-            term.value &&
-            !searchHaystack(
-                supplier.code,
-                supplier.name,
-                supplier.contact,
-                supplier.mobile,
-                supplier.biz,
-                supplier.city,
-            ).includes(term.value)
-        ) {
-            return false;
-        }
-
-        return true;
-    }),
+const searched = computed(() =>
+    term.value
+        ? system.suppliers.filter((supplier) =>
+              searchHaystack(
+                  supplier.code,
+                  supplier.name,
+                  supplier.bizNum,
+                  supplier.contact?.name,
+                  supplier.contact?.phone,
+              ).includes(term.value),
+          )
+        : system.suppliers,
 );
 
-const dirty = computed(() =>
-    Boolean(view.sq || view.kind || view.status || view.docs),
-);
+const filters = useListFilters(SPEC, view, searched);
 
-const openSupplier = computed(
-    () =>
-        system.suppliers.find((supplier) => supplier.code === view.supplier) ||
-        null,
-);
+const rows = computed(() => filters.rows);
+
+const { paged, total } = usePaged(rows, view);
+
+const dirty = computed(() => filters.dirty || Boolean(view.sq));
+
+const spec = computed(() => ({
+    id: 'suppliers',
+    ns: 'systemContacts.suppliers',
+    noun: t('systemContacts.suppliers.filter.noun'),
+    groups: SUPPLIER_FILTER_GROUPS,
+    fields: SUPPLIER_FILTER_FIELDS,
+}));
 
 function clear() {
     view.sq = '';
-    view.kind = '';
-    view.status = '';
-    view.docs = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(view, filterDefaults(SPEC), { sq: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
 }
 
 /**
@@ -182,6 +170,14 @@ function lockCards() {
                 </AButton>
             </div>
 
+            <SavedViews
+                ref="savedViews"
+                :spec="spec"
+                :filters="view"
+                :rows="searched"
+                @apply="applyView"
+            />
+
             <FilterBar
                 :count="rows.length"
                 :label="t('systemContacts.suppliers.countLabel')"
@@ -194,27 +190,47 @@ function lockCards() {
                     :label="t('systemContacts.suppliers.filter.searchLabel')"
                     :width="320"
                 />
-                <ASelect
-                    v-model="view.kind"
-                    :options="kindOptions"
-                    :aria-label="t('systemContacts.suppliers.filter.kind')"
-                />
-                <ASelect
-                    v-model="view.status"
-                    :options="statusOptions"
-                    :aria-label="t('systemContacts.suppliers.filter.status')"
-                />
-                <ASelect
-                    v-model="view.docs"
-                    :options="docsOptions"
-                    :aria-label="t('systemContacts.suppliers.filter.docs')"
-                />
+                <AButton icon="layers" @click="drawerOpen = true">
+                    {{
+                        filters.active.length
+                            ? t('filters.openWith', {
+                                  n: filters.active.length,
+                              })
+                            : t('filters.open')
+                    }}
+                </AButton>
             </FilterBar>
 
+            <FilterChips
+                :spec="spec"
+                :filters="view"
+                :rows="searched"
+                @remove="removeChip"
+                @clear="clear"
+            />
+
             <SupplierTable
-                :rows="rows"
+                :rows="paged"
                 :selected="view.supplier"
                 @open="view.supplier = $event.code"
+            />
+
+            <APagination
+                v-model:page="view.pg"
+                v-model:size="view.ps"
+                :total="total"
+            />
+
+            <FilterDrawer
+                :open="drawerOpen"
+                :spec="spec"
+                :filters="view"
+                :rows="searched"
+                :result-count="rows.length"
+                @close="drawerOpen = false"
+                @clear="clear"
+                @patch="filters.patch"
+                @save="savedViews?.openSave()"
             />
 
             <ADrawer

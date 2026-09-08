@@ -222,6 +222,62 @@ export default {
         rejectedBody: 'נשלחה הודעה עם הסיבה: {reason}',
     },
 
+    filterGroup: {
+        who: 'מי זה',
+        money: 'כספים',
+        safety: 'בטיחות',
+        site: 'אתר ותשלום',
+    },
+
+    filter: {
+        practitionerNoun: 'מטפלים',
+        patientNoun: 'לקוחות',
+        field: {
+            th: 'תחום',
+            status: 'סטטוס',
+            city: 'עיר',
+            cr: 'תנאי תשלום',
+            dbt: 'חוב',
+            debt: 'סכום החוב',
+            points: 'נקודות',
+            site: 'מופיע באתר',
+            pay: 'אמצעי תשלום',
+            cpr: 'מטפל',
+            ccity: 'עיר',
+            cst: 'סטטוס',
+            csafe: 'סימוני בטיחות',
+            csite: 'חשבון באתר',
+            cspent: 'סך רכישות',
+        },
+        statusState: {
+            active: 'פעיל',
+            inactive: 'לא פעיל',
+        },
+        creditState: {
+            credit: 'בהקפה',
+            now: 'תשלום מיידי',
+        },
+        debtState: {
+            late: 'חוב באיחור',
+            open: 'חוב פתוח',
+            none: 'ללא חוב',
+        },
+        siteState: {
+            yes: 'מופיע באתר',
+            no: 'לא מופיע',
+        },
+        siteAccountState: {
+            yes: 'יש חשבון',
+            no: 'אין חשבון',
+        },
+        safetyState: {
+            meds: 'נוטל תרופות',
+            preg: 'היריון או הנקה',
+            allerg: 'אלרגיות',
+            consent: 'ללא הסכמה חתומה',
+        },
+    },
+
     directory: {
         count: 'מטפלים · מתוך {n}',
         search: 'שם · מספר לקוח · טלפון · אימייל',
@@ -560,7 +616,8 @@ export default {
         clubSince: 'חבר מועדון מאז',
         sitePoints: 'נקודות צרכני',
         birthday: 'יום הולדת',
-        siteNote: 'השדות שהאתר הצרכני צריך מכרטיס הלקוח: מועדון, נקודות ויום הולדת — נשמרים כאן, לא באתר.',
+        siteNote:
+            'השדות שהאתר הצרכני צריך מכרטיס הלקוח: מועדון, נקודות ויום הולדת — נשמרים כאן, לא באתר.',
         codeChip: 'מספר לקוח {code}',
         practitionerChip: 'מטפל: {name}',
         inactive: 'לא פעיל',
