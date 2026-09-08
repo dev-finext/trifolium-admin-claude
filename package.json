@@ -15,8 +15,8 @@
         "check:i18n": "node --import ./scripts/alias-register.mjs scripts/check-i18n.mjs",
         "check:privacy": "node scripts/check-fixture-privacy.mjs",
         "check:build": "node scripts/check-build.mjs",
-        "verify": "npm run lint:check && npm run check:i18n && npm run build",
-        "verify:prod": "npm run lint:check && npm run check:i18n && npm run build && npm run check:build"
+        "verify": "npm run lint:check && npm run check:i18n && npm run check:privacy && npm run build",
+        "verify:prod": "npm run lint:check && npm run check:i18n && npm run check:privacy && npm run build && npm run check:build"
     },
     "engines": {
         "node": ">=20.19"
