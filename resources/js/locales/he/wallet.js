@@ -26,14 +26,40 @@ export default {
 
     filter: {
         search: 'שם מטפל · מספר לקוח · טלפון',
-        balanceAll: 'יתרה — הכל',
-        withPoints: 'עם יתרת נקודות',
-        withoutPoints: 'בלי יתרת נקודות',
-        withDebt: 'עם חוב פתוח',
-        withEarned: 'עם תנועות צבירה',
-        withRedeemed: 'עם תנועות מימוש',
         kindAll: 'סוג — הכל',
         searchLedger: 'הזמנה · תאריך · סיבה',
+        pointsUnit: 'נק׳',
+
+        // Field names in the filter drawer — stores/money.js.
+        field: {
+            wpoints: 'יתרת נקודות',
+            wpts: 'כמה נקודות',
+            wdebt: 'חוב פתוח',
+            wowed: 'גובה החוב',
+            wact: 'תנועות בארנק',
+        },
+
+        pointsState: {
+            has: 'עם יתרת נקודות',
+            none: 'בלי יתרת נקודות',
+        },
+
+        debtState: {
+            has: 'עם חוב פתוח',
+            none: 'בלי חוב',
+        },
+
+        activity: {
+            earn: 'צבר נקודות',
+            spend: 'מימש נקודות',
+        },
+    },
+
+    // Filter-drawer groups — stores/money.js.
+    filterGroup: {
+        points: 'נקודות',
+        debt: 'חוב',
+        activity: 'פעילות',
     },
 
     list: {

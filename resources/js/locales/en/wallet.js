@@ -25,15 +25,41 @@ export default {
     },
 
     filter: {
-        search: 'Practitioner name · customer no. · phone',
-        balanceAll: 'Balance — all',
-        withPoints: 'With a points balance',
-        withoutPoints: 'Without a points balance',
-        withDebt: 'With open debt',
-        withEarned: 'With earning movements',
-        withRedeemed: 'With redemption movements',
+        search: 'Practitioner name · customer number · phone',
         kindAll: 'Kind — all',
         searchLedger: 'Order · date · reason',
+        pointsUnit: 'pts',
+
+        // Field names in the filter drawer — stores/money.js.
+        field: {
+            wpoints: 'Points balance',
+            wpts: 'How many points',
+            wdebt: 'Open debt',
+            wowed: 'Amount owed',
+            wact: 'Wallet activity',
+        },
+
+        pointsState: {
+            has: 'Has a points balance',
+            none: 'No points balance',
+        },
+
+        debtState: {
+            has: 'Has open debt',
+            none: 'No debt',
+        },
+
+        activity: {
+            earn: 'Earned points',
+            spend: 'Redeemed points',
+        },
+    },
+
+    // Filter-drawer groups — stores/money.js.
+    filterGroup: {
+        points: 'Points',
+        debt: 'Debt',
+        activity: 'Activity',
     },
 
     list: {

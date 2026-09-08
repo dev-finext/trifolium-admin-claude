@@ -202,6 +202,58 @@ export const TXN_FILTER_FIELDS = [
 
 export const TXN_FILTER_GROUPS = ['what', 'who', 'size'];
 
+/**
+ * What the points wallet can be filtered by.
+ *
+ * The screen used to carry one dropdown holding six values, which forced three
+ * unrelated questions into one answer — a reader could ask for "has points" or
+ * "owes money" but never for both at once. They are three fields here, and a
+ * practitioner who both earned and redeemed this year appears under both.
+ *
+ * `earned` and `redeemed` are read off the row: the ledger lives in the store,
+ * so the screen resolves them once when it builds its list.
+ */
+export const WALLET_FILTER_FIELDS = [
+    {
+        key: 'wpoints',
+        group: 'points',
+        kind: 'set',
+        prefix: 'wallet.filter.pointsState',
+        values: (row) => [row.points > 0 ? 'has' : 'none'],
+    },
+    {
+        key: 'wpts',
+        group: 'points',
+        kind: 'num',
+        value: (row) => row.points || 0,
+    },
+    {
+        key: 'wdebt',
+        group: 'debt',
+        kind: 'set',
+        prefix: 'wallet.filter.debtState',
+        values: (row) => [row.debt > 0 ? 'has' : 'none'],
+    },
+    {
+        key: 'wowed',
+        group: 'debt',
+        kind: 'num',
+        value: (row) => row.debt || 0,
+    },
+    {
+        key: 'wact',
+        group: 'activity',
+        kind: 'set',
+        prefix: 'wallet.filter.activity',
+        values: (row) => [
+            ...(row.earned ? ['earn'] : []),
+            ...(row.redeemed ? ['spend'] : []),
+        ],
+    },
+];
+
+export const WALLET_FILTER_GROUPS = ['points', 'debt', 'activity'];
+
 export const useMoneyStore = defineStore('money', () => {
     const dataset = useDatasetStore();
 

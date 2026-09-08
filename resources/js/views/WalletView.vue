@@ -19,16 +19,29 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ASelect from '@/components/ui/ASelect.vue';
+import APagination from '@/components/ui/APagination.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
 import PointsLedgerPanel from '@/components/wallet/PointsLedgerPanel.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { ils, num } from '@/lib/money';
-import { useMoneyStore } from '@/stores/money';
+import {
+    useMoneyStore,
+    WALLET_FILTER_FIELDS,
+    WALLET_FILTER_GROUPS,
+} from '@/stores/money';
 
 /** How wide the balances list sits once a ledger is open beside it. */
 const LIST_WIDTH = '420px';
@@ -38,7 +51,17 @@ const { loc, searchHaystack } = useLocalized();
 const { push } = useToast();
 const money = useMoneyStore();
 
-const view = useUrlState({ q: '', only: '', practitioner: '' });
+const SPEC = { fields: WALLET_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
+const view = useUrlState({
+    q: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
+    practitioner: '',
+});
 const checking = ref(false);
 
 const withPoints = computed(() =>
@@ -61,43 +84,62 @@ const selected = computed(() =>
     view.practitioner ? money.byCode(view.practitioner) : null,
 );
 
-const onlyOptions = computed(() => [
-    { value: '', label: t('wallet.filter.balanceAll') },
-    { value: 'points', label: t('wallet.filter.withPoints') },
-    { value: 'none', label: t('wallet.filter.withoutPoints') },
-    { value: 'debt', label: t('wallet.filter.withDebt') },
-    { value: 'earn', label: t('wallet.filter.withEarned') },
-    { value: 'spend', label: t('wallet.filter.withRedeemed') },
-]);
-
-/** One predicate per filter value, so the select and the tiles agree. */
-const PREDICATES = {
-    points: (row) => row.points > 0,
-    none: (row) => row.points === 0,
-    debt: (row) => row.debt > 0,
-    earn: (row, store) => store.hasEarned(row.code),
-    spend: (row, store) => store.hasRedeemed(row.code),
-};
-
-const rows = computed(() =>
-    money.practitioners.filter((row) => {
-        const predicate = PREDICATES[view.only];
-
-        if (predicate && !predicate(row, money)) {
-            return false;
-        }
-
-        const q = view.q.trim().toLowerCase();
-
-        if (q && !searchHaystack(row.code, row.name, row.phone).includes(q)) {
-            return false;
-        }
-
-        return true;
-    }),
+/** Every practitioner, with the two ledger answers resolved onto the row. */
+const all = computed(() =>
+    money.practitioners.map((row) => ({
+        ...row,
+        earned: money.hasEarned(row.code),
+        redeemed: money.hasRedeemed(row.code),
+    })),
 );
 
-const dirty = computed(() => Boolean(view.q) || Boolean(view.only));
+const searched = computed(() => {
+    const query = view.q.trim().toLowerCase();
+
+    if (!query) {
+        return all.value;
+    }
+
+    return all.value.filter((row) =>
+        searchHaystack(row.code, row.name, row.phone).includes(query),
+    );
+});
+
+const filters = useListFilters(SPEC, view, searched);
+
+const rows = computed(() => filters.rows);
+
+const { paged, total } = usePaged(rows, view);
+
+const dirty = computed(() => filters.dirty || Boolean(view.q));
+
+const spec = computed(() => ({
+    id: 'wallet',
+    ns: 'wallet',
+    noun: t('wallet.noun.practitioners'),
+    groups: WALLET_FILTER_GROUPS,
+    units: { wpts: t('wallet.filter.pointsUnit'), wowed: '₪' },
+    fields: WALLET_FILTER_FIELDS,
+}));
+
+function clear() {
+    view.q = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(view, filterDefaults(SPEC), { q: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
 
 // With a ledger open beside it the list keeps only what identifies a row; the
 // value, order count and debt come back when the ledger closes.
@@ -151,15 +193,6 @@ const checkEffects = computed(() => [
     t('wallet.check.effect3'),
 ]);
 
-function toggle(value) {
-    view.only = view.only === value ? '' : value;
-}
-
-function clear() {
-    view.q = '';
-    view.only = '';
-}
-
 /** Reconcile every card against its ledger and report what does not agree. */
 function runCheck() {
     checking.value = false;
@@ -202,8 +235,8 @@ function runCheck() {
             :sub="
                 t('wallet.kpi.totalSub', { value: ils(money.totalPoints, 0) })
             "
-            :active="!view.only"
-            @click="view.only = ''"
+            :active="!filters.active.length"
+            @click="filters.clear()"
         />
         <FilterKpi
             icon="users"
@@ -214,24 +247,24 @@ function runCheck() {
                     n: money.practitioners.length,
                 })
             "
-            :active="view.only === 'points'"
-            @click="toggle('points')"
+            :active="view.wpoints.includes('has')"
+            @click="filters.toggle('wpoints', 'has')"
         />
         <FilterKpi
             icon="user"
             :label="t('wallet.kpi.withoutBalance')"
             :value="num(money.practitioners.length - withPoints.length)"
             :sub="t('wallet.kpi.withoutBalanceSub')"
-            :active="view.only === 'none'"
-            @click="toggle('none')"
+            :active="view.wpoints.includes('none')"
+            @click="filters.toggle('wpoints', 'none')"
         />
         <FilterKpi
             icon="card"
             :label="t('wallet.kpi.withDebt')"
             :value="num(withDebt.length)"
             :sub="t('wallet.kpi.withDebtSub', { amount: ils(debtTotal, 0) })"
-            :active="view.only === 'debt'"
-            @click="toggle('debt')"
+            :active="view.wdebt.includes('has')"
+            @click="filters.toggle('wdebt', 'has')"
         />
     </div>
 
@@ -241,8 +274,8 @@ function runCheck() {
             :label="t('wallet.kpi.earned')"
             :value="num(money.pointsEarned)"
             :sub="t('wallet.kpi.earnedSub', { n: earners.length })"
-            :active="view.only === 'earn'"
-            @click="toggle('earn')"
+            :active="view.wact.includes('earn')"
+            @click="filters.toggle('wact', 'earn')"
         />
         <FilterKpi
             icon="card"
@@ -254,13 +287,22 @@ function runCheck() {
                     value: ils(money.pointsRedeemed, 0),
                 })
             "
-            :active="view.only === 'spend'"
-            @click="toggle('spend')"
+            :active="view.wact.includes('spend')"
+            @click="filters.toggle('wact', 'spend')"
         />
     </div>
 
+    <SavedViews
+        ref="savedViews"
+        :spec="spec"
+        :filters="view"
+        :rows="searched"
+        @apply="applyView"
+    />
+
     <FilterBar
         :count="rows.length"
+        :total="searched.length"
         :label="t('wallet.noun.practitioners')"
         :dirty="dirty"
         @clear="clear"
@@ -270,8 +312,34 @@ function runCheck() {
             :placeholder="t('wallet.filter.search')"
             :width="320"
         />
-        <ASelect v-model="view.only" :options="onlyOptions" />
+        <AButton icon="layers" @click="drawerOpen = true">
+            {{
+                filters.active.length
+                    ? t('filters.openWith', { n: filters.active.length })
+                    : t('filters.open')
+            }}
+        </AButton>
     </FilterBar>
+
+    <FilterChips
+        :spec="spec"
+        :filters="view"
+        :rows="searched"
+        @remove="removeChip"
+        @clear="clear"
+    />
+
+    <FilterDrawer
+        :open="drawerOpen"
+        :spec="spec"
+        :filters="view"
+        :rows="searched"
+        :result-count="rows.length"
+        @close="drawerOpen = false"
+        @clear="clear"
+        @patch="filters.patch"
+        @save="savedViews?.openSave()"
+    />
 
     <div
         class="a-grid w-split"
@@ -282,7 +350,7 @@ function runCheck() {
         <ACard :title="t('wallet.list.title')" icon="users" :pad="false">
             <ADataTable
                 :cols="cols"
-                :rows="rows"
+                :rows="paged"
                 row-key="code"
                 :selected="view.practitioner"
                 @row="(row) => (view.practitioner = row.code)"
@@ -323,6 +391,12 @@ function runCheck() {
                     <span v-else class="w-dash">—</span>
                 </template>
             </ADataTable>
+
+            <APagination
+                v-model:page="view.pg"
+                v-model:size="view.ps"
+                :total="total"
+            />
         </ACard>
 
         <PointsLedgerPanel
