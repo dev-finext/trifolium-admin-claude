@@ -21,7 +21,7 @@
 // A `set` field may carry `prefix: 'items.family'`, and the drawer reads its
 // option text from `<prefix>.<value>`. A field whose values are record content
 // rather than ids (a city, a person) carries `optionLabel` instead.
-import { computed } from 'vue';
+import { computed, reactive, watch } from 'vue';
 
 import {
     activeKeys,
@@ -78,7 +78,9 @@ export function useListFilters(spec, view, source) {
         patch(emptyFilters(fields));
     }
 
-    return {
+    // A reactive object rather than a bag of refs: the screen and its template
+    // both read `filters.rows` and `filters.dirty` as plain values.
+    return reactive({
         fields,
         active,
         dirty,
@@ -88,10 +90,46 @@ export function useListFilters(spec, view, source) {
         toggle,
         clearField,
         clear,
-    };
+    });
 }
 
 /** The defaults a screen hands `useUrlState` so every field round-trips. */
 export function filterDefaults(spec) {
     return emptyFilters(spec.fields || []);
 }
+
+/**
+ * One page of a filtered list, with the page and its size in the URL.
+ *
+ * The prototype's fixture fits on one page; the real list will not, and this is
+ * the contract for that — the same two parameters a server pager takes.
+ *
+ * @param {import('vue').Ref<Array>} rows  The filtered rows.
+ * @param {object} view  The URL state, holding `pg` and `ps`.
+ */
+export function usePaged(rows, view) {
+    const total = computed(() => rows.value.length);
+    const pages = computed(() =>
+        Math.max(1, Math.ceil(total.value / (Number(view.ps) || 50))),
+    );
+
+    // A filter that shortens the list must not leave the reader on a page that
+    // no longer exists.
+    watch(pages, (n) => {
+        if (Number(view.pg) > n) {
+            view.pg = 1;
+        }
+    });
+
+    const paged = computed(() => {
+        const size = Number(view.ps) || 50;
+        const page = Math.min(Math.max(1, Number(view.pg) || 1), pages.value);
+
+        return rows.value.slice((page - 1) * size, page * size);
+    });
+
+    return { paged, total, pages };
+}
+
+/** The page keys a screen adds to its URL state alongside the filters. */
+export const PAGE_DEFAULTS = { pg: 1, ps: 50 };

@@ -103,7 +103,54 @@ export default {
         siteSub: 'Sync flag on',
     },
 
+    // The filter system
+    filterGroup: {
+        what: 'What it is',
+        stock: 'Stock',
+        supply: 'Purchasing & price',
+        site: 'Consumer site',
+        quality: 'Card completeness',
+    },
+
     filter: {
+        noun: 'items',
+        field: {
+            fam: 'Family',
+            flag: 'Flags',
+            uom: 'Sales unit',
+            stk: 'Stock state',
+            avail: 'Available',
+            sup: 'Standing supplier',
+            price: 'Last purchase price',
+            site: 'Site sync',
+            miss: 'Mandatory fields',
+            bom: 'Bill of materials',
+            files: 'Attachments',
+        },
+        stockState: {
+            out: 'Out of stock',
+            low: 'Below minimum',
+            ok: 'In stock',
+            untracked: 'Not stock-tracked',
+        },
+        siteState: {
+            on: 'Synced',
+            off: 'Not synced',
+        },
+        missState: {
+            yes: 'Fields missing',
+            no: 'Card complete',
+        },
+        bomState: {
+            yes: 'Has a BOM',
+            no: 'No BOM',
+        },
+        fileState: {
+            yes: 'Has files',
+            no: 'No files',
+        },
+        noSupplier: 'No standing supplier',
+        supplierNa: 'Not a purchase item',
         count: 'items · of {total}',
         search: 'Name · Latin · Chinese · code · SKU · supplier',
         family: 'Family — all',

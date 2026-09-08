@@ -13,6 +13,7 @@ import { computed } from 'vue';
 import {
     ITEM_CODE_DIGITS,
     ITEM_FAMILY,
+    ITEM_FLAG_IDS,
     ITEM_MANDATORY,
     TERMINAL_STATUS_IDS,
 } from '@/config';
@@ -67,6 +68,118 @@ const FILLED = {
         item.price?.sale !== null && item.price?.sale !== undefined,
     supplier: (item) => Boolean(item.suppliers?.preferred),
 };
+
+/**
+ * Where one item's stock stands, as one value the filter can group by.
+ * An item the console does not track has no state at all rather than a zero.
+ */
+export function itemStockState(row) {
+    if (row.avail === null || row.avail === undefined) {
+        return 'untracked';
+    }
+
+    if (row.avail <= 0) {
+        return 'out';
+    }
+
+    return row.low ? 'low' : 'ok';
+}
+
+/**
+ * What the one filter system may narrow the item list by. Option text comes
+ * from each field's `prefix`; the supplier is record content and is labelled by
+ * the screen.
+ */
+export const ITEM_FILTER_FIELDS = [
+    {
+        key: 'fam',
+        group: 'what',
+        kind: 'set',
+        prefix: 'items.family',
+        values: (row) => [row.family],
+    },
+    {
+        key: 'flag',
+        group: 'what',
+        kind: 'set',
+        prefix: 'items.flag',
+        values: (row) => ITEM_FLAG_IDS.filter((id) => row.flags?.[id]),
+    },
+    {
+        key: 'uom',
+        group: 'what',
+        kind: 'set',
+        prefix: 'items.uom',
+        values: (row) => (row.uom?.sales ? [row.uom.sales] : []),
+    },
+    {
+        key: 'stk',
+        group: 'stock',
+        kind: 'set',
+        prefix: 'items.filter.stockState',
+        values: (row) => [itemStockState(row)],
+    },
+    {
+        key: 'avail',
+        group: 'stock',
+        kind: 'num',
+        value: (row) => row.avail ?? -1,
+    },
+    {
+        // 'none' is a purchase item with no standing supplier — the buyer's
+        // working list. Everything else that has no supplier is simply not
+        // bought, and says so.
+        key: 'sup',
+        group: 'supply',
+        kind: 'set',
+        values: (row) => [
+            row.suppliers?.preferred || (row.flags?.purchase ? 'none' : 'na'),
+        ],
+    },
+    {
+        key: 'price',
+        group: 'supply',
+        kind: 'num',
+        value: (row) => row.price?.lastPurchase ?? -1,
+    },
+    {
+        key: 'site',
+        group: 'site',
+        kind: 'set',
+        prefix: 'items.filter.siteState',
+        values: (row) => [row.site?.sync ? 'on' : 'off'],
+    },
+    {
+        key: 'miss',
+        group: 'quality',
+        kind: 'set',
+        prefix: 'items.filter.missState',
+        values: (row) => [row.missing.length ? 'yes' : 'no'],
+    },
+    {
+        key: 'bom',
+        group: 'quality',
+        kind: 'set',
+        prefix: 'items.filter.bomState',
+        values: (row) => [row.bomCount ? 'yes' : 'no'],
+    },
+    {
+        key: 'files',
+        group: 'quality',
+        kind: 'set',
+        prefix: 'items.filter.fileState',
+        values: (row) => [row.fileCount ? 'yes' : 'no'],
+    },
+];
+
+/** The order the drawer lays the field groups out in. */
+export const ITEM_FILTER_GROUPS = [
+    'what',
+    'stock',
+    'supply',
+    'site',
+    'quality',
+];
 
 export const useItemsStore = defineStore('items', () => {
     const dataset = useDatasetStore();

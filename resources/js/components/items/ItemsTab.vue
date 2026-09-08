@@ -3,7 +3,7 @@
 // figures a buyer, a pharmacist and the site manager each look for first —
 // units, stock, last purchase price, supplier, site state and whether the card
 // is complete under the family's mandatory-field policy.
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
@@ -11,17 +11,30 @@ import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ASelect from '@/components/ui/ASelect.vue';
+import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { CURRENCY_SYMBOL, ITEM_FAMILY_IDS, ITEM_FLAG_IDS } from '@/config';
+import { CURRENCY_SYMBOL } from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
 import { num } from '@/lib/money';
-import { useItemsStore } from '@/stores/items';
+import {
+    ITEM_FILTER_FIELDS,
+    ITEM_FILTER_GROUPS,
+    useItemsStore,
+} from '@/stores/items';
 
 defineProps({
     /** The sku whose card is open, so its row reads as selected. */
@@ -30,20 +43,19 @@ defineProps({
 
 const emit = defineEmits(['open', 'edit']);
 
-const FILTER_KEYS = ['q', 'fam', 'flag', 'sup', 'site', 'miss'];
+const SPEC = { fields: ITEM_FILTER_FIELDS };
 
 const { t } = useI18n();
 const { loc, searchHaystack } = useLocalized();
 const { push } = useToast();
 const store = useItemsStore();
+const drawerOpen = ref(false);
+const savedViews = ref(null);
 
 const state = useUrlState({
     q: '',
-    fam: '',
-    flag: '',
-    sup: '',
-    site: '',
-    miss: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
     sort: '',
     dir: 'asc',
 });
@@ -54,117 +66,54 @@ function tally(predicate) {
     return all.value.filter(predicate).length;
 }
 
-const rows = computed(() => {
+/** Free text first, then the field filters — the shared engine does the rest. */
+const searched = computed(() => {
     const term = state.q.trim().toLowerCase();
 
-    return all.value.filter((row) => {
-        if (state.fam && row.family !== state.fam) {
-            return false;
-        }
+    if (!term) {
+        return all.value;
+    }
 
-        if (state.flag && !row.flags?.[state.flag]) {
-            return false;
-        }
-
-        // `none` is the KPI's own value: purchase items with no preferred supplier.
-        if (state.sup === 'none') {
-            if (!row.flags?.purchase || row.suppliers?.preferred) {
-                return false;
-            }
-        } else if (state.sup && row.suppliers?.preferred !== state.sup) {
-            return false;
-        }
-
-        if (state.site === 'on' && !row.site?.sync) {
-            return false;
-        }
-
-        if (state.site === 'off' && row.site?.sync) {
-            return false;
-        }
-
-        if (state.miss === 'yes' && !row.missing.length) {
-            return false;
-        }
-
-        if (state.miss === 'no' && row.missing.length) {
-            return false;
-        }
-
-        if (
-            term &&
-            !searchHaystack(row.names, row.sku, row.code, row.preferred?.name)
-                .toLowerCase()
-                .includes(term)
-        ) {
-            return false;
-        }
-
-        return true;
-    });
+    return all.value.filter((row) =>
+        searchHaystack(row.names, row.sku, row.code, row.preferred?.name)
+            .toLowerCase()
+            .includes(term),
+    );
 });
 
-const dirty = computed(() => FILTER_KEYS.some((key) => state[key] !== ''));
+const filters = useListFilters(SPEC, state, searched);
 
-const familyOptions = computed(() => [
-    { value: '', label: t('items.filter.family') },
-    ...ITEM_FAMILY_IDS.filter(
-        (id) => tally((row) => row.family === id) > 0,
-    ).map((id) => ({
-        value: id,
-        label: `${t(`items.family.${id}`)} (${tally((row) => row.family === id)})`,
-    })),
-]);
+/** The supplier's own name, and the two values that are not a supplier. */
+function supplierLabel(code) {
+    if (code === 'none') {
+        return t('items.filter.noSupplier');
+    }
 
-const flagOptions = computed(() => [
-    { value: '', label: t('items.filter.flag') },
-    ...ITEM_FLAG_IDS.map((id) => ({
-        value: id,
-        label: `${t(`items.flag.${id}`)} (${tally((row) => row.flags?.[id])})`,
-    })),
-]);
+    if (code === 'na') {
+        return t('items.filter.supplierNa');
+    }
 
-const supplierOptions = computed(() => {
-    const seen = new Map();
+    const hit = all.value.find((row) => row.suppliers?.preferred === code);
 
-    all.value.forEach((row) => {
-        if (row.preferred) {
-            seen.set(row.preferred.code, row.preferred);
-        }
-    });
+    return hit?.preferred ? loc(hit.preferred.name) : String(code);
+}
 
-    return [
-        { value: '', label: t('items.filter.supplier') },
-        ...[...seen.values()].map((supplier) => ({
-            value: supplier.code,
-            label: `${loc(supplier.name)} (${tally((row) => row.suppliers?.preferred === supplier.code)})`,
-        })),
-    ];
-});
+const spec = computed(() => ({
+    id: 'items',
+    ns: 'items',
+    noun: t('items.filter.noun'),
+    groups: ITEM_FILTER_GROUPS,
+    units: { price: '₪' },
+    fields: ITEM_FILTER_FIELDS.map((field) =>
+        field.key === 'sup' ? { ...field, optionLabel: supplierLabel } : field,
+    ),
+}));
 
-const siteOptions = computed(() => [
-    { value: '', label: t('items.filter.site') },
-    {
-        value: 'on',
-        label: `${t('items.filter.siteOn')} (${tally((row) => row.site?.sync)})`,
-    },
-    {
-        value: 'off',
-        label: `${t('items.filter.siteOff')} (${tally((row) => !row.site?.sync)})`,
-    },
-]);
+const rows = computed(() => filters.rows);
 
-const missingOptions = computed(() => [
-    { value: '', label: t('items.filter.missing') },
-    {
-        value: 'yes',
-        label: `${t('items.filter.missingYes')} (${tally((row) => row.missing.length)})`,
-    },
-    {
-        value: 'no',
-        label: `${t('items.filter.missingNo')} (${tally((row) => !row.missing.length)})`,
-    },
-]);
+const { paged, total } = usePaged(rows, state);
+
+const dirty = computed(() => filters.dirty || state.q.trim() !== '');
 
 const cols = computed(() => [
     { k: 'code', label: t('items.col.code'), nowrap: true, sortable: true },
@@ -208,9 +157,24 @@ function onSort(next) {
 }
 
 function clear() {
-    FILTER_KEYS.forEach((key) => {
-        state[key] = '';
-    });
+    state.q = '';
+    filters.clear();
+}
+
+/** Apply a saved view: its fields replace the current ones. */
+function applyView(patch) {
+    Object.assign(state, filterDefaults(SPEC), { q: '' }, patch);
+}
+
+/** One chip removed: a value out of its field, or a numeric test cleared. */
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
 }
 
 const uomLabel = (id) => (id ? t(`items.uom.${id}`) : '—');
@@ -289,7 +253,7 @@ function exportRows() {
                 :label="t('items.kpi.all')"
                 :value="all.length"
                 :sub="t('items.kpi.allSub')"
-                :active="!state.fam && !state.miss && !state.site && !state.sup"
+                :active="!dirty"
                 @click="clear"
             />
             <FilterKpi
@@ -297,8 +261,8 @@ function exportRows() {
                 :label="t('items.kpi.missing')"
                 :value="tally((row) => row.missing.length)"
                 :sub="t('items.kpi.missingSub')"
-                :active="state.miss === 'yes'"
-                @click="state.miss = state.miss === 'yes' ? '' : 'yes'"
+                :active="state.miss.includes('yes')"
+                @click="filters.toggle('miss', 'yes')"
             />
             <FilterKpi
                 icon="truck"
@@ -310,18 +274,26 @@ function exportRows() {
                     )
                 "
                 :sub="t('items.kpi.noSupplierSub')"
-                :active="state.sup === 'none'"
-                @click="state.sup = state.sup === 'none' ? '' : 'none'"
+                :active="state.sup.includes('none')"
+                @click="filters.toggle('sup', 'none')"
             />
             <FilterKpi
                 icon="external"
                 :label="t('items.kpi.site')"
                 :value="tally((row) => row.site?.sync)"
                 :sub="t('items.kpi.siteSub')"
-                :active="state.site === 'on'"
-                @click="state.site = state.site === 'on' ? '' : 'on'"
+                :active="state.site.includes('on')"
+                @click="filters.toggle('site', 'on')"
             />
         </div>
+
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            @apply="applyView"
+        />
 
         <FilterBar
             :count="rows.length"
@@ -334,11 +306,13 @@ function exportRows() {
                 class="search"
                 :placeholder="t('items.filter.search')"
             />
-            <ASelect v-model="state.fam" :options="familyOptions" />
-            <ASelect v-model="state.flag" :options="flagOptions" />
-            <ASelect v-model="state.sup" :options="supplierOptions" />
-            <ASelect v-model="state.site" :options="siteOptions" />
-            <ASelect v-model="state.miss" :options="missingOptions" />
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
             <AButton
                 sm
                 icon="download"
@@ -349,9 +323,17 @@ function exportRows() {
             </AButton>
         </FilterBar>
 
+        <FilterChips
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clear"
+        />
+
         <ADataTable
             :cols="cols"
-            :rows="rows"
+            :rows="paged"
             row-key="sku"
             :selected="selected"
             :sort="sortModel"
@@ -451,6 +433,24 @@ function exportRows() {
                 </div>
             </template>
         </ADataTable>
+
+        <APagination
+            v-model:page="state.pg"
+            v-model:size="state.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
     </div>
 </template>
 
