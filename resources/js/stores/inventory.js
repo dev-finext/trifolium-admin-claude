@@ -143,6 +143,59 @@ export const BATCH_FILTER_FIELDS = [
 
 export const BATCH_FILTER_GROUPS = ['state', 'where', 'level'];
 
+/** What the goods-receipt list may be narrowed by. */
+export const RECEIPT_FILTER_FIELDS = [
+    {
+        key: 'rsup',
+        group: 'who',
+        kind: 'set',
+        values: (receipt) => [optionKey(receipt.supplier)],
+    },
+    {
+        key: 'rby',
+        group: 'who',
+        kind: 'set',
+        values: (receipt) => [optionKey(receipt.by)],
+    },
+    {
+        key: 'rpo',
+        group: 'what',
+        kind: 'set',
+        prefix: 'inventory.filter.poState',
+        values: (receipt) => [receipt.po ? 'yes' : 'no'],
+    },
+    {
+        key: 'rlines',
+        group: 'what',
+        kind: 'num',
+        value: (receipt) => (receipt.lines || []).length,
+    },
+];
+
+export const RECEIPT_FILTER_GROUPS = ['who', 'what'];
+
+/** What the stock-movement ledger may be narrowed by. */
+export const MOVEMENT_FILTER_FIELDS = [
+    {
+        key: 'mkind',
+        group: 'what',
+        kind: 'set',
+        prefix: 'stockMove',
+        values: (move) => [move.kind],
+    },
+    { key: 'mwh', group: 'what', kind: 'set', values: (move) => [move.wh] },
+    { key: 'mitem', group: 'where', kind: 'set', values: (move) => [move.sku] },
+    {
+        key: 'mdir',
+        group: 'where',
+        kind: 'set',
+        prefix: 'inventory.filter.moveDir',
+        values: (move) => [move.qty < 0 ? 'out' : 'in'],
+    },
+];
+
+export const MOVEMENT_FILTER_GROUPS = ['what', 'where'];
+
 export const useInventoryStore = defineStore('inventory', () => {
     const dataset = useDatasetStore();
 

@@ -5,38 +5,40 @@
 // arrived on, its own expiry date and what is left of it. Its state follows from
 // those two numbers — inside BATCH_EXPIRY_WARN_DAYS of expiry it is `expiring`,
 // past the date `expired` and blocked from compounding.
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BatchPickPanel from '@/components/inventory/BatchPickPanel.vue';
 import BatchSettingsCard from '@/components/inventory/BatchSettingsCard.vue';
 import SearchBox from '@/components/inventory/SearchBox.vue';
+import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import ANum from '@/components/ui/ANum.vue';
+import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
-import {
-    BATCH_EXPIRY_WARN_DAYS,
-    BATCH_STATE_IDS,
-    BATCH_STATES,
-    WAREHOUSES,
-} from '@/config';
+import { BATCH_EXPIRY_WARN_DAYS, BATCH_STATES } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { searchHaystack } from '@/lib/localized';
 import { num } from '@/lib/money';
-import { useInventoryStore } from '@/stores/inventory';
-
-/**
- * The expiry windows the filter offers, in days. The wide one is the warning
- * window itself; the narrow one is the month ahead, which is the horizon the lab
- * plans a week of compounding against.
- */
-const NEAR_EXPIRY_DAYS = 30;
-const EXPIRY_WINDOWS = [NEAR_EXPIRY_DAYS, BATCH_EXPIRY_WARN_DAYS];
+import {
+    BATCH_FILTER_FIELDS,
+    BATCH_FILTER_GROUPS,
+    useInventoryStore,
+} from '@/stores/inventory';
 
 defineProps({
     /** The batch whose trace drawer is open, so its row reads as selected. */
@@ -49,137 +51,72 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const inventory = useInventoryStore();
 
+const SPEC = { fields: BATCH_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
 const view = useUrlState({
     bq: '',
-    bstate: '',
-    bexp: '',
-    bwh: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
     pick: '',
     pickQty: '',
 });
 
-const states = computed(() =>
-    BATCH_STATE_IDS.map((id) => ({ value: id, label: t(`batchState.${id}`) })),
-);
-
-const warehouses = computed(() =>
-    WAREHOUSES.map((warehouse) => ({
-        value: warehouse.id,
-        label: t(`warehouse.${warehouse.id}.name`),
-    })),
-);
-
 const term = computed(() => view.bq.trim().toLowerCase());
 
-function inWindow(batch) {
-    if (!view.bexp) {
-        return true;
-    }
-
-    if (view.bexp === 'past') {
-        return batch.daysToExp < 0;
-    }
-
-    const days = Number(view.bexp);
-
-    return batch.daysToExp >= 0 && batch.daysToExp < days;
-}
-
-const rows = computed(() =>
-    inventory.batches.filter(
-        (batch) =>
-            (!view.bstate || batch.state === view.bstate) &&
-            (!view.bwh || batch.wh === view.bwh) &&
-            inWindow(batch) &&
-            (!term.value ||
-                searchHaystack(
-                    batch.id,
-                    batch.name,
-                    batch.sku,
-                    batch.supplier,
-                    batch.receipt,
-                ).includes(term.value)),
-    ),
+const searched = computed(() =>
+    term.value
+        ? inventory.batches.filter((batch) =>
+              searchHaystack(
+                  batch.id,
+                  batch.name,
+                  batch.sku,
+                  batch.supplier,
+                  batch.receipt,
+              ).includes(term.value),
+          )
+        : inventory.batches,
 );
 
-const dirty = computed(
-    () =>
-        Boolean(view.bq) ||
-        Boolean(view.bstate) ||
-        Boolean(view.bexp) ||
-        Boolean(view.bwh),
-);
+const filters = useListFilters(SPEC, view, searched);
 
-const cols = computed(() => [
-    {
-        k: 'id',
-        label: t('inventory.batches.col.id'),
-        nowrap: true,
-        sortable: true,
-    },
-    { k: 'name', label: t('inventory.batches.col.name'), sortable: true },
-    { k: 'supplier', label: t('inventory.batches.col.supplier') },
-    {
-        k: 'qty',
-        label: t('inventory.batches.col.qty'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (row) => row.remaining,
-    },
-    {
-        k: 'expiry',
-        label: t('inventory.batches.col.expiry'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (row) => row.daysToExp,
-    },
-    {
-        k: 'state',
-        label: t('inventory.batches.col.state'),
-        nowrap: true,
-        sortable: true,
-    },
-    { k: 'receipt', label: t('inventory.batches.col.receipt'), nowrap: true },
-    {
-        k: 'use',
-        label: t('inventory.batches.col.use'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (row) => inventory.useOfBatch(row.id).length,
-    },
-]);
+const rows = computed(() => filters.rows);
 
-function expiryNote(batch) {
-    return batch.daysToExp < 0
-        ? t('inventory.batches.expiredAgo', { n: -batch.daysToExp })
-        : t('inventory.batches.expiresIn', { n: batch.daysToExp });
-}
+const { paged, total } = usePaged(rows, view);
 
-function clear() {
-    view.bq = '';
-    view.bstate = '';
-    view.bexp = '';
-    view.bwh = '';
-}
+const dirty = computed(() => filters.dirty || Boolean(view.bq));
 
-function showAll() {
-    view.bstate = '';
-    view.bexp = '';
-}
+/** The two warning tiles are values of the state field. */
+const stateOnly = (id) => view.bstate.length === 1 && view.bstate[0] === id;
 
-function onState(state) {
-    view.bstate = view.bstate === state ? '' : state;
-    view.bexp = '';
-}
+const spec = computed(() => ({
+    id: 'batches',
+    ns: 'inventory',
+    noun: t('inventory.filter.batchNoun'),
+    groups: BATCH_FILTER_GROUPS,
+    fields: BATCH_FILTER_FIELDS.map((field) => {
+        if (field.key === 'bwh') {
+            return { ...field, optionLabel: (id) => t(`warehouse.${id}.name`) };
+        }
 
-/** The two filters answer the same question, so one always clears the other. */
-function onWindow(value) {
-    view.bexp = value;
+        if (field.key === 'bitem') {
+            return {
+                ...field,
+                optionLabel: (sku) => {
+                    const hit = inventory.batches.find(
+                        (batch) => batch.sku === sku,
+                    );
 
-    if (value) {
-        view.bstate = '';
-    }
-}
+                    return hit ? `${loc(hit.name)} · ${sku}` : String(sku);
+                },
+            };
+        }
+
+        return field;
+    }),
+}));
 </script>
 
 <template>
@@ -208,15 +145,15 @@ function onWindow(value) {
         <div class="a-kpis">
             <FilterKpi
                 icon="layers"
-                :active="!view.bstate && !view.bexp"
+                :active="!filters.dirty"
                 :label="t('inventory.batches.kpi.all')"
                 :value="inventory.batches.length"
                 :sub="t('inventory.batches.kpi.allSub')"
-                @click="showAll"
+                @click="filters.clear"
             />
             <FilterKpi
                 icon="clock"
-                :active="view.bstate === 'expiring'"
+                :active="stateOnly('expiring')"
                 :label="t('inventory.batches.kpi.expiring')"
                 :value="inventory.expiringBatches.length"
                 :sub="
@@ -224,17 +161,25 @@ function onWindow(value) {
                         days: BATCH_EXPIRY_WARN_DAYS,
                     })
                 "
-                @click="onState('expiring')"
+                @click="filters.toggle('bstate', 'expiring')"
             />
             <FilterKpi
                 icon="alert"
-                :active="view.bstate === 'expired'"
+                :active="stateOnly('expired')"
                 :label="t('inventory.batches.kpi.expired')"
                 :value="inventory.expiredBatches.length"
                 :sub="t('inventory.batches.kpi.expiredSub')"
-                @click="onState('expired')"
+                @click="filters.toggle('bstate', 'expired')"
             />
         </div>
+
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @apply="applyView"
+        />
 
         <FilterBar
             :count="rows.length"
@@ -247,61 +192,26 @@ function onWindow(value) {
                 :placeholder="t('inventory.batches.search')"
                 :width="340"
             />
-            <select
-                v-model="view.bstate"
-                class="a-select"
-                :aria-label="t('inventory.batches.aria.state')"
-            >
-                <option value="">
-                    {{ t('inventory.batches.filter.state') }}
-                </option>
-                <option
-                    v-for="state in states"
-                    :key="state.value"
-                    :value="state.value"
-                >
-                    {{ state.label }}
-                </option>
-            </select>
-            <select
-                class="a-select"
-                :value="view.bexp"
-                :aria-label="t('inventory.batches.aria.expiry')"
-                @change="onWindow($event.target.value)"
-            >
-                <option value="">
-                    {{ t('inventory.batches.filter.expiry') }}
-                </option>
-                <option
-                    v-for="days in EXPIRY_WINDOWS"
-                    :key="days"
-                    :value="String(days)"
-                >
-                    {{ t('inventory.batches.filter.days', { n: days }) }}
-                </option>
-                <option value="past">
-                    {{ t('inventory.batches.filter.past') }}
-                </option>
-            </select>
-            <select
-                v-model="view.bwh"
-                class="a-select"
-                :aria-label="t('inventory.batches.aria.wh')"
-            >
-                <option value="">{{ t('inventory.batches.filter.wh') }}</option>
-                <option
-                    v-for="warehouse in warehouses"
-                    :key="warehouse.value"
-                    :value="warehouse.value"
-                >
-                    {{ warehouse.label }}
-                </option>
-            </select>
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
         </FilterBar>
+
+        <FilterChips
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clear"
+        />
 
         <ADataTable
             :cols="cols"
-            :rows="rows"
+            :rows="paged"
             row-key="id"
             :selected="selected"
             @row="emit('open-batch', $event.id)"
@@ -356,6 +266,24 @@ function onWindow(value) {
                 <ANum>{{ inventory.useOfBatch(row.id).length }}</ANum>
             </template>
         </ADataTable>
+
+        <APagination
+            v-model:page="view.pg"
+            v-model:size="view.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
 
         <BatchPickPanel
             v-model:sku="view.pick"

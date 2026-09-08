@@ -2,7 +2,7 @@
 // Goods receipts. There are no purchase orders in this console: a receipt
 // records the supplier's name and delivery-note number as plain data, and the
 // batches it opened are the link to everything downstream.
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import SearchBox from '@/components/inventory/SearchBox.vue';
@@ -11,17 +11,28 @@ import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import ANum from '@/components/ui/ANum.vue';
+import APagination from '@/components/ui/APagination.vue';
+import DateRangeBar from '@/components/ui/DateRangeBar.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
+import { inRange } from '@/lib/dateRange';
 import { searchHaystack } from '@/lib/localized';
-import { optionKey, useInventoryStore } from '@/stores/inventory';
-
-/**
- * The ranges a goods-receipt question is asked in: the past week, the past
- * month, the past quarter.
- */
-const RECEIPT_WINDOWS = [7, 30, 90];
+import {
+    optionKey,
+    RECEIPT_FILTER_FIELDS,
+    RECEIPT_FILTER_GROUPS,
+    useInventoryStore,
+} from '@/stores/inventory';
 
 defineProps({
     /** The receipt whose drawer is open. */
@@ -34,16 +45,35 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const inventory = useInventoryStore();
 
-const view = useUrlState({ rq: '', rsup: '', rby: '', rwin: '' });
+const SPEC = { fields: RECEIPT_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
+const view = useUrlState({
+    rq: '',
+    preset: 'all',
+    from: '',
+    to: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
+});
+
+const range = computed({
+    get: () => ({ preset: view.preset, from: view.from, to: view.to }),
+    set: (next) => {
+        view.preset = next.preset;
+        view.from = next.from;
+        view.to = next.to;
+    },
+});
 
 const term = computed(() => view.rq.trim().toLowerCase());
 
-const rows = computed(() =>
+const searched = computed(() =>
     inventory.receipts.filter(
         (receipt) =>
-            (!view.rwin || receipt.when.daysAgo <= Number(view.rwin)) &&
-            (!view.rsup || optionKey(receipt.supplier) === view.rsup) &&
-            (!view.rby || optionKey(receipt.by) === view.rby) &&
+            inRange(receipt.when.iso, range.value) &&
             (!term.value ||
                 searchHaystack(
                     receipt.id,
@@ -55,13 +85,67 @@ const rows = computed(() =>
     ),
 );
 
+const filters = useListFilters(SPEC, view, searched);
+
+const rows = computed(() => filters.rows);
+
+const { paged, total } = usePaged(rows, view);
+
 const dirty = computed(
-    () =>
-        Boolean(view.rq) ||
-        Boolean(view.rsup) ||
-        Boolean(view.rby) ||
-        Boolean(view.rwin),
+    () => filters.dirty || Boolean(view.rq) || Boolean(view.from || view.to),
 );
+
+const spec = computed(() => ({
+    id: 'receipts',
+    ns: 'inventory',
+    noun: t('inventory.filter.receiptNoun'),
+    groups: RECEIPT_FILTER_GROUPS,
+    fields: RECEIPT_FILTER_FIELDS.map((field) => {
+        if (field.key === 'rsup' || field.key === 'rby') {
+            return {
+                ...field,
+                optionLabel: (key) => {
+                    const hit = inventory.receipts.find(
+                        (receipt) =>
+                            optionKey(
+                                field.key === 'rsup'
+                                    ? receipt.supplier
+                                    : receipt.by,
+                            ) === key,
+                    );
+
+                    return hit
+                        ? loc(field.key === 'rsup' ? hit.supplier : hit.by)
+                        : String(key);
+                },
+            };
+        }
+
+        return field;
+    }),
+}));
+
+function clear() {
+    view.rq = '';
+    view.preset = 'all';
+    view.from = '';
+    view.to = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(view, filterDefaults(SPEC), { rq: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
 
 const cols = computed(() => [
     {
@@ -94,12 +178,6 @@ const cols = computed(() => [
     { k: 'note', label: t('inventory.receipts.col.note') },
 ]);
 
-function clear() {
-    view.rq = '';
-    view.rsup = '';
-    view.rby = '';
-    view.rwin = '';
-}
 </script>
 
 <template>
@@ -107,6 +185,16 @@ function clear() {
         <div class="a-note a-note--info">
             {{ t('inventory.receipts.note') }}
         </div>
+
+        <DateRangeBar v-model="range" />
+
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @apply="applyView"
+        />
 
         <FilterBar
             :count="rows.length"
@@ -123,72 +211,26 @@ function clear() {
                 :placeholder="t('inventory.receipts.search')"
                 :width="360"
             />
-            <select
-                v-model="view.rsup"
-                class="a-select"
-                :aria-label="t('inventory.receipts.aria.supplier')"
-            >
-                <option value="">
-                    {{ t('inventory.receipts.filter.supplier') }}
-                </option>
-                <option
-                    v-for="supplier in inventory.receiptSuppliers"
-                    :key="supplier.key"
-                    :value="supplier.key"
-                >
-                    {{
-                        t('inventory.receipts.filter.option', {
-                            name: loc(supplier.label),
-                            n: supplier.n,
-                        })
-                    }}
-                </option>
-            </select>
-            <select
-                v-model="view.rby"
-                class="a-select"
-                :aria-label="t('inventory.receipts.aria.by')"
-            >
-                <option value="">
-                    {{ t('inventory.receipts.filter.by') }}
-                </option>
-                <option
-                    v-for="person in inventory.receiptReceivers"
-                    :key="person.key"
-                    :value="person.key"
-                >
-                    {{
-                        t('inventory.receipts.filter.option', {
-                            name: loc(person.label),
-                            n: person.n,
-                        })
-                    }}
-                </option>
-            </select>
-            <select
-                v-model="view.rwin"
-                class="a-select"
-                :aria-label="t('inventory.receipts.aria.window')"
-            >
-                <option value="">
-                    {{ t('inventory.receipts.filter.window') }}
-                </option>
-                <option
-                    v-for="days in RECEIPT_WINDOWS"
-                    :key="days"
-                    :value="String(days)"
-                >
-                    {{ t('inventory.receipts.filter.days', { n: days }) }}
-                </option>
-            </select>
-            <AButton sm kind="p" icon="plus" @click="emit('new-receipt')">
-                {{ t('inventory.action.newReceipt') }}
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
             </AButton>
         </FilterBar>
 
+        <FilterChips
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clear"
+        />
+
         <ADataTable
             :cols="cols"
-            :rows="rows"
+            :rows="paged"
             row-key="id"
             :selected="selected"
             @row="emit('open-receipt', $event.id)"
@@ -237,6 +279,24 @@ function clear() {
                 <span v-else class="a-muted">—</span>
             </template>
         </ADataTable>
+
+        <APagination
+            v-model:page="view.pg"
+            v-model:size="view.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
     </div>
 </template>
 
