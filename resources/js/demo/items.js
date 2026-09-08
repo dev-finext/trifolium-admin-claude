@@ -41,16 +41,29 @@ export const SITE_CATEGORIES = REAL_CATEGORIES.filter((category) =>
 // ------------------------------------------------------------- prep types
 
 /**
- * The 17 preparation types SAP actually carries (item properties 1–17). The nine
- * the first version knew keep their ids, so every existing order still resolves;
- * `legacy` marks them. Everything a label needs per type — the fixed text, the
- * default shelf life, what it contains — is data here, edited in the console,
- * never a constant in code. `recipe` is the mechanics for the lab's method
- * (step, minutes); its content comes from the lab and is empty until it does.
+ * The preparation types, as `OITG` holds them.
+ *
+ * SAP carries seventeen item properties, and fourteen of them are preparation
+ * types; 15, 19 and 20 (`מוצרי מדף`, `רשאי להנחת מוצר למטפלים`,
+ * `מבצע החודש`) are flags on an item, not ways of making one, so they are not
+ * here. `sap` is the property number each type answers to.
+ *
+ * Evaporation is one type, not four. SAP has a single `טינקטורה בנידוף`, and
+ * what it is carried in — glycerin, honey, carob, molasses — is the order's own
+ * answer on the formula's `evap` field. The four separate types this console
+ * used to carry said the same thing twice.
+ *
+ * The nine the first version knew keep their ids, so every existing order still
+ * resolves; `legacy` marks them. Everything a label needs per type — the fixed
+ * text, the default shelf life, what it contains — is data here, edited in the
+ * console, never a constant in code. `recipe` is the mechanics for the lab's
+ * method (step, minutes); its content comes from the lab and is empty until it
+ * does.
  */
 export const PREP_TYPES = [
     {
         id: 'tincture',
+        sap: 1,
         legacy: true,
         name: L('טינקטורה', 'Tincture'),
         unit: 'ml',
@@ -60,59 +73,24 @@ export const PREP_TYPES = [
         recipe: [],
     },
     {
-        id: 'evap_glycerin',
+        id: 'evap_tincture',
+        sap: 2,
         legacy: false,
-        name: L('טינקטורה בנידוף — גליצרין', 'Evaporated tincture — glycerin'),
+        name: L('טינקטורה בנידוף', 'Evaporated tincture'),
         unit: 'ml',
         expiryMonths: 12,
         labelText: L(
             'לנער לפני שימוש · לשמור בקירור לאחר פתיחה',
             'Shake before use · refrigerate after opening',
         ),
-        contains: ['glycerin', 'water'],
-        recipe: [],
-    },
-    {
-        id: 'evap_honey',
-        legacy: false,
-        name: L('טינקטורה בנידוף — דבש', 'Evaporated tincture — honey'),
-        unit: 'ml',
-        expiryMonths: 12,
-        labelText: L(
-            'לנער לפני שימוש · לשמור בקירור לאחר פתיחה',
-            'Shake before use · refrigerate after opening',
-        ),
-        contains: ['honey', 'water'],
-        recipe: [],
-    },
-    {
-        id: 'evap_carob',
-        legacy: false,
-        name: L('טינקטורה בנידוף — חרוב', 'Evaporated tincture — carob'),
-        unit: 'ml',
-        expiryMonths: 12,
-        labelText: L(
-            'לנער לפני שימוש · לשמור בקירור לאחר פתיחה',
-            'Shake before use · refrigerate after opening',
-        ),
-        contains: ['carob', 'water'],
-        recipe: [],
-    },
-    {
-        id: 'evap_molasses',
-        legacy: false,
-        name: L('טינקטורה בנידוף — מולסה', 'Evaporated tincture — molasses'),
-        unit: 'ml',
-        expiryMonths: 12,
-        labelText: L(
-            'לנער לפני שימוש · לשמור בקירור לאחר פתיחה',
-            'Shake before use · refrigerate after opening',
-        ),
-        contains: ['molasses', 'water'],
+        // What the evaporation is carried in belongs to the order, not to the
+        // type — the formula's `evap` field names it.
+        contains: ['water'],
         recipe: [],
     },
     {
         id: 'capsule',
+        sap: 5,
         legacy: true,
         name: L('קפסולות', 'Capsules'),
         unit: 'capsule',
@@ -123,6 +101,7 @@ export const PREP_TYPES = [
     },
     {
         id: 'powder',
+        sap: 6,
         legacy: true,
         name: L('אבקה', 'Powder'),
         unit: 'g',
@@ -133,6 +112,7 @@ export const PREP_TYPES = [
     },
     {
         id: 'tea',
+        sap: 7,
         legacy: true,
         name: L('חליטה Raw', 'Raw infusion'),
         unit: 'g',
@@ -143,6 +123,7 @@ export const PREP_TYPES = [
     },
     {
         id: 'decoction',
+        sap: 4,
         legacy: true,
         name: L('TANG — בישול אישי', 'TANG — personal decoction'),
         unit: 'ml',
@@ -156,6 +137,7 @@ export const PREP_TYPES = [
     },
     {
         id: 'classic_tincture',
+        sap: 8,
         legacy: false,
         name: L(
             'הרכב סיני קלאסי — טינקטורה',
@@ -169,6 +151,7 @@ export const PREP_TYPES = [
     },
     {
         id: 'classic_powder',
+        sap: 9,
         legacy: false,
         name: L('הרכב סיני קלאסי — אבקה', 'Classic Chinese formula — powder'),
         unit: 'g',
@@ -179,6 +162,7 @@ export const PREP_TYPES = [
     },
     {
         id: 'cream',
+        sap: 11,
         legacy: true,
         name: L('קרם', 'Cream'),
         unit: 'g',
@@ -189,6 +173,7 @@ export const PREP_TYPES = [
     },
     {
         id: 'gel',
+        sap: 12,
         legacy: true,
         name: L('ג׳ל', 'Gel'),
         unit: 'g',
@@ -199,6 +184,7 @@ export const PREP_TYPES = [
     },
     {
         id: 'infused_oil',
+        sap: 3,
         legacy: true,
         name: L('שמן מושרה', 'Infused oil'),
         unit: 'ml',
@@ -209,6 +195,7 @@ export const PREP_TYPES = [
     },
     {
         id: 'essential_oil',
+        sap: 13,
         legacy: true,
         name: L('שמן אתרי', 'Essential oil'),
         unit: 'ml',
@@ -222,6 +209,7 @@ export const PREP_TYPES = [
     },
     {
         id: 'hydrosol',
+        sap: 14,
         legacy: false,
         name: L('הידרוסול', 'Hydrosol'),
         unit: 'ml',
@@ -232,6 +220,7 @@ export const PREP_TYPES = [
     },
     {
         id: 'suppository',
+        sap: 17,
         legacy: false,
         name: L('נרות', 'Suppositories'),
         unit: 'unit',
@@ -248,7 +237,7 @@ const WESTERN_PREP = [
     'powder',
     'capsule',
     'tea',
-    'evap_glycerin',
+    'evap_tincture',
     'infused_oil',
 ];
 const CHINESE_PREP = [
