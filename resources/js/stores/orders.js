@@ -22,12 +22,10 @@ import { computed } from 'vue';
 
 import {
     CREDIT,
+    isSettled,
     LAB_ROLE_IDS,
-    ORDER_TO_ITEM_STAGE,
     PAY_LINK,
-    SETTLED_STATUS_IDS,
-    STAGE_TO_STATUS,
-    itemStageIndex,
+    paymentStateOf,
 } from '@/config';
 import { persist } from '@/data/source';
 import { inRange } from '@/lib/dateRange';
@@ -48,7 +46,7 @@ export function orderHaystack(order) {
     );
 }
 
-/** The compounded formulas on an order — the only items that carry a stage. */
+/** The compounded formulas on an order — the lines the lab actually makes. */
 export function trackedItems(order) {
     return (order.items || []).filter((item) => item.kind === 'formula');
 }
@@ -59,105 +57,54 @@ export function shelfItems(order) {
 }
 
 /**
- * The items still running. A shelf line carries no stage at all — it is picked,
- * not made — with one exception: cancelling a line writes `cancelled` onto it,
- * whatever its kind, so that is the only stage a shelf line ever holds.
- */
-function liveItems(order, kind) {
-    return (order.items || []).filter(
-        (item) => item.kind === kind && item.stage !== 'cancelled',
-    );
-}
-
-/** The least advanced stage among the items still running, or null. */
-export function lowestStage(order) {
-    const live = trackedItems(order).filter(
-        (item) => item.stage !== 'cancelled',
-    );
-
-    if (!live.length) {
-        return null;
-    }
-
-    return live.reduce(
-        (low, item) =>
-            itemStageIndex(item.stage) < itemStageIndex(low) ? item.stage : low,
-        live[0].stage,
-    );
-}
-
-/**
- * The order's real status.
+ * The order's status.
  *
- * Only compounded formulas carry a stage, so only they can move an order along.
- * Three cases, in the order they are decided:
+ * One field, `U_OrderState`, and the console reads it as it is. It used to be
+ * derived from the stage of the least advanced formula — a model with no
+ * counterpart in SAP, which is why it is gone.
  *
- * 1. Nothing live at all — every line cancelled — and the order is cancelled.
- *
- * 2. Live lines, but no formula among them. Either the order was shelf products
- *    from the start (a third of them are) or its formula was cancelled and the
- *    shelf lines carry on, which is the rule: cancelling one line never moves the
- *    others. There is no lab step here — the lines are picked off the shelf, and
- *    picking IS the packing — so once the money is settled the order reads as
- *    `ready_for_delivery` and lands on the deliveries desk, instead of sitting at
- *    `paid` waiting for a step that does not exist. Before payment and after
- *    dispatch the recorded status stands.
- *
- * 3. A live formula exists, and the lowest stage among them decides. Shelf lines
- *    on the same order ride along: no split orders and no partial shipment, so the
- *    packer takes them when the formula is ready. The recorded status is kept
- *    whenever it already agrees with that stage, because two statuses map onto one
- *    stage and only the record knows which — `credit` and `paid` both sit at
- *    `awaiting_prep`, `delivered` and `completed` both at `delivered`.
+ * The one thing still worth deciding here: an order whose every line was
+ * cancelled reads as cancelled even if the record was not updated, because
+ * there is nothing left of it.
  */
 export function statusOf(order) {
     if (!order) {
         return '';
     }
 
-    const formulas = liveItems(order, 'formula');
-    const shelf = liveItems(order, 'shelf');
+    const live = (order.items || []).filter((item) => !item.cancelled);
 
-    if (!formulas.length && !shelf.length) {
-        return (order.items || []).length ? 'cancelled' : order.status;
+    if (!live.length && (order.items || []).length) {
+        return 'cancelled';
     }
 
-    if (!formulas.length) {
-        return SETTLED_STATUS_IDS.includes(order.status)
-            ? 'ready_for_delivery'
-            : order.status;
-    }
-
-    const lowest = lowestStage(order);
-
-    if (ORDER_TO_ITEM_STAGE[order.status] === lowest) {
-        return order.status;
-    }
-
-    return STAGE_TO_STATUS[lowest] || order.status;
+    return order.status;
 }
 
 /**
  * Whether an agent may send this order to the lab.
  *
- * This is the *only* status an agent sets by hand, and the reason is that it is
+ * This is the one status an agent sets by hand, and the reason is that it is
  * the only one no other system can report. Payment is reported by the clearing
- * provider, the compounding stages by the lab as it works the order, dispatch and
- * delivery by the courier. Committing materials to a formula, on the other hand,
- * is somebody deciding to start — there is nothing to observe until they do.
+ * provider, dispatch and delivery by the courier. Committing materials to a
+ * formula is somebody deciding to start — there is nothing to observe until
+ * they do.
  *
  * Two things have to hold. The money is settled, in one of the two ways it can
- * be — the order is paid, or the practitioner is approved for credit terms and
- * the balance is collected later, which are exactly the `paid` and `credit`
- * statuses. And there is something to compound: a third of the orders are shelf
- * products only, and those have no lab step at all.
+ * be — paid, or the practitioner is approved for credit terms and the balance
+ * is collected later. And there is something to compound: a third of the
+ * orders are shelf products only, and those have no lab step at all.
  */
 export function canSendToLab(order) {
-    if (!SETTLED_STATUS_IDS.includes(statusOf(order))) {
+    if (!isSettled(order)) {
         return false;
     }
 
-    return trackedItems(order).some((item) => item.stage !== 'cancelled');
+    if (!['pending', 'confirmed'].includes(statusOf(order))) {
+        return false;
+    }
+
+    return trackedItems(order).some((item) => !item.cancelled);
 }
 
 /**
@@ -245,6 +192,14 @@ export const ORDER_FILTER_FIELDS = [
         kind: 'set',
         prefix: 'payer',
         values: (o) => [o.payer],
+    },
+    {
+        // Payment is its own field in SAP, so it is its own filter here.
+        key: 'payment',
+        group: 'money',
+        kind: 'set',
+        prefix: 'payment',
+        values: (o) => [paymentStateOf(o)],
     },
     {
         key: 'credit',
@@ -344,7 +299,7 @@ export const LAB_FILTER_FIELDS = [
         values: (o) => [
             ...new Set(
                 trackedItems(o)
-                    .filter((item) => item.stage !== 'cancelled')
+                    .filter((item) => !item.cancelled)
                     .map((item) => item.typeId),
             ),
         ],
@@ -594,7 +549,7 @@ export const useOrdersStore = defineStore('orders', () => {
         const status = statusOf(order);
         const resolved = new Set();
 
-        if (status !== 'pending_payment') {
+        if (isSettled(order)) {
             resolved.add('pay_stale');
             resolved.add('link_expiring');
         }
@@ -603,7 +558,7 @@ export const useOrdersStore = defineStore('orders', () => {
             resolved.add('lab');
         }
 
-        if (status !== 'ready_for_delivery' || order.courier) {
+        if (status !== 'ready' || order.courier) {
             resolved.add('courier');
         }
 
@@ -619,30 +574,11 @@ export const useOrdersStore = defineStore('orders', () => {
             resolved.add('credit_debt');
         }
 
-        if (status === 'cancelled' || status === 'completed') {
+        if (status === 'cancelled') {
             resolved.add('interaction');
         }
 
         order.flags = (order.flags || []).filter((flag) => !resolved.has(flag));
-    }
-
-    /**
-     * Move an order's items to the stage the new status puts them in. Cancelled
-     * items are left where they are: a cancellation is not undone by the rest of
-     * the order moving on.
-     */
-    function syncItemStages(order, status) {
-        const stage = ORDER_TO_ITEM_STAGE[status];
-
-        if (!stage) {
-            return;
-        }
-
-        trackedItems(order).forEach((item) => {
-            if (item.stage !== 'cancelled') {
-                item.stage = stage;
-            }
-        });
     }
 
     /**
@@ -662,7 +598,6 @@ export const useOrdersStore = defineStore('orders', () => {
         const from = statusOf(order);
 
         order.status = status;
-        syncItemStages(order, status);
         reviewFlags(order);
 
         logEntry(order, {
@@ -741,7 +676,7 @@ export const useOrdersStore = defineStore('orders', () => {
 
         const refund = itemRefund(order, item);
 
-        item.stage = 'cancelled';
+        item.cancelled = true;
         reviewFlags(order);
 
         logEntry(order, {
@@ -1292,7 +1227,7 @@ export const STATUS_ACTIONS = {
             id: 'mark_ready',
             icon: 'check',
             primary: true,
-            statusTo: 'ready_for_delivery',
+            statusTo: 'ready',
             effects: ['batchesDeducted', 'showsOnDeliveries'],
         },
         { id: 'print_label', icon: 'printer', instant: true },
@@ -1366,13 +1301,7 @@ const COLLECTION_ACTION = {
 };
 
 /** Statuses at which an unpaid credit order has already left the lab. */
-const AFTER_LAB = [
-    'in_production',
-    'ready_for_delivery',
-    'shipped',
-    'delivered',
-    'completed',
-];
+const AFTER_LAB = ['in_production', 'ready', 'shipped', 'delivered'];
 
 /**
  * The actions an order offers right now.
@@ -1391,7 +1320,7 @@ export function actionsFor(order) {
             ...list.filter((action) => action.id !== 'print_receipt'),
             {
                 ...COLLECTION_ACTION,
-                primary: status === 'delivered' || status === 'completed',
+                primary: status === 'delivered',
             },
         ];
     }
@@ -1404,7 +1333,7 @@ export function actionsFor(order) {
  * order is closed; a cancelled one cannot be cancelled twice.
  */
 export function isCancellable(order) {
-    return !['cancelled', 'completed', 'delivered'].includes(statusOf(order));
+    return !['cancelled', 'delivered'].includes(statusOf(order));
 }
 
 /**
@@ -1413,7 +1342,5 @@ export function isCancellable(order) {
  * expired link is a fact an agent has to see rather than a countdown.
  */
 export function payLinkExpired(order) {
-    return (
-        statusOf(order) === 'pending_payment' && order.daysAgo > PAY_LINK.days
-    );
+    return !isSettled(order) && order.daysAgo > PAY_LINK.days;
 }

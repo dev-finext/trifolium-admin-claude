@@ -10,7 +10,6 @@ import { useI18n } from 'vue-i18n';
 
 import OrderItemCard from '@/components/orders/OrderItemCard.vue';
 import OrderItemFieldsEditor from '@/components/orders/OrderItemFieldsEditor.vue';
-import OrderItemStages from '@/components/orders/OrderItemStages.vue';
 import OrderLabCard from '@/components/orders/OrderLabCard.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
@@ -28,6 +27,7 @@ import { useDatasetStore } from '@/stores/dataset';
 import {
     itemRefund,
     shelfItems,
+    statusOf,
     trackedItems,
     useOrdersStore,
 } from '@/stores/orders';
@@ -51,7 +51,8 @@ const open = ref(
     (() => {
         const busy = formulas.value.find(
             (item) =>
-                !['shipped', 'delivered', 'cancelled'].includes(item.stage),
+                !item.cancelled &&
+                !['shipped', 'delivered'].includes(statusOf(props.order)),
         );
 
         return busy ? [busy.id] : [];
@@ -121,7 +122,6 @@ async function confirmCancel(reason) {
 
 <template>
     <div class="a-grid">
-        <OrderItemStages :order="order" />
 
         <OrderLabCard v-if="formulas.length" :order="order" />
 

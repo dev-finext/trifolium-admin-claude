@@ -19,9 +19,15 @@ import ANum from '@/components/ui/ANum.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
-import { CREDIT, DOC_PROVIDER, DOC_STATES, PAY_LINK } from '@/config';
+import {
+    CREDIT,
+    DOC_PROVIDER,
+    DOC_STATES,
+    isSettled,
+    PAY_LINK,
+} from '@/config';
 import { ils } from '@/lib/money';
-import { payLink, payLinkExpired, statusOf } from '@/stores/orders';
+import { payLink, payLinkExpired } from '@/stores/orders';
 
 const props = defineProps({
     order: { type: Object, required: true },
@@ -35,8 +41,6 @@ const { push } = useToast();
 
 const link = computed(() => payLink(props.order));
 const expired = computed(() => payLinkExpired(props.order));
-const status = computed(() => statusOf(props.order));
-
 const docState = computed(
     () => DOC_STATES[props.order.docStatus] || DOC_STATES.none,
 );
@@ -49,7 +53,7 @@ const onOpenCredit = computed(
 );
 
 const paymentState = computed(() => {
-    if (status.value === 'pending_payment') {
+    if (!isSettled(props.order)) {
         return { tone: 'amber', label: t('orders.payment.state.awaiting') };
     }
 

@@ -151,7 +151,7 @@ const ENUM_NAMESPACES = [
     ['@/config/org', 'THERAPY_IDS', 'therapy'],
     ['@/config/statuses', 'DELIVERY_STATUS_IDS', 'status'],
     ['@/config/statuses', 'HOLD_REASON_IDS', 'holdReason'],
-    ['@/config/statuses', 'ITEM_STAGE_IDS', 'itemStage'],
+    ['@/config/statuses', 'PAYMENT_STATE_IDS', 'payment'],
     ['@/config/statuses', 'ORDER_STATUS_IDS', 'status'],
     ['@/config/statuses', 'TERMINAL_STATUS_IDS', 'status'],
     ['@/config/suppliers', 'PAYMENT_TERM_IDS', 'systemContacts.terms'],

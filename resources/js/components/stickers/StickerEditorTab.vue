@@ -102,10 +102,10 @@ const sample = computed(() => {
     if (view.tpl === 'prep') {
         const order = orders.all.find(
             (row) =>
-                ['in_production', 'ready_for_delivery'].includes(
+                ['in_production', 'ready'].includes(
                     statusOf(row),
                 ) &&
-                trackedItems(row).some((item) => item.stage !== 'cancelled'),
+                trackedItems(row).some((item) => !item.cancelled),
         );
 
         return order
@@ -129,7 +129,7 @@ const sample = computed(() => {
     const order = orders.all.find(
         (row) =>
             row.courier &&
-            ['ready_for_delivery', 'shipped'].includes(statusOf(row)),
+            ['ready', 'shipped'].includes(statusOf(row)),
     );
 
     return order

@@ -13,7 +13,7 @@ import { useI18n } from 'vue-i18n';
 
 import { useCourierName } from '@/components/deliveries/useCourierName';
 import { useLocalized } from '@/composables/useLocalized';
-import { LAB_ROLE_IDS, ORG, SAFETY_LEVEL_IDS } from '@/config';
+import { isSettled, LAB_ROLE_IDS, ORG, SAFETY_LEVEL_IDS } from '@/config';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
 import { esc, printHtml } from '@/lib/print';
 import { useDeliveriesStore } from '@/stores/deliveries';
@@ -21,7 +21,6 @@ import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 import {
     shelfItems,
-    statusOf,
     trackedItems,
     useOrdersStore,
 } from '@/stores/orders';
@@ -83,25 +82,23 @@ export function usePrepSheet() {
 
     /** When the order was paid or cleared for credit, off its own audit trail. */
     function paymentLine(order) {
-        const status = statusOf(order);
-
         if (order.credit && !order.creditPaid) {
             return t('lab.sheet.credit');
         }
 
-        if (status === 'pending_payment') {
+        if (!isSettled(order)) {
             return t('lab.sheet.unpaid');
         }
 
         const paid = (order.audit || []).find(
             (row) =>
                 row.valueType === 'status' &&
-                ['paid', 'credit'].includes(row.to),
+                row.to === 'confirmed',
         );
 
         return paid?.when?.stamp
             ? t('lab.sheet.paidOn', { stamp: paid.when.stamp })
-            : t('status.paid');
+            : t('payment.paid');
     }
 
     function deliveryLine(order) {
@@ -211,7 +208,7 @@ export function usePrepSheet() {
     /** The whole document for one order, as body markup. */
     function build(order) {
         const formulas = trackedItems(order).filter(
-            (item) => item.stage !== 'cancelled',
+            (item) => !item.cancelled,
         );
         const shelf = shelfItems(order);
         const patient = order.patient;

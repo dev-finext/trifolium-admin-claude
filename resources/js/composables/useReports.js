@@ -155,7 +155,7 @@ export function useReports() {
 
             list.forEach((order) => {
                 trackedItems(order)
-                    .filter((item) => item.stage !== 'cancelled')
+                    .filter((item) => !item.cancelled)
                     .forEach((item) => {
                         const type = items.prepTypeById(item.typeId);
                         const key = item.typeId;

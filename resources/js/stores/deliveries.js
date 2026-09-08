@@ -25,12 +25,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
-import {
-    COURIER,
-    ORDER_FLOW,
-    ORDER_TO_ITEM_STAGE,
-    WEEKDAY_IDS,
-} from '@/config';
+import { COURIER, ORDER_FLOW, WEEKDAY_IDS } from '@/config';
 import { persist } from '@/data/source';
 import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { FALLBACK_LOCALE, loc, searchHaystack } from '@/lib/localized';
@@ -47,7 +42,6 @@ const DESK_ENTRY_STATUS = 'in_production';
  */
 export const DESK_STATUS_IDS = [
     ...ORDER_FLOW.slice(ORDER_FLOW.indexOf(DESK_ENTRY_STATUS)),
-    'completed',
 ];
 
 /**
@@ -69,14 +63,14 @@ export const DELIVERY_STAGES = [
     {
         id: 'assign',
         match: (order) =>
-            statusOf(order) === 'ready_for_delivery' &&
+            statusOf(order) === 'ready' &&
             order.deliveryType === 'courier' &&
             !order.courier,
     },
     {
         id: 'handed',
         match: (order) =>
-            statusOf(order) === 'ready_for_delivery' &&
+            statusOf(order) === 'ready' &&
             order.deliveryType === 'courier' &&
             Boolean(order.courier),
     },
@@ -85,11 +79,11 @@ export const DELIVERY_STAGES = [
         id: 'pickup',
         match: (order) =>
             order.deliveryType === 'pickup' &&
-            ['in_production', 'ready_for_delivery'].includes(statusOf(order)),
+            ['in_production', 'ready'].includes(statusOf(order)),
     },
     {
         id: 'done',
-        match: (order) => ['delivered', 'completed'].includes(statusOf(order)),
+        match: (order) => statusOf(order) === 'delivered',
     },
 ];
 
@@ -270,7 +264,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         deskOrders.value.filter(
             (order) =>
                 order.pickupPoint === id &&
-                ['in_production', 'ready_for_delivery'].includes(
+                ['in_production', 'ready'].includes(
                     statusOf(order),
                 ),
         );
@@ -288,7 +282,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
                     point,
                     orders: waiting,
                     ready: waiting.filter(
-                        (order) => statusOf(order) === 'ready_for_delivery',
+                        (order) => statusOf(order) === 'ready',
                     ),
                 };
             }),
@@ -313,7 +307,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
             (order) =>
                 order.deliveryType === 'courier' &&
                 order.courier === courierId &&
-                statusOf(order) === 'ready_for_delivery',
+                statusOf(order) === 'ready',
         );
 
     function bag(name) {
@@ -468,11 +462,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
 
         order.status = 'shipped';
         order.sentOn = sentOn || isoDaysAgo(0);
-        order.items.forEach((item) => {
-            if (item.kind === 'formula' && item.stage !== 'cancelled') {
-                item.stage = ORDER_TO_ITEM_STAGE.shipped;
-            }
-        });
         clearFlag(order, 'courier');
 
         await persist(`orders/${order.id}/shipped`, { sentOn: order.sentOn });

@@ -103,7 +103,7 @@ const courierCode = (id) => COURIER[id]?.code || '';
 function canShip(order) {
     return (
         order.deliveryType === 'courier' &&
-        order.status === 'ready_for_delivery' &&
+        order.status === 'ready' &&
         Boolean(order.courier)
     );
 }
@@ -152,7 +152,7 @@ function addressDetail(order) {
             </div>
             <div v-if="row.credit && !row.creditPaid" class="mark">
                 <AChip tone="purple" size="sm" :dot="false">
-                    {{ t('status.credit') }}
+                    {{ t('payment.credit') }}
                 </AChip>
             </div>
             <div

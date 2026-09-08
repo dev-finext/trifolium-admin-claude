@@ -23,7 +23,7 @@ import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useSaveGuard } from '@/composables/useSaveGuard';
 import { useToast } from '@/composables/useToast';
-import { CANCEL_REASON_IDS } from '@/config';
+import { CANCEL_REASON_IDS, isSettled, paymentStateOf } from '@/config';
 import { useCrmStore } from '@/stores/crm';
 import { useDatasetStore } from '@/stores/dataset';
 import {
@@ -60,14 +60,14 @@ const toLab = computed(() => canSendToLab(props.order));
 /** Only the compounded formulas go to the lab; shelf lines are picked, not made. */
 const labItems = computed(
     () =>
-        trackedItems(props.order).filter((item) => item.stage !== 'cancelled')
+        trackedItems(props.order).filter((item) => !item.cancelled)
             .length,
 );
 const cancellable = computed(() => isCancellable(props.order));
 
 /** V2: urgency can be flagged on any order still in the pharmacy's hands. */
 const urgentToggle = computed(
-    () => !['cancelled', 'completed', 'delivered'].includes(status.value),
+    () => !['cancelled', 'delivered'].includes(status.value),
 );
 
 async function toggleUrgent() {
@@ -96,7 +96,7 @@ const ask = ref('');
  * anything already paid is refunded by a credit note.
  */
 const cancelMoneyEffect = computed(() => {
-    if (status.value === 'pending_payment') {
+    if (!isSettled(props.order)) {
         return t('orders.effect.payLinkVoided');
     }
 
@@ -120,7 +120,7 @@ const labEffects = computed(() => [
     t('orders.effect.statusTo', { status: t('status.in_production') }),
     t('orders.effect.itemsToLabQueue'),
     t('orders.effect.msgByTriggers'),
-    status.value === 'credit'
+    paymentStateOf(props.order) === 'credit'
         ? t('orders.effect.collectedOnCredit')
         : t('orders.effect.alreadyPaid'),
 ]);

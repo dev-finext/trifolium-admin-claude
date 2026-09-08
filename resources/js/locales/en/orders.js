@@ -56,6 +56,7 @@ export default {
         multiStatus: '{n} statuses selected',
         field: {
             status: 'Status',
+            payment: 'Payment',
             payer: 'Paid by',
             credit: 'On credit terms',
             fulfilment: 'Fulfilment',

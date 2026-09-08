@@ -21,7 +21,7 @@ import { useDatasetStore } from '@/stores/dataset';
 import { statusOf, trackedItems, useOrdersStore } from '@/stores/orders';
 
 /** The statuses that put an order on the lab's bench or its packing table. */
-const BENCH_STATUS_IDS = ['in_production', 'ready_for_delivery'];
+const BENCH_STATUS_IDS = ['in_production', 'ready'];
 
 const { t } = useI18n();
 const router = useRouter();
@@ -36,7 +36,7 @@ const queue = computed(() =>
         .filter(
             (order) =>
                 BENCH_STATUS_IDS.includes(statusOf(order)) &&
-                trackedItems(order).some((item) => item.stage !== 'cancelled'),
+                trackedItems(order).some((item) => !item.cancelled),
         )
         .sort((a, b) => {
             if (Boolean(a.urgent) !== Boolean(b.urgent)) {

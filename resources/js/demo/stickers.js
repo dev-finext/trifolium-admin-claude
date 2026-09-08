@@ -368,16 +368,15 @@ export function buildStickerPrints(orders, receipts) {
 
     orders.forEach((order) => {
         const live = (order.items || []).filter(
-            (item) => item.kind === 'formula' && item.stage !== 'cancelled',
+            (item) => item.kind === 'formula' && !item.cancelled,
         );
 
         if (
             [
-                'ready_for_delivery',
+                'ready',
                 'shipped',
                 'delivered',
-                'completed',
-            ].includes(order.status) &&
+                ].includes(order.status) &&
             live.length
         ) {
             const count = live.reduce((sum, item) => sum + prepCount(item), 0);
@@ -392,7 +391,7 @@ export function buildStickerPrints(orders, receipts) {
         }
 
         if (
-            ['shipped', 'delivered', 'completed'].includes(order.status) &&
+            ['shipped', 'delivered'].includes(order.status) &&
             order.courier
         ) {
             push(

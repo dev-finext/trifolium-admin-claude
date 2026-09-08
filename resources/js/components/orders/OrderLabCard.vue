@@ -26,7 +26,7 @@ const orders = useOrdersStore();
 
 /** The roles are marked while the order is on the lab's bench or being packed. */
 const editable = computed(() =>
-    ['in_production', 'ready_for_delivery'].includes(statusOf(props.order)),
+    ['in_production', 'ready'].includes(statusOf(props.order)),
 );
 
 const roles = computed(() =>
@@ -35,7 +35,7 @@ const roles = computed(() =>
 
 const itemCodes = computed(() =>
     trackedItems(props.order)
-        .filter((item) => item.stage !== 'cancelled')
+        .filter((item) => !item.cancelled)
         .map((item) => ({ id: item.id, name: loc(item.name) })),
 );
 

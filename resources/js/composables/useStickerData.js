@@ -138,7 +138,7 @@ export function useStickerData() {
         const rows = [];
 
         trackedItems(order)
-            .filter((item) => item.stage !== 'cancelled')
+            .filter((item) => !item.cancelled)
             .forEach((item) => {
                 const total = stickers.prepCount(item);
 

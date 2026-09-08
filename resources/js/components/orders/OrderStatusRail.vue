@@ -29,9 +29,6 @@ const props = defineProps({
 const { t } = useI18n();
 const orders = useOrdersStore();
 
-/** Statuses that are not on the flow but sit at a flow step's position. */
-const RAIL_ALIAS = { credit: 'paid', completed: 'delivered' };
-
 const status = computed(() => statusOf(props.order));
 const cancelled = computed(() => status.value === 'cancelled');
 
@@ -43,9 +40,7 @@ const flow = computed(() =>
 );
 
 const activeIndex = computed(() => {
-    const on = RAIL_ALIAS[status.value] || status.value;
-
-    return flow.value.indexOf(on);
+    return flow.value.indexOf(status.value);
 });
 
 const stamps = computed(() => orders.flowStamps(props.order));

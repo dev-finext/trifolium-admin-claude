@@ -52,10 +52,10 @@ const benchOrders = computed(() =>
     orders.all
         .filter(
             (order) =>
-                ['in_production', 'ready_for_delivery'].includes(
+                ['in_production', 'ready'].includes(
                     statusOf(order),
                 ) &&
-                trackedItems(order).some((item) => item.stage !== 'cancelled'),
+                trackedItems(order).some((item) => !item.cancelled),
         )
         .sort((a, b) => Number(Boolean(b.urgent)) - Number(Boolean(a.urgent))),
 );
@@ -64,7 +64,7 @@ const parcelOrders = computed(() =>
     orders.all.filter(
         (order) =>
             order.courier &&
-            ['ready_for_delivery', 'shipped'].includes(statusOf(order)),
+            ['ready', 'shipped'].includes(statusOf(order)),
     ),
 );
 
@@ -122,7 +122,7 @@ const ruleLines = computed(() => {
 
     if (view.src === 'prep') {
         return trackedItems(selected.value.record)
-            .filter((item) => item.stage !== 'cancelled')
+            .filter((item) => !item.cancelled)
             .map((item) => {
                 const packages = Math.max(1, Number(item.packages) || 1);
                 const n = stickers.prepCount(item);

@@ -38,6 +38,7 @@ import ATabs from '@/components/ui/ATabs.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import ExceptionChip from '@/components/ui/ExceptionChip.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
+import PaymentChip from '@/components/ui/PaymentChip.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
@@ -209,6 +210,7 @@ function close() {
                                 </AChip>
                                 <V2Badge id="crm" size="sm" />
                             </template>
+                            <PaymentChip :order="order" />
                             <AChip v-if="order.hold" tone="gray">
                                 {{
                                     t('orders.detail.holdChip', {

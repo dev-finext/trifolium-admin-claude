@@ -16,10 +16,11 @@ import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ExceptionChip from '@/components/ui/ExceptionChip.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
+import PaymentChip from '@/components/ui/PaymentChip.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { ORDER_STATUS_IDS } from '@/config';
+import { isSettled, ORDER_STATUS_IDS } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { shelfItems, statusOf, trackedItems } from '@/stores/orders';
 
@@ -234,6 +235,7 @@ function itemSummary(order) {
 
         <template #cell-status="{ row }">
             <StatusChip :status="statusOf(row)" />
+            <div class="a-orderpay"><PaymentChip :order="row" size="sm" /></div>
         </template>
 
         <template #cell-del="{ row }">
@@ -255,7 +257,7 @@ function itemSummary(order) {
         <template #cell-act="{ row }">
             <div class="a-rowbtns" @click.stop>
                 <AButton
-                    v-if="statusOf(row) === 'pending_payment'"
+                    v-if="!isSettled(row)"
                     sm
                     icon="whatsapp"
                     @click="emit('remind', row)"
@@ -264,7 +266,7 @@ function itemSummary(order) {
                 </AButton>
                 <AButton
                     v-if="
-                        statusOf(row) === 'ready_for_delivery' &&
+                        statusOf(row) === 'ready' &&
                         row.deliveryType === 'courier'
                     "
                     sm
@@ -282,6 +284,10 @@ function itemSummary(order) {
 </template>
 
 <style scoped>
+.a-orderpay {
+    margin-top: 4px;
+}
+
 .a-orderid {
     font-size: 16px;
 }

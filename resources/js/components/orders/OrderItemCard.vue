@@ -11,10 +11,9 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AIcon from '@/components/ui/AIcon.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ItemStageChip from '@/components/ui/ItemStageChip.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { useOrdersStore } from '@/stores/orders';
+import { statusOf, useOrdersStore } from '@/stores/orders';
 
 /** A ratio bar's fill, scaled so the largest realistic share fills it. */
 const RATIO_BAR_SCALE = 2.6;
@@ -57,10 +56,10 @@ const instructionsText = computed(() =>
           }),
 );
 
-const cancelled = computed(() => props.item.stage === 'cancelled');
+const cancelled = computed(() => Boolean(props.item.cancelled));
 
 const done = computed(() =>
-    ['shipped', 'delivered'].includes(props.item.stage),
+    ['shipped', 'delivered'].includes(statusOf(props.order)),
 );
 
 const meta = computed(() =>
@@ -145,7 +144,9 @@ function barWidth(share) {
                 <div class="t-sub">{{ meta }}</div>
             </div>
             <div class="a-icard-chips">
-                <ItemStageChip :stage="item.stage" />
+                <AChip v-if="cancelled" tone="red" size="sm" :dot="false">
+                    {{ t('status.cancelled') }}
+                </AChip>
                 <AChip v-if="item.pharm" tone="green" size="sm">
                     {{ t('orders.itemsTab.pharmApproved') }}
                 </AChip>
@@ -180,8 +181,6 @@ function barWidth(share) {
             <div class="a-2col a-icard-kv">
                 <AKeyValue :rows="detailRows" />
                 <AKeyValue :rows="doseRows">
-                    <dt>{{ t('orders.field.itemStage') }}</dt>
-                    <dd><ItemStageChip :stage="item.stage" size="sm" /></dd>
                     <dt>{{ t('orders.field.pharmApproval') }}</dt>
                     <dd>
                         <template v-if="item.pharm">

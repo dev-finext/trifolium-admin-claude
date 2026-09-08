@@ -325,19 +325,16 @@ export function buildBatchUse(orders, batches) {
         return rows;
     }
 
+    // Only an order the lab actually started consumes a batch.
     orders
-        .filter(
-            (order) => !['pending_payment', 'cancelled'].includes(order.status),
+        .filter((order) =>
+            ['in_production', 'ready', 'shipped', 'delivered'].includes(
+                order.status,
+            ),
         )
         .forEach((order) => {
             order.items
-                .filter(
-                    (item) =>
-                        item.kind === 'formula' &&
-                        !['pending_payment', 'awaiting_prep'].includes(
-                            item.stage,
-                        ),
-                )
+                .filter((item) => item.kind === 'formula' && !item.cancelled)
                 .forEach((item) => {
                     const batch =
                         usable[

@@ -24,7 +24,8 @@ import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 
 /** Item stages during which the herbs on an order are committed, not yet consumed. */
-const COMMITTED_STAGES = ['awaiting_prep', 'in_lab', 'ready_pack'];
+/** The statuses at which an order has claimed its materials but not shipped. */
+const COMMITTED_STATUS_IDS = ['confirmed', 'in_production', 'ready'];
 
 /** This moment, in the shape every record's `when` field carries. */
 function moment(iso = null) {
@@ -327,7 +328,7 @@ export const useItemsStore = defineStore('items', () => {
                         id: line.id,
                         order: order.id,
                         itemName: line.name,
-                        stage: null,
+                        status: order.status,
                         practitioner: order.practitioner?.name,
                         qty: line.qty,
                         unit: 'unit',
@@ -339,7 +340,8 @@ export const useItemsStore = defineStore('items', () => {
                 if (
                     line.kind !== 'formula' ||
                     !herbId ||
-                    !COMMITTED_STAGES.includes(line.stage)
+                    line.cancelled ||
+                    !COMMITTED_STATUS_IDS.includes(order.status)
                 ) {
                     return;
                 }
@@ -353,7 +355,7 @@ export const useItemsStore = defineStore('items', () => {
                         id: line.id,
                         order: order.id,
                         itemName: line.name,
-                        stage: line.stage,
+                        status: order.status,
                         practitioner: order.practitioner?.name,
                         qty: herb.qty,
                         unit: stock?.unit || 'g',

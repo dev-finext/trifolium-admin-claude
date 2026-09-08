@@ -16,7 +16,7 @@ import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 
 /** Orders whose shelf lines have left the pharmacy — what "sales" counts. */
-const SOLD_STATUS_IDS = ['shipped', 'delivered', 'completed'];
+const SOLD_STATUS_IDS = ['shipped', 'delivered'];
 
 const PO_SERIES = 'PO-';
 const NOTE_SERIES = 'SDN-';

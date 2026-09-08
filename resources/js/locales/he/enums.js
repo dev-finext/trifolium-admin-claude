@@ -10,42 +10,35 @@
 export default {
     // ── orders ── config/statuses.js ORDER_STATUSES
     status: {
-        pending_payment: 'ממתין לתשלום',
-        credit: 'בהקפה',
-        paid: 'שולם',
+        pending: 'ממתינה',
+        confirmed: 'אושרה',
         in_production: 'בהכנה',
-        ready_for_delivery: 'מוכן לאריזה',
-        shipped: 'נשלח',
-        delivered: 'נמסר',
-        completed: 'הושלם',
-        cancelled: 'בוטל',
+        ready: 'מוכנה',
+        shipped: 'נשלחה',
+        delivered: 'נמסרה',
+        cancelled: 'בוטלה',
+    },
+
+    // config/statuses.js PAYMENT_STATE_IDS — שדה נפרד, לא שלב במחזור החיים
+    payment: {
+        unpaid: 'לא שולם',
+        paid: 'שולם',
+        credit: 'בהקפה',
     },
 
     // Short captions on the progress rail — ORDER_FLOW, not the status chips.
     flowLabel: {
-        pending_payment: 'התקבלה',
-        paid: 'תשלום',
+        pending: 'התקבלה',
+        confirmed: 'אושרה',
         in_production: 'הכנה במעבדה',
-        ready_for_delivery: 'מוכן לאריזה',
-        shipped: 'נשלח',
-        delivered: 'נמסר',
-    },
-
-    // config/statuses.js ITEM_STAGES + ITEM_CANCELLED
-    itemStage: {
-        pending_payment: 'ממתין לתשלום',
-        awaiting_prep: 'ממתין להכנה',
-        in_lab: 'בהכנה במעבדה',
-        ready_pack: 'מוכן לאריזה',
-        packed: 'נארז',
-        shipped: 'נשלח',
-        delivered: 'נמסר',
-        cancelled: 'בוטל',
+        ready: 'מוכנה',
+        shipped: 'נשלחה',
+        delivered: 'נמסרה',
     },
 
     // Reasons an order sits on hold before it enters the lab.
     holdReason: {
-        pending_payment: 'ממתין לתשלום',
+        unpaid: 'טרם שולמה',
         awaiting_customer: 'ממתין לאישור לקוח',
         draft: 'טיוטה',
     },

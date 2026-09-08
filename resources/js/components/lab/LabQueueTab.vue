@@ -246,7 +246,7 @@ const cols = computed(() => [
 ]);
 
 const liveFormulas = (order) =>
-    trackedItems(order).filter((item) => item.stage !== 'cancelled');
+    trackedItems(order).filter((item) => !item.cancelled);
 
 function fulfilment(order) {
     if (order.deliveryType === 'pickup') {
@@ -292,11 +292,11 @@ async function print(order) {
                 icon="package"
                 :label="t('lab.kpi.ready')"
                 :value="
-                    tally((order) => statusOf(order) === 'ready_for_delivery')
+                    tally((order) => statusOf(order) === 'ready')
                 "
                 :sub="t('lab.kpi.readySub')"
-                :active="state.stage.includes('ready_for_delivery')"
-                @click="filters.toggle('stage', 'ready_for_delivery')"
+                :active="state.stage.includes('ready')"
+                @click="filters.toggle('stage', 'ready')"
             />
             <FilterKpi
                 icon="alert"

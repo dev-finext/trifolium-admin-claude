@@ -1,25 +1,26 @@
-// Order and item status model.
+// Order status model.
 //
-// One canonical list, owned by this system: the database stores the id itself,
-// there are no external status codes. Display text is NOT here — it lives in the
-// locale catalogs under `status.*` and `itemStage.*`, so the same id renders in
-// Hebrew or English without touching this file.
-
-/**
- * Order statuses. `credit` (בהקפה) is the paid-equivalent state of an order that
- * reached the lab unpaid under approved credit terms: the money is owed, the
- * work goes ahead.
- */
+// These are the seven values `U_OrderState` actually holds in SAP today, and
+// nothing else. The number is what the field stores; the id is what this
+// console passes around, so the mapping in either direction is one line.
+//
+// Two things this file deliberately does NOT have, because SAP does not:
+//
+//   * a payment step. Payment is its own field (`U_PayedSite`), and an order
+//     can be paid or unpaid at any point in the flow. See PAYMENT_STATE_IDS.
+//   * a status per formula. There is no status field on an order line — the
+//     only thing a line carries of its own is whether it was cancelled.
+//
+// Display text is not here: it lives in the locale catalogs under `status.*`,
+// so the same id renders in Hebrew or English without touching this file.
 export const ORDER_STATUSES = [
-    { id: 'pending_payment', tone: 'amber' },
-    { id: 'credit', tone: 'purple' },
-    { id: 'paid', tone: 'blue' },
-    { id: 'in_production', tone: 'blue' },
-    { id: 'ready_for_delivery', tone: 'teal' },
-    { id: 'shipped', tone: 'blue' },
-    { id: 'delivered', tone: 'green' },
-    { id: 'completed', tone: 'green' },
-    { id: 'cancelled', tone: 'red' },
+    { id: 'pending', code: 0, tone: 'amber' },
+    { id: 'confirmed', code: 1, tone: 'gray' },
+    { id: 'in_production', code: 2, tone: 'blue' },
+    { id: 'ready', code: 3, tone: 'teal' },
+    { id: 'shipped', code: 4, tone: 'blue' },
+    { id: 'delivered', code: 5, tone: 'green' },
+    { id: 'cancelled', code: 8, tone: 'red' },
 ];
 
 export const ORDER_STATUS = Object.fromEntries(
@@ -28,109 +29,59 @@ export const ORDER_STATUS = Object.fromEntries(
 
 export const ORDER_STATUS_IDS = ORDER_STATUSES.map((status) => status.id);
 
-/** The happy path, in order — drives the progress rail on an order. */
-export const ORDER_FLOW = [
-    'pending_payment',
-    'paid',
-    'in_production',
-    'ready_for_delivery',
-    'shipped',
-    'delivered',
-];
-
-/**
- * Item-level tracking. Every compounded formula carries its own stage; the lab
- * works four of them (awaiting_prep → in_lab → ready_pack → packed). There is no
- * QC stage — the pharmacist-approval field on the formula replaces it. Shelf
- * products are not tracked separately.
- *
- * An order's status is always the lowest stage among its non-cancelled items:
- * no split orders, no partial shipment.
- */
-export const ITEM_STAGES = [
-    { id: 'pending_payment', tone: 'amber' },
-    { id: 'awaiting_prep', tone: 'gray' },
-    { id: 'in_lab', tone: 'blue' },
-    { id: 'ready_pack', tone: 'teal' },
-    { id: 'packed', tone: 'teal' },
-    { id: 'shipped', tone: 'blue' },
-    { id: 'delivered', tone: 'green' },
-];
-
-export const ITEM_CANCELLED = { id: 'cancelled', tone: 'red' };
-
-export const ITEM_STAGE = Object.fromEntries(
-    [...ITEM_STAGES, ITEM_CANCELLED].map((stage) => [stage.id, stage]),
+/** `U_OrderState` value → the id this console uses. */
+export const ORDER_STATUS_BY_CODE = Object.fromEntries(
+    ORDER_STATUSES.map((status) => [status.code, status.id]),
 );
 
-export const ITEM_STAGE_IDS = ITEM_STAGES.map((stage) => stage.id);
+/** The id → the value `U_OrderState` stores. */
+export const orderStatusCode = (id) => ORDER_STATUS[id]?.code ?? null;
 
-/** Where an order status places its items when the two are synchronised. */
-export const ORDER_TO_ITEM_STAGE = {
-    pending_payment: 'pending_payment',
-    credit: 'awaiting_prep',
-    paid: 'awaiting_prep',
-    in_production: 'in_lab',
-    ready_for_delivery: 'ready_pack',
-    shipped: 'shipped',
-    delivered: 'delivered',
-    completed: 'delivered',
-    cancelled: 'cancelled',
-};
-
-/**
- * The status an order takes from the stage its items are at — the inverse of
- * ORDER_TO_ITEM_STAGE, and deliberately written out rather than computed from it.
- *
- * The mapping is not one-to-one, so an inversion in code would have to pick a
- * winner arbitrarily:
- *
- *   awaiting_prep  ← both `credit` and `paid`
- *   delivered      ← both `delivered` and `completed`
- *   packed         → has no status of its own; a packed order is still waiting
- *                    to leave, which is `ready_for_delivery`
- *
- * `statusOf()` resolves the first two by keeping the recorded status whenever it
- * already agrees with the stage, and reaches this table only once the two have
- * diverged — which is what happens while the lab works one formula ahead of
- * another. These values are what such a divergence settles on.
- */
-export const STAGE_TO_STATUS = {
-    pending_payment: 'pending_payment',
-    awaiting_prep: 'paid',
-    in_lab: 'in_production',
-    ready_pack: 'ready_for_delivery',
-    packed: 'ready_for_delivery',
-    shipped: 'shipped',
-    delivered: 'delivered',
-    cancelled: 'cancelled',
-};
-
-/**
- * The statuses at which an order's money is settled — paid outright, or approved
- * for credit terms with the balance collected later. Either one clears the order
- * for work.
- */
-export const SETTLED_STATUS_IDS = ['paid', 'credit'];
-
-/** Position of a stage along the lab progression; `-1` when cancelled. */
-export function itemStageIndex(id) {
-    return ITEM_STAGE_IDS.indexOf(id);
-}
-
-/** Reasons an order can sit on hold before it enters the lab. */
-export const HOLD_REASON_IDS = [
-    'pending_payment',
-    'awaiting_customer',
-    'draft',
-];
-
-/** Statuses that mean the order is finished and needs no further action. */
-export const TERMINAL_STATUS_IDS = ['delivered', 'completed', 'cancelled'];
-
-/** Statuses a delivery screen cares about. */
-export const DELIVERY_STATUS_IDS = [
-    'ready_for_delivery',
+/** The happy path, in order — drives the progress rail on an order. */
+export const ORDER_FLOW = [
+    'pending',
+    'confirmed',
+    'in_production',
+    'ready',
     'shipped',
     'delivered',
 ];
+
+/**
+ * Payment, which is a field of its own and never a step in the flow.
+ *
+ * `paid` is `U_PayedSite = Y`. `credit` (בהקפה) is an order that went ahead
+ * unpaid under the practitioner's approved credit terms: the money is owed and
+ * collected later, and the work does not wait for it.
+ */
+export const PAYMENT_STATE_IDS = ['unpaid', 'paid', 'credit'];
+
+/** Which of the three one order is in. */
+export function paymentStateOf(order) {
+    if (!order) {
+        return 'unpaid';
+    }
+
+    if (order.credit && !order.creditPaid) {
+        return 'credit';
+    }
+
+    return order.paid ? 'paid' : 'unpaid';
+}
+
+/** An order whose money is settled — paid outright, or cleared on credit. */
+export const isSettled = (order) => paymentStateOf(order) !== 'unpaid';
+
+/** Reasons an order can sit on hold before it goes to the lab. */
+export const HOLD_REASON_IDS = ['unpaid', 'awaiting_customer', 'draft'];
+
+/** Statuses that mean the order is finished and needs no further action. */
+export const TERMINAL_STATUS_IDS = ['delivered', 'cancelled'];
+
+/** Statuses a delivery screen cares about. */
+export const DELIVERY_STATUS_IDS = ['ready', 'shipped', 'delivered'];
+
+/** Where an order sits along the flow; `-1` for cancelled. */
+export function statusIndex(id) {
+    return ORDER_FLOW.indexOf(id);
+}

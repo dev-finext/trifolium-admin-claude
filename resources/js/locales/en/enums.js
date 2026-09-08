@@ -6,42 +6,35 @@
 export default {
     // ── orders ── config/statuses.js ORDER_STATUSES
     status: {
-        pending_payment: 'Awaiting payment',
-        credit: 'On credit terms',
-        paid: 'Paid',
+        pending: 'Pending',
+        confirmed: 'Confirmed',
         in_production: 'In preparation',
-        ready_for_delivery: 'Ready to pack',
+        ready: 'Ready',
         shipped: 'Shipped',
         delivered: 'Delivered',
-        completed: 'Completed',
         cancelled: 'Cancelled',
+    },
+
+    // config/statuses.js PAYMENT_STATE_IDS — a field of its own, not a step
+    payment: {
+        unpaid: 'Unpaid',
+        paid: 'Paid',
+        credit: 'On credit terms',
     },
 
     // Short captions on the progress rail — ORDER_FLOW, not the status chips.
     flowLabel: {
-        pending_payment: 'Received',
-        paid: 'Payment',
+        pending: 'Received',
+        confirmed: 'Confirmed',
         in_production: 'Lab compounding',
-        ready_for_delivery: 'Ready to pack',
+        ready: 'Ready',
         shipped: 'Shipped',
         delivered: 'Delivered',
-    },
-
-    // config/statuses.js ITEM_STAGES + ITEM_CANCELLED
-    itemStage: {
-        pending_payment: 'Awaiting payment',
-        awaiting_prep: 'Awaiting compounding',
-        in_lab: 'Compounding in lab',
-        ready_pack: 'Ready to pack',
-        packed: 'Packed',
-        shipped: 'Shipped',
-        delivered: 'Delivered',
-        cancelled: 'Cancelled',
     },
 
     // Reasons an order sits on hold before it enters the lab.
     holdReason: {
-        pending_payment: 'Awaiting payment',
+        unpaid: 'Not yet paid',
         awaiting_customer: 'Awaiting customer approval',
         draft: 'Draft',
     },

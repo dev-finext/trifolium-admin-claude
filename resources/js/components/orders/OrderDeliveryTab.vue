@@ -73,7 +73,7 @@ const recipient = computed(() =>
 const address = computed(() => props.order.address || {});
 
 const shipped = computed(() =>
-    ['shipped', 'delivered', 'completed'].includes(statusOf(props.order)),
+    ['shipped', 'delivered'].includes(statusOf(props.order)),
 );
 
 const shipDate = computed(() =>
@@ -91,7 +91,7 @@ const awaitingAddress = computed(
  * kind of message that costs a wasted trip.
  */
 const atCounter = computed(
-    () => statusOf(props.order) === 'ready_for_delivery',
+    () => statusOf(props.order) === 'ready',
 );
 
 // Readiness is not set here: the lab reports it by finishing the order, and this

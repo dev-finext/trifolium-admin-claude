@@ -573,8 +573,8 @@ function parentName(bom) {
                             </template>
                             <template #cell-item="{ row: line }">
                                 <div>{{ loc(line.itemName) }}</div>
-                                <div v-if="line.stage" class="t-sub">
-                                    {{ t(`itemStage.${line.stage}`) }}
+                                <div v-if="line.status" class="t-sub">
+                                    {{ t(`status.${line.status}`) }}
                                 </div>
                             </template>
                             <template #cell-practitioner="{ row: line }">{{

@@ -62,6 +62,7 @@ export default {
         multiStatus: '{n} סטטוסים נבחרו',
         field: {
             status: 'סטטוס',
+            payment: 'תשלום',
             payer: 'מי משלם',
             credit: 'בהקפה',
             fulfilment: 'אופן מסירה',
