@@ -46,12 +46,22 @@ function checksumValid(digits) {
 
 const files = [];
 
-for (const dir of ROOTS) {
-    for (const name of await readdir(dir)) {
-        if (name.endsWith('.js')) {
-            files.push(path.join(dir, name));
+// One level down as well, and JSON as well as JavaScript: the real extract in
+// `demo/real/` is exactly the kind of file this check exists for.
+async function collect(dir) {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+            await collect(full);
+        } else if (entry.name.endsWith('.js') || entry.name.endsWith('.json')) {
+            files.push(full);
         }
     }
+}
+
+for (const dir of ROOTS) {
+    await collect(dir);
 }
 
 const source = (await Promise.all(files.map((f) => readFile(f, 'utf8')))).join(
