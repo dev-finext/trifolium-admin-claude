@@ -259,7 +259,7 @@ const RECEIPT_NOTES = [
     L('אריזה אחת פגומה, לא נקלטה', 'One package damaged, not received'),
 ];
 
-const RECEIVERS = [DEMO_ACTORS.ronit, DEMO_ACTORS.avi, DEMO_ACTORS.danaRaz];
+const RECEIVERS = [DEMO_ACTORS.orit, DEMO_ACTORS.amit, DEMO_ACTORS.hadarMizrahi];
 
 /** Goods receipts — the single entry point of all stock. */
 export function buildReceipts(stock) {

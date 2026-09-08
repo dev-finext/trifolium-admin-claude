@@ -35,10 +35,10 @@ export const LOG_ENTITY_TYPE_IDS = [
 
 /** Agents who sign in, and the address they sign in from. */
 export const DEMO_LOG_AGENTS = [
-    { name: DEMO_ACTORS.ronit, ip: '10.0.4.21' },
-    { name: DEMO_ACTORS.shay, ip: '10.0.4.34' },
-    { name: DEMO_ACTORS.avi, ip: '82.166.19.104' },
-    { name: DEMO_ACTORS.noa, ip: '10.0.4.18' },
+    { name: DEMO_ACTORS.orit, ip: '10.0.4.21' },
+    { name: DEMO_ACTORS.nir, ip: '10.0.4.34' },
+    { name: DEMO_ACTORS.amit, ip: '82.166.19.104' },
+    { name: DEMO_ACTORS.ella, ip: '10.0.4.18' },
 ];
 
 /** The first compounded item on an order, or the first one anywhere. */

@@ -80,7 +80,7 @@ export function buildPriceGroups() {
             prefixes: ['15'],
             uom: 'ml',
             updated: at(2, 11, 40),
-            updatedBy: DEMO_ACTORS.avi,
+            updatedBy: DEMO_ACTORS.amit,
             breaks: DEMO_PRICE_BREAKS,
             prices: [
                 12, 10, 8.5, 8, 7.5, 7, 5, 4, 3.6, 3.3, 3.1, 2.9, 2.8, 2.7, 2.6,
@@ -93,7 +93,7 @@ export function buildPriceGroups() {
             prefixes: ['201'],
             uom: 'ml',
             updated: at(6, 9, 15),
-            updatedBy: DEMO_ACTORS.ronit,
+            updatedBy: DEMO_ACTORS.orit,
             breaks: DEMO_PRICE_BREAKS,
             prices: [
                 9, 8, 7, 6.5, 6, 5.6, 4.5, 3.8, 3.4, 3.1, 2.9, 2.7, 2.6, 2.5,
@@ -106,7 +106,7 @@ export function buildPriceGroups() {
             prefixes: ['21'],
             uom: 'ml',
             updated: at(14, 13, 0),
-            updatedBy: DEMO_ACTORS.ronit,
+            updatedBy: DEMO_ACTORS.orit,
             breaks: DEMO_PRICE_BREAKS,
             prices: [
                 4, 3.4, 3, 2.7, 2.5, 2.3, 2, 1.7, 1.5, 1.4, 1.3, 1.25, 1.2,
@@ -120,7 +120,7 @@ export function buildPriceGroups() {
             prefixes: ['10', '11'],
             uom: 'g',
             updated: at(1, 16, 22),
-            updatedBy: DEMO_ACTORS.avi,
+            updatedBy: DEMO_ACTORS.amit,
             breaks: DEMO_PRICE_BREAKS,
             prices: [
                 3.5, 3.2, 2.8, 2.6, 2.4, 2.9, 2.2, 1.9, 1.7, 1.5, 1.4, 1.3, 1.2,
@@ -134,7 +134,7 @@ export function buildPriceGroups() {
             prefixes: ['30'],
             uom: 'capsule',
             updated: at(0, 10, 5),
-            updatedBy: DEMO_ACTORS.ronit,
+            updatedBy: DEMO_ACTORS.orit,
             breaks: [100, 250, 500, 1000, 2500, 5000],
             prices: [0.5, 0.45, 0.4, 0.34, 0.3, 0.26],
         },

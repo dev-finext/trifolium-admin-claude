@@ -38,7 +38,7 @@ export const INVENTORY_SETTINGS = {
         labour: null,
     },
     updated: at(40, 11, 20),
-    updatedBy: DEMO_ACTORS.ronit,
+    updatedBy: DEMO_ACTORS.orit,
 };
 
 const PO_COUNT = 7;
@@ -55,7 +55,7 @@ const STATE_MIX = [
     'open',
 ];
 
-const BUYERS = [DEMO_ACTORS.ronit, DEMO_ACTORS.noa];
+const BUYERS = [DEMO_ACTORS.orit, DEMO_ACTORS.ella];
 
 /** Rough conversion into shekels, for a fixture line priced in another currency. */
 const TO_ILS = { ILS: 1, EUR: 4, USD: 3.7 };

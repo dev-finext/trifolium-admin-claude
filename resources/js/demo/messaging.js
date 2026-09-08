@@ -381,15 +381,15 @@ export function buildScheduledMessages() {
             recipients: {
                 count: 2,
                 names: [
-                    L('יואב שטרן', 'Yoav Stern'),
-                    L('רחל סער', 'Rachel Saar'),
+                    L('מתן הלוי', 'Matan Halevi'),
+                    L('אביגיל צדוק', 'Avigail Tzadok'),
                 ],
             },
             ch: 'whatsapp',
             source: {
                 kind: 'manual',
                 trigger: null,
-                actor: DEMO_ACTORS.ronitSupport,
+                actor: DEMO_ACTORS.oritSupport,
             },
         },
         {

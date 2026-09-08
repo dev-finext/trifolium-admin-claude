@@ -7,7 +7,7 @@
 //
 // Demo records are authored with the `L` helper:
 //
-//     name: L('רונית מרדכי', 'Ronit Mordechai')
+//     name: L('אורית דגן', 'Orit Dagan')
 //
 // and read in components with `loc()` (or the `$loc` global / `useLocalized`
 // composable, which pick the active locale up automatically):

@@ -20,5 +20,5 @@ export const LAB_SETTINGS = {
         'A herbal preparation compounded to a practitioner’s instruction. Not a medicine and not intended to diagnose, treat or prevent disease. Keep out of reach of children. In pregnancy, while breastfeeding or when taking medication, consult the practitioner.',
     ),
     updated: at(120, 10, 0),
-    updatedBy: DEMO_ACTORS.ronit,
+    updatedBy: DEMO_ACTORS.orit,
 };

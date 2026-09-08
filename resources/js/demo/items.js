@@ -619,7 +619,7 @@ export function buildItems(stock, products, suppliers) {
 
 // ------------------------------------------------------------------- BOMs
 
-const BOM_EDITORS = [DEMO_ACTORS.ronit, DEMO_ACTORS.avi, DEMO_ACTORS.danaRaz];
+const BOM_EDITORS = [DEMO_ACTORS.orit, DEMO_ACTORS.amit, DEMO_ACTORS.hadarMizrahi];
 
 /**
  * Bills of materials, on the SAP model: a parent item and its components with a
@@ -749,7 +749,7 @@ export function buildBoms(stock, products) {
 
 // ------------------------------------------------------------ attachments
 
-const UPLOADERS = [DEMO_ACTORS.ronit, DEMO_ACTORS.avi, DEMO_ACTORS.danaRaz];
+const UPLOADERS = [DEMO_ACTORS.orit, DEMO_ACTORS.amit, DEMO_ACTORS.hadarMizrahi];
 
 /**
  * Files on record. In the fixture a file is its metadata — name, type, size, who
@@ -816,7 +816,7 @@ export function buildAttachments(stock, batches) {
         );
     }
 
-    add('supplier', 'S-104', 'הסכם סודיות — הרבה יבוא.pdf', 'pdf', 188, 380);
+    add('supplier', 'S-104', 'הסכם סודיות — עלה ירוק.pdf', 'pdf', 188, 380);
     add('supplier', 'S-104', 'חוזה מסגרת 2026.pdf', 'pdf', 742, 92);
     add('supplier', 'S-131', 'רישיון אלכוהול רפואי 2026.pdf', 'pdf', 156, 120);
     add('supplier', 'S-118', 'מחירון ספק 2026.xlsx', 'xlsx', 88, 45);

@@ -109,7 +109,7 @@ export const STICKER_TEMPLATES = [
             }),
         ],
         updated: at(21, 10, 12),
-        updatedBy: DEMO_ACTORS.ronit,
+        updatedBy: DEMO_ACTORS.orit,
     },
     {
         id: 'item',
@@ -184,7 +184,7 @@ export const STICKER_TEMPLATES = [
             field('pharmacy', 'pharmacy', { x: 2, y: 35, w: 66, size: 5.5 }),
         ],
         updated: at(34, 9, 40),
-        updatedBy: DEMO_ACTORS.avi,
+        updatedBy: DEMO_ACTORS.amit,
     },
     {
         id: 'shipping',
@@ -238,7 +238,7 @@ export const STICKER_TEMPLATES = [
             }),
         ],
         updated: at(60, 14, 5),
-        updatedBy: DEMO_ACTORS.ronit,
+        updatedBy: DEMO_ACTORS.orit,
     },
 ];
 
@@ -254,7 +254,7 @@ export const STICKER_NOTES = [
         prepTypes: ['evap_tincture', 'decoction', 'hydrosol'],
         active: true,
         updated: at(40, 11, 20),
-        updatedBy: DEMO_ACTORS.avi,
+        updatedBy: DEMO_ACTORS.amit,
     },
     {
         id: 'sn-shake',
@@ -263,7 +263,7 @@ export const STICKER_NOTES = [
         prepTypes: ['tincture', 'classic_tincture', 'evap_tincture'],
         active: true,
         updated: at(40, 11, 22),
-        updatedBy: DEMO_ACTORS.avi,
+        updatedBy: DEMO_ACTORS.amit,
     },
     {
         id: 'sn-heat',
@@ -280,7 +280,7 @@ export const STICKER_NOTES = [
         ],
         active: true,
         updated: at(40, 11, 25),
-        updatedBy: DEMO_ACTORS.avi,
+        updatedBy: DEMO_ACTORS.amit,
     },
     {
         id: 'sn-children',
@@ -289,7 +289,7 @@ export const STICKER_NOTES = [
         prepTypes: [],
         active: true,
         updated: at(40, 11, 27),
-        updatedBy: DEMO_ACTORS.avi,
+        updatedBy: DEMO_ACTORS.amit,
     },
     {
         id: 'sn-dry',
@@ -301,7 +301,7 @@ export const STICKER_NOTES = [
         prepTypes: ['powder', 'classic_powder', 'tea', 'capsule'],
         active: true,
         updated: at(12, 9, 5),
-        updatedBy: DEMO_ACTORS.ronit,
+        updatedBy: DEMO_ACTORS.orit,
     },
     {
         id: 'sn-external',
@@ -310,7 +310,7 @@ export const STICKER_NOTES = [
         prepTypes: ['cream', 'gel', 'infused_oil', 'essential_oil'],
         active: true,
         updated: at(12, 9, 8),
-        updatedBy: DEMO_ACTORS.ronit,
+        updatedBy: DEMO_ACTORS.orit,
     },
     {
         id: 'sn-suppository',
@@ -322,11 +322,11 @@ export const STICKER_NOTES = [
         prepTypes: ['suppository'],
         active: false,
         updated: at(5, 16, 30),
-        updatedBy: DEMO_ACTORS.ronit,
+        updatedBy: DEMO_ACTORS.orit,
     },
 ];
 
-const PRINTERS = [DEMO_ACTORS.aviLab, DEMO_ACTORS.danaPharmacist];
+const PRINTERS = [DEMO_ACTORS.amitLab, DEMO_ACTORS.hadarPharmacist];
 
 const prepCount = (item) =>
     Math.max(1, Number(item.packages) || 1) + (item.unit === 'capsule' ? 1 : 0);

@@ -149,11 +149,11 @@ export const FORMULA_TEMPLATES = [
 ];
 
 const DELIVERY_STREETS = [
-    L('ארלוזורוב', 'Arlozorov'),
-    L('הרצל', 'Herzl'),
-    L('ביאליק', 'Bialik'),
-    L('ז׳בוטינסקי', 'Jabotinsky'),
-    L('סוקולוב', 'Sokolov'),
+    L('בן גוריון', 'Ben Gurion'),
+    L('אלנבי', 'Allenby'),
+    L('הגלבוע', 'HaGilboa'),
+    L('רוטשילד', 'Rothschild'),
+    L('הכרמל', 'HaCarmel'),
 ];
 
 /** Card three times over: the mix a pharmacy of this size actually collects. */
@@ -166,12 +166,12 @@ const LINK_STATES = ['sent', 'viewed', 'sent'];
 export function buildOrderNote() {
     return {
         when: at(1, 12, 18),
-        actor: L('שי כ׳', 'Shay C.'),
+        actor: L('ניר ק׳', 'Nir K.'),
         text: L(
             'המטפל ביקש לעכב שליחה עד יום ראשון.',
             'The practitioner asked to hold the shipment until Sunday.',
         ),
-        mention: L('@אבי', '@Avi'),
+        mention: L('@עמית', '@Amit'),
     };
 }
 
@@ -498,7 +498,7 @@ function buildAudit(order) {
         rows.push({
             when: at(Math.max(0, order.daysAgo - 1), 14, 2),
             actorKind: 'agent',
-            actor: DEMO_ACTORS.ronitSupport,
+            actor: DEMO_ACTORS.oritSupport,
             act: L('ההזמנה בוטלה', 'Order cancelled'),
             det: L(
                 'סיבה: בקשת המטפל · המלאי שהוקצה שוחרר',
@@ -551,7 +551,7 @@ function buildDocumentation(order, audit) {
         id: 'mn0',
         kind: 'manual',
         when: at(Math.max(0, order.daysAgo - 1), 12, 18),
-        actor: DEMO_ACTORS.shaySupport,
+        actor: DEMO_ACTORS.nirSupport,
         text: DOC_NOTES[order.daysAgo % DOC_NOTES.length],
     });
 
@@ -560,7 +560,7 @@ function buildDocumentation(order, audit) {
             id: 'mn0f',
             kind: 'manual',
             when: at(Math.max(0, order.daysAgo - 1), 15, 2),
-            actor: DEMO_ACTORS.ronitSupport,
+            actor: DEMO_ACTORS.oritSupport,
             text: L(
                 'תיקון: הבקשה הייתה לדחות ליום שני, לא ליום ראשון.',
                 'Correction: the request was to push it to Monday, not Sunday.',
@@ -590,22 +590,22 @@ function labRoles(status, slot, daysAgo) {
     if (status === 'lab') {
         return {
             ...none,
-            picker: { by: DEMO_ACTORS.aviLab, when: when(9) },
+            picker: { by: DEMO_ACTORS.amitLab, when: when(9) },
             checker: chance(`${slot}:lab:checker`, 0.5)
-                ? { by: DEMO_ACTORS.shaySupport, when: when(10) }
+                ? { by: DEMO_ACTORS.nirSupport, when: when(10) }
                 : null,
         };
     }
 
     if (['packed', 'sent', 'closed'].includes(status)) {
         return {
-            picker: { by: DEMO_ACTORS.aviLab, when: when(9) },
-            checker: { by: DEMO_ACTORS.shaySupport, when: when(10) },
+            picker: { by: DEMO_ACTORS.amitLab, when: when(9) },
+            checker: { by: DEMO_ACTORS.nirSupport, when: when(10) },
             pharmacist: {
                 by: pickFrom(`${slot}:lab:pharm`, PHARMACIST_ACTORS),
                 when: when(11),
             },
-            packer: { by: DEMO_ACTORS.noaSupport, when: when(13) },
+            packer: { by: DEMO_ACTORS.ellaSupport, when: when(13) },
         };
     }
 

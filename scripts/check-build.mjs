@@ -29,7 +29,7 @@ const FIXTURE_MARKERS = [
     ['a phone number', '052-000-4546'],
     ['a national ID', '929384756'],
     ['a company number', '813874902'],
-    ['a practitioner email', 'dan@ether.example'],
+    ['a practitioner email', 'zohar@harmonia.example'],
     // Not personal data, but demo-only all the same: the development progress
     // article, whose route is folded out of an api build in router/index.js.
     ['the development article', 'dev-progress-article-v2'],
