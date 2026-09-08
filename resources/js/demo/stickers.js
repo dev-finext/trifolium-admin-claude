@@ -373,9 +373,9 @@ export function buildStickerPrints(orders, receipts) {
 
         if (
             [
-                'ready',
-                'shipped',
-                'delivered',
+                'packed',
+                'sent',
+                'closed',
                 ].includes(order.status) &&
             live.length
         ) {
@@ -391,7 +391,7 @@ export function buildStickerPrints(orders, receipts) {
         }
 
         if (
-            ['shipped', 'delivered'].includes(order.status) &&
+            ['sent', 'closed'].includes(order.status) &&
             order.courier
         ) {
             push(

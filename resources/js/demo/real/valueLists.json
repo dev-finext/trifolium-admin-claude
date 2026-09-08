@@ -1,0 +1,82 @@
+{
+ "courier": [
+  {
+   "value": "S",
+   "label": "סוסנה"
+  },
+  {
+   "value": "T",
+   "label": "תפוז"
+  },
+  {
+   "value": "Y",
+   "label": "ירדן"
+  },
+  {
+   "value": "D",
+   "label": "דליבר"
+  },
+  {
+   "value": "-.-",
+   "label": "-.-"
+  },
+  {
+   "value": "F",
+   "label": "פוקוס"
+  },
+  {
+   "value": "A",
+   "label": "Special Delivery"
+  }
+ ],
+ "whoPays": [
+  {
+   "value": "-.-",
+   "label": "-.-"
+  },
+  {
+   "value": "המטפל",
+   "label": "המטפל"
+  },
+  {
+   "value": "המטופל",
+   "label": "המטופל"
+  }
+ ],
+ "whoReceives": [
+  {
+   "value": "'-'",
+   "label": "'-'"
+  },
+  {
+   "value": "המטפל/ת",
+   "label": "המטפל/ת"
+  },
+  {
+   "value": "המטופל/ת",
+   "label": "המטופל/ת"
+  },
+  {
+   "value": "איסוף עצמי",
+   "label": "איסוף עצמי"
+  }
+ ],
+ "dosageUnit": [],
+ "instructions": [],
+ "use": [],
+ "howToUse": [],
+ "pregnancyLimits": [
+  {
+   "value": "None",
+   "label": "אין"
+  },
+  {
+   "value": "NotRecomended",
+   "label": "לא מומלץ"
+  },
+  {
+   "value": "NotAllowed",
+   "label": "אסור"
+  }
+ ]
+}

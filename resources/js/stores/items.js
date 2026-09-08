@@ -25,7 +25,7 @@ import { useInventoryStore } from '@/stores/inventory';
 
 /** Item stages during which the herbs on an order are committed, not yet consumed. */
 /** The statuses at which an order has claimed its materials but not shipped. */
-const COMMITTED_STATUS_IDS = ['confirmed', 'in_production', 'ready'];
+const COMMITTED_STATUS_IDS = ['new', 'lab', 'packed'];
 
 /** This moment, in the shape every record's `when` field carries. */
 function moment(iso = null) {

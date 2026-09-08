@@ -9,14 +9,16 @@
 // `exception.lab.fix`, `logAction.doc_issue`.
 export default {
     // ── orders ── config/statuses.js ORDER_STATUSES
+    // config/statuses.js — the eight values ORDR.U_OrderState holds
     status: {
-        pending: 'ממתינה',
-        confirmed: 'אושרה',
-        in_production: 'בהכנה',
-        ready: 'מוכנה',
-        shipped: 'נשלחה',
-        delivered: 'נמסרה',
-        cancelled: 'בוטלה',
+        new: 'הזמנה חדשה',
+        in_process: 'בטיפול',
+        lab: 'מעבדה',
+        packed: 'ארוז',
+        sent: 'נשלח',
+        closed: 'סגור',
+        on_hold: 'מושהה',
+        cancelled: 'מבוטל',
     },
 
     // config/statuses.js PAYMENT_STATE_IDS — שדה נפרד, לא שלב במחזור החיים

@@ -73,7 +73,7 @@ const recipient = computed(() =>
 const address = computed(() => props.order.address || {});
 
 const shipped = computed(() =>
-    ['shipped', 'delivered'].includes(statusOf(props.order)),
+    ['sent', 'closed'].includes(statusOf(props.order)),
 );
 
 const shipDate = computed(() =>
@@ -91,7 +91,7 @@ const awaitingAddress = computed(
  * kind of message that costs a wasted trip.
  */
 const atCounter = computed(
-    () => statusOf(props.order) === 'ready',
+    () => statusOf(props.order) === 'packed',
 );
 
 // Readiness is not set here: the lab reports it by finishing the order, and this
@@ -118,11 +118,11 @@ function askDelivered() {
         confirmLabel: t('orders.delivery.pickupConfirm'),
         body: t('orders.delivery.pickupBody', { id: props.order.id }),
         effects: [
-            t('orders.effect.statusTo', { status: t('status.delivered') }),
+            t('orders.effect.statusTo', { status: t('status.closed') }),
             t('orders.delivery.pickupEffectPoints'),
         ],
         done: async () => {
-            await orders.setStatus(props.order.id, 'delivered');
+            await orders.setStatus(props.order.id, 'closed');
             push({ title: t('orders.delivery.pickupDone') });
         },
     });

@@ -21,7 +21,7 @@ import { useDatasetStore } from '@/stores/dataset';
 import { statusOf, trackedItems, useOrdersStore } from '@/stores/orders';
 
 /** The statuses that put an order on the lab's bench or its packing table. */
-const BENCH_STATUS_IDS = ['in_production', 'ready'];
+const BENCH_STATUS_IDS = ['lab', 'packed'];
 
 const { t } = useI18n();
 const router = useRouter();

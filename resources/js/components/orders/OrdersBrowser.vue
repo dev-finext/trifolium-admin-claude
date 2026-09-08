@@ -62,7 +62,7 @@ const view = useUrlState({
     from: '',
     to: '',
     // Every set field is an array, so multi-select survives a pasted link:
-    // ?status=in_production,ready_for_delivery
+    // ?status=lab,packed
     ...emptyFilters(ORDER_FILTER_FIELDS),
     q: '',
     sort: '',
@@ -362,7 +362,7 @@ function askToLab() {
         reason: true,
         body: t('orders.bulk.toLabBody', { n: sendable.length }),
         effects: [
-            t('orders.effect.statusTo', { status: t('status.in_production') }),
+            t('orders.effect.statusTo', { status: t('status.lab') }),
             t('orders.effect.itemsToLabQueue'),
             t('orders.effect.msgByTriggers'),
             ...(skipped

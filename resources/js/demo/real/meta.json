@@ -1,0 +1,51 @@
+{
+ "source": "TR_backup_2026_08_05_180002_6205496.bak (SAP Business One)",
+ "database": "TR",
+ "extractedOn": "2026-09-08",
+ "rows": {
+  "orderStates": 8,
+  "prepTypes": 17,
+  "categories": 71,
+  "itemGroups": 48,
+  "warehouses": 7,
+  "pickupPoints": 10,
+  "contentSizes": 16,
+  "valueLists": 1,
+  "ingredients": 200,
+  "products": 100,
+  "boms": 50,
+  "priceTiers": 400,
+  "batches": 120,
+  "practitioners": 30,
+  "patients": 60,
+  "suppliers": 40,
+  "orders": 50
+ },
+ "pseudonymised": [
+  "practitioners",
+  "patients",
+  "orders (names only)",
+  "suppliers (contact person only)"
+ ],
+ "verbatim": [
+  "items",
+  "ingredients",
+  "products",
+  "boms",
+  "batches",
+  "priceTiers",
+  "categories",
+  "prepTypes",
+  "itemGroups",
+  "warehouses",
+  "pickupPoints",
+  "orderStates",
+  "valueLists",
+  "order dates, states, totals, discounts, points and composition"
+ ],
+ "neverRead": [
+  "RCT3",
+  "passwords",
+  "@SPR_STICKER"
+ ]
+}

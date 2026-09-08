@@ -54,50 +54,50 @@ const POINTS_EARN_RATE = 0.1;
  * index, so the mix holds whatever the order count is.
  */
 const STATUS_MIX = [
-    'pending',
-    'pending',
-    'pending',
-    'pending',
-    'pending',
-    'pending',
-    'pending',
-    'pending',
-    'confirmed',
-    'confirmed',
-    'confirmed',
-    'confirmed',
-    'confirmed',
-    'in_production',
-    'in_production',
-    'in_production',
-    'in_production',
-    'in_production',
-    'in_production',
-    'in_production',
-    'ready',
-    'ready',
-    'ready',
-    'ready',
-    'ready',
-    'shipped',
-    'shipped',
-    'shipped',
-    'shipped',
-    'shipped',
-    'shipped',
-    'delivered',
-    'delivered',
-    'delivered',
-    'delivered',
-    'delivered',
-    'delivered',
-    'delivered',
-    'delivered',
-    'delivered',
-    'delivered',
-    'delivered',
-    'delivered',
-    'delivered',
+    'new',
+    'new',
+    'new',
+    'new',
+    'new',
+    'new',
+    'new',
+    'new',
+    'new',
+    'new',
+    'new',
+    'new',
+    'new',
+    'lab',
+    'lab',
+    'lab',
+    'lab',
+    'lab',
+    'lab',
+    'lab',
+    'packed',
+    'packed',
+    'packed',
+    'packed',
+    'packed',
+    'sent',
+    'sent',
+    'sent',
+    'sent',
+    'sent',
+    'sent',
+    'closed',
+    'closed',
+    'closed',
+    'closed',
+    'closed',
+    'closed',
+    'closed',
+    'closed',
+    'closed',
+    'closed',
+    'closed',
+    'closed',
+    'closed',
     'cancelled',
     'cancelled',
     'cancelled',
@@ -307,7 +307,7 @@ function formulaBody(template, slot) {
  */
 function buildItems(order) {
     const items = [];
-    const inLab = ['in_production', 'ready', 'shipped', 'delivered'].includes(
+    const inLab = ['lab', 'packed', 'sent', 'closed'].includes(
         order.status,
     );
 
@@ -416,11 +416,11 @@ function buildAudit(order) {
     }
 
     const sequence = [
-        'confirmed',
-        'in_production',
-        'ready',
-        'shipped',
-        'delivered',
+        'new',
+        'lab',
+        'packed',
+        'sent',
+        'closed',
     ];
     const reached = sequence.indexOf(order.status);
 
@@ -438,7 +438,7 @@ function buildAudit(order) {
                 'Status written to the database · messages sent by the triggers',
             ),
             valueType: 'status',
-            from: k === 0 ? 'pending' : sequence[k - 1],
+            from: k === 0 ? 'new' : sequence[k - 1],
             to: status,
         });
     });
@@ -563,7 +563,7 @@ function labRoles(status, slot, daysAgo) {
         packer: null,
     };
 
-    if (status === 'in_production') {
+    if (status === 'lab') {
         return {
             ...none,
             picker: { by: DEMO_ACTORS.aviLab, when: when(9) },
@@ -573,7 +573,7 @@ function labRoles(status, slot, daysAgo) {
         };
     }
 
-    if (['ready', 'shipped', 'delivered'].includes(status)) {
+    if (['packed', 'sent', 'closed'].includes(status)) {
         return {
             picker: { by: DEMO_ACTORS.aviLab, when: when(9) },
             checker: { by: DEMO_ACTORS.shaySupport, when: when(10) },
@@ -678,8 +678,8 @@ export function buildOrders(practitioners, patients) {
 
         const needsCourier =
             deliveryType === 'courier' &&
-            (['shipped', 'delivered'].includes(status) ||
-                (status === 'ready' && chance(`${slot}:courier:maybe`, 0.5)));
+            (['sent', 'closed'].includes(status) ||
+                (status === 'packed' && chance(`${slot}:courier:maybe`, 0.5)));
         const courierId = needsCourier
             ? pickFrom(`${slot}:courier`, ACTIVE_COURIER_IDS)
             : null;
@@ -693,7 +693,7 @@ export function buildOrders(practitioners, patients) {
             payer,
             status,
             hold:
-                status === 'pending' && chance(`${slot}:hold`, 0.3)
+                status === 'new' && chance(`${slot}:hold`, 0.3)
                     ? pickFrom(`${slot}:hold:reason`, HOLD_REASON_IDS)
                     : null,
             type: isShelf ? 'shelf' : 'formula',
@@ -745,13 +745,13 @@ export function buildOrders(practitioners, patients) {
             linkExpires: null,
             gcSession: `gc_sess_${spread(`${slot}:gcs`, 100000, 999999)}`,
             gcTxn:
-                status === 'pending'
+                status === 'new'
                     ? null
                     : `gc_txn_${spread(`${slot}:gct`, 1000000, 9999999)}`,
             payToken: `pl_${spread(`${slot}:tok`, 100000, 999999).toString(36)}${spread(`${slot}:tok2`, 1000, 9999)}`,
             linkState:
                 payer === 'patient'
-                    ? status === 'pending'
+                    ? status === 'new'
                         ? pickFrom(`${slot}:link`, LINK_STATES)
                         : 'paid'
                     : null,
@@ -766,7 +766,7 @@ export function buildOrders(practitioners, patients) {
             flags: [],
             // V2
             urgent:
-                !['cancelled', 'delivered'].includes(status) &&
+                !['cancelled', 'closed'].includes(status) &&
                 chance(`${slot}:urgent`, 0.12),
             pickupPoint:
                 deliveryType === 'pickup' && chance(`${slot}:point`, 0.55)
@@ -788,20 +788,20 @@ export function buildOrders(practitioners, patients) {
         order.credit =
             order.payer === 'practitioner' &&
             order.practitioner.credit &&
-            !['pending', 'cancelled'].includes(order.status);
+            !['new', 'cancelled'].includes(order.status);
 
         order.creditPaid =
             order.credit && order.daysAgo >= 18 && order.daysAgo % 3 !== 0;
 
         // U_PayedSite: a field of its own, never a step in the flow. An order
-        // past 'pending' has been paid unless it went ahead on credit terms.
+        // past 'new' has been paid unless it went ahead on credit terms.
         order.paid =
-            !order.credit && !['pending', 'cancelled'].includes(order.status);
+            !order.credit && !['new', 'cancelled'].includes(order.status);
 
         const unpaidCredit = order.credit && !order.creditPaid;
 
         if (
-            order.status === 'pending' ||
+            order.status === 'new' ||
             order.status === 'cancelled' ||
             unpaidCredit
         ) {
@@ -811,7 +811,7 @@ export function buildOrders(practitioners, patients) {
         }
 
         order.linkExpires =
-            order.payer === 'patient' && order.status === 'pending'
+            order.payer === 'patient' && order.status === 'new'
                 ? Math.max(0, PAY_LINK.days - order.daysAgo)
                 : null;
 
@@ -830,7 +830,7 @@ export function buildOrders(practitioners, patients) {
     // the "ready to pack, no courier" exception is always reachable — the same
     // trick inventory.js uses to keep both batch expiry states on screen.
     const awaitingCourier = orders.filter(
-        (order) => order.status === 'ready' && order.deliveryType === 'courier',
+        (order) => order.status === 'packed' && order.deliveryType === 'courier',
     );
 
     if (awaitingCourier.length > 1) {
@@ -842,7 +842,7 @@ export function buildOrders(practitioners, patients) {
 
     // One order on the lab bench is always urgent, so the queue's ordering and
     // the urgency marks are on screen whatever the rest of the fixture does.
-    const bench = orders.find((order) => order.status === 'in_production');
+    const bench = orders.find((order) => order.status === 'lab');
 
     if (bench) {
         bench.urgent = true;
@@ -873,7 +873,7 @@ export function orderExceptionFlags(order, messages) {
     if (
         order.payer === 'patient' &&
         !order.addressProvided &&
-        !['cancelled', 'pending'].includes(order.status)
+        !['cancelled', 'new'].includes(order.status)
     ) {
         flags.push('address');
     }
@@ -888,7 +888,7 @@ export function orderExceptionFlags(order, messages) {
     }
 
     if (
-        order.status === 'pending' &&
+        order.status === 'new' &&
         order.daysAgo >= EXCEPTION_THRESHOLDS.payStaleDays
     ) {
         flags.push('pay_stale');
@@ -899,14 +899,14 @@ export function orderExceptionFlags(order, messages) {
     }
 
     if (
-        order.status === 'in_production' &&
+        order.status === 'lab' &&
         order.daysAgo >= EXCEPTION_THRESHOLDS.labStuckDays
     ) {
         flags.push('lab');
     }
 
     if (
-        order.status === 'ready' &&
+        order.status === 'packed' &&
         order.deliveryType === 'courier' &&
         !order.courier
     ) {

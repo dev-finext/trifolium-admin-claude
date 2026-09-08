@@ -328,7 +328,7 @@ export function buildBatchUse(orders, batches) {
     // Only an order the lab actually started consumes a batch.
     orders
         .filter((order) =>
-            ['in_production', 'ready', 'shipped', 'delivered'].includes(
+            ['lab', 'packed', 'sent', 'closed'].includes(
                 order.status,
             ),
         )

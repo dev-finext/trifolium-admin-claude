@@ -5,13 +5,15 @@
 // חשבונית מס קבלה is a "tax invoice/receipt", מטפל is a "practitioner".
 export default {
     // ── orders ── config/statuses.js ORDER_STATUSES
+    // config/statuses.js — the eight values ORDR.U_OrderState holds
     status: {
-        pending: 'Pending',
-        confirmed: 'Confirmed',
-        in_production: 'In preparation',
-        ready: 'Ready',
-        shipped: 'Shipped',
-        delivered: 'Delivered',
+        new: 'New order',
+        in_process: 'In process',
+        lab: 'In the lab',
+        packed: 'Packed',
+        sent: 'Sent',
+        closed: 'Closed',
+        on_hold: 'On hold',
         cancelled: 'Cancelled',
     },
 

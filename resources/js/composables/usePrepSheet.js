@@ -93,7 +93,7 @@ export function usePrepSheet() {
         const paid = (order.audit || []).find(
             (row) =>
                 row.valueType === 'status' &&
-                row.to === 'confirmed',
+                row.to === 'new',
         );
 
         return paid?.when?.stamp

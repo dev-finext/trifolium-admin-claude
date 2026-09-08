@@ -1,0 +1,42 @@
+[
+ {
+  "code": 1,
+  "label": "הזמנה חדשה",
+  "orders": 20289
+ },
+ {
+  "code": 2,
+  "label": "בטיפול",
+  "orders": 10
+ },
+ {
+  "code": 3,
+  "label": "מעבדה",
+  "orders": 865
+ },
+ {
+  "code": 4,
+  "label": "ארוז",
+  "orders": 5
+ },
+ {
+  "code": 5,
+  "label": "נשלח",
+  "orders": 109886
+ },
+ {
+  "code": 6,
+  "label": "סגור",
+  "orders": 210468
+ },
+ {
+  "code": 7,
+  "label": "מושהה",
+  "orders": 92
+ },
+ {
+  "code": 8,
+  "label": "מבוטל",
+  "orders": 13431
+ }
+]
