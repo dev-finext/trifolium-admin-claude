@@ -20,6 +20,7 @@ export default {
         ingredients: 'Formula ingredients',
         items: 'Items',
         lab: 'Lab',
+        stickers: 'Stickers',
         inventory: 'Stock & batches',
         purchasing: 'Purchasing',
         safety: 'Drug interactions',

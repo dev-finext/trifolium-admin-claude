@@ -53,6 +53,8 @@ export default {
         purchase_order: 'Purchase order',
         customer: 'Customer',
         supplier: 'Supplier',
+        sticker_template: 'Sticker template',
+        sticker_note: 'Sticker note',
     },
 
     loadMore: 'Load {n} more entries',

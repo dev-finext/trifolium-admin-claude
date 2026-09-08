@@ -55,6 +55,9 @@ export const LOG_ACTION_IDS = [
     'prep_sheet_print',
     'activity_add',
     'gate_unlock',
+    'sticker_template_update',
+    'sticker_note_update',
+    'sticker_print',
     // people
     'registration_approve',
     'registration_reject',

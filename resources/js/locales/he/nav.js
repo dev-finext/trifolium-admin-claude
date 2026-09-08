@@ -23,6 +23,7 @@ export default {
         ingredients: 'רכיבי פורמולה',
         items: 'פריטים',
         lab: 'מעבדה',
+        stickers: 'מדבקות',
         inventory: 'מלאי ואצוות',
         purchasing: 'רכש',
         safety: 'אינטראקציות תרופתיות',

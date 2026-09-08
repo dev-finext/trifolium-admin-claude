@@ -224,6 +224,8 @@ export function buildReceipts(stock) {
                         spread(`${lineSlot}:jitter`, 0, 180),
                 ),
                 supplierBatch: `L${spread(`${lineSlot}:sbatch`, 10000, 99999)}`,
+                // V2: how many item labels the receipt asked for
+                labels: spread(`${lineSlot}:labels`, 1, 3),
             });
 
             batchNumber += 1;

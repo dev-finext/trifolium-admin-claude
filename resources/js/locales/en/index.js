@@ -24,6 +24,7 @@ import products from '@/locales/en/products';
 import purchasing from '@/locales/en/purchasing';
 import safety from '@/locales/en/safety';
 import shell from '@/locales/en/shell';
+import stickers from '@/locales/en/stickers';
 import systemContacts from '@/locales/en/systemContacts';
 import ui from '@/locales/en/ui';
 import users from '@/locales/en/users';
@@ -56,6 +57,7 @@ export default {
     purchasing,
     safety,
     shell,
+    stickers,
     ui,
     users,
     systemContacts,

@@ -57,6 +57,8 @@ export default {
         purchase_order: 'הזמנת רכש',
         customer: 'לקוח',
         supplier: 'ספק',
+        sticker_template: 'תבנית מדבקה',
+        sticker_note: 'הערת מדבקה',
     },
 
     loadMore: 'טען עוד {n} רשומות',

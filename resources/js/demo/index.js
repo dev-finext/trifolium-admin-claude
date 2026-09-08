@@ -107,6 +107,11 @@ import {
 } from '@/demo/purchasing';
 import { buildServices, SERVICE_STATES } from '@/demo/services';
 import {
+    buildStickerPrints,
+    STICKER_NOTES,
+    STICKER_TEMPLATES,
+} from '@/demo/stickers';
+import {
     BUSINESS_TYPE_IDS,
     DEMO_SUPPLIERS,
     DEMO_VENDOR_CONTACTS,
@@ -211,6 +216,10 @@ export function buildDataset() {
         labSettings: LAB_SETTINGS,
         // crm (V2)
         activities: buildActivities(practitioners, customers, orders),
+        // stickers (V2)
+        stickerTemplates: STICKER_TEMPLATES,
+        stickerNotes: STICKER_NOTES,
+        stickerPrints: buildStickerPrints(orders, receipts),
 
         // inventory
         stock,

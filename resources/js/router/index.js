@@ -85,6 +85,12 @@ const routes = [
         component: () => import('@/views/LabView.vue'),
     },
     {
+        path: '/stickers',
+        name: 'stickers',
+        meta: { titleKey: 'nav.item.stickers' },
+        component: () => import('@/views/StickersView.vue'),
+    },
+    {
         path: '/inventory',
         name: 'inventory',
         meta: { titleKey: 'nav.item.inventory' },
