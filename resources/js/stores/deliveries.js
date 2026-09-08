@@ -140,37 +140,73 @@ export function deliveryHaystack(order) {
  * Does an order survive the queue's filters? `filters` is the screen's URL state,
  * so this is also what a pasted link reproduces.
  */
+/**
+ * What the delivery desk may be narrowed by. The stage stays a control of its
+ * own above the table — it is how the desk is read, not a filter of it.
+ */
+export const DELIVERY_FILTER_FIELDS = [
+    {
+        key: 'status',
+        group: 'state',
+        kind: 'set',
+        prefix: 'status',
+        values: (order) => [statusOf(order)],
+    },
+    {
+        key: 'tracking',
+        group: 'state',
+        kind: 'set',
+        prefix: 'deliveries.filter.trackingState',
+        values: (order) => [order.tracking ? 'yes' : 'no'],
+    },
+    {
+        key: 'signed',
+        group: 'state',
+        kind: 'set',
+        prefix: 'deliveries.filter.poaState',
+        values: (order) => [order.poaSigned ? 'yes' : 'no'],
+    },
+    {
+        key: 'type',
+        group: 'how',
+        kind: 'set',
+        prefix: 'fulfilment',
+        values: (order) => [order.deliveryType],
+    },
+    {
+        key: 'courier',
+        group: 'how',
+        kind: 'set',
+        values: (order) => [order.courier || 'none'],
+    },
+    {
+        // Keyed by the record's Hebrew source text, so a filtered link opens on
+        // the same city whichever language the reader is in.
+        key: 'city',
+        group: 'where',
+        kind: 'set',
+        values: (order) =>
+            order.address?.city
+                ? [loc(order.address.city, FALLBACK_LOCALE)]
+                : [],
+    },
+    {
+        key: 'point',
+        group: 'where',
+        kind: 'set',
+        values: (order) => [order.pickupPoint || 'none'],
+    },
+];
+
+export const DELIVERY_FILTER_GROUPS = ['state', 'how', 'where'];
+
+/**
+ * The two narrowings the desk owns itself: which stage of the desk is being
+ * read, and the free-text search. Every other field goes through the shared
+ * filter engine.
+ */
 export function matchesFilters(order, filters) {
     if (!deliveryStage(filters.stage).match(order)) {
-        return false;
-    }
-
-    if (filters.status && statusOf(order) !== filters.status) {
-        return false;
-    }
-
-    if (filters.type && order.deliveryType !== filters.type) {
-        return false;
-    }
-
-    if (filters.courier && order.courier !== filters.courier) {
-        return false;
-    }
-
-    // The city filter travels in the URL, so it is keyed by the record's source
-    // text rather than by what the reader currently sees.
-    if (
-        filters.city &&
-        loc(order.address.city, FALLBACK_LOCALE) !== filters.city
-    ) {
-        return false;
-    }
-
-    if (filters.tracking === 'yes' && !order.tracking) {
-        return false;
-    }
-
-    if (filters.tracking === 'no' && order.tracking) {
         return false;
     }
 
@@ -178,11 +214,7 @@ export function matchesFilters(order, filters) {
         .trim()
         .toLowerCase();
 
-    if (needle && !deliveryHaystack(order).includes(needle)) {
-        return false;
-    }
-
-    return true;
+    return !needle || deliveryHaystack(order).includes(needle);
 }
 
 /** One CSV cell, quoted so a comma or a quote inside a name survives. */
@@ -264,9 +296,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         deskOrders.value.filter(
             (order) =>
                 order.pickupPoint === id &&
-                ['in_production', 'ready'].includes(
-                    statusOf(order),
-                ),
+                ['in_production', 'ready'].includes(statusOf(order)),
         );
 
     /** The points whose dispatch day is today, with what is waiting for each. */

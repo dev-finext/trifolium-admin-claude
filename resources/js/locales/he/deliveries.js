@@ -38,7 +38,33 @@ export default {
         done: 'נמסר',
     },
 
+    filterGroup: {
+        state: 'מצב המשלוח',
+        how: 'אופן מסירה',
+        where: 'יעד',
+    },
+
     filter: {
+        noun: 'משלוחים',
+        field: {
+            status: 'סטטוס',
+            tracking: 'מספר מעקב',
+            signed: 'ייפוי כוח',
+            type: 'אופן מסירה',
+            courier: 'חברת שליחויות',
+            city: 'עיר',
+            point: 'נקודת איסוף',
+        },
+        trackingState: {
+            yes: 'יש מספר מעקב',
+            no: 'ללא מספר מעקב',
+        },
+        poaState: {
+            yes: 'חתום',
+            no: 'חסר',
+        },
+        noCourier: 'לא הוקצה שליח',
+        noPoint: 'איסוף בבית המרקחת',
         search: 'חיפוש משלוח',
         searchPlaceholder: 'הזמנה · מקבל · עיר · מספר מעקב',
         stage: 'שלב טיפול',

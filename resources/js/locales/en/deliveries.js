@@ -33,7 +33,33 @@ export default {
         done: 'Delivered',
     },
 
+    filterGroup: {
+        state: 'Delivery state',
+        how: 'How it leaves',
+        where: 'Destination',
+    },
+
     filter: {
+        noun: 'deliveries',
+        field: {
+            status: 'Status',
+            tracking: 'Tracking number',
+            signed: 'Power of attorney',
+            type: 'How it leaves',
+            courier: 'Courier',
+            city: 'City',
+            point: 'Pickup point',
+        },
+        trackingState: {
+            yes: 'Has a tracking number',
+            no: 'No tracking number',
+        },
+        poaState: {
+            yes: 'Signed',
+            no: 'Missing',
+        },
+        noCourier: 'No courier assigned',
+        noPoint: 'Pickup at the pharmacy',
         search: 'Search deliveries',
         searchPlaceholder: 'Order · recipient · city · tracking number',
         stage: 'Handling stage',

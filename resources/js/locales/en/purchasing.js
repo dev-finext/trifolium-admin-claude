@@ -40,7 +40,36 @@ export default {
         valueSub: 'Lines not yet received · in shekels',
     },
 
+    filterGroup: {
+        state: 'Order state',
+        who: 'Supplier & buyer',
+        size: 'Size',
+    },
+
     filter: {
+        noun: 'purchase orders',
+        noteNoun: 'notes',
+        field: {
+            pstate: 'State',
+            pdue: 'Against the ETA',
+            psup: 'Supplier',
+            pby: 'Ordered by',
+            pvalue: 'Value',
+            plines: 'Lines',
+            nstate: 'Note state',
+            ninv: 'Invoice',
+            nsup: 'Supplier',
+        },
+        dueState: {
+            late: 'Past the ETA',
+            due: 'On the way',
+            noEta: 'No ETA',
+            done: 'Closed',
+        },
+        invoiceState: {
+            yes: 'Invoice received',
+            no: 'No invoice',
+        },
         count: 'orders · of {total}',
         search: 'Number · supplier · item',
         state: 'State — all',

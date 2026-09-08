@@ -18,6 +18,64 @@ export const PO_STATE = Object.fromEntries(
 export const PO_STATE_IDS = PO_STATES.map((state) => state.id);
 
 /** States a purchase order still accepts goods in. */
+/** What the purchase-order list may be narrowed by. */
+export const PO_FILTER_FIELDS = [
+    {
+        key: 'pstate',
+        group: 'state',
+        kind: 'set',
+        prefix: 'purchasing.state',
+        values: (row) => [row.state],
+    },
+    {
+        key: 'pdue',
+        group: 'state',
+        kind: 'set',
+        prefix: 'purchasing.filter.dueState',
+        values: (row) => [poDueState(row)],
+    },
+    { key: 'psup', group: 'who', kind: 'set', values: (row) => [row.supplierCode] },
+    { key: 'pby', group: 'who', kind: 'set', values: (row) => [row.by?.he || row.by] },
+    { key: 'pvalue', group: 'size', kind: 'num', value: (row) => row.value },
+    { key: 'plines', group: 'size', kind: 'num', value: (row) => row.lines.length },
+];
+
+export const PO_FILTER_GROUPS = ['state', 'who', 'size'];
+
+/** Whether a purchase order is late, due soon, or has nothing outstanding. */
+export function poDueState(row) {
+    if (!['open', 'partial'].includes(row.state)) {
+        return 'done';
+    }
+
+    if (!row.eta) {
+        return 'noEta';
+    }
+
+    return row.eta < new Date().toISOString().slice(0, 10) ? 'late' : 'due';
+}
+
+/** What the supplier-note list may be narrowed by. */
+export const SUPPLIER_NOTE_FILTER_FIELDS = [
+    {
+        key: 'nstate',
+        group: 'state',
+        kind: 'set',
+        prefix: 'purchasing.noteState',
+        values: (note) => [note.state],
+    },
+    {
+        key: 'ninv',
+        group: 'state',
+        kind: 'set',
+        prefix: 'purchasing.filter.invoiceState',
+        values: (note) => [note.invoice?.num ? 'yes' : 'no'],
+    },
+    { key: 'nsup', group: 'who', kind: 'set', values: (note) => [note.supplierCode] },
+];
+
+export const SUPPLIER_NOTE_FILTER_GROUPS = ['state', 'who'];
+
 export const PO_RECEIVABLE_STATE_IDS = ['open', 'partial'];
 
 /**

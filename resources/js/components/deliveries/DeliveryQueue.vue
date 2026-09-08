@@ -2,7 +2,7 @@
 // The queue table: one dense row per delivery on the desk, and the actions an
 // agent takes from it — assign or update a courier, dispatch, notify a pickup
 // customer, open the order. The filters that feed `rows` live in
-// DeliveryFilters.vue; the state both read lives in the screen's URL.
+// the shared filter drawer; the state both read lives in the screen's URL.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 

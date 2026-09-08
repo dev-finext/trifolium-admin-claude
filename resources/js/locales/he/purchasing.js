@@ -40,7 +40,36 @@ export default {
         valueSub: 'שורות שטרם נקלטו · בשקלים',
     },
 
+    filterGroup: {
+        state: 'מצב ההזמנה',
+        who: 'ספק ומזמין',
+        size: 'היקף',
+    },
+
     filter: {
+        noun: 'הזמנות רכש',
+        noteNoun: 'תעודות',
+        field: {
+            pstate: 'מצב',
+            pdue: 'מול הצפי',
+            psup: 'ספק',
+            pby: 'מי הזמין',
+            pvalue: 'שווי',
+            plines: 'שורות',
+            nstate: 'מצב התעודה',
+            ninv: 'חשבונית',
+            nsup: 'ספק',
+        },
+        dueState: {
+            late: 'עבר הצפי',
+            due: 'בדרך',
+            noEta: 'ללא צפי',
+            done: 'נסגרה',
+        },
+        invoiceState: {
+            yes: 'התקבלה חשבונית',
+            no: 'ללא חשבונית',
+        },
         count: 'הזמנות · מתוך {total}',
         search: 'מספר · ספק · פריט',
         state: 'מצב — הכל',

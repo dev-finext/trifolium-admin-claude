@@ -12,12 +12,24 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ASelect from '@/components/ui/ASelect.vue';
+import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { SUPPLIER_NOTE_STATE_IDS } from '@/config';
+import {
+    SUPPLIER_NOTE_FILTER_FIELDS,
+    SUPPLIER_NOTE_FILTER_GROUPS,
+} from '@/config';
 import { isoDaysAgo } from '@/lib/dates';
 import { usePurchasingStore } from '@/stores/purchasing';
 
@@ -29,35 +41,85 @@ const { push } = useToast();
 const router = useRouter();
 const store = usePurchasingStore();
 
-const state = useUrlState({ nq: '', nstate: '' });
+const SPEC = { fields: SUPPLIER_NOTE_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
+const state = useUrlState({
+    nq: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
+});
 
 const closing = ref(null);
 const invoice = reactive({ num: '', date: isoDaysAgo(0) });
 
-const rows = computed(() => {
+const searched = computed(() => {
     const term = state.nq.trim().toLowerCase();
 
-    return store.supplierNotes.filter(
-        (note) =>
-            (!state.nstate || note.state === state.nstate) &&
-            (!term ||
-                searchHaystack(
-                    note.id,
-                    note.po,
-                    note.supplier,
-                    note.docNum,
-                    note.invoice?.num,
-                ).includes(term)),
+    if (!term) {
+        return store.supplierNotes;
+    }
+
+    return store.supplierNotes.filter((note) =>
+        searchHaystack(
+            note.id,
+            note.po,
+            note.supplier,
+            note.docNum,
+            note.invoice?.num,
+        ).includes(term),
     );
 });
 
-const stateOptions = computed(() => [
-    { value: '', label: t('purchasing.notes.filter.state') },
-    ...SUPPLIER_NOTE_STATE_IDS.map((id) => ({
-        value: id,
-        label: `${t(`purchasing.noteState.${id}`)} (${store.supplierNotes.filter((note) => note.state === id).length})`,
-    })),
-]);
+const filters = useListFilters(SPEC, state, searched);
+
+const rows = computed(() => filters.rows);
+
+const { paged, total } = usePaged(rows, state);
+
+const dirty = computed(() => filters.dirty || Boolean(state.nq));
+
+const spec = computed(() => ({
+    id: 'supplierNotes',
+    ns: 'purchasing',
+    noun: t('purchasing.filter.noteNoun'),
+    groups: SUPPLIER_NOTE_FILTER_GROUPS,
+    fields: SUPPLIER_NOTE_FILTER_FIELDS.map((field) =>
+        field.key === 'nsup'
+            ? {
+                  ...field,
+                  optionLabel: (code) => {
+                      const hit = store.supplierNotes.find(
+                          (note) => note.supplierCode === code,
+                      );
+
+                      return hit ? loc(hit.supplier) : String(code);
+                  },
+              }
+            : field,
+    ),
+}));
+
+function clear() {
+    state.nq = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(state, filterDefaults(SPEC), { nq: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
 
 const cols = computed(() => [
     {
@@ -115,6 +177,14 @@ async function confirmClose() {
     <div class="a-grid a-tabbody">
         <div class="a-note a-note--info">{{ t('purchasing.notes.note') }}</div>
 
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            @apply="applyView"
+        />
+
         <FilterBar
             :count="rows.length"
             :label="
@@ -122,18 +192,32 @@ async function confirmClose() {
                     total: store.supplierNotes.length,
                 })
             "
-            :dirty="Boolean(state.nq || state.nstate)"
-            @clear="((state.nq = ''), (state.nstate = ''))"
+            :dirty="dirty"
+            @clear="clear"
         >
             <AInput
                 v-model="state.nq"
                 class="search"
                 :placeholder="t('purchasing.notes.search')"
             />
-            <ASelect v-model="state.nstate" :options="stateOptions" />
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
         </FilterBar>
 
-        <ADataTable :cols="cols" :rows="rows" row-key="id">
+        <FilterChips
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clear"
+        />
+
+        <ADataTable :cols="cols" :rows="paged" row-key="id">
             <template #cell-id="{ row }"
                 ><span class="t-strong num">{{ row.id }}</span></template
             >
@@ -184,6 +268,24 @@ async function confirmClose() {
                 </AButton>
             </template>
         </ADataTable>
+
+        <APagination
+            v-model:page="state.pg"
+            v-model:size="state.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
 
         <AModal
             :open="Boolean(closing)"

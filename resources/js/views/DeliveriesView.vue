@@ -8,30 +8,44 @@
 // Everything the reader chose — pane, date range, handling stage, every filter,
 // the sort, and which power-of-attorney group is open — lives in the query string,
 // so a filtered view can be pasted to a colleague and opens the same way.
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 import CourierAssignModal from '@/components/deliveries/CourierAssignModal.vue';
 import CourierMap from '@/components/deliveries/CourierMap.vue';
-import DeliveryFilters from '@/components/deliveries/DeliveryFilters.vue';
 import DeliveryQueue from '@/components/deliveries/DeliveryQueue.vue';
 import PickupPointsPanel from '@/components/deliveries/PickupPointsPanel.vue';
 import PowerOfAttorneyPanel from '@/components/deliveries/PowerOfAttorneyPanel.vue';
+import { useCourierName } from '@/components/deliveries/useCourierName';
 import { useDeliveryActions } from '@/components/deliveries/useDeliveryActions';
 import { useDeliveryExport } from '@/components/deliveries/useDeliveryExport';
 import PageHead from '@/components/layout/PageHead.vue';
 import AButton from '@/components/ui/AButton.vue';
+import AInput from '@/components/ui/AInput.vue';
+import APagination from '@/components/ui/APagination.vue';
 import ATabs from '@/components/ui/ATabs.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import DateRangeBar from '@/components/ui/DateRangeBar.vue';
+import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
 import { COURIER_IDS } from '@/config';
 import { hasRange, inRange as insideRange } from '@/lib/dateRange';
 import { FALLBACK_LOCALE, loc as resolve } from '@/lib/localized';
 import {
+    DELIVERY_FILTER_FIELDS,
+    DELIVERY_FILTER_GROUPS,
     DELIVERY_STAGES,
     DESK_STATUS_IDS,
     matchesFilters,
@@ -46,13 +60,16 @@ const PANES = [
     { id: 'codes', icon: 'settings' },
 ];
 
-/** The filters the "clear" button resets. The date range is not one of them. */
-const FILTER_KEYS = ['q', 'status', 'type', 'courier', 'city', 'tracking'];
-
 const { t, locale } = useI18n();
 const { loc } = useLocalized();
 const router = useRouter();
 const deliveries = useDeliveriesStore();
+const { courierName } = useCourierName();
+
+const SPEC = { fields: DELIVERY_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
 
 const state = useUrlState({
     view: 'queue',
@@ -60,15 +77,12 @@ const state = useUrlState({
     from: '',
     to: '',
     stage: 'all',
-    status: '',
-    type: '',
-    courier: '',
-    city: '',
-    tracking: '',
     q: '',
     sort: '',
     dir: 'asc',
     poa: 'missing',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
 });
 
 const range = computed({
@@ -87,9 +101,77 @@ const ranged = computed(() =>
     ),
 );
 
-const rows = computed(() =>
+const searched = computed(() =>
     ranged.value.filter((order) => matchesFilters(order, state)),
 );
+
+const filters = useListFilters(SPEC, state, searched);
+
+const rows = computed(() => filters.rows);
+
+const { paged, total } = usePaged(rows, state);
+
+const spec = computed(() => ({
+    id: 'deliveries',
+    ns: 'deliveries',
+    noun: t('deliveries.filter.noun'),
+    groups: DELIVERY_FILTER_GROUPS,
+    fields: DELIVERY_FILTER_FIELDS.map((field) => {
+        if (field.key === 'courier') {
+            return {
+                ...field,
+                optionLabel: (id) =>
+                    id === 'none'
+                        ? t('deliveries.filter.noCourier')
+                        : courierName(id),
+            };
+        }
+
+        if (field.key === 'city') {
+            return {
+                ...field,
+                optionLabel: (he) => {
+                    const hit = ranged.value.find(
+                        (order) => order.address?.city?.he === he,
+                    );
+
+                    return hit ? loc(hit.address.city) : he;
+                },
+            };
+        }
+
+        if (field.key === 'point') {
+            return {
+                ...field,
+                optionLabel: (id) => {
+                    if (id === 'none') {
+                        return t('deliveries.filter.noPoint');
+                    }
+
+                    const point = deliveries.pointById(id);
+
+                    return point ? loc(point.name) : String(id);
+                },
+            };
+        }
+
+        return field;
+    }),
+}));
+
+function applyView(patch) {
+    Object.assign(state, filterDefaults(SPEC), { q: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
 
 const cities = computed(() => {
     const seen = new Map();
@@ -171,12 +253,8 @@ const sub = computed(() =>
 const sortModel = computed(() => ({ key: state.sort, dir: state.dir }));
 
 const dirty = computed(
-    () => state.stage !== 'all' || FILTER_KEYS.some((key) => state[key] !== ''),
+    () => state.stage !== 'all' || filters.dirty || Boolean(state.q),
 );
-
-function applyFilters(patch) {
-    Object.assign(state, patch);
-}
 
 function onSort(next) {
     state.sort = next.key;
@@ -184,10 +262,9 @@ function onSort(next) {
 }
 
 function clear() {
-    FILTER_KEYS.forEach((key) => {
-        state[key] = '';
-    });
+    state.q = '';
     state.stage = 'all';
+    filters.clear();
 }
 
 function openOrder(order) {
@@ -291,24 +368,69 @@ const paneTabs = computed(() =>
             @update:model-value="state.stage = $event"
         />
 
-        <DeliveryFilters
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
             :filters="state"
-            :shown="rows.length"
-            :counts="counts"
-            :cities="cities"
+            :rows="searched"
+            @apply="applyView"
+        />
+
+        <FilterBar
+            :count="rows.length"
+            :label="t('deliveries.count', { n: counts.inRange || 0 })"
             :dirty="dirty"
-            @update:filters="applyFilters"
+            @clear="clear"
+        >
+            <AInput
+                v-model="state.q"
+                class="dq-search"
+                :aria-label="t('deliveries.filter.search')"
+                :placeholder="t('deliveries.filter.searchPlaceholder')"
+            />
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
+        </FilterBar>
+
+        <FilterChips
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            @remove="removeChip"
             @clear="clear"
         />
 
         <DeliveryQueue
-            :rows="rows"
+            :rows="paged"
             :sort="sortModel"
             @update:sort="onSort"
             @assign="assigning = $event"
             @ship="shipping = $event"
             @notify="notifying = $event"
             @open="openOrder"
+        />
+
+        <APagination
+            v-model:page="state.pg"
+            v-model:size="state.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
         />
     </template>
 

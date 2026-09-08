@@ -1,19 +1,29 @@
 <script setup>
 // The purchase-order list: what is on order from whom, how much of it has
 // arrived, and what is still expected.
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ASelect from '@/components/ui/ASelect.vue';
+import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
-import { CURRENCY_SYMBOL, PO_STATE, PO_STATE_IDS } from '@/config';
+import { PO_FILTER_FIELDS, PO_FILTER_GROUPS, PO_STATE } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { num } from '@/lib/money';
 import { usePurchasingStore } from '@/stores/purchasing';
@@ -28,111 +38,84 @@ const { t } = useI18n();
 const { loc, searchHaystack } = useLocalized();
 const store = usePurchasingStore();
 
-const state = useUrlState({ pq: '', pstate: '', psup: '' });
+const SPEC = { fields: PO_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
+const state = useUrlState({
+    pq: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
+});
 
 const all = computed(() => store.rows);
 
 const tally = (predicate) => all.value.filter(predicate).length;
 
-const rows = computed(() => {
+const searched = computed(() => {
     const term = state.pq.trim().toLowerCase();
 
-    return all.value.filter(
-        (row) =>
-            (!state.pstate || row.state === state.pstate) &&
-            (!state.psup || row.supplierCode === state.psup) &&
-            (!term ||
-                searchHaystack(
-                    row.id,
-                    row.supplier,
-                    row.lines.map((line) => line.name),
-                ).includes(term)),
+    if (!term) {
+        return all.value;
+    }
+
+    return all.value.filter((row) =>
+        searchHaystack(
+            row.id,
+            row.supplier,
+            row.lines.map((line) => line.name),
+        ).includes(term),
     );
 });
 
-const dirty = computed(() => Boolean(state.pq || state.pstate || state.psup));
+const filters = useListFilters(SPEC, state, searched);
 
-const stateOptions = computed(() => [
-    { value: '', label: t('purchasing.filter.state') },
-    ...PO_STATE_IDS.map((id) => ({
-        value: id,
-        label: `${t(`purchasing.state.${id}`)} (${tally((row) => row.state === id)})`,
-    })),
-]);
+const rows = computed(() => filters.rows);
 
-const supplierOptions = computed(() => {
-    const seen = new Map();
+const { paged, total } = usePaged(rows, state);
 
-    all.value.forEach((row) => seen.set(row.supplierCode, row.supplier));
+const dirty = computed(() => filters.dirty || Boolean(state.pq));
 
-    return [
-        { value: '', label: t('purchasing.filter.supplier') },
-        ...[...seen.entries()].map(([code, name]) => ({
-            value: code,
-            label: `${loc(name)} (${tally((row) => row.supplierCode === code)})`,
-        })),
-    ];
-});
+/** A tile is one value of the state field. */
+const stateOnly = (id) => state.pstate.length === 1 && state.pstate[0] === id;
 
-const openValue = computed(() =>
-    all.value
-        .filter((row) => row.state === 'open' || row.state === 'partial')
-        .reduce(
-            (sum, row) => sum + (row.currency === 'ILS' ? row.openValue : 0),
-            0,
-        ),
-);
+const spec = computed(() => ({
+    id: 'purchaseOrders',
+    ns: 'purchasing',
+    noun: t('purchasing.filter.noun'),
+    groups: PO_FILTER_GROUPS,
+    units: { pvalue: '₪' },
+    fields: PO_FILTER_FIELDS.map((field) => {
+        if (field.key === 'psup') {
+            return {
+                ...field,
+                optionLabel: (code) => {
+                    const hit = all.value.find(
+                        (row) => row.supplierCode === code,
+                    );
 
-const cols = computed(() => [
-    { k: 'id', label: t('purchasing.col.id'), nowrap: true, sortable: true },
-    {
-        k: 'supplier',
-        label: t('purchasing.col.supplier'),
-        sortable: true,
-        sortValue: (row) => loc(row.supplier),
-    },
-    {
-        k: 'state',
-        label: t('purchasing.col.state'),
-        nowrap: true,
-        sortable: true,
-    },
-    { k: 'lines', label: t('purchasing.col.lines') },
-    {
-        k: 'value',
-        label: t('purchasing.col.value'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (row) => row.value,
-    },
-    {
-        k: 'eta',
-        label: t('purchasing.col.eta'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (row) => row.eta || '',
-    },
-    {
-        k: 'created',
-        label: t('purchasing.col.created'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (row) => row.created.iso,
-    },
-]);
+                    return hit ? loc(hit.supplier) : String(code);
+                },
+            };
+        }
 
-const money = (row, value) =>
-    `${CURRENCY_SYMBOL[row.currency] || ''}${num(value, 0)}`;
+        if (field.key === 'pby') {
+            return {
+                ...field,
+                optionLabel: (he) => {
+                    const hit = all.value.find(
+                        (row) => (row.by?.he || row.by) === he,
+                    );
 
-function clear() {
-    state.pq = '';
-    state.pstate = '';
-    state.psup = '';
-}
+                    return hit ? loc(hit.by) : String(he);
+                },
+            };
+        }
 
-function toggleState(id) {
-    state.pstate = state.pstate === id ? '' : id;
-}
+        return field;
+    }),
+}));
 </script>
 
 <template>
@@ -143,24 +126,24 @@ function toggleState(id) {
                 :label="t('purchasing.kpi.open')"
                 :value="tally((row) => row.state === 'open')"
                 :sub="t('purchasing.kpi.openSub')"
-                :active="state.pstate === 'open'"
-                @click="toggleState('open')"
+                :active="stateOnly('open')"
+                @click="filters.toggle('pstate', 'open')"
             />
             <FilterKpi
                 icon="clock"
                 :label="t('purchasing.kpi.partial')"
                 :value="tally((row) => row.state === 'partial')"
                 :sub="t('purchasing.kpi.partialSub')"
-                :active="state.pstate === 'partial'"
-                @click="toggleState('partial')"
+                :active="stateOnly('partial')"
+                @click="filters.toggle('pstate', 'partial')"
             />
             <FilterKpi
                 icon="check"
                 :label="t('purchasing.kpi.closed')"
                 :value="tally((row) => row.state === 'closed')"
                 :sub="t('purchasing.kpi.closedSub')"
-                :active="state.pstate === 'closed'"
-                @click="toggleState('closed')"
+                :active="stateOnly('closed')"
+                @click="filters.toggle('pstate', 'closed')"
             />
             <FilterKpi
                 icon="coin"
@@ -170,6 +153,14 @@ function toggleState(id) {
                 :active="false"
             />
         </div>
+
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            @apply="applyView"
+        />
 
         <FilterBar
             :count="rows.length"
@@ -182,13 +173,26 @@ function toggleState(id) {
                 class="search"
                 :placeholder="t('purchasing.filter.search')"
             />
-            <ASelect v-model="state.pstate" :options="stateOptions" />
-            <ASelect v-model="state.psup" :options="supplierOptions" />
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
         </FilterBar>
+
+        <FilterChips
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clear"
+        />
 
         <ADataTable
             :cols="cols"
-            :rows="rows"
+            :rows="paged"
             row-key="id"
             :selected="selected"
             @row="emit('open', $event.id)"
@@ -243,6 +247,24 @@ function toggleState(id) {
                 <ANum>{{ row.created.stamp }}</ANum>
             </template>
         </ADataTable>
+
+        <APagination
+            v-model:page="state.pg"
+            v-model:size="state.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
     </div>
 </template>
 
