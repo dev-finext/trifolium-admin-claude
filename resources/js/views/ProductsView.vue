@@ -7,7 +7,6 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import PageHead from '@/components/layout/PageHead.vue';
-import LabelFilterSelect from '@/components/products/LabelFilterSelect.vue';
 import LabelsManager from '@/components/products/LabelsManager.vue';
 import ProductEditor from '@/components/products/ProductEditor.vue';
 import ProductTable from '@/components/products/ProductTable.vue';
@@ -15,21 +14,30 @@ import AButton from '@/components/ui/AButton.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import AErrorState from '@/components/ui/AErrorState.vue';
 import AIcon from '@/components/ui/AIcon.vue';
-import ASelect from '@/components/ui/ASelect.vue';
+import APagination from '@/components/ui/APagination.vue';
 import ASkeleton from '@/components/ui/ASkeleton.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { PRODUCT_STATUSES, UNITS } from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
 import { searchHaystack } from '@/lib/localized';
 import { ils, priceParts } from '@/lib/money';
 import {
+    PRODUCT_FILTER_FIELDS,
+    PRODUCT_FILTER_GROUPS,
     PRODUCT_PRICE_BANDS,
-    isBlockedForSale,
     useCatalogStore,
 } from '@/stores/catalog';
 import { useDatasetStore } from '@/stores/dataset';
@@ -46,15 +54,15 @@ const { push } = useToast();
 const dataset = useDatasetStore();
 const catalog = useCatalogStore();
 
+const SPEC = { fields: PRODUCT_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
 const view = useUrlState({
     q: '',
-    labels: [],
-    status: 'all',
-    stock: '',
-    price: '',
-    uom: '',
-    img: '',
-    tags: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
     edit: '',
     full: false,
     manage: false,
@@ -65,219 +73,89 @@ const ask = ref(null);
 
 const term = computed(() => view.q.trim().toLowerCase());
 
-const priceBand = computed(() =>
-    PRODUCT_PRICE_BANDS.find((band) => band.id === view.price),
-);
-
-function inBand(product, band) {
-    if (band.min !== null && product.net <= band.min) {
-        return false;
+const searched = computed(() => {
+    if (!term.value) {
+        return catalog.products;
     }
 
-    return !(band.max !== null && product.net > band.max);
+    return catalog.products.filter((product) =>
+        searchHaystack(product.name, product.sku, product.content).includes(
+            term.value,
+        ),
+    );
+});
+
+const filters = useListFilters(SPEC, view, searched);
+
+const shown = computed(() => filters.rows);
+
+const { paged, total } = usePaged(shown, view);
+
+const dirty = computed(() => filters.dirty || Boolean(term.value));
+
+/** How a price band reads, built from the amounts the band itself carries. */
+function bandLabel(id) {
+    const band = PRODUCT_PRICE_BANDS.find((one) => one.id === id);
+
+    if (!band) {
+        return String(id);
+    }
+
+    if (band.min === null) {
+        return t('products.filters.priceUpTo', { amount: ils(band.max, 0) });
+    }
+
+    if (band.max === null) {
+        return t('products.filters.priceOver', { amount: ils(band.min, 0) });
+    }
+
+    return t('products.filters.priceBetween', {
+        from: ils(band.min, 0),
+        to: ils(band.max, 0),
+    });
 }
 
-const shown = computed(() =>
-    catalog.products.filter((product) => {
-        if (
-            term.value &&
-            !searchHaystack(
-                product.name,
-                product.sku,
-                product.content,
-            ).includes(term.value)
-        ) {
-            return false;
+const spec = computed(() => ({
+    id: 'products',
+    ns: 'products',
+    noun: t('products.filter.noun'),
+    groups: PRODUCT_FILTER_GROUPS,
+    units: { pstock: t('products.filter.unitsUnit') },
+    fields: PRODUCT_FILTER_FIELDS.map((field) => {
+        if (field.key === 'pband') {
+            return { ...field, optionLabel: bandLabel };
         }
 
-        // Every chosen label must be present: the filter narrows, it never widens.
-        if (
-            view.labels.length &&
-            !view.labels.every((id) => product.labels.includes(id))
-        ) {
-            return false;
+        if (field.key === 'plabel') {
+            return {
+                ...field,
+                optionLabel: (id) =>
+                    loc(catalog.labelById(id)?.name) || String(id),
+            };
         }
 
-        if (view.status !== 'all' && product.status !== view.status) {
-            return false;
-        }
-
-        if (priceBand.value && !inBand(product, priceBand.value)) {
-            return false;
-        }
-
-        if (view.uom && product.wUom !== view.uom) {
-            return false;
-        }
-
-        if (view.img === 'has' && !product.img) {
-            return false;
-        }
-
-        if (view.img === 'none' && product.img) {
-            return false;
-        }
-
-        if (view.tags === 'none' && product.labels.length) {
-            return false;
-        }
-
-        if (view.tags === 'has' && !product.labels.length) {
-            return false;
-        }
-
-        if (view.stock === 'low' && !isBlockedForSale(product)) {
-            return false;
-        }
-
-        if (view.stock === 'zero' && (product.stock || 0) > 0) {
-            return false;
-        }
-
-        if (view.stock === 'ok' && isBlockedForSale(product)) {
-            return false;
-        }
-
-        return true;
+        return field;
     }),
-);
-
-const dirty = computed(() =>
-    Boolean(
-        term.value ||
-        view.labels.length ||
-        view.status !== 'all' ||
-        view.price ||
-        view.uom ||
-        view.img ||
-        view.tags ||
-        view.stock,
-    ),
-);
+}));
 
 function clearFilters() {
     view.q = '';
-    view.labels = [];
-    view.status = 'all';
-    view.price = '';
-    view.uom = '';
-    view.img = '';
-    view.tags = '';
-    view.stock = '';
+    filters.clear();
 }
 
-// ---- filter options -------------------------------------------------------
+function applyView(patch) {
+    Object.assign(view, filterDefaults(SPEC), { q: '' }, patch);
+}
 
-const option = (label, n) => t('products.filters.option', { label, n });
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
 
-const statusOptions = computed(() => [
-    {
-        value: 'all',
-        label: option(t('products.filters.statusAll'), catalog.products.length),
-    },
-    ...PRODUCT_STATUSES.map((status) => ({
-        value: status.id,
-        label: option(
-            t(`products.status.${status.id}`),
-            catalog.products.filter((product) => product.status === status.id)
-                .length,
-        ),
-    })),
-]);
+        return;
+    }
 
-const stockOptions = computed(() => [
-    { value: '', label: t('products.filters.stockAll') },
-    {
-        value: 'low',
-        label: option(
-            t('products.filters.stockLow'),
-            catalog.blockedProducts.length,
-        ),
-    },
-    {
-        value: 'zero',
-        label: option(
-            t('products.filters.stockZero'),
-            catalog.products.filter((product) => !(product.stock > 0)).length,
-        ),
-    },
-    {
-        value: 'ok',
-        label: option(
-            t('products.filters.stockOk'),
-            catalog.products.filter((product) => !isBlockedForSale(product))
-                .length,
-        ),
-    },
-]);
-
-const priceOptions = computed(() => [
-    { value: '', label: t('products.filters.priceAll') },
-    ...PRODUCT_PRICE_BANDS.map((band) => ({
-        value: band.id,
-        label:
-            band.min === null
-                ? t('products.filters.priceUpTo', { amount: ils(band.max, 0) })
-                : band.max === null
-                  ? t('products.filters.priceOver', {
-                        amount: ils(band.min, 0),
-                    })
-                  : t('products.filters.priceBetween', {
-                        from: ils(band.min, 0),
-                        to: ils(band.max, 0),
-                    }),
-    })),
-]);
-
-const uomOptions = computed(() => [
-    { value: '', label: t('products.filters.uomAll') },
-    ...UNITS.filter((unit) => catalog.weightUnitsInUse.includes(unit)).map(
-        (unit) => ({
-            value: unit,
-            label: option(
-                t(`products.unit.${unit}`),
-                catalog.products.filter((product) => product.wUom === unit)
-                    .length,
-            ),
-        }),
-    ),
-]);
-
-const imgOptions = computed(() => [
-    { value: '', label: t('products.filters.imageAll') },
-    {
-        value: 'has',
-        label: option(
-            t('products.filters.imageHas'),
-            catalog.products.filter((product) => product.img).length,
-        ),
-    },
-    {
-        value: 'none',
-        label: option(
-            t('products.filters.imageNone'),
-            catalog.products.filter((product) => !product.img).length,
-        ),
-    },
-]);
-
-const tagOptions = computed(() => [
-    { value: '', label: t('products.filters.tagsAll') },
-    {
-        value: 'none',
-        label: option(
-            t('products.filters.tagsNone'),
-            catalog.products.filter((product) => !product.labels.length).length,
-        ),
-    },
-    {
-        value: 'has',
-        label: option(
-            t('products.filters.tagsHas'),
-            catalog.products.filter((product) => product.labels.length).length,
-        ),
-    },
-]);
+    filters.toggle(chip.key, chip.value);
+}
 
 // ---- the editor drawer ----------------------------------------------------
 
@@ -457,8 +335,17 @@ function exportCatalog() {
             </template>
         </PageHead>
 
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @apply="applyView"
+        />
+
         <FilterBar
             :count="shown.length"
+            :total="searched.length"
             :label="
                 t('products.countLabel', { total: catalog.products.length })
             "
@@ -474,49 +361,28 @@ function exportCatalog() {
                 />
             </div>
 
-            <LabelFilterSelect
-                v-model="view.labels"
-                :labels="catalog.labels"
-                :usage="catalog.labelUsage"
-            />
-
-            <ASelect
-                v-model="view.status"
-                :options="statusOptions"
-                :aria-label="t('products.filters.statusAria')"
-            />
-            <ASelect
-                v-model="view.stock"
-                :options="stockOptions"
-                :aria-label="t('products.filters.stockAria')"
-            />
-            <ASelect
-                v-model="view.price"
-                :options="priceOptions"
-                :aria-label="t('products.filters.priceAria')"
-            />
-            <ASelect
-                v-model="view.uom"
-                :options="uomOptions"
-                :aria-label="t('products.filters.uomAria')"
-            />
-            <ASelect
-                v-model="view.img"
-                :options="imgOptions"
-                :aria-label="t('products.filters.imageAria')"
-            />
-            <ASelect
-                v-model="view.tags"
-                :options="tagOptions"
-                :aria-label="t('products.filters.tagsAria')"
-            />
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
         </FilterBar>
+
+        <FilterChips
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clearFilters"
+        />
 
         <ASkeleton v-if="dataset.isBusy" :rows="SKELETON_ROWS" />
         <AErrorState v-else-if="dataset.isError" @retry="dataset.load(true)" />
         <ProductTable
             v-else
-            :rows="shown"
+            :rows="paged"
             :labels="catalog.labels"
             :selected="editing?.id || null"
             :has-any="catalog.products.length > 0"
@@ -526,6 +392,24 @@ function exportCatalog() {
             @restore="askRestore"
             @new="openNew"
             @clear="clearFilters"
+        />
+
+        <APagination
+            v-model:page="view.pg"
+            v-model:size="view.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            :result-count="shown.length"
+            @close="drawerOpen = false"
+            @clear="clearFilters"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
         />
 
         <ADrawer

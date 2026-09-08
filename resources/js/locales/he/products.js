@@ -13,39 +13,55 @@ export default {
     countLabel: 'מוצרים מתוך {total}',
 
     filters: {
-        // `{label} ({n})` — every filter option that carries a count.
+        // `{label} ({n})` — a filter option that carries a count.
         option: '{label} ({n})',
         searchPlaceholder: 'שם מוצר · מק״ט · תכולה',
         searchAria: 'חיפוש מוצרים',
-        labelsAria: 'סינון לפי תוויות',
-        labelsAll: 'תוויות — הכל',
-        labelsChosen: '{n} תוויות נבחרו',
-        labelsClear: 'נקה בחירת תוויות',
-        statusAria: 'סטטוס מוצר',
-        statusAll: 'סטטוס — הכל',
-        stockAria: 'מלאי זמין',
-        stockAll: 'מלאי — הכל',
-        stockLow: 'מתחת למינימום — חסום למכירה',
-        stockZero: 'אזל מהמלאי',
-        stockOk: 'זמין למכירה',
-        priceAria: 'מחיר לפני מע״מ',
-        priceAll: 'מחיר — הכל',
         priceUpTo: 'עד {amount}',
         priceBetween: '{from}–{to}',
         priceOver: 'מעל {amount}',
-        uomAria: 'יחידת משקל',
-        uomAll: 'יחידת מידה — הכל',
-        imageAria: 'תמונת מוצר',
-        imageAll: 'תמונה — הכל',
-        imageHas: 'עם תמונה',
-        imageNone: 'ללא תמונה',
-        tagsAria: 'שיוך תוויות',
-        tagsAll: 'שיוך תוויות — הכל',
-        tagsNone: 'ללא תוויות כלל',
-        tagsHas: 'עם תוויות',
+    },
+
+    // Filter drawer — stores/catalog.js PRODUCT_FILTER_FIELDS.
+    filter: {
+        noun: 'מוצרים',
+        unitsUnit: 'יחידות',
+
+        field: {
+            pstatus: 'סטטוס פרסום',
+            pstate: 'מצב מלאי',
+            pstock: 'כמות במלאי',
+            plabel: 'תווית',
+            ptags: 'שיוך תוויות',
+            pimg: 'תמונת מוצר',
+            puom: 'יחידת משקל',
+            pband: 'מחיר לפני מע״מ',
+        },
+
+        stockState: {
+            ok: 'זמין למכירה',
+            low: 'מתחת למינימום — חסום למכירה',
+            zero: 'אזל מהמלאי',
+        },
+
+        tagState: {
+            has: 'עם תוויות',
+            none: 'ללא תוויות כלל',
+        },
+
+        imageState: {
+            has: 'עם תמונה',
+            none: 'ללא תמונה',
+        },
     },
 
     noWeight: 'לא הוגדר',
+
+    filterGroup: {
+        state: 'מצב ומלאי',
+        catalogue: 'קטלוג',
+        price: 'מחיר',
+    },
 
     status: {
         published: 'מפורסם',

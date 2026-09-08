@@ -47,6 +47,15 @@ export const PRODUCT_PRICE_BANDS = [
     { id: 'gt100', min: 100, max: null },
 ];
 
+/** Does a product's price fall in one band? Bands are open at the bottom. */
+export function inPriceBand(product, band) {
+    if (band.min !== null && product.net <= band.min) {
+        return false;
+    }
+
+    return !(band.max !== null && product.net > band.max);
+}
+
 /** A free-text query is treated as a SKU lookup from this many digits on. */
 export const PRICE_SKU_QUERY_MIN_DIGITS = 3;
 
@@ -145,6 +154,88 @@ function moment() {
         stamp: stamp(0),
     };
 }
+
+/**
+ * What the shelf catalogue can be filtered by, declared once beside the store
+ * that holds it.
+ *
+ * Two fields answer questions the raw values cannot: `ptags` asks whether a
+ * product has been filed under anything at all, which a list of categories can
+ * never say, and `pstate` folds stock and minimum into the three states the
+ * shelf is actually managed by — sellable, under its minimum, gone.
+ *
+ * There is no display text here: `group` and every value are ids, and the
+ * drawer resolves them through the locale catalogs.
+ */
+export const PRODUCT_FILTER_FIELDS = [
+    {
+        key: 'pstatus',
+        group: 'state',
+        kind: 'set',
+        prefix: 'products.status',
+        values: (product) => [product.status],
+    },
+    {
+        key: 'pstate',
+        group: 'state',
+        kind: 'set',
+        prefix: 'products.filter.stockState',
+        values: (product) => [
+            !(product.stock > 0)
+                ? 'zero'
+                : isBlockedForSale(product)
+                  ? 'low'
+                  : 'ok',
+        ],
+    },
+    {
+        key: 'pstock',
+        group: 'state',
+        kind: 'num',
+        value: (product) => product.stock || 0,
+    },
+    {
+        key: 'plabel',
+        group: 'catalogue',
+        kind: 'set',
+        values: (product) => product.labels || [],
+    },
+    {
+        key: 'ptags',
+        group: 'catalogue',
+        kind: 'set',
+        prefix: 'products.filter.tagState',
+        values: (product) => [product.labels?.length ? 'has' : 'none'],
+    },
+    {
+        key: 'pimg',
+        group: 'catalogue',
+        kind: 'set',
+        prefix: 'products.filter.imageState',
+        values: (product) => [product.img ? 'has' : 'none'],
+    },
+    {
+        key: 'puom',
+        group: 'catalogue',
+        kind: 'set',
+        prefix: 'products.unit',
+        values: (product) => (product.wUom ? [product.wUom] : []),
+    },
+    {
+        key: 'pband',
+        group: 'price',
+        kind: 'set',
+        values: (product) => {
+            const band = PRODUCT_PRICE_BANDS.find((one) =>
+                inPriceBand(product, one),
+            );
+
+            return band ? [band.id] : [];
+        },
+    },
+];
+
+export const PRODUCT_FILTER_GROUPS = ['state', 'catalogue', 'price'];
 
 export const useCatalogStore = defineStore('catalog', () => {
     const dataset = useDatasetStore();

@@ -15,22 +15,31 @@ import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ASelect from '@/components/ui/ASelect.vue';
+import APagination from '@/components/ui/APagination.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { INGREDIENT_KINDS, WAREHOUSE_IDS } from '@/config';
+import { INGREDIENT_KINDS } from '@/config';
 import { isoDaysAgo } from '@/lib/dates';
 import { num } from '@/lib/money';
 import { useCatalogStore } from '@/stores/catalog';
-import { useInventoryStore } from '@/stores/inventory';
-
-const UNITS = ['g', 'ml', 'unit'];
-
-const FILTER_KEYS = ['q', 'kind', 'unit', 'wh', 'stk', 'sys', 'pg'];
+import {
+    INGREDIENT_FILTER_FIELDS,
+    INGREDIENT_FILTER_GROUPS,
+    useInventoryStore,
+} from '@/stores/inventory';
 
 const { t } = useI18n();
 const { loc, searchHaystack } = useLocalized();
@@ -38,14 +47,15 @@ const { push } = useToast();
 const inventory = useInventoryStore();
 const catalog = useCatalogStore();
 
+const SPEC = { fields: INGREDIENT_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
 const state = useUrlState({
     q: '',
-    kind: '',
-    unit: '',
-    wh: '',
-    stk: '',
-    sys: '',
-    pg: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
     sort: '',
     dir: 'asc',
 });
@@ -57,7 +67,10 @@ const removing = ref(null);
 const all = computed(() =>
     inventory.ingredients.map((row) => ({
         ...row,
-        group: row.priceSku ? catalog.resolveSku(row.priceSku) : null,
+        // resolveSku answers { group, prefix } — the row wants the group.
+        group: row.priceSku
+            ? (catalog.resolveSku(row.priceSku)?.group ?? null)
+            : null,
     })),
 );
 
@@ -66,124 +79,75 @@ function tally(predicate) {
     return all.value.filter(predicate).length;
 }
 
-const rows = computed(() => {
+const searched = computed(() => {
     const term = state.q.trim().toLowerCase();
 
-    return all.value.filter((row) => {
-        if (state.kind && row.kind !== state.kind) {
-            return false;
-        }
+    if (!term) {
+        return all.value;
+    }
 
-        if (state.unit && row.unit !== state.unit) {
-            return false;
-        }
-
-        if (state.wh && row.wh !== state.wh) {
-            return false;
-        }
-
-        if (state.stk === 'low' && !row.low) {
-            return false;
-        }
-
-        if (state.stk === 'zero' && row.avail > 0) {
-            return false;
-        }
-
-        if (state.stk === 'ok' && row.low) {
-            return false;
-        }
-
-        if (state.sys && (row.system || 'west') !== state.sys) {
-            return false;
-        }
-
-        if (state.pg === 'none' && row.group) {
-            return false;
-        }
-
-        if (state.pg && state.pg !== 'none' && row.group?.id !== state.pg) {
-            return false;
-        }
-
-        if (
-            term &&
-            !searchHaystack(row.name, row.sku, row.priceSku, row.lat, row.cn)
-                .toLowerCase()
-                .includes(term)
-        ) {
-            return false;
-        }
-
-        return true;
-    });
+    return all.value.filter((row) =>
+        searchHaystack(row.name, row.sku, row.priceSku, row.lat, row.cn)
+            .toLowerCase()
+            .includes(term),
+    );
 });
 
-const dirty = computed(() => FILTER_KEYS.some((key) => state[key] !== ''));
+const filters = useListFilters(SPEC, state, searched);
 
-const kindOptions = computed(() => [
-    { value: '', label: t('ingredients.filter.kind') },
-    ...INGREDIENT_KINDS.map((id) => ({
-        value: id,
-        label: `${t(`ingredients.kind.${id}`)} (${tally((row) => row.kind === id)})`,
-    })),
-]);
+const rows = computed(() => filters.rows);
 
-const unitOptions = computed(() => [
-    { value: '', label: t('ingredients.filter.unit') },
-    ...UNITS.map((id) => ({
-        value: id,
-        label: `${t(`ingredients.unit.${id}`)} (${tally((row) => row.unit === id)})`,
-    })),
-]);
+const { paged, total } = usePaged(rows, state);
 
-const warehouseOptions = computed(() => [
-    { value: '', label: t('ingredients.filter.warehouse') },
-    ...WAREHOUSE_IDS.map((id) => ({
-        value: id,
-        label: `${t(`warehouse.${id}.name`)} (${tally((row) => row.wh === id)})`,
-    })),
-]);
+const dirty = computed(() => filters.dirty || Boolean(state.q));
 
-const stockOptions = computed(() => [
-    { value: '', label: t('ingredients.filter.stock') },
-    {
-        value: 'low',
-        label: `${t('ingredients.filter.stockLow')} (${tally((row) => row.low)})`,
-    },
-    {
-        value: 'zero',
-        label: `${t('ingredients.filter.stockZero')} (${tally((row) => row.avail <= 0)})`,
-    },
-    {
-        value: 'ok',
-        label: `${t('ingredients.filter.stockOk')} (${tally((row) => !row.low)})`,
-    },
-]);
+const spec = computed(() => ({
+    id: 'ingredients',
+    ns: 'ingredients',
+    noun: t('ingredients.filter.noun'),
+    groups: INGREDIENT_FILTER_GROUPS,
+    units: { iavail: t('ingredients.filter.qtyUnit') },
+    fields: INGREDIENT_FILTER_FIELDS.map((field) => {
+        if (field.key === 'iwh') {
+            return { ...field, optionLabel: (id) => t(`warehouse.${id}.name`) };
+        }
 
-const systemOptions = computed(() => [
-    { value: '', label: t('ingredients.filter.system') },
-    {
-        value: 'west',
-        label: `${t('ingredients.system.west')} (${tally((row) => (row.system || 'west') === 'west')})`,
-    },
-    {
-        value: 'chinese',
-        label: `${t('ingredients.system.chinese')} (${tally((row) => row.system === 'chinese')})`,
-    },
-]);
+        if (field.key === 'ipg') {
+            return {
+                ...field,
+                optionLabel: (id) =>
+                    id === 'none'
+                        ? t('ingredients.filter.noGroup')
+                        : loc(
+                              catalog.priceGroups.find(
+                                  (group) => group.id === id,
+                              )?.name,
+                          ) || String(id),
+            };
+        }
 
-const priceGroupOptions = computed(() => [
-    { value: '', label: t('ingredients.filter.priceGroup') },
-    {
-        value: 'none',
-        label: `${t('ingredients.filter.noGroup')} (${tally((row) => !row.group)})`,
-    },
-    ...catalog.priceGroups.map((group) => ({
-        value: group.id,
-        label: `${loc(group.name)} (${tally((row) => row.group?.id === group.id)})`,
-    })),
-]);
+        return field;
+    }),
+}));
+
+function clear() {
+    state.q = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(state, filterDefaults(SPEC), { q: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
 
 const cols = computed(() => [
     { k: 'sku', label: t('ingredients.col.sku'), nowrap: true, sortable: true },
@@ -228,18 +192,6 @@ const crumbs = computed(() => [
 function onSort(next) {
     state.sort = next.key;
     state.dir = next.dir;
-}
-
-function clear() {
-    FILTER_KEYS.forEach((key) => {
-        state[key] = '';
-    });
-}
-
-function resetKinds() {
-    state.kind = '';
-    state.stk = '';
-    state.sys = '';
 }
 
 function unitLabel(row) {
@@ -349,8 +301,8 @@ function exportRows() {
                 :label="t('ingredients.kpi.all')"
                 :value="all.length"
                 :sub="t('ingredients.kpi.allSub')"
-                :active="!state.kind && !state.stk && !state.sys"
-                @click="resetKinds"
+                :active="!filters.active.length"
+                @click="filters.clear()"
             />
             <FilterKpi
                 v-for="id in INGREDIENT_KINDS"
@@ -361,21 +313,30 @@ function exportRows() {
                 :label="t(`ingredients.kind.${id}`)"
                 :value="tally((row) => row.kind === id)"
                 :sub="t('ingredients.kpi.filters')"
-                :active="state.kind === id"
-                @click="state.kind = state.kind === id ? '' : id"
+                :active="state.ikind.includes(id)"
+                @click="filters.toggle('ikind', id)"
             />
             <FilterKpi
                 icon="alert"
                 :label="t('ingredients.kpi.low')"
                 :value="tally((row) => row.low)"
                 :sub="t('ingredients.kpi.lowSub')"
-                :active="state.stk === 'low'"
-                @click="state.stk = state.stk === 'low' ? '' : 'low'"
+                :active="state.istk.includes('low')"
+                @click="filters.toggle('istk', 'low')"
             />
         </div>
 
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            @apply="applyView"
+        />
+
         <FilterBar
             :count="rows.length"
+            :total="searched.length"
             :label="t('ingredients.filter.count', { total: all.length })"
             :dirty="dirty"
             @clear="clear"
@@ -385,17 +346,26 @@ function exportRows() {
                 class="search"
                 :placeholder="t('ingredients.filter.search')"
             />
-            <ASelect v-model="state.kind" :options="kindOptions" />
-            <ASelect v-model="state.unit" :options="unitOptions" />
-            <ASelect v-model="state.wh" :options="warehouseOptions" />
-            <ASelect v-model="state.stk" :options="stockOptions" />
-            <ASelect v-model="state.sys" :options="systemOptions" />
-            <ASelect v-model="state.pg" :options="priceGroupOptions" />
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
         </FilterBar>
+
+        <FilterChips
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clear"
+        />
 
         <ADataTable
             :cols="cols"
-            :rows="rows"
+            :rows="paged"
             row-key="sku"
             :sort="sortModel"
             :empty-title="t('ingredients.empty.title')"
@@ -465,6 +435,24 @@ function exportRows() {
                 </div>
             </template>
         </ADataTable>
+
+        <APagination
+            v-model:page="state.pg"
+            v-model:size="state.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="state"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
 
         <IngredientEditor
             v-if="editing"

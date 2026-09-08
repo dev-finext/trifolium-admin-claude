@@ -21,6 +21,13 @@ export default {
         unit: 'יחידות',
     },
 
+    // Filter-drawer groups — stores/inventory.js.
+    filterGroup: {
+        what: 'מה זה',
+        stock: 'מלאי',
+        pricing: 'תמחור',
+    },
+
     kpi: {
         all: 'כל הרכיבים',
         allSub: 'לחיצה מציגה הכל',
@@ -31,6 +38,25 @@ export default {
     },
 
     filter: {
+        noun: 'רכיבים',
+        qtyUnit: 'יחידות',
+
+        // Field names in the filter drawer — stores/inventory.js.
+        field: {
+            ikind: 'סוג הרכיב',
+            isys: 'מסורת',
+            iunit: 'יחידת מידה',
+            iwh: 'מחסן',
+            istk: 'מצב מלאי',
+            iavail: 'כמות זמינה',
+            ipg: 'קבוצת תמחור',
+        },
+
+        stockState: {
+            ok: 'מעל המינימום',
+            low: 'מתחת למינימום',
+            zero: 'אזל',
+        },
         count: 'רכיבים · מתוך {total}',
         search: 'שם · שם לטיני · סיני · מק״ט · קוד תמחור',
         kind: 'סוג — הכל',

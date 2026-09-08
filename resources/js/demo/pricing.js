@@ -76,7 +76,8 @@ export function buildPriceGroups() {
         {
             id: 'g1',
             name: L('שמנים אתריים', 'Essential oils'),
-            prefixes: ['200'],
+            // Family 15 in SAP's item numbering.
+            prefixes: ['15'],
             uom: 'ml',
             updated: at(2, 11, 40),
             updatedBy: DEMO_ACTORS.avi,
@@ -115,7 +116,8 @@ export function buildPriceGroups() {
         {
             id: 'g4',
             name: L('צמחי מרפא יבשים', 'Dried herbs'),
-            prefixes: ['300', '301'],
+            // Families 10 and 11 — the herbs and the 1:1 extracts.
+            prefixes: ['10', '11'],
             uom: 'g',
             updated: at(1, 16, 22),
             updatedBy: DEMO_ACTORS.avi,
@@ -128,7 +130,8 @@ export function buildPriceGroups() {
         {
             id: 'g5',
             name: L('קפסולות', 'Capsules'),
-            prefixes: ['500'],
+            // Family 30, where the capsule shells are numbered.
+            prefixes: ['30'],
             uom: 'capsule',
             updated: at(0, 10, 5),
             updatedBy: DEMO_ACTORS.ronit,

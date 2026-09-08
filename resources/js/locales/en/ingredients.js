@@ -21,6 +21,13 @@ export default {
         unit: 'units',
     },
 
+    // Filter-drawer groups — stores/inventory.js.
+    filterGroup: {
+        what: 'What it is',
+        stock: 'Stock',
+        pricing: 'Pricing',
+    },
+
     kpi: {
         all: 'All ingredients',
         allSub: 'Click to show all',
@@ -31,6 +38,25 @@ export default {
     },
 
     filter: {
+        noun: 'ingredients',
+        qtyUnit: 'units',
+
+        // Field names in the filter drawer — stores/inventory.js.
+        field: {
+            ikind: 'Ingredient kind',
+            isys: 'Tradition',
+            iunit: 'Unit',
+            iwh: 'Warehouse',
+            istk: 'Stock state',
+            iavail: 'Available quantity',
+            ipg: 'Pricing group',
+        },
+
+        stockState: {
+            ok: 'Above its minimum',
+            low: 'Under its minimum',
+            zero: 'Out of stock',
+        },
         count: 'ingredients · of {total}',
         search: 'Name · Latin · Chinese · SKU · pricing code',
         kind: 'Kind — all',

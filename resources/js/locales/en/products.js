@@ -12,38 +12,55 @@ export default {
     countLabel: 'products of {total}',
 
     filters: {
+        // `{label} ({n})` — a filter option that carries a count.
         option: '{label} ({n})',
-        searchPlaceholder: 'Product name · SKU · pack contents',
+        searchPlaceholder: 'Product name · SKU · content',
         searchAria: 'Search products',
-        labelsAria: 'Filter by label',
-        labelsAll: 'Labels — all',
-        labelsChosen: '{n} labels selected',
-        labelsClear: 'Clear label selection',
-        statusAria: 'Product status',
-        statusAll: 'Status — all',
-        stockAria: 'Available stock',
-        stockAll: 'Stock — all',
-        stockLow: 'Under minimum — blocked for sale',
-        stockZero: 'Out of stock',
-        stockOk: 'Available for sale',
-        priceAria: 'Price before VAT',
-        priceAll: 'Price — all',
         priceUpTo: 'Up to {amount}',
         priceBetween: '{from}–{to}',
         priceOver: 'Over {amount}',
-        uomAria: 'Weight unit',
-        uomAll: 'Unit of measure — all',
-        imageAria: 'Product image',
-        imageAll: 'Image — all',
-        imageHas: 'With an image',
-        imageNone: 'Without an image',
-        tagsAria: 'Label assignment',
-        tagsAll: 'Label assignment — all',
-        tagsNone: 'No labels at all',
-        tagsHas: 'With labels',
+    },
+
+    // Filter drawer — stores/catalog.js PRODUCT_FILTER_FIELDS.
+    filter: {
+        noun: 'products',
+        unitsUnit: 'units',
+
+        field: {
+            pstatus: 'Publishing status',
+            pstate: 'Stock state',
+            pstock: 'Quantity in stock',
+            plabel: 'Label',
+            ptags: 'Labelling',
+            pimg: 'Product image',
+            puom: 'Weight unit',
+            pband: 'Price before VAT',
+        },
+
+        stockState: {
+            ok: 'Available to sell',
+            low: 'Under its minimum — blocked for sale',
+            zero: 'Out of stock',
+        },
+
+        tagState: {
+            has: 'Labelled',
+            none: 'Not labelled at all',
+        },
+
+        imageState: {
+            has: 'With an image',
+            none: 'Without an image',
+        },
     },
 
     noWeight: 'Not set',
+
+    filterGroup: {
+        state: 'State and stock',
+        catalogue: 'Catalogue',
+        price: 'Price',
+    },
 
     status: {
         published: 'Published',

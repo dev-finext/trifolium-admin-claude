@@ -196,6 +196,69 @@ export const MOVEMENT_FILTER_FIELDS = [
 
 export const MOVEMENT_FILTER_GROUPS = ['what', 'where'];
 
+/**
+ * What the ingredient catalogue can be filtered by, declared once beside the
+ * store that holds it.
+ *
+ * The units are not a fixed list: SAP keeps herbs in grams, bases in millilitres
+ * and some raw material by the kilogram, and a facet reads whatever the rows
+ * actually carry — so a unit can never go missing from the filter because a
+ * constant somewhere forgot it.
+ *
+ * There is no display text here: `group` and every value are ids, and the
+ * drawer resolves them through the locale catalogs.
+ */
+export const INGREDIENT_FILTER_FIELDS = [
+    {
+        key: 'ikind',
+        group: 'what',
+        kind: 'set',
+        prefix: 'ingredients.kind',
+        values: (row) => [row.kind],
+    },
+    {
+        key: 'isys',
+        group: 'what',
+        kind: 'set',
+        prefix: 'ingredients.system',
+        values: (row) => [row.system || 'west'],
+    },
+    {
+        key: 'iunit',
+        group: 'what',
+        kind: 'set',
+        prefix: 'ingredients.unit',
+        values: (row) => (row.unit ? [row.unit] : []),
+    },
+    {
+        key: 'iwh',
+        group: 'stock',
+        kind: 'set',
+        values: (row) => (row.wh ? [row.wh] : []),
+    },
+    {
+        key: 'istk',
+        group: 'stock',
+        kind: 'set',
+        prefix: 'ingredients.filter.stockState',
+        values: (row) => [row.avail > 0 ? (row.low ? 'low' : 'ok') : 'zero'],
+    },
+    {
+        key: 'iavail',
+        group: 'stock',
+        kind: 'num',
+        value: (row) => row.avail || 0,
+    },
+    {
+        key: 'ipg',
+        group: 'pricing',
+        kind: 'set',
+        values: (row) => [row.group?.id || 'none'],
+    },
+];
+
+export const INGREDIENT_FILTER_GROUPS = ['what', 'stock', 'pricing'];
+
 export const useInventoryStore = defineStore('inventory', () => {
     const dataset = useDatasetStore();
 
