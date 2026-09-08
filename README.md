@@ -44,6 +44,7 @@ resources/
     App.vue        root shell
     config/        permanent product configuration — business rules only
     demo/          every fabricated record, and nothing else
+    dev/           the development-progress article — demo builds only
     data/source.js the seam between the console and its data
     locales/he|en/ one catalog file per area
     lib/           money, dates, clock, localized-record helpers
@@ -85,6 +86,23 @@ name: L('רונית מרדכי', 'Ronit Mordechai'),
 Free-text search matches either language, so a Hebrew query still finds a record
 while the console is in English.
 
+### Second-version material (V2)
+
+Everything built from the July 2026 specification review is marked as a second
+version, so each feature can be discussed and kept or dropped on its own:
+
+- A feature — a screen, a card, a table, a button — carries `<V2Badge id="…" />`.
+  The id names a section of `resources/js/dev/progress.js`, the long-form
+  article on what was built, what is still blocked and why. Clicking a badge
+  jumps to that section; the top bar toggles all badges off.
+- A new screen registers its badge with `v2: '<section-id>'` on its nav item in
+  `config/nav.js`; `SideNav` and `PageHead` render it.
+- The article page (`/dev/progress`, nav group פיתוח) exists only in demo builds.
+  `router/index.js` folds the route out when `VITE_DATA_SOURCE=api`, and
+  `check:build` fails if the article's marker reaches an api build.
+- The article's `status` per section (built / building / planned / blocked) is
+  the one place that says what is done. Keep it in step with the code.
+
 ## Domain notes that are easy to get wrong
 
 - **Order status is derived, not stored per order.** Every compounded formula
@@ -110,6 +128,10 @@ while the console is in English.
   receipt is the alternative.
 - **Courier delivery requires a signed power of attorney.** Pickup does not.
 - **Loyalty is a credit-points wallet** where 1 point = ₪1.
+- **There are no roles.** Every admin is equal. What the specifications call
+  "with a password only" is a re-confirmation with the approval code in front of
+  one screen (supplier cards, admin users) or, since V2, one action (batch
+  analyses, item prices, the lab's regulatory texts) — session-scoped and logged.
 
 Every state-changing action writes one immutable row to the system log, and
 destructive actions confirm first.
