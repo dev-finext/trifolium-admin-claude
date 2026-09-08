@@ -3,7 +3,7 @@
 // what is left. `available` is what matters — an item can hold plenty and still
 // be short once its allocations are counted, which is what the minimum level is
 // measured against.
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import SearchBox from '@/components/inventory/SearchBox.vue';
@@ -12,19 +12,28 @@ import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import ANum from '@/components/ui/ANum.vue';
+import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
+import {
+    filterDefaults,
+    PAGE_DEFAULTS,
+    useListFilters,
+    usePaged,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
-import {
-    BATCH_EXPIRY_WARN_DAYS,
-    STOCK_KIND,
-    STOCK_KINDS,
-    WAREHOUSES,
-} from '@/config';
+import { BATCH_EXPIRY_WARN_DAYS, STOCK_KIND } from '@/config';
 import { searchHaystack } from '@/lib/localized';
 import { num } from '@/lib/money';
-import { useInventoryStore } from '@/stores/inventory';
+import {
+    STOCK_FILTER_FIELDS,
+    STOCK_FILTER_GROUPS,
+    useInventoryStore,
+} from '@/stores/inventory';
 
 /** How many item names the low-stock banner lists before it counts the rest. */
 const LOW_PREVIEW = 4;
@@ -35,42 +44,73 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const inventory = useInventoryStore();
 
-const view = useUrlState({ q: '', kind: '', wh: '', low: false });
+const SPEC = { fields: STOCK_FILTER_FIELDS };
+
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
+const view = useUrlState({
+    q: '',
+    ...filterDefaults(SPEC),
+    ...PAGE_DEFAULTS,
+});
 
 const kindTone = (id) => STOCK_KIND[id]?.tone;
 
-const kinds = computed(() =>
-    STOCK_KINDS.map((entry) => ({
-        value: entry.id,
-        label: t(`inventory.stockKind.${entry.id}`),
-    })),
-);
-
-const warehouses = computed(() =>
-    WAREHOUSES.map((warehouse) => ({
-        value: warehouse.id,
-        label: t(`warehouse.${warehouse.id}.name`),
-    })),
-);
-
 const term = computed(() => view.q.trim().toLowerCase());
 
-const rows = computed(() =>
-    inventory.stock.filter(
-        (row) =>
-            (!view.kind || row.kind === view.kind) &&
-            (!view.wh || row.wh === view.wh) &&
-            (!view.low || row.low) &&
-            (!term.value ||
-                searchHaystack(row.name, row.sku, row.lat).includes(
-                    term.value,
-                )),
-    ),
+const searched = computed(() =>
+    term.value
+        ? inventory.stock.filter((row) =>
+              searchHaystack(row.name, row.sku, row.lat).includes(term.value),
+          )
+        : inventory.stock,
 );
 
-const dirty = computed(
-    () => Boolean(view.q) || Boolean(view.kind) || Boolean(view.wh) || view.low,
-);
+const filters = useListFilters(SPEC, view, searched);
+
+const rows = computed(() => filters.rows);
+
+const { paged, total } = usePaged(rows, view);
+
+const spec = computed(() => ({
+    id: 'stock',
+    ns: 'inventory',
+    noun: t('inventory.filter.stockNoun'),
+    groups: STOCK_FILTER_GROUPS,
+    fields: STOCK_FILTER_FIELDS.map((field) =>
+        field.key === 'wh'
+            ? {
+                  ...field,
+                  optionLabel: (id) => t(`warehouse.${id}.name`),
+              }
+            : field,
+    ),
+}));
+
+function clear() {
+    view.q = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(view, filterDefaults(SPEC), { q: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
+
+const dirty = computed(() => filters.dirty || Boolean(view.q));
+
+/** The low-stock banner and its tile are one value of the state field. */
+const lowOnly = computed(() => view.state.includes('low'));
 
 const lowNames = computed(() => {
     const names = inventory.lowStock
@@ -128,19 +168,6 @@ const cols = computed(() => [
     },
     { k: 'act', label: '', nowrap: true },
 ]);
-
-function clear() {
-    view.q = '';
-    view.kind = '';
-    view.wh = '';
-    view.low = false;
-}
-
-function showAll() {
-    view.kind = '';
-    view.wh = '';
-    view.low = false;
-}
 </script>
 
 <template>
@@ -148,13 +175,13 @@ function showAll() {
         <div
             v-if="inventory.lowStock.length"
             class="a-note a-note--warn a-note--btn"
-            :class="{ 'is-on': view.low }"
+            :class="{ 'is-on': lowOnly }"
             role="button"
             tabindex="0"
-            :aria-pressed="view.low"
-            @click="view.low = !view.low"
-            @keydown.enter.prevent="view.low = !view.low"
-            @keydown.space.prevent="view.low = !view.low"
+            :aria-pressed="lowOnly"
+            @click="filters.toggle('state', 'low')"
+            @keydown.enter.prevent="filters.toggle('state', 'low')"
+            @keydown.space.prevent="filters.toggle('state', 'low')"
         >
             <strong>
                 {{
@@ -166,7 +193,7 @@ function showAll() {
             {{ t('inventory.stock.lowNames', { names: lowNames }) }}
             <span class="a-note-a">
                 {{
-                    view.low
+                    lowOnly
                         ? t('inventory.stock.lowOn')
                         : t('inventory.stock.lowOff')
                 }}
@@ -179,19 +206,19 @@ function showAll() {
         <div class="a-kpis">
             <FilterKpi
                 icon="grid"
-                :active="!view.kind && !view.wh && !view.low"
+                :active="!filters.dirty"
                 :label="t('inventory.stock.kpi.all')"
                 :value="inventory.stock.length"
                 :sub="t('inventory.stock.kpi.allSub')"
-                @click="showAll"
+                @click="filters.clear"
             />
             <FilterKpi
                 icon="alert"
-                :active="view.low"
+                :active="lowOnly"
                 :label="t('inventory.stock.kpi.low')"
                 :value="inventory.lowStock.length"
                 :sub="t('inventory.stock.kpi.lowSub')"
-                @click="view.low = !view.low"
+                @click="filters.toggle('state', 'low')"
             />
             <FilterKpi
                 icon="clock"
@@ -207,6 +234,14 @@ function showAll() {
             />
         </div>
 
+        <SavedViews
+            ref="savedViews"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @apply="applyView"
+        />
+
         <FilterBar
             :count="rows.length"
             :label="t('inventory.stock.count')"
@@ -218,50 +253,24 @@ function showAll() {
                 :placeholder="t('inventory.stock.search')"
                 :width="320"
             />
-            <select
-                v-model="view.kind"
-                class="a-select"
-                :aria-label="t('inventory.stock.aria.kind')"
-            >
-                <option value="">{{ t('inventory.stock.filter.kind') }}</option>
-                <option
-                    v-for="kind in kinds"
-                    :key="kind.value"
-                    :value="kind.value"
-                >
-                    {{ kind.label }}
-                </option>
-            </select>
-            <select
-                v-model="view.wh"
-                class="a-select"
-                :aria-label="t('inventory.stock.aria.wh')"
-            >
-                <option value="">{{ t('inventory.stock.filter.wh') }}</option>
-                <option
-                    v-for="warehouse in warehouses"
-                    :key="warehouse.value"
-                    :value="warehouse.value"
-                >
-                    {{ warehouse.label }}
-                </option>
-            </select>
-            <select
-                class="a-select"
-                :value="view.low ? 'low' : ''"
-                :aria-label="t('inventory.stock.aria.level')"
-                @change="view.low = $event.target.value === 'low'"
-            >
-                <option value="">
-                    {{ t('inventory.stock.filter.level') }}
-                </option>
-                <option value="low">
-                    {{ t('inventory.stock.filter.low') }}
-                </option>
-            </select>
+            <AButton icon="layers" @click="drawerOpen = true">
+                {{
+                    filters.active.length
+                        ? t('filters.openWith', { n: filters.active.length })
+                        : t('filters.open')
+                }}
+            </AButton>
         </FilterBar>
 
-        <ADataTable :cols="cols" :rows="rows" row-key="sku">
+        <FilterChips
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            @remove="removeChip"
+            @clear="clear"
+        />
+
+        <ADataTable :cols="cols" :rows="paged" row-key="sku">
             <template #empty>
                 <AEmpty
                     icon="grid"
@@ -324,6 +333,24 @@ function showAll() {
                 </div>
             </template>
         </ADataTable>
+
+        <APagination
+            v-model:page="view.pg"
+            v-model:size="view.ps"
+            :total="total"
+        />
+
+        <FilterDrawer
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="view"
+            :rows="searched"
+            :result-count="rows.length"
+            @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
     </div>
 </template>
 

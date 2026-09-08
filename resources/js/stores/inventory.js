@@ -57,6 +57,92 @@ function moment(iso = null) {
     };
 }
 
+/** Where one stock row stands against its minimum, as one value. */
+export function stockRowState(row) {
+    if (row.avail <= 0) {
+        return 'out';
+    }
+
+    return row.low ? 'low' : 'ok';
+}
+
+/** How near a batch is to its expiry, in the windows a pharmacist works in. */
+export function batchExpiryWindow(batch) {
+    if (batch.daysToExp < 0) {
+        return 'past';
+    }
+
+    if (batch.daysToExp < 30) {
+        return 'd30';
+    }
+
+    if (batch.daysToExp < 60) {
+        return 'd60';
+    }
+
+    if (batch.daysToExp < 90) {
+        return 'd90';
+    }
+
+    return 'later';
+}
+
+/** What the stock table may be narrowed by. */
+export const STOCK_FILTER_FIELDS = [
+    {
+        key: 'kind',
+        group: 'what',
+        kind: 'set',
+        prefix: 'inventory.stockKind',
+        values: (row) => [row.kind],
+    },
+    { key: 'wh', group: 'what', kind: 'set', values: (row) => [row.wh] },
+    {
+        key: 'state',
+        group: 'level',
+        kind: 'set',
+        prefix: 'inventory.filter.stockState',
+        values: (row) => [stockRowState(row)],
+    },
+    { key: 'avail', group: 'level', kind: 'num', value: (row) => row.avail },
+    { key: 'alloc', group: 'level', kind: 'num', value: (row) => row.alloc },
+];
+
+export const STOCK_FILTER_GROUPS = ['what', 'level'];
+
+/** What the batch table may be narrowed by. */
+export const BATCH_FILTER_FIELDS = [
+    {
+        key: 'bstate',
+        group: 'state',
+        kind: 'set',
+        prefix: 'batchState',
+        values: (batch) => [batch.state],
+    },
+    {
+        key: 'bexp',
+        group: 'state',
+        kind: 'set',
+        prefix: 'inventory.filter.expiryWindow',
+        values: (batch) => [batchExpiryWindow(batch)],
+    },
+    { key: 'bwh', group: 'where', kind: 'set', values: (batch) => [batch.wh] },
+    {
+        key: 'bitem',
+        group: 'where',
+        kind: 'set',
+        values: (batch) => [batch.sku],
+    },
+    {
+        key: 'bleft',
+        group: 'level',
+        kind: 'num',
+        value: (batch) => batch.remaining,
+    },
+];
+
+export const BATCH_FILTER_GROUPS = ['state', 'where', 'level'];
+
 export const useInventoryStore = defineStore('inventory', () => {
     const dataset = useDatasetStore();
 

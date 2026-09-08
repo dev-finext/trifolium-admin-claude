@@ -5,6 +5,45 @@ export default {
     title: 'Stock, goods receipt and batches',
     sub: '{items} items · {batches} batches with quantity left · {receipts} goods receipts',
 
+    // The filter system
+    filterGroup: {
+        what: 'What and where',
+        level: 'Quantities',
+        state: 'Batch state',
+        where: 'Warehouse & item',
+        who: 'Supplier & receiver',
+        when: 'Time',
+    },
+
+    filter: {
+        stockNoun: 'stock rows',
+        batchNoun: 'batches',
+        field: {
+            kind: 'Kind',
+            wh: 'Warehouse',
+            state: 'Against minimum',
+            avail: 'Available',
+            alloc: 'Committed',
+            bstate: 'State',
+            bexp: 'Expiry',
+            bwh: 'Warehouse',
+            bitem: 'Item',
+            bleft: 'Left in batch',
+        },
+        stockState: {
+            out: 'Out of stock',
+            low: 'Below minimum',
+            ok: 'In stock',
+        },
+        expiryWindow: {
+            past: 'Expired',
+            d30: 'Within 30 days',
+            d60: '30–60 days',
+            d90: '60–90 days',
+            later: 'Over 90 days',
+        },
+    },
+
     tab: {
         stock: 'Stock',
         receipts: 'Goods receipt',

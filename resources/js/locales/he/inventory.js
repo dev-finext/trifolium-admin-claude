@@ -7,6 +7,45 @@ export default {
     title: 'מלאי, קליטת סחורה ואצוות',
     sub: '{items} פריטים · {batches} אצוות עם יתרה · {receipts} תעודות קליטה',
 
+    // מערכת הסינון
+    filterGroup: {
+        what: 'מה ואיפה',
+        level: 'כמויות',
+        state: 'מצב האצווה',
+        where: 'מחסן ופריט',
+        who: 'ספק ומבצע',
+        when: 'זמן',
+    },
+
+    filter: {
+        stockNoun: 'שורות מלאי',
+        batchNoun: 'אצוות',
+        field: {
+            kind: 'סוג',
+            wh: 'מחסן',
+            state: 'מצב מול מינימום',
+            avail: 'זמין',
+            alloc: 'בהתחייבות',
+            bstate: 'מצב',
+            bexp: 'תוקף',
+            bwh: 'מחסן',
+            bitem: 'פריט',
+            bleft: 'נותר באצווה',
+        },
+        stockState: {
+            out: 'אזל',
+            low: 'מתחת למינימום',
+            ok: 'תקין',
+        },
+        expiryWindow: {
+            past: 'פג תוקף',
+            d30: 'עד 30 יום',
+            d60: '30–60 יום',
+            d90: '60–90 יום',
+            later: 'מעל 90 יום',
+        },
+    },
+
     tab: {
         stock: 'מלאי',
         receipts: 'קליטת סחורה',
