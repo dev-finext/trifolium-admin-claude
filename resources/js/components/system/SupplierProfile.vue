@@ -10,22 +10,30 @@
 // each one rather than handing it up.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
 import SupplierEditor from '@/components/system/SupplierEditor.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
+import ActivitiesPanel from '@/components/ui/ActivitiesPanel.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ATabs from '@/components/ui/ATabs.vue';
+import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
+import { CURRENCY_SYMBOL, PO_STATES } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { num } from '@/lib/money';
+import { useCrmStore } from '@/stores/crm';
+import { useItemsStore } from '@/stores/items';
+import { usePurchasingStore } from '@/stores/purchasing';
 import { supplierDocsOk, useSystemStore } from '@/stores/system';
 
 const props = defineProps({
@@ -38,6 +46,10 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
 const system = useSystemStore();
+const items = useItemsStore();
+const purchasing = usePurchasingStore();
+const crm = useCrmStore();
+const router = useRouter();
 
 const tab = ref('profile');
 const editing = ref(false);
@@ -47,6 +59,74 @@ const supplier = computed(() => props.supplier);
 const isActive = computed(() => supplier.value.status === 'active');
 const docsOk = computed(() => supplierDocsOk(supplier.value));
 const receipts = computed(() => system.supplierReceipts(supplier.value.code));
+
+// V2 — what the item cards and the purchase orders say about this supplier
+const linkedItems = computed(() =>
+    items.rows
+        .filter(
+            (row) =>
+                row.suppliers?.preferred === supplier.value.code ||
+                row.suppliers?.last === supplier.value.code,
+        )
+        .map((row) => ({
+            ...row,
+            role:
+                row.suppliers?.preferred === supplier.value.code
+                    ? 'preferred'
+                    : 'last',
+        })),
+);
+const supplierPos = computed(() =>
+    purchasing.rows.filter((po) => po.supplierCode === supplier.value.code),
+);
+const openPos = computed(() =>
+    supplierPos.value.filter((po) => ['open', 'partial'].includes(po.state)),
+);
+const closedPos = computed(() =>
+    supplierPos.value.filter((po) => !['open', 'partial'].includes(po.state)),
+);
+const activities = computed(() =>
+    crm.activitiesOf('supplier', supplier.value.code),
+);
+
+const itemCols = computed(() => [
+    {
+        k: 'sku',
+        label: t('systemContacts.suppliers.items.col.code'),
+    },
+    { k: 'name', label: t('systemContacts.suppliers.items.col.name') },
+    { k: 'family', label: t('systemContacts.suppliers.items.col.family') },
+    {
+        k: 'price',
+        label: t('systemContacts.suppliers.items.col.price'),
+    },
+    { k: 'role', label: t('systemContacts.suppliers.items.col.role') },
+]);
+const poCols = computed(() => [
+    {
+        k: 'id',
+        label: t('systemContacts.suppliers.purchasing.col.id'),
+    },
+    { k: 'state', label: t('systemContacts.suppliers.purchasing.col.state') },
+    {
+        k: 'lines',
+        label: t('systemContacts.suppliers.purchasing.col.lines'),
+    },
+    {
+        k: 'value',
+        label: t('systemContacts.suppliers.purchasing.col.value'),
+    },
+    {
+        k: 'eta',
+        label: t('systemContacts.suppliers.purchasing.col.eta'),
+    },
+    { k: 'go', label: '' },
+]);
+
+function openPo(po) {
+    emit('close');
+    router.push({ name: 'purchasing', query: { po: po.id } });
+}
 
 const tabs = computed(() => [
     {
@@ -69,6 +149,25 @@ const tabs = computed(() => [
         label: t('systemContacts.suppliers.tab.receipts'),
         icon: 'package',
         n: receipts.value.length,
+    },
+    // V2
+    {
+        id: 'items',
+        label: t('systemContacts.suppliers.tab.items'),
+        icon: 'tag',
+        n: linkedItems.value.length || undefined,
+    },
+    {
+        id: 'purchasing',
+        label: t('systemContacts.suppliers.tab.purchasing'),
+        icon: 'inbox',
+        n: supplierPos.value.length || undefined,
+    },
+    {
+        id: 'activities',
+        label: t('systemContacts.suppliers.tab.activities'),
+        icon: 'phone',
+        n: activities.value.length || undefined,
     },
 ]);
 
@@ -555,17 +654,134 @@ function onSaved(changed) {
                     </AChip>
                 </div>
             </ACard>
+            <AttachmentsPanel
+                entity="supplier"
+                :ref-id="supplier.code"
+                :title="t('systemContacts.suppliers.docs.files')"
+            />
+        </div>
+
+        <!-- V2: linked items -->
+        <div v-else-if="tab === 'items'" class="sp-stack">
             <ACard
-                :title="t('systemContacts.suppliers.card.scans')"
-                icon="file_text"
+                :title="t('systemContacts.suppliers.tab.items')"
+                icon="tag"
+                :pad="false"
             >
+                <template #right>
+                    <V2Badge id="supplier-card" size="sm" />
+                </template>
+                <p class="a-hint sp-pad">
+                    {{ t('systemContacts.suppliers.items.note') }}
+                </p>
+                <ADataTable
+                    v-if="linkedItems.length"
+                    :cols="itemCols"
+                    :rows="linkedItems"
+                    row-key="sku"
+                >
+                    <template #cell-sku="{ row }"
+                        ><ANum>{{ row.sku }}</ANum></template
+                    >
+                    <template #cell-name="{ row }">{{
+                        loc({ he: row.names?.he, en: row.names?.en })
+                    }}</template>
+                    <template #cell-family="{ row }">{{
+                        t(`items.family.${row.family}`)
+                    }}</template>
+                    <template #cell-price="{ row }">
+                        <template v-if="row.price?.lastPurchase">
+                            <ANum>{{ num(row.price.lastPurchase) }}</ANum>
+                            {{ CURRENCY_SYMBOL[row.price.currency] || '' }}
+                        </template>
+                        <template v-else>—</template>
+                    </template>
+                    <template #cell-role="{ row }">
+                        <AChip
+                            :tone="row.role === 'preferred' ? 'green' : 'gray'"
+                            size="sm"
+                            :dot="false"
+                        >
+                            {{
+                                t(`systemContacts.suppliers.items.${row.role}`)
+                            }}
+                        </AChip>
+                    </template>
+                </ADataTable>
                 <AEmpty
-                    icon="file"
-                    :title="t('systemContacts.suppliers.docs.noScans')"
-                    :sub="t('systemContacts.suppliers.docs.noScansSub')"
+                    v-else
+                    icon="tag"
+                    :title="t('systemContacts.suppliers.items.empty')"
                 />
             </ACard>
         </div>
+
+        <!-- V2: purchase orders -->
+        <div v-else-if="tab === 'purchasing'" class="sp-stack">
+            <ACard
+                v-for="group in [
+                    { id: 'open', rows: openPos },
+                    { id: 'closed', rows: closedPos },
+                ]"
+                :key="group.id"
+                :title="t(`systemContacts.suppliers.purchasing.${group.id}`)"
+                icon="inbox"
+                :pad="false"
+            >
+                <template #right>
+                    <V2Badge id="supplier-card" size="sm" />
+                    <span class="t-sub">{{ group.rows.length }}</span>
+                </template>
+                <ADataTable
+                    v-if="group.rows.length"
+                    :cols="poCols"
+                    :rows="group.rows"
+                    row-key="id"
+                >
+                    <template #cell-id="{ row }"
+                        ><ANum>{{ row.id }}</ANum></template
+                    >
+                    <template #cell-state="{ row }">
+                        <AChip
+                            :tone="PO_STATES[row.state]?.tone || 'gray'"
+                            size="sm"
+                        >
+                            {{ t(`purchasing.state.${row.state}`) }}
+                        </AChip>
+                    </template>
+                    <template #cell-lines="{ row }"
+                        ><ANum>{{ row.lines.length }}</ANum></template
+                    >
+                    <template #cell-value="{ row }">
+                        <ANum>{{ num(row.value) }}</ANum>
+                        {{ CURRENCY_SYMBOL[row.currency] || '' }}
+                    </template>
+                    <template #cell-eta="{ row }">
+                        <ANum v-if="row.eta">{{ fmtISO(row.eta) }}</ANum>
+                        <template v-else>—</template>
+                    </template>
+                    <template #cell-go="{ row }">
+                        <AButton sm icon="external" @click="openPo(row)">
+                            {{
+                                t('systemContacts.suppliers.purchasing.openIt')
+                            }}
+                        </AButton>
+                    </template>
+                </ADataTable>
+                <AEmpty
+                    v-else
+                    icon="inbox"
+                    :title="t('systemContacts.suppliers.purchasing.empty')"
+                />
+            </ACard>
+        </div>
+
+        <!-- V2: activities -->
+        <ActivitiesPanel
+            v-else-if="tab === 'activities'"
+            entity="supplier"
+            :ref-id="supplier.code"
+        />
 
         <template v-else>
             <ACard
@@ -695,6 +911,21 @@ function onSaved(changed) {
 
 .sp-doc-l {
     font-weight: 600;
+}
+
+.sp-stack {
+    display: grid;
+    gap: 18px;
+}
+
+.sp-pad {
+    margin: 0;
+    padding: 12px 18px 0;
+}
+
+.t-sub {
+    font-size: 13px;
+    color: var(--a-ink-4);
 }
 
 .sp-doc-x {

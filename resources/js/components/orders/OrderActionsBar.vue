@@ -22,6 +22,8 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
+import { CANCEL_REASON_IDS } from '@/config';
+import { useCrmStore } from '@/stores/crm';
 import { useDatasetStore } from '@/stores/dataset';
 import {
     canSendToLab,
@@ -40,6 +42,15 @@ const { loc } = useLocalized();
 const toast = useToast();
 const dataset = useDatasetStore();
 const orders = useOrdersStore();
+const crm = useCrmStore();
+
+// V2 — the structured cancellation reason offered in the dialog
+const cancelCauses = computed(() =>
+    CANCEL_REASON_IDS.map((id) => ({
+        value: id,
+        label: t(`orders.cancelCause.${id}`),
+    })),
+);
 
 const status = computed(() => statusOf(props.order));
 const toLab = computed(() => canSendToLab(props.order));
@@ -125,9 +136,22 @@ async function confirmToLab() {
     });
 }
 
-async function confirmCancel(reason) {
+async function confirmCancel(reason, code, cause) {
     ask.value = '';
-    await orders.cancelOrder(props.order.id, reason);
+    await orders.cancelOrder(props.order.id, reason, cause || null);
+
+    // V2 — the cancellation is filed as a CRM activity on the practitioner
+    await crm.addActivity({
+        entity: 'practitioner',
+        ref: props.order.practitioner.code,
+        type: 'note',
+        subject: 'cancellation',
+        order: props.order.id,
+        text: cause
+            ? `${t(`orders.cancelCause.${cause}`)} · ${reason}`
+            : reason,
+        auto: true,
+    });
 
     toast.push({
         title: t('orders.action.cancel_order.toast'),
@@ -197,9 +221,14 @@ async function confirmCancel(reason) {
             "
             :effects="cancelEffects"
             :confirm-label="t('orders.action.cancel_order.confirm')"
+            :choices="cancelCauses"
+            :choice-label="t('orders.action.cancel_order.cause')"
+            :choice-hint="t('orders.action.cancel_order.causeHint')"
             @close="ask = ''"
             @confirm="confirmCancel"
-        />
+        >
+            <template #choice-badge><V2Badge id="crm" size="sm" /></template>
+        </ConfirmDialog>
     </div>
 </template>
 

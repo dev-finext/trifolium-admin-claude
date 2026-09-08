@@ -219,6 +219,7 @@ export default {
         // V2
         urgent: 'דחוף',
         specialTerms: 'תנאים מיוחדים',
+        cancelledWhy: 'בוטלה · {cause}',
         fullScreen: 'פתח במסך מלא',
         exitFull: 'חזרה לרשימה',
         created: 'נוצרה {stamp}',
@@ -829,10 +830,23 @@ export default {
             body: 'האם לבטל את ההזמנה {id} של {name}? לא ניתן לשחזר ביטול.',
             toast: 'ההזמנה בוטלה',
             toastBody: 'המלאי שוחרר · סיבה: {reason}',
+            // V2
+            cause: 'סיבת הביטול (מובנית)',
+            causeHint: 'הסיבה המובנית נספרת בדוחות; הטקסט החופשי נרשם ביומן וכפעילות CRM על המטפל.',
         },
     },
 
     // Effect lines the confirmation dialog spells out before an action is taken.
+    // V2 — config/crm.js CANCEL_REASON_IDS
+    cancelCause: {
+        practitioner_request: 'בקשת המטפל',
+        patient_request: 'בקשת המטופל',
+        out_of_stock: 'חוסר במלאי',
+        payment_failed: 'תשלום לא הוסדר',
+        duplicate: 'הזמנה כפולה',
+        other: 'אחר',
+    },
+
     effect: {
         statusTo: 'סטטוס → {status}',
         msgToCustomer: 'הודעת WhatsApp ללקוח',

@@ -34,6 +34,11 @@ export default {
     },
 
     field: {
+        // V2
+        accountingEmail: 'מייל להנהלת חשבונות',
+        bizNum: 'מספר עוסק / ח.פ',
+        payMethod: 'אמצעי תשלום קבוע',
+        shelfDisc: 'הנחת מדף (%)',
         first: 'שם פרטי',
         last: 'שם משפחה',
         fullName: 'שם מלא',
@@ -96,6 +101,10 @@ export default {
         allergShown: 'מוצג לרוקח בכל הזמנה של הלקוח',
         clinicEmpty: 'ריק = לא מופיע כמטפל באתר',
         defaultDisc: 'ברירת המחדל במערכת: {n}%',
+        // V2
+        shelfDisc: 'ההנחה על מוצרי מדף, בנפרד מההנחה הבסיסית · ברירת המחדל 40%',
+        accountingEmail: 'אליו נשלחות החשבוניות והקבלות',
+        payMethod: 'ריק = לפי ההזמנה',
     },
 
     addr: {
@@ -258,7 +267,15 @@ export default {
             orders: 'היסטוריית הזמנות',
             points: 'נקודות',
             documentation: 'תיעודים',
+            // V2
+            activities: 'פעילויות',
+            files: 'קבצים',
         },
+        // V2
+        accounting: 'חשבונאות ותשלום',
+        payMethodNone: 'לא הוגדר — לפי ההזמנה',
+        filesTitle: 'הסכמים ומסמכים',
+        shelfDiscNote: 'על מוצרי מדף בלבד',
         codeChip: 'מספר לקוח {code}',
         creditOn: 'מאושר לתשלום דחוי (הקפה)',
         creditOff: 'תשלום מיידי — ללא הקפה',
@@ -532,7 +549,18 @@ export default {
             link: 'קישור למטפל',
             orders: 'הזמנות',
             safety: 'בטיחות והצהרות',
+            // V2
+            activities: 'פעילויות',
         },
+        // V2
+        site: 'אתר צרכני',
+        siteAccount: 'חשבון באתר',
+        siteAccountOn: 'קיים — הלקוח מזמין גם בעצמו',
+        siteAccountOff: 'אין — הלקוח קיים רק דרך המטפל',
+        clubSince: 'חבר מועדון מאז',
+        sitePoints: 'נקודות צרכני',
+        birthday: 'יום הולדת',
+        siteNote: 'השדות שהאתר הצרכני צריך מכרטיס הלקוח: מועדון, נקודות ויום הולדת — נשמרים כאן, לא באתר.',
         codeChip: 'מספר לקוח {code}',
         practitionerChip: 'מטפל: {name}',
         inactive: 'לא פעיל',
@@ -618,6 +646,25 @@ export default {
         },
         doneTitle: 'הלקוח הועבר',
         doneBody: '{name} → {to}',
+    },
+
+    // V2 — the duplicate check on a card being created
+    duplicates: {
+        title: 'בדיקת כפילויות',
+        idle: 'הזן ת״ז, טלפון או מייל — הבדיקה רצה בזמן ההקלדה מול מטפלים, לקוחות והרשמות ממתינות',
+        none: 'לא נמצאו רשומות דומות לפי ת״ז, טלפון, מייל או שם',
+        found: 'נמצאו {n} רשומות דומות — לבדוק לפני יצירת כרטיס חדש',
+        reason: {
+            tz: 'ת״ז זהה',
+            phone: 'טלפון זהה',
+            email: 'מייל זהה',
+            name: 'שם זהה',
+        },
+        kind: {
+            practitioner: 'מטפל',
+            patient: 'לקוח',
+            pending: 'הרשמה ממתינה',
+        },
     },
 
     newCustomer: {

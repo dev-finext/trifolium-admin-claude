@@ -321,6 +321,8 @@ export default {
         pickup_point_update: 'עדכון נקודת איסוף',
         lab_settings_update: 'עדכון הטקסטים המנוהלים של המעבדה',
         prep_sheet_print: 'הדפסת דף הכנה',
+        activity_add: 'רישום פעילות CRM',
+        gate_unlock: 'פתיחת פעולה מוגנת',
         registration_approve: 'אישור הרשמה',
         registration_reject: 'דחיית הרשמה',
         practitioner_update: 'עדכון כרטיס מטפל',

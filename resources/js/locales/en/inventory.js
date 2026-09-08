@@ -225,6 +225,8 @@ export default {
             sub: 'Clear the filter',
         },
         trace: {
+            // V2
+            analyses: 'Batch analyses & documents',
             title: 'Batch',
             supplier: 'Supplier: {name}',
             received: 'Received',

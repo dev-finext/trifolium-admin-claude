@@ -55,6 +55,8 @@ export default {
         product: 'מוצר',
         product_label: 'תווית מוצר',
         purchase_order: 'הזמנת רכש',
+        customer: 'לקוח',
+        supplier: 'ספק',
     },
 
     loadMore: 'טען עוד {n} רשומות',

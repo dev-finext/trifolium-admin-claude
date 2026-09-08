@@ -179,6 +179,39 @@ export default {
             terms: 'Trade & payment terms',
             docs: 'Certificates & documents',
             receipts: 'Goods receipts',
+            // V2
+            items: 'Linked items',
+            purchasing: 'Purchase orders',
+            activities: 'Activities',
+        },
+
+        // V2
+        items: {
+            note: 'The items this supplier is the standing supplier for, or that were last bought from it — from the item card, not a separate list.',
+            preferred: 'Standing supplier',
+            last: 'Last supplier',
+            empty: 'No items linked to this supplier',
+            col: {
+                code: 'Code',
+                name: 'Item',
+                family: 'Family',
+                price: 'Last purchase price',
+                role: 'Link',
+            },
+        },
+        purchasing: {
+            open: 'Open orders',
+            closed: 'Completed or cancelled orders',
+            empty: 'No purchase orders for this supplier',
+            openIt: 'Open',
+            col: {
+                id: 'Order',
+                state: 'State',
+                lines: 'Lines',
+                value: 'Value',
+                eta: 'ETA',
+                created: 'Created',
+            },
         },
 
         card: {
@@ -255,6 +288,7 @@ export default {
             coaEveryReceipt:
                 'Received with the delivery note on every goods receipt',
             noScans: 'No scans on the card',
+            files: 'Contract, NDA, scanned certificates',
             noScansSub:
                 'Scanned documents are kept on the supplier card. No file is stored right now.',
         },

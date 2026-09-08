@@ -9,6 +9,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
+import ActionGate from '@/components/ui/ActionGate.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ASelect from '@/components/ui/ASelect.vue';
@@ -563,72 +564,74 @@ const title = computed(() =>
             <!-- pricing & suppliers -->
             <section>
                 <div class="a-sect-t">{{ t('items.editor.pricing') }}</div>
-                <div class="a-3col">
-                    <div>
-                        <label class="a-lbl">{{
-                            t('items.card.salePrice')
-                        }}</label>
-                        <AInput
-                            v-model="form.price.sale"
-                            type="number"
-                            ltr
-                            class="a-w100"
-                            @blur="mark('sale')"
-                        />
-                        <div v-if="show('sale')" class="a-inv">
-                            {{ show('sale') }}
-                        </div>
-                        <div v-else class="a-hint">
-                            {{ t('items.editor.salePriceHint') }}
-                        </div>
-                    </div>
-                    <div>
-                        <label class="a-lbl">{{
-                            t('items.card.lastPurchase')
-                        }}</label>
-                        <div class="pair">
+                <ActionGate id="item_price" compact>
+                    <div class="a-3col">
+                        <div>
+                            <label class="a-lbl">{{
+                                t('items.card.salePrice')
+                            }}</label>
                             <AInput
-                                v-model="form.price.lastPurchase"
+                                v-model="form.price.sale"
                                 type="number"
                                 ltr
-                                @blur="mark('lastPurchase')"
+                                class="a-w100"
+                                @blur="mark('sale')"
                             />
+                            <div v-if="show('sale')" class="a-inv">
+                                {{ show('sale') }}
+                            </div>
+                            <div v-else class="a-hint">
+                                {{ t('items.editor.salePriceHint') }}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="a-lbl">{{
+                                t('items.card.lastPurchase')
+                            }}</label>
+                            <div class="pair">
+                                <AInput
+                                    v-model="form.price.lastPurchase"
+                                    type="number"
+                                    ltr
+                                    @blur="mark('lastPurchase')"
+                                />
+                                <ASelect
+                                    v-model="form.price.currency"
+                                    :options="currencyOptions"
+                                />
+                            </div>
+                            <div v-if="show('lastPurchase')" class="a-inv">
+                                {{ show('lastPurchase') }}
+                            </div>
+                            <div v-else class="a-hint">
+                                {{ t('items.editor.lastPurchaseHint') }}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="a-lbl">{{
+                                t('items.card.preferredSupplier')
+                            }}</label>
                             <ASelect
-                                v-model="form.price.currency"
-                                :options="currencyOptions"
+                                v-model="form.suppliers.preferred"
+                                :options="supplierOptions"
+                                class="a-w100"
                             />
                         </div>
-                        <div v-if="show('lastPurchase')" class="a-inv">
-                            {{ show('lastPurchase') }}
-                        </div>
-                        <div v-else class="a-hint">
-                            {{ t('items.editor.lastPurchaseHint') }}
-                        </div>
-                    </div>
-                    <div>
-                        <label class="a-lbl">{{
-                            t('items.card.preferredSupplier')
-                        }}</label>
-                        <ASelect
-                            v-model="form.suppliers.preferred"
-                            :options="supplierOptions"
-                            class="a-w100"
-                        />
-                    </div>
-                    <div>
-                        <label class="a-lbl">{{
-                            t('items.card.lastSupplier')
-                        }}</label>
-                        <ASelect
-                            v-model="form.suppliers.last"
-                            :options="supplierOptions"
-                            class="a-w100"
-                        />
-                        <div class="a-hint">
-                            {{ t('items.editor.lastSupplierHint') }}
+                        <div>
+                            <label class="a-lbl">{{
+                                t('items.card.lastSupplier')
+                            }}</label>
+                            <ASelect
+                                v-model="form.suppliers.last"
+                                :options="supplierOptions"
+                                class="a-w100"
+                            />
+                            <div class="a-hint">
+                                {{ t('items.editor.lastSupplierHint') }}
+                            </div>
                         </div>
                     </div>
-                </div>
+                </ActionGate>
             </section>
 
             <!-- preparation & safety -->

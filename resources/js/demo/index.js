@@ -31,6 +31,7 @@ import {
     DEMO_VIDEOS,
     EVENT_KIND_IDS,
 } from '@/demo/content';
+import { buildActivities } from '@/demo/crm';
 import { buildPickupPoints } from '@/demo/deliveries';
 import {
     buildBatchUse,
@@ -133,6 +134,7 @@ export function buildDataset() {
     });
 
     applyBalances(practitioners, orders);
+    const customers = buildCustomers(orders, practitioners);
 
     practitioners.forEach((practitioner) => {
         practitioner.documentation = buildPractitionerDocumentation(
@@ -155,7 +157,7 @@ export function buildDataset() {
         practitioners,
         pendingUsers: buildPendingUsers(),
         patients,
-        customers: buildCustomers(orders, practitioners),
+        customers,
         admins: buildAdmins(),
         pointsLedger: buildPointsLedger(practitioners, orders),
         session: DEMO_SESSION,
@@ -207,6 +209,8 @@ export function buildDataset() {
         // deliveries & lab (V2)
         pickupPoints: buildPickupPoints(practitioners),
         labSettings: LAB_SETTINGS,
+        // crm (V2)
+        activities: buildActivities(practitioners, customers, orders),
 
         // inventory
         stock,

@@ -16,6 +16,7 @@ import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
 import AModal from '@/components/ui/AModal.vue';
+import ASelect from '@/components/ui/ASelect.vue';
 
 // Wide enough for a sentence of body copy plus the effects list without the card
 // scrolling inside itself.
@@ -34,6 +35,10 @@ const props = defineProps({
     reason: { type: Boolean, default: false },
     /** The expected code, or `true` to require one the parent validates. */
     pin: { type: [Boolean, String], default: false },
+    /** A structured choice (`[{ value, label }]`) required alongside the reason. */
+    choices: { type: Array, default: () => [] },
+    choiceLabel: { type: String, default: '' },
+    choiceHint: { type: String, default: '' },
 });
 
 const emit = defineEmits(['confirm', 'close']);
@@ -43,6 +48,7 @@ const uid = useId();
 
 const why = ref('');
 const code = ref('');
+const choice = ref('');
 const wrong = ref(false);
 const pinInput = ref(null);
 
@@ -57,7 +63,9 @@ const expected = computed(() =>
 const steps = computed(() => (props.effects || []).filter(Boolean));
 const blocked = computed(
     () =>
-        (props.reason && !why.value.trim()) || (needsPin.value && !code.value),
+        (props.reason && !why.value.trim()) ||
+        (props.choices.length > 0 && !choice.value) ||
+        (needsPin.value && !code.value),
 );
 
 // Every opening starts clean — a reason typed for one action must never be
@@ -67,6 +75,7 @@ watch(
     async (open) => {
         why.value = '';
         code.value = '';
+        choice.value = '';
         wrong.value = false;
 
         if (open && needsPin.value) {
@@ -93,7 +102,7 @@ function submit() {
         return;
     }
 
-    emit('confirm', why.value.trim(), code.value);
+    emit('confirm', why.value.trim(), code.value, choice.value);
 }
 </script>
 
@@ -112,6 +121,20 @@ function submit() {
             <ul class="a-ul">
                 <li v-for="(step, i) in steps" :key="i">{{ step }}</li>
             </ul>
+        </div>
+
+        <div v-if="choices.length" class="a-confirm-r">
+            <label class="a-lbl" :for="`${uid}-choice`">
+                {{ choiceLabel }}
+                <slot name="choice-badge" />
+            </label>
+            <ASelect
+                :id="`${uid}-choice`"
+                v-model="choice"
+                class="a-w100"
+                :options="[{ value: '', label: '—' }, ...choices]"
+            />
+            <div v-if="choiceHint" class="a-hint">{{ choiceHint }}</div>
         </div>
 
         <div v-if="reason" class="a-confirm-r">

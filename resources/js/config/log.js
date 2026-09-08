@@ -53,6 +53,8 @@ export const LOG_ACTION_IDS = [
     'pickup_point_update',
     'lab_settings_update',
     'prep_sheet_print',
+    'activity_add',
+    'gate_unlock',
     // people
     'registration_approve',
     'registration_reject',

@@ -197,6 +197,18 @@ function close() {
                                 </AChip>
                                 <V2Badge id="order-flags" size="sm" />
                             </template>
+                            <template v-if="order.cancelCause">
+                                <AChip tone="red" :dot="false">
+                                    {{
+                                        t('orders.detail.cancelledWhy', {
+                                            cause: t(
+                                                `orders.cancelCause.${order.cancelCause}`,
+                                            ),
+                                        })
+                                    }}
+                                </AChip>
+                                <V2Badge id="crm" size="sm" />
+                            </template>
                             <AChip v-if="order.hold" tone="gray">
                                 {{
                                     t('orders.detail.holdChip', {

@@ -19,6 +19,7 @@ import ATextarea from '@/components/ui/ATextarea.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { formatAddress } from '@/components/users/address';
 import DocViewer from '@/components/users/DocViewer.vue';
+import DuplicatesNote from '@/components/users/DuplicatesNote.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { NUMBERING, SETTINGS } from '@/config';
 import { usePeopleStore } from '@/stores/people';
@@ -218,6 +219,8 @@ function reject() {
                     </template>
                 </AKeyValue>
             </ACard>
+
+            <DuplicatesNote :probe="user" :exclude="user.id" />
 
             <ACard :title="t('users.approval.willCreate')" icon="db">
                 <AKeyValue>

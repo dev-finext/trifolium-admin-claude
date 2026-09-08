@@ -9,11 +9,13 @@ import { useI18n } from 'vue-i18n';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
+import ActionGate from '@/components/ui/ActionGate.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import ANum from '@/components/ui/ANum.vue';
+import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { BATCH_STATES } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -252,6 +254,13 @@ const cols = computed(() => [
                     </ADataTable>
                 </ACard>
             </div>
+
+            <!-- V2: analyses behind the approval code -->
+            <ACard :title="t('inventory.batches.trace.analyses')" icon="file">
+                <ActionGate id="batch_analyses">
+                    <AttachmentsPanel entity="batch" :ref-id="batch.id" bare />
+                </ActionGate>
+            </ACard>
         </template>
     </ADrawer>
 </template>

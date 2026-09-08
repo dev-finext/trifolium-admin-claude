@@ -214,6 +214,7 @@ export default {
         // V2
         urgent: 'Urgent',
         specialTerms: 'Special terms',
+        cancelledWhy: 'Cancelled · {cause}',
         fullScreen: 'Open full screen',
         exitFull: 'Back to the list',
         created: 'Created {stamp}',
@@ -839,7 +840,20 @@ export default {
             body: 'Cancel order {id} for {name}? A cancellation cannot be undone.',
             toast: 'The order was cancelled',
             toastBody: 'Stock released · reason: {reason}',
+            // V2
+            cause: 'Cancellation reason (structured)',
+            causeHint: 'The structured reason is counted in reports; the free text goes to the log and to a CRM activity on the practitioner.',
         },
+    },
+
+    // V2 — config/crm.js CANCEL_REASON_IDS
+    cancelCause: {
+        practitioner_request: 'Practitioner request',
+        patient_request: 'Patient request',
+        out_of_stock: 'Out of stock',
+        payment_failed: 'Payment not settled',
+        duplicate: 'Duplicate order',
+        other: 'Other',
     },
 
     effect: {

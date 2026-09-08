@@ -19,6 +19,7 @@ import ANum from '@/components/ui/ANum.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import { cityKey } from '@/components/users/address';
+import DuplicatesNote from '@/components/users/DuplicatesNote.vue';
 import { patientFields } from '@/components/users/personFields';
 import SearchField from '@/components/users/SearchField.vue';
 import { useLocalized } from '@/composables/useLocalized';
@@ -532,6 +533,8 @@ function create() {
                 </div>
             </div>
 
+            <div class="u-dups"><DuplicatesNote :probe="values" /></div>
+
             <div v-if="missing.length" class="u-missing">
                 {{
                     t('users.newCustomer.missing', {
@@ -604,5 +607,8 @@ function create() {
     margin-top: 14px;
     font-size: 14px;
     color: var(--a-red);
+}
+.u-dups {
+    margin-top: 16px;
 }
 </style>

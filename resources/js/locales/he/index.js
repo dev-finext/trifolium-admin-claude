@@ -7,10 +7,12 @@ import admins from '@/locales/he/admins';
 import attachments from '@/locales/he/attachments';
 import common from '@/locales/he/common';
 import content from '@/locales/he/content';
+import crm from '@/locales/he/crm';
 import deliveries from '@/locales/he/deliveries';
 import dev from '@/locales/he/dev';
 import enums from '@/locales/he/enums';
 import finance from '@/locales/he/finance';
+import gate from '@/locales/he/gate';
 import ingredients from '@/locales/he/ingredients';
 import integrations from '@/locales/he/integrations';
 import inventory from '@/locales/he/inventory';
@@ -38,9 +40,11 @@ export default {
     admins,
     attachments,
     content,
+    crm,
     deliveries,
     dev,
     finance,
+    gate,
     ingredients,
     integrations,
     inventory,

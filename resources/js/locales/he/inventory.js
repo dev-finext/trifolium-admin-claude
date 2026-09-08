@@ -225,6 +225,8 @@ export default {
             sub: 'נקה את הסינון',
         },
         trace: {
+            // V2
+            analyses: 'אנליזות ומסמכי אצווה',
             title: 'אצווה',
             supplier: 'ספק: {name}',
             received: 'נקלטה',

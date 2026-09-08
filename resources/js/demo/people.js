@@ -143,6 +143,11 @@ const PRACTITIONERS = [
         legacyNum: true,
         since: '2021-03-11',
         tz: '029384756',
+        // V2 — accounting & payment
+        accountingEmail: 'hanhala@shoresh.co.il',
+        bizNum: '515382910',
+        payMethod: 'transfer',
+        shelfDisc: 40,
     },
     {
         code: '11507',
@@ -170,6 +175,11 @@ const PRACTITIONERS = [
             'Pays at month end — do not hold the lab release · invoice goes to his bookkeeper',
         ),
         tz: '031928475',
+        // V2 — accounting & payment
+        accountingEmail: null,
+        bizNum: '034958211',
+        payMethod: 'card',
+        shelfDisc: 40,
     },
     {
         code: '11533',
@@ -192,6 +202,11 @@ const PRACTITIONERS = [
         legacyNum: true,
         since: '2020-06-20',
         tz: '045612378',
+        // V2 — accounting & payment
+        accountingEmail: 'billing@tzmiha.co.il',
+        bizNum: '514029384',
+        payMethod: 'transfer',
+        shelfDisc: 35,
     },
     {
         code: '11570',
@@ -214,6 +229,11 @@ const PRACTITIONERS = [
         legacyNum: true,
         since: '2023-01-14',
         tz: '052839471',
+        // V2 — accounting & payment
+        accountingEmail: null,
+        bizNum: '045612378',
+        payMethod: null,
+        shelfDisc: 40,
     },
     {
         code: '11588',
@@ -244,6 +264,11 @@ const PRACTITIONERS = [
             'Attach a printed invoice to the parcel · calls before dispatch · pickup point for her patients',
         ),
         tz: '063748291',
+        // V2 — accounting & payment
+        accountingEmail: 'accounts@naturali.co.il',
+        bizNum: '516273849',
+        payMethod: 'transfer',
+        shelfDisc: 45,
     },
     {
         code: '11601',
@@ -266,6 +291,11 @@ const PRACTITIONERS = [
         legacyNum: true,
         since: '2022-11-28',
         tz: '074839201',
+        // V2 — accounting & payment
+        accountingEmail: null,
+        bizNum: '074839201',
+        payMethod: 'card',
+        shelfDisc: 40,
     },
     {
         code: '11622',
@@ -288,6 +318,11 @@ const PRACTITIONERS = [
         legacyNum: true,
         since: '2023-08-19',
         tz: '085920138',
+        // V2 — accounting & payment
+        accountingEmail: 'hesh@herbal-clinic.co.il',
+        bizNum: '513948271',
+        payMethod: 'transfer',
+        shelfDisc: 40,
     },
     {
         code: '11640',
@@ -310,6 +345,11 @@ const PRACTITIONERS = [
         legacyNum: true,
         since: '2024-02-02',
         tz: '096528738',
+        // V2 — accounting & payment
+        accountingEmail: null,
+        bizNum: '096528738',
+        payMethod: null,
+        shelfDisc: 30,
     },
 ];
 
@@ -822,6 +862,11 @@ export function buildCustomers(orders, practitioners) {
             spent,
             status: mine.length || i % 5 !== 4 ? 'active' : 'inactive',
             created: isoDaysAgo(40 + i * 12),
+            // V2 — what the consumer site needs from the card
+            siteAccount: i % 2 === 0,
+            clubSince: i % 2 === 0 ? isoDaysAgo(200 + i * 17) : null,
+            sitePoints:
+                i % 2 === 0 ? spread(`customer:${i}:points`, 40, 640) : 0,
         };
     });
 }

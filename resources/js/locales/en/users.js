@@ -34,6 +34,11 @@ export default {
     },
 
     field: {
+        // V2
+        accountingEmail: 'Accounting email',
+        bizNum: 'Business / company no.',
+        payMethod: 'Standing payment method',
+        shelfDisc: 'Shelf discount (%)',
         first: 'First name',
         last: 'Surname',
         fullName: 'Full name',
@@ -97,6 +102,10 @@ export default {
             "Shown to the pharmacist on every one of the customer's orders",
         clinicEmpty: 'Empty = not listed as a practitioner on the website',
         defaultDisc: 'System default: {n}%',
+        // V2
+        shelfDisc: 'The discount on shelf products, separate from the base discount · default 40%',
+        accountingEmail: 'Invoices and receipts are sent to it',
+        payMethod: 'Empty = per order',
     },
 
     addr: {
@@ -262,7 +271,15 @@ export default {
             orders: 'Order history',
             points: 'Points',
             documentation: 'Documentation',
+            // V2
+            activities: 'Activities',
+            files: 'Files',
         },
+        // V2
+        accounting: 'Accounting & payment',
+        payMethodNone: 'Not set — per order',
+        filesTitle: 'Agreements & documents',
+        shelfDiscNote: 'On shelf products only',
         codeChip: 'Customer no. {code}',
         creditOn: 'Approved for deferred payment (credit terms)',
         creditOff: 'Immediate payment — no credit terms',
@@ -542,7 +559,18 @@ export default {
             link: 'Practitioner link',
             orders: 'Orders',
             safety: 'Safety & declarations',
+            // V2
+            activities: 'Activities',
         },
+        // V2
+        site: 'Consumer site',
+        siteAccount: 'Site account',
+        siteAccountOn: 'Yes — the customer also orders alone',
+        siteAccountOff: 'None — the customer exists only through the practitioner',
+        clubSince: 'Club member since',
+        sitePoints: 'Consumer points',
+        birthday: 'Birthday',
+        siteNote: 'The fields the consumer site needs from the customer card — club, points and birthday — are kept here, not on the site.',
         codeChip: 'Customer no. {code}',
         practitionerChip: 'Practitioner: {name}',
         inactive: 'Inactive',
@@ -632,6 +660,25 @@ export default {
         },
         doneTitle: 'Customer moved',
         doneBody: '{name} → {to}',
+    },
+
+    // V2 — the duplicate check on a card being created
+    duplicates: {
+        title: 'Duplicate check',
+        idle: 'Enter an ID, phone or email — the check runs as you type, against practitioners, customers and waiting registrations',
+        none: 'No similar record by ID, phone, email or name',
+        found: '{n} similar records found — check before creating a new card',
+        reason: {
+            tz: 'Same ID',
+            phone: 'Same phone',
+            email: 'Same email',
+            name: 'Same name',
+        },
+        kind: {
+            practitioner: 'Practitioner',
+            patient: 'Customer',
+            pending: 'Waiting registration',
+        },
     },
 
     newCustomer: {

@@ -317,6 +317,8 @@ export default {
         pickup_point_update: 'Pickup point updated',
         lab_settings_update: 'Lab managed texts updated',
         prep_sheet_print: 'Prep sheet printed',
+        activity_add: 'CRM activity recorded',
+        gate_unlock: 'Protected action unlocked',
         registration_approve: 'Registration approved',
         registration_reject: 'Registration rejected',
         practitioner_update: 'Practitioner card updated',

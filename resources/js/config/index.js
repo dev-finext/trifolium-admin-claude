@@ -6,8 +6,10 @@
 // through resources/js/data/source.js.
 export * from '@/config/catalog';
 export * from '@/config/customers';
+export * from '@/config/crm';
 export * from '@/config/exceptions';
 export * from '@/config/finance';
+export * from '@/config/gates';
 export * from '@/config/inventory';
 export * from '@/config/items';
 export * from '@/config/purchasing';

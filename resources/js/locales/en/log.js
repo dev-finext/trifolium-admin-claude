@@ -51,6 +51,8 @@ export default {
         product: 'Product',
         product_label: 'Product label',
         purchase_order: 'Purchase order',
+        customer: 'Customer',
+        supplier: 'Supplier',
     },
 
     loadMore: 'Load {n} more entries',

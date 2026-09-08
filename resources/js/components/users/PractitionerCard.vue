@@ -11,6 +11,7 @@ import { useI18n } from 'vue-i18n';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
+import ActivitiesPanel from '@/components/ui/ActivitiesPanel.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
@@ -21,9 +22,11 @@ import ASelect from '@/components/ui/ASelect.vue';
 import ASwitch from '@/components/ui/ASwitch.vue';
 import ATabs from '@/components/ui/ATabs.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
+import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { formatAddress } from '@/components/users/address';
 import { practitionerFields } from '@/components/users/personFields';
 import PointsLedger from '@/components/users/PointsLedger.vue';
@@ -36,6 +39,7 @@ import { useUrlState } from '@/composables/useUrlState';
 import { CREDIT, ORDER_STATUS_IDS, SETTINGS } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { ils, num } from '@/lib/money';
+import { useCrmStore } from '@/stores/crm';
 import { useDatasetStore } from '@/stores/dataset';
 import { shelfItems, statusOf, trackedItems } from '@/stores/orders';
 import { usePeopleStore } from '@/stores/people';
@@ -71,6 +75,10 @@ const fixTarget = ref(null);
 const noteText = ref('');
 
 const editFields = computed(() => practitionerFields(t));
+const crm = useCrmStore();
+const activities = computed(() =>
+    crm.activitiesOf('practitioner', props.practitioner.code),
+);
 
 const orders = computed(() => people.ordersOf(props.practitioner.code));
 const signedOrders = computed(() =>
@@ -103,6 +111,14 @@ const tabs = computed(() => [
         label: t('users.card.tab.documentation'),
         icon: 'file_text',
     },
+    // V2
+    {
+        id: 'activities',
+        label: t('users.card.tab.activities'),
+        icon: 'phone',
+        n: activities.value.length || undefined,
+    },
+    { id: 'files', label: t('users.card.tab.files'), icon: 'file' },
 ]);
 
 const cardName = computed(
@@ -637,8 +653,53 @@ function onReset() {
                     <dd>{{ t('users.card.clinicAddress') }}</dd>
                 </AKeyValue>
             </ACard>
+
+            <ACard :title="t('users.card.accounting')" icon="card">
+                <template #right>
+                    <V2Badge id="practitioner-card" size="sm" />
+                </template>
+                <AKeyValue>
+                    <dt>{{ t('users.field.accountingEmail') }}</dt>
+                    <dd dir="ltr">
+                        {{ practitioner.accountingEmail || practitioner.email }}
+                    </dd>
+                    <dt>{{ t('users.field.bizNum') }}</dt>
+                    <dd>
+                        <ANum>{{ practitioner.bizNum || '—' }}</ANum>
+                    </dd>
+                    <dt>{{ t('users.field.payMethod') }}</dt>
+                    <dd>
+                        {{
+                            practitioner.payMethod
+                                ? t(`paymentMethod.${practitioner.payMethod}`)
+                                : t('users.card.payMethodNone')
+                        }}
+                    </dd>
+                    <dt>{{ t('users.field.shelfDisc') }}</dt>
+                    <dd>
+                        <ANum>{{ practitioner.shelfDisc ?? 40 }}%</ANum>
+                        <span class="u-aside"
+                            >· {{ t('users.card.shelfDiscNote') }}</span
+                        >
+                    </dd>
+                </AKeyValue>
+            </ACard>
         </div>
     </div>
+
+    <!-- V2: activities & files -->
+    <ActivitiesPanel
+        v-else-if="view.ctab === 'activities'"
+        entity="practitioner"
+        :ref-id="practitioner.code"
+        :orders="orders"
+    />
+    <AttachmentsPanel
+        v-else-if="view.ctab === 'files'"
+        entity="practitioner"
+        :ref-id="practitioner.code"
+        :title="t('users.card.filesTitle')"
+    />
 
     <!-- Signatures -->
     <template v-else-if="view.ctab === 'signatures'">

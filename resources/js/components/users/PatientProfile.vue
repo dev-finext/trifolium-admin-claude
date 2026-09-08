@@ -11,6 +11,7 @@ import { useI18n } from 'vue-i18n';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
+import ActivitiesPanel from '@/components/ui/ActivitiesPanel.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
@@ -24,6 +25,7 @@ import ATextarea from '@/components/ui/ATextarea.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { formatAddress } from '@/components/users/address';
 import { patientFields } from '@/components/users/personFields';
 import PractitionerEdit from '@/components/users/PractitionerEdit.vue';
@@ -32,6 +34,7 @@ import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { fmtISO } from '@/lib/dates';
+import { useCrmStore } from '@/stores/crm';
 import { useDatasetStore } from '@/stores/dataset';
 import { shelfItems, statusOf, trackedItems } from '@/stores/orders';
 import { usePeopleStore } from '@/stores/people';
@@ -60,6 +63,10 @@ const target = ref('');
 const reason = ref('');
 
 const editFields = computed(() => patientFields(t));
+const crm = useCrmStore();
+const activities = computed(() =>
+    crm.activitiesOf('customer', props.patient.code),
+);
 
 const orders = computed(() => people.ordersForPatient(props.patient.tz));
 const declarations = computed(() =>
@@ -93,6 +100,13 @@ const tabs = computed(() => [
         label: t('users.customer.tab.safety'),
         icon: 'shield',
         n: declarations.value.length || undefined,
+    },
+    // V2
+    {
+        id: 'activities',
+        label: t('users.customer.tab.activities'),
+        icon: 'phone',
+        n: activities.value.length || undefined,
     },
 ]);
 
@@ -370,8 +384,51 @@ function applyTransfer() {
                     <dd>{{ t('users.customer.shipMsgs') }}</dd>
                 </AKeyValue>
             </ACard>
+
+            <ACard :title="t('users.customer.site')" icon="external">
+                <template #right>
+                    <V2Badge id="site-fields" size="sm" />
+                </template>
+                <AKeyValue>
+                    <dt>{{ t('users.customer.siteAccount') }}</dt>
+                    <dd>
+                        {{
+                            patient.siteAccount
+                                ? t('users.customer.siteAccountOn')
+                                : t('users.customer.siteAccountOff')
+                        }}
+                    </dd>
+                    <dt>{{ t('users.customer.clubSince') }}</dt>
+                    <dd>
+                        <ANum v-if="patient.clubSince">{{
+                            fmtISO(patient.clubSince)
+                        }}</ANum>
+                        <template v-else>—</template>
+                    </dd>
+                    <dt>{{ t('users.customer.sitePoints') }}</dt>
+                    <dd>
+                        <ANum>{{ patient.sitePoints || 0 }}</ANum>
+                    </dd>
+                    <dt>{{ t('users.customer.birthday') }}</dt>
+                    <dd>
+                        <ANum v-if="patient.birth">{{
+                            fmtISO(patient.birth)
+                        }}</ANum>
+                        <template v-else>—</template>
+                    </dd>
+                </AKeyValue>
+                <p class="a-hint">{{ t('users.customer.siteNote') }}</p>
+            </ACard>
         </div>
     </div>
+
+    <!-- V2: activities -->
+    <ActivitiesPanel
+        v-else-if="view.ptab === 'activities'"
+        entity="customer"
+        :ref-id="patient.code"
+        :orders="orders"
+    />
 
     <!-- Practitioner link -->
     <div v-else-if="view.ptab === 'link'" class="a-2col">

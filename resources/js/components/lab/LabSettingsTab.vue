@@ -9,6 +9,7 @@ import { useRouter } from 'vue-router';
 
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
+import ActionGate from '@/components/ui/ActionGate.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
@@ -86,62 +87,68 @@ async function save() {
 
             <p class="a-hint">{{ t('lab.settings.note') }}</p>
 
-            <div class="a-2col">
-                <div>
-                    <label class="a-lbl"
-                        >{{ t('lab.settings.instructions') }} ·
-                        {{ t('lab.settings.he') }}</label
-                    >
-                    <AInput v-model="form.instructions.he" class="a-w100" />
-                    <div class="a-hint">
-                        {{ t('lab.settings.instructionsHint') }}
+            <ActionGate id="lab_texts">
+                <div class="a-2col">
+                    <div>
+                        <label class="a-lbl"
+                            >{{ t('lab.settings.instructions') }} ·
+                            {{ t('lab.settings.he') }}</label
+                        >
+                        <AInput v-model="form.instructions.he" class="a-w100" />
+                        <div class="a-hint">
+                            {{ t('lab.settings.instructionsHint') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl"
+                            >{{ t('lab.settings.instructions') }} ·
+                            {{ t('lab.settings.en') }}</label
+                        >
+                        <AInput
+                            v-model="form.instructions.en"
+                            ltr
+                            class="a-w100"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl"
+                            >{{ t('lab.settings.regulatory') }} ·
+                            {{ t('lab.settings.he') }}</label
+                        >
+                        <ATextarea
+                            v-model="form.regulatory.he"
+                            :rows="4"
+                            class="a-w100"
+                        />
+                        <div class="a-hint">
+                            {{ t('lab.settings.regulatoryHint') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl"
+                            >{{ t('lab.settings.regulatory') }} ·
+                            {{ t('lab.settings.en') }}</label
+                        >
+                        <ATextarea
+                            v-model="form.regulatory.en"
+                            :rows="4"
+                            ltr
+                            class="a-w100"
+                        />
                     </div>
                 </div>
-                <div>
-                    <label class="a-lbl"
-                        >{{ t('lab.settings.instructions') }} ·
-                        {{ t('lab.settings.en') }}</label
-                    >
-                    <AInput v-model="form.instructions.en" ltr class="a-w100" />
-                </div>
-                <div>
-                    <label class="a-lbl"
-                        >{{ t('lab.settings.regulatory') }} ·
-                        {{ t('lab.settings.he') }}</label
-                    >
-                    <ATextarea
-                        v-model="form.regulatory.he"
-                        :rows="4"
-                        class="a-w100"
-                    />
-                    <div class="a-hint">
-                        {{ t('lab.settings.regulatoryHint') }}
-                    </div>
-                </div>
-                <div>
-                    <label class="a-lbl"
-                        >{{ t('lab.settings.regulatory') }} ·
-                        {{ t('lab.settings.en') }}</label
-                    >
-                    <ATextarea
-                        v-model="form.regulatory.en"
-                        :rows="4"
-                        ltr
-                        class="a-w100"
-                    />
-                </div>
-            </div>
 
-            <div class="actions">
-                <AButton
-                    kind="p"
-                    icon="save"
-                    :disabled="!dirty || !valid"
-                    @click="save"
-                >
-                    {{ t('lab.settings.save') }}
-                </AButton>
-            </div>
+                <div class="actions">
+                    <AButton
+                        kind="p"
+                        icon="save"
+                        :disabled="!dirty || !valid"
+                        @click="save"
+                    >
+                        {{ t('lab.settings.save') }}
+                    </AButton>
+                </div>
+            </ActionGate>
         </ACard>
 
         <div class="a-2col">

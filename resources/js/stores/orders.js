@@ -615,7 +615,14 @@ export const useOrdersStore = defineStore('orders', () => {
     }
 
     /** Cancel a whole order: nothing is compounded and the stock is released. */
-    async function cancelOrder(id, reason = '') {
+    async function cancelOrder(id, reason = '', cause = null) {
+        const order = byId(id);
+
+        if (order) {
+            // V2 — the structured reason, on top of the written one
+            order.cancelCause = cause || null;
+        }
+
         return setStatus(id, 'cancelled', reason);
     }
 

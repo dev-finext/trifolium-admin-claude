@@ -237,7 +237,10 @@ export const usePeopleStore = defineStore('people', () => {
         changes.forEach((change) => {
             practitioner[change.key] = change.to;
             writeLog({
-                act: change.key === 'disc' ? 'discount_update' : 'practitioner_update',
+                act:
+                    change.key === 'disc'
+                        ? 'discount_update'
+                        : 'practitioner_update',
                 entType: 'practitioner',
                 ent: practitioner.code,
                 from: change.from === '' ? null : String(change.from),
@@ -294,9 +297,7 @@ export const usePeopleStore = defineStore('people', () => {
      */
     function creditPoints(practitioner, amount, reason) {
         const balance = Math.max(0, practitioner.points + amount);
-        let entry = ledgers.value.find(
-            (one) => one.code === practitioner.code,
-        );
+        let entry = ledgers.value.find((one) => one.code === practitioner.code);
 
         if (!entry) {
             entry = { code: practitioner.code, rows: [] };
@@ -464,11 +465,80 @@ export const usePeopleStore = defineStore('people', () => {
         return patient;
     }
 
+    /**
+     * The duplicate check on a card being created (V2). The same national ID,
+     * phone or email — or the same full name — already on a practitioner, a
+     * patient or a waiting registration. Returns one row per match with the
+     * reasons it matched on.
+     */
+    function findDuplicates(probe, exclude = '') {
+        const digits = (value) => String(value || '').replace(/\D/g, '');
+        const tz = digits(probe.tz);
+        const phone = digits(probe.phone);
+        const email = String(probe.email || '')
+            .trim()
+            .toLowerCase();
+        const name =
+            [loc(probe.first, 'he'), loc(probe.last, 'he')]
+                .filter(Boolean)
+                .join(' ')
+                .trim() || String(probe.name || '').trim();
+
+        const check = (row, kind, code, rowName) => {
+            if (exclude && code === exclude) {
+                return null;
+            }
+
+            const reasons = [];
+
+            if (tz && digits(row.tz) === tz) {
+                reasons.push('tz');
+            }
+
+            if (phone && phone.length >= 9 && digits(row.phone) === phone) {
+                reasons.push('phone');
+            }
+
+            if (
+                email &&
+                String(row.email || '')
+                    .trim()
+                    .toLowerCase() === email
+            ) {
+                reasons.push('email');
+            }
+
+            if (name && loc(rowName, 'he') === name) {
+                reasons.push('name');
+            }
+
+            return reasons.length
+                ? { kind, code, name: rowName, reasons }
+                : null;
+        };
+
+        return [
+            ...practitioners.value.map((row) =>
+                check(row, 'practitioner', row.code, row.name),
+            ),
+            ...patients.value.map((row) =>
+                check(row, 'patient', row.code, row.name),
+            ),
+            ...pendingUsers.value.map((row) =>
+                check(row, 'pending', row.id, {
+                    he: `${loc(row.first, 'he')} ${loc(row.last, 'he')}`,
+                    en: `${loc(row.first, 'en')} ${loc(row.last, 'en')}`,
+                }),
+            ),
+        ].filter(Boolean);
+    }
+
     return {
         practitioners,
         pendingUsers,
         patients,
         ledgers,
+        findDuplicates,
 
         practitionerByCode,
         patientByCode,

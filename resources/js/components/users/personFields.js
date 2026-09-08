@@ -35,6 +35,38 @@ export function practitionerFields(t) {
         { k: 'tz', label: t('users.field.tz'), req: true, digits: true },
         { k: 'phone', label: t('users.field.phone'), req: true },
         { k: 'email', label: t('users.field.email'), req: true, ltr: true },
+        // V2 — accounting & payment
+        {
+            k: 'accountingEmail',
+            label: t('users.field.accountingEmail'),
+            ltr: true,
+            hint: t('users.hint.accountingEmail'),
+            v2: 'practitioner-card',
+        },
+        {
+            k: 'bizNum',
+            label: t('users.field.bizNum'),
+            digits: true,
+            v2: 'practitioner-card',
+        },
+        {
+            k: 'payMethod',
+            label: t('users.field.payMethod'),
+            options: [
+                { value: '', label: '—' },
+                { value: 'card', label: t('paymentMethod.card') },
+                { value: 'transfer', label: t('paymentMethod.transfer') },
+            ],
+            hint: t('users.hint.payMethod'),
+            v2: 'practitioner-card',
+        },
+        {
+            k: 'shelfDisc',
+            label: t('users.field.shelfDisc'),
+            numeric: true,
+            hint: t('users.hint.shelfDisc'),
+            v2: 'practitioner-card',
+        },
         {
             k: 'therapy',
             label: t('users.field.therapy'),

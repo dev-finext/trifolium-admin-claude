@@ -784,6 +784,14 @@ export function buildOrders(practitioners, patients) {
                     ? pickFrom(`${slot}:point:id`, PICKUP_POINT_IDS)
                     : null,
             lab: labRoles(status, slot, daysAgo),
+            cancelCause:
+                status === 'cancelled'
+                    ? pickFrom(`${slot}:cause`, [
+                          'practitioner_request',
+                          'patient_request',
+                          'payment_failed',
+                      ])
+                    : null,
         });
     }
 
