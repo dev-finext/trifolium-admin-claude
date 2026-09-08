@@ -3,6 +3,33 @@ export default {
     title: 'Lab',
     sub: '{queue} orders on the bench · {urgent} urgent · a prep sheet for every order in one click',
 
+    // The lab queue's filter system
+    filterGroup: {
+        state: 'Order state',
+        work: 'Work on the bench',
+        delivery: 'How it leaves',
+        people: 'Practitioner',
+        time: 'Waiting time',
+    },
+
+    filter: {
+        noun: 'orders',
+        field: {
+            stage: 'Stage',
+            urgent: 'Urgency',
+            todo: 'Waiting for role',
+            prep: 'Preparation type',
+            fulfilment: 'How it leaves',
+            practitioner: 'Practitioner',
+            waiting: 'Days waiting',
+        },
+        urgentState: {
+            yes: 'Urgent',
+            no: 'Normal',
+        },
+        daysUnit: 'days',
+    },
+
     tab: {
         queue: 'Lab queue',
         settings: 'Lab settings',
@@ -18,7 +45,12 @@ export default {
     },
 
     queue: {
-        note: 'The queue is ordered urgent first, then by time of entry. Roles are marked by hand on the order card; in phase B the station scan fills them.',
+        roleMark: 'Mark {role}',
+        roleClear: 'Clear the {role} mark',
+        roleBy: '{role} · {by}',
+        roleMarked: '{role} marked',
+        roleCleared: '{role} mark cleared',
+        note: 'The queue is ordered urgent first, then by time of entry. The four roles are marked with a click straight from the row, each recorded with the name and the time; in phase B the station scan fills them.',
         search: 'Order · practitioner · patient · formula',
         count: 'orders in the queue',
         col: {

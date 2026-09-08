@@ -310,6 +310,69 @@ export const ORDER_FILTER_FIELDS = [
     { key: 'days', group: 'time', kind: 'num', value: (o) => o.daysAgo },
 ];
 
+/**
+ * What the lab may narrow its queue by. The one field that matters most is
+ * `todo`: which of the four roles has *not* been marked yet — that is the
+ * question the bench asks all day, and it cannot be asked of the order list.
+ */
+export const LAB_FILTER_FIELDS = [
+    {
+        key: 'stage',
+        group: 'state',
+        kind: 'set',
+        prefix: 'status',
+        values: (o) => [statusOf(o)],
+    },
+    {
+        key: 'urgent',
+        group: 'state',
+        kind: 'set',
+        prefix: 'lab.filter.urgentState',
+        values: (o) => [o.urgent ? 'yes' : 'no'],
+    },
+    {
+        key: 'todo',
+        group: 'work',
+        kind: 'set',
+        prefix: 'orders.labRole',
+        values: (o) => LAB_ROLE_IDS.filter((role) => !o.lab?.[role]),
+    },
+    {
+        key: 'prep',
+        group: 'work',
+        kind: 'set',
+        values: (o) => [
+            ...new Set(
+                trackedItems(o)
+                    .filter((item) => item.stage !== 'cancelled')
+                    .map((item) => item.typeId),
+            ),
+        ],
+    },
+    {
+        key: 'fulfilment',
+        group: 'delivery',
+        kind: 'set',
+        prefix: 'fulfilment',
+        values: (o) => [o.deliveryType],
+    },
+    {
+        key: 'practitioner',
+        group: 'people',
+        kind: 'set',
+        values: (o) => [o.practitioner.code],
+    },
+    { key: 'waiting', group: 'time', kind: 'num', value: (o) => o.daysAgo },
+];
+
+export const LAB_FILTER_GROUPS = [
+    'state',
+    'work',
+    'delivery',
+    'people',
+    'time',
+];
+
 /** The order the drawer lays the field groups out in. */
 export const ORDER_FILTER_GROUPS = [
     'state',
