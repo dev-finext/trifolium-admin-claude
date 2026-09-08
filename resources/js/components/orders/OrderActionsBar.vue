@@ -21,6 +21,7 @@ import AButton from '@/components/ui/AButton.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { useSaveGuard } from '@/composables/useSaveGuard';
 import { useToast } from '@/composables/useToast';
 import { CANCEL_REASON_IDS } from '@/config';
 import { useCrmStore } from '@/stores/crm';
@@ -43,6 +44,7 @@ const toast = useToast();
 const dataset = useDatasetStore();
 const orders = useOrdersStore();
 const crm = useCrmStore();
+const { guard } = useSaveGuard();
 
 // V2 — the structured cancellation reason offered in the dialog
 const cancelCauses = computed(() =>
@@ -71,11 +73,15 @@ const urgentToggle = computed(
 async function toggleUrgent() {
     const on = !props.order.urgent;
 
-    await orders.setUrgent(props.order.id, on);
-    toast.push({
-        title: on
-            ? t('orders.actions.urgentOnToast')
-            : t('orders.actions.urgentOffToast'),
+    // Through the save guard: a refused write clears the flag again and offers
+    // the action back, instead of leaving the lab a priority nobody recorded.
+    await guard({
+        label: t(
+            on
+                ? 'orders.actions.urgentOnToast'
+                : 'orders.actions.urgentOffToast',
+        ),
+        run: () => orders.setUrgent(props.order.id, on),
     });
 }
 

@@ -27,6 +27,7 @@ import {
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { usePrepSheet } from '@/composables/usePrepSheet';
+import { useSaveGuard } from '@/composables/useSaveGuard';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { LAB_ROLE_IDS } from '@/config';
@@ -52,6 +53,7 @@ const { loc, searchHaystack } = useLocalized();
 const { push } = useToast();
 const { courierName } = useCourierName();
 const { printPrepSheet } = usePrepSheet();
+const { guard } = useSaveGuard();
 const deliveries = useDeliveriesStore();
 const orders = useOrdersStore();
 const items = useItemsStore();
@@ -176,17 +178,22 @@ function removeChip(chip) {
     filters.toggle(chip.key, chip.value);
 }
 
-/** Mark or clear one of the four roles straight from the queue row. */
+/**
+ * Mark or clear one of the four roles straight from the queue row.
+ *
+ * Through the save guard: a refused write puts the mark back where it was and
+ * offers the action again, rather than leaving the row claiming work that was
+ * never recorded.
+ */
 async function toggleRole(order, role) {
     const on = !order.lab?.[role];
 
-    await orders.setLabRole(order.id, role, on);
-
-    push({
-        title: t(on ? 'lab.queue.roleMarked' : 'lab.queue.roleCleared', {
+    await guard({
+        label: t(on ? 'lab.queue.roleMarked' : 'lab.queue.roleCleared', {
             role: t(`orders.labRole.${role}`),
         }),
         body: order.id,
+        run: () => orders.setLabRole(order.id, role, on),
     });
 }
 

@@ -38,6 +38,13 @@ export default {
     dateRange: 'Date range',
     from: 'From',
     to: 'To',
+    // What a refused action looks like
+    saveFailed: {
+        title: 'The change was not saved',
+        body: '{what} · {reason}. The screen was put back.',
+        retry: 'Try again',
+    },
+
     // Pagination — the shared footer under every table
     page: {
         showing: 'Showing',

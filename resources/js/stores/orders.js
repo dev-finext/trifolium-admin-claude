@@ -554,13 +554,33 @@ export const useOrdersStore = defineStore('orders', () => {
 
         entrySequence += 1;
 
-        order.docsExtra.push({
+        const row = {
             id: `x${entrySequence}`,
             kind: 'agent',
             when: moment(),
             actor: actor.value,
             ...entry,
-        });
+        };
+
+        order.docsExtra.push(row);
+
+        return { order, row };
+    }
+
+    /**
+     * Take a documentation row back off an order.
+     *
+     * A change the server refused never happened, and the trail must not
+     * claim it did — so the row written a moment ago goes with it.
+     */
+    function dropLog(entry) {
+        if (!entry?.order || !Array.isArray(entry.order.docsExtra)) {
+            return;
+        }
+
+        entry.order.docsExtra = entry.order.docsExtra.filter(
+            (one) => one !== entry.row,
+        );
     }
 
     /**
@@ -781,9 +801,14 @@ export const useOrdersStore = defineStore('orders', () => {
             return null;
         }
 
+        // Optimistic, then sent. A refused write must leave neither the flag
+        // nor its log row behind, so both are undone before the caller hears
+        // about it.
+        const was = Boolean(order.urgent);
+
         order.urgent = Boolean(on);
 
-        logEntry(order, {
+        const entry = logEntry(order, {
             actionId: 'order_urgent_set',
             detail: {
                 key: on ? 'orders.doc.urgentOn' : 'orders.doc.urgentOff',
@@ -791,11 +816,18 @@ export const useOrdersStore = defineStore('orders', () => {
             },
         });
 
-        await persist(
-            `orders/${id}/urgent`,
-            { urgent: order.urgent, reason },
-            'PUT',
-        );
+        try {
+            await persist(
+                `orders/${id}/urgent`,
+                { urgent: order.urgent, reason },
+                'PUT',
+            );
+        } catch (error) {
+            order.urgent = was;
+            dropLog(entry);
+
+            throw error;
+        }
 
         return order;
     }
@@ -815,9 +847,11 @@ export const useOrdersStore = defineStore('orders', () => {
             order.lab = {};
         }
 
+        const was = order.lab[role] || null;
+
         order.lab[role] = on ? { by: actor.value, when: moment() } : null;
 
-        logEntry(order, {
+        const entry = logEntry(order, {
             actionId: 'lab_role_set',
             detail: {
                 key: `orders.doc.labRole.${role}${on ? 'Set' : 'Cleared'}`,
@@ -825,7 +859,14 @@ export const useOrdersStore = defineStore('orders', () => {
             },
         });
 
-        await persist(`orders/${id}/lab/${role}`, { on }, 'PUT');
+        try {
+            await persist(`orders/${id}/lab/${role}`, { on }, 'PUT');
+        } catch (error) {
+            order.lab[role] = was;
+            dropLog(entry);
+
+            throw error;
+        }
 
         return order;
     }

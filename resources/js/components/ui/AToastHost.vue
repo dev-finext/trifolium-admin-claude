@@ -11,6 +11,12 @@ import { useToastStore } from '@/stores/toasts';
 
 const toasts = useToastStore();
 const { t } = useI18n();
+
+// The action closes its own toast: whatever it does next will report itself.
+function run(toast) {
+    toasts.dismiss(toast.id);
+    toast.action.run();
+}
 </script>
 
 <template>
@@ -27,6 +33,14 @@ const { t } = useI18n();
             <div class="a-toast-c">
                 <div class="tt">{{ toast.title }}</div>
                 <div v-if="toast.body" class="tb">{{ toast.body }}</div>
+                <button
+                    v-if="toast.action"
+                    type="button"
+                    class="a-toast-act"
+                    @click="run(toast)"
+                >
+                    {{ toast.action.label }}
+                </button>
             </div>
             <button
                 type="button"
@@ -41,6 +55,23 @@ const { t } = useI18n();
 </template>
 
 <style scoped>
+.a-toast-act {
+    margin-top: 8px;
+    border: 1px solid currentColor;
+    background: transparent;
+    color: inherit;
+    border-radius: 7px;
+    padding: 3px 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.a-toast-act:hover {
+    background: rgb(255 255 255 / 0.16);
+}
+
 .a-toast-c {
     flex: 1;
     min-width: 0;

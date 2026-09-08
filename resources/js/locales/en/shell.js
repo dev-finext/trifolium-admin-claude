@@ -1,6 +1,13 @@
 // English mirror of he/shell.js — same keys, real translations.
 export default {
     // The V2 review markers — demo only. `badge` is the literal on the red pill.
+    // The demo switch that refuses every write, to show the failure state
+    fail: {
+        on: 'Writes failing',
+        off: 'Simulate failure',
+        hint: 'Demo only: turns every save into a failure, to see what the screen does when an action does not go through. Actions on the save guard put themselves back and offer to try again.',
+    },
+
     v2: {
         badge: 'V2',
         tip: 'New in version 2 — click for the explanation in “Spec progress”',

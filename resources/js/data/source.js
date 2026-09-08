@@ -25,6 +25,15 @@ export const dataSourceMode = MODE;
 /** True while the console is showing fabricated records. */
 export const isDemoData = MODE === 'demo';
 
+/** Demo only: make every write fail, to exercise the console's failure state. */
+let refuseWrites = false;
+
+export const writesRefused = () => refuseWrites;
+
+export function setWritesRefused(on) {
+    refuseWrites = isDemoData && Boolean(on);
+}
+
 /**
  * Load the whole dataset the console needs at boot.
  *
@@ -78,6 +87,15 @@ async function loadFromApi() {
  */
 export async function persist(path, payload, method = 'POST') {
     if (MODE !== 'api') {
+        if (refuseWrites) {
+            // Demo only. Without a backend there is nothing that can fail, and
+            // a console whose every action always succeeds never shows what it
+            // does when one does not. This switch is how that state is seen.
+            await new Promise((resolve) => setTimeout(resolve, 350));
+
+            throw new Error('demo: write refused');
+        }
+
         return { ok: true, local: true };
     }
 
