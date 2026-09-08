@@ -84,7 +84,8 @@ const shown = computed(() =>
 
 /** A service belongs to the picked system when its group holds it. */
 function matches(service) {
-    return (group) => group.key === view.sys && group.services.includes(service);
+    return (group) =>
+        group.key === view.sys && group.services.includes(service);
 }
 
 const shownGroups = computed(() => groupServices(shown.value));
@@ -179,17 +180,12 @@ async function runCheck() {
     <div v-if="view.tab === 'services'" class="a-grid int-body">
         <div v-if="system.downServices.length" class="a-note a-note--danger">
             <strong>
-                {{
-                    t('integrations.banner.down', system.downServices.length)
-                }}
+                {{ t('integrations.banner.down', system.downServices.length) }}
             </strong>
             — {{ namesOf(system.downServices) }}.
             {{ t('integrations.banner.downBody') }}
         </div>
-        <div
-            v-else-if="system.slowServices.length"
-            class="a-note a-note--warn"
-        >
+        <div v-else-if="system.slowServices.length" class="a-note a-note--warn">
             <strong>
                 {{ t('integrations.banner.slow', system.slowServices.length) }}
             </strong>
@@ -204,7 +200,9 @@ async function runCheck() {
             }}
         </div>
 
-        <div class="a-note a-note--info">{{ t('integrations.serverSide') }}</div>
+        <div class="a-note a-note--info">
+            {{ t('integrations.serverSide') }}
+        </div>
 
         <ServiceSummary
             :counts="system.serviceCounts"

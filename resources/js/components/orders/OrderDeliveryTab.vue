@@ -90,9 +90,7 @@ const awaitingAddress = computed(
  * counter. Telling somebody to come and collect an order still in the lab is the
  * kind of message that costs a wasted trip.
  */
-const atCounter = computed(
-    () => statusOf(props.order) === 'packed',
-);
+const atCounter = computed(() => statusOf(props.order) === 'packed');
 
 // Readiness is not set here: the lab reports it by finishing the order, and this
 // button's job is to tell the customer about it. It used to claim a status change

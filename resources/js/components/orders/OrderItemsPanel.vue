@@ -122,7 +122,6 @@ async function confirmCancel(reason) {
 
 <template>
     <div class="a-grid">
-
         <OrderLabCard v-if="formulas.length" :order="order" />
 
         <ACard

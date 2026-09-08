@@ -291,9 +291,7 @@ async function print(order) {
             <FilterKpi
                 icon="package"
                 :label="t('lab.kpi.ready')"
-                :value="
-                    tally((order) => statusOf(order) === 'packed')
-                "
+                :value="tally((order) => statusOf(order) === 'packed')"
                 :sub="t('lab.kpi.readySub')"
                 :active="state.stage.includes('packed')"
                 @click="filters.toggle('stage', 'packed')"

@@ -34,10 +34,25 @@ export const PO_FILTER_FIELDS = [
         prefix: 'purchasing.filter.dueState',
         values: (row) => [poDueState(row)],
     },
-    { key: 'psup', group: 'who', kind: 'set', values: (row) => [row.supplierCode] },
-    { key: 'pby', group: 'who', kind: 'set', values: (row) => [row.by?.he || row.by] },
+    {
+        key: 'psup',
+        group: 'who',
+        kind: 'set',
+        values: (row) => [row.supplierCode],
+    },
+    {
+        key: 'pby',
+        group: 'who',
+        kind: 'set',
+        values: (row) => [row.by?.he || row.by],
+    },
     { key: 'pvalue', group: 'size', kind: 'num', value: (row) => row.value },
-    { key: 'plines', group: 'size', kind: 'num', value: (row) => row.lines.length },
+    {
+        key: 'plines',
+        group: 'size',
+        kind: 'num',
+        value: (row) => row.lines.length,
+    },
 ];
 
 export const PO_FILTER_GROUPS = ['state', 'who', 'size'];
@@ -71,7 +86,12 @@ export const SUPPLIER_NOTE_FILTER_FIELDS = [
         prefix: 'purchasing.filter.invoiceState',
         values: (note) => [note.invoice?.num ? 'yes' : 'no'],
     },
-    { key: 'nsup', group: 'who', kind: 'set', values: (note) => [note.supplierCode] },
+    {
+        key: 'nsup',
+        group: 'who',
+        kind: 'set',
+        values: (note) => [note.supplierCode],
+    },
 ];
 
 export const SUPPLIER_NOTE_FILTER_GROUPS = ['state', 'who'];

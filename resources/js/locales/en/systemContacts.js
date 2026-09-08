@@ -201,7 +201,6 @@ export default {
             papers: 'Documents & payment',
         },
 
-
         // V2
         items: {
             note: 'The items this supplier is the standing supplier for, or that were last bought from it — from the item card, not a separate list.',

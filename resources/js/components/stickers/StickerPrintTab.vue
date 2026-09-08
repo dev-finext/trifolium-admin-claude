@@ -52,9 +52,7 @@ const benchOrders = computed(() =>
     orders.all
         .filter(
             (order) =>
-                ['lab', 'packed'].includes(
-                    statusOf(order),
-                ) &&
+                ['lab', 'packed'].includes(statusOf(order)) &&
                 trackedItems(order).some((item) => !item.cancelled),
         )
         .sort((a, b) => Number(Boolean(b.urgent)) - Number(Boolean(a.urgent))),
@@ -63,8 +61,7 @@ const benchOrders = computed(() =>
 const parcelOrders = computed(() =>
     orders.all.filter(
         (order) =>
-            order.courier &&
-            ['packed', 'sent'].includes(statusOf(order)),
+            order.courier && ['packed', 'sent'].includes(statusOf(order)),
     ),
 );
 

@@ -59,9 +59,7 @@ const toLab = computed(() => canSendToLab(props.order));
 
 /** Only the compounded formulas go to the lab; shelf lines are picked, not made. */
 const labItems = computed(
-    () =>
-        trackedItems(props.order).filter((item) => !item.cancelled)
-            .length,
+    () => trackedItems(props.order).filter((item) => !item.cancelled).length,
 );
 const cancellable = computed(() => isCancellable(props.order));
 

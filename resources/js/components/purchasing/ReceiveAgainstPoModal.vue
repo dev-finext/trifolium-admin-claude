@@ -275,10 +275,9 @@ async function save() {
 
 .row {
     display: grid;
-    grid-template-columns: minmax(
-            180px,
-            1.3fr
-        ) 110px 100px 150px 100px 110px 150px 130px 70px 40px;
+    grid-template-columns:
+        minmax(180px, 1.3fr)
+        110px 100px 150px 100px 110px 150px 130px 70px 40px;
     gap: 8px;
     align-items: center;
     padding: 6px 0;

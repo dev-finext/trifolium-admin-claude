@@ -77,7 +77,6 @@ const all = computed(() => people.patients);
 
 const practitioners = computed(() => people.practitioners);
 
-
 const searched = computed(() => {
     const query = view.cq.trim().toLowerCase();
 

@@ -24,7 +24,6 @@ app.config.globalProperties.$loc = (value) =>
 // empty console and has no idea whether their last click saved anything, so say
 // so on the page. `where` is Vue's own description of what was running.
 app.config.errorHandler = (error, instance, where) => {
-     
     console.error(`[trifolium-admin] ${where}`, error);
 
     const root = document.getElementById('app');

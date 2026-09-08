@@ -37,9 +37,7 @@ const rows = computed(() =>
         return {
             ...point,
             waiting: waiting.length,
-            ready: waiting.filter(
-                (order) => order.status === 'packed',
-            ).length,
+            ready: waiting.filter((order) => order.status === 'packed').length,
             today: point.active && point.days.includes(deliveries.todayId),
         };
     }),

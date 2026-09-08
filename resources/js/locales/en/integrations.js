@@ -31,8 +31,10 @@ export default {
         confirm: 'Check all',
         body: '{n} endpoints will be checked now, without waiting for the automatic cycle.',
         effectEach: 'Each service is checked on its own and gets its own state',
-        effectFigures: 'Response time and check time update on every row once the server answers',
-        effectDown: 'A disabled service stays disabled until the provider answers again',
+        effectFigures:
+            'Response time and check time update on every row once the server answers',
+        effectDown:
+            'A disabled service stays disabled until the provider answers again',
         done: 'Request sent',
         doneBody: '{n} endpoints · the readings update once the server answers',
         failed: 'The request was not sent',

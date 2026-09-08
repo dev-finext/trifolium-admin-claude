@@ -372,11 +372,7 @@ export function buildStickerPrints(orders, receipts) {
         );
 
         if (
-            [
-                'packed',
-                'sent',
-                'closed',
-                ].includes(order.status) &&
+            ['packed', 'sent', 'closed'].includes(order.status) &&
             live.length
         ) {
             const count = live.reduce((sum, item) => sum + prepCount(item), 0);
@@ -390,10 +386,7 @@ export function buildStickerPrints(orders, receipts) {
             );
         }
 
-        if (
-            ['sent', 'closed'].includes(order.status) &&
-            order.courier
-        ) {
+        if (['sent', 'closed'].includes(order.status) && order.courier) {
             push(
                 'shipping',
                 order.id,

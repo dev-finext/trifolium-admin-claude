@@ -54,7 +54,12 @@ export const BACKUP_POLICY = {
 export const CONNECTIONS = [
     { id: 'doc', icon: 'file_text', provider: DOC_PROVIDER, services: ['gi'] },
     { id: 'pay', icon: 'card', provider: PAY_PROVIDER, services: ['gc'] },
-    { id: 'msg', icon: 'whatsapp', provider: MSG_PROVIDER, services: ['inforu'] },
+    {
+        id: 'msg',
+        icon: 'whatsapp',
+        provider: MSG_PROVIDER,
+        services: ['inforu'],
+    },
     { id: 'courier', icon: 'truck', provider: null, services: ['tapuz'] },
     { id: 'backup', icon: 'db', provider: null, services: ['backup'] },
 ];

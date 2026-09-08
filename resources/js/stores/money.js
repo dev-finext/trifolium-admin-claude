@@ -26,7 +26,6 @@ import { L } from '@/lib/localized';
 import { num, priceParts } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 
-
 /**
  * The age windows the finance filters offer, in days. A display range, not a
  * business rule — the thresholds that decide anything live in config/finance.js.

@@ -177,7 +177,6 @@ const cols = computed(() => [
     { k: 'by', label: t('inventory.receipts.col.by') },
     { k: 'note', label: t('inventory.receipts.col.note') },
 ]);
-
 </script>
 
 <template>
