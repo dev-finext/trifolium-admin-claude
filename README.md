@@ -162,13 +162,13 @@ run build` — because asset URLs are baked into the bundle.
 push to `main`. It is for reviewing screens, not for production: every record comes
 from the fixture, and every change is discarded on refresh.
 
-The fixture's phone numbers, national IDs and company numbers are fabricated but
-shaped like real Israeli ones, and the test environment is public, so they are
-public with it. `npm run check:privacy` reports every such value and stays in the
-repository as the tool for neutralising them: phones move to the `000` subscriber
-block, national IDs take a `9` prefix and a deliberately failing check digit,
-company numbers an `8` prefix, and emails a reserved domain. Production builds do
-not carry any of it — `check:build` fails if they do.
+The fixture's phone numbers, national IDs and company numbers are fabricated,
+and the test environment is public, so they are public with it — which is why
+they are also kept in shapes that cannot collide with a real one: phones sit in
+the `000` subscriber block, national IDs take a `9` prefix and a deliberately
+failing check digit, company numbers an `8` prefix, and emails a reserved domain.
+`npm run check:privacy` enforces that and fails on anything that slips back.
+Production builds do not carry any of it — `check:build` fails if they do.
 
 ## Provenance
 

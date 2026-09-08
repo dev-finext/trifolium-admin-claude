@@ -10,7 +10,7 @@ export const ORG = {
         '94 Yigal Alon St, floor 3, Tel Aviv',
     ),
     hours: L('א׳–ה׳ 09:00–17:00', 'Sun–Thu 09:00–17:00'),
-    phone: '03-6001200',
+    phone: '03-0001200',
     email: 'lab@trifolium.example',
 };
 
@@ -23,7 +23,7 @@ export const ORG = {
  * tracking is a TP number plus a shipment number, hence `tp`.
  */
 export const COURIERS = [
-    { code: 'T', id: 'tapuz', phone: '03-6001200', hasApi: false },
+    { code: 'T', id: 'tapuz', phone: '03-0001200', hasApi: false },
     { code: 'A', id: 'special_delivery', phone: '', hasApi: false, v2: true },
     { code: 'F', id: 'focus', phone: '', hasApi: false, v2: true },
     { code: 'Y', id: 'yarden', phone: '', hasApi: false, v2: true },

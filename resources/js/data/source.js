@@ -10,9 +10,9 @@ import { setClock } from '@/lib/clock';
 
 // Read straight off import.meta.env rather than through a local alias. Vite
 // replaces `import.meta.env` with a literal, so the `MODE === 'api'` test below
-// folds at build time and the whole demo fixture — plausible-looking phone numbers
-// and national IDs included — is dropped from a production bundle. Routed through
-// a `const ENV` it does not fold, and the fixture ships.
+// folds at build time and the whole demo fixture — its invented people, orders
+// and the SAP catalogue extract behind them — is dropped from a production
+// bundle. Routed through a `const ENV` it does not fold, and the fixture ships.
 //
 // Optional chaining because the check scripts import this graph under plain Node,
 // where there is no Vite and no import.meta.env at all.

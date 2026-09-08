@@ -1,13 +1,14 @@
 // PRE-PUBLICATION CHECK — not part of `npm run verify`.
 //
-// The fixture deliberately carries the designer's original contact details, so
-// the console can be compared against the design screen by screen. Those values
-// are fabricated, but they are shaped like real Israeli phone numbers, national
-// ID numbers and company numbers, and a national ID even carries a valid check
-// digit.
+// Every contact detail in the fixture is fabricated. But a fabricated value
+// shaped like a real Israeli phone number, national ID or company number can
+// still land on a real one, and the demo build is published — so the fixture
+// keeps its identifiers in shapes that cannot: phones in the unallocated `000`
+// subscriber block, national IDs 9-prefixed with a deliberately wrong check
+// digit, company numbers 8-prefixed, emails under a reserved domain.
 //
-// That is fine for a local demo and NOT fine in a public repository. Run this
-// before making the repository public or deploying it anywhere reachable:
+// This is what holds that line. Run it before making the repository public or
+// deploying it anywhere reachable:
 //
 //     npm run check:privacy
 //
@@ -87,8 +88,12 @@ const realisticIds = ids.filter((v) => !v.startsWith('9') || checksumValid(v));
 const companies = distinct(/\bbiz:\s*'(\d+)'/g);
 const realisticCompanies = companies.filter((v) => !v.startsWith('8'));
 
-// Every email domain must sit under a reserved TLD.
-const emails = distinct(/'([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})'/g);
+// Every email domain must sit under a reserved TLD. Backticks count: the
+// customer addresses are built from the customer code, and a template
+// literal hid them from an earlier version of this pattern.
+const emails = distinct(
+    /['`]([A-Za-z0-9._%+-]*(?:\${[^}]*})?[A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Za-z]{2,})['`]/g,
+);
 const routableEmails = emails.filter((e) => {
     const domain = e.split('@')[1];
 

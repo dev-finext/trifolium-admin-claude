@@ -2,14 +2,14 @@
 //
 // `check-fixture-privacy.mjs` reads the source. This reads the OUTPUT, which is
 // the only thing that actually gets served, and answers one question: did any
-// fabricated personal data survive into it?
+// demo-only data survive into it?
 //
 // The two are not interchangeable. The fixture is excluded by a compile-time fold
 // in data/source.js, and a fold is easy to break by accident — routing
 // `import.meta.env` through a local const is enough to stop Vite substituting a
-// literal, after which the branch survives and 105 kB of plausible-looking Israeli
-// phone numbers and national IDs go out with the bundle. That regression is
-// invisible in the source and obvious here.
+// literal, after which the branch survives and 105 kB of invented people and
+// orders — with the SAP catalogue extract behind them — go out with the bundle in
+// place of live data. That regression is invisible in the source and obvious here.
 //
 //   node scripts/check-build.mjs [dist]
 import { readdir, readFile, stat } from 'node:fs/promises';
@@ -20,15 +20,16 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.resolve(root, process.argv[2] || 'dist');
 
 /**
- * Values taken from the fixture itself — a real phone, national ID, company
- * number and email that exist in resources/js/demo/. Any one of them appearing in
- * the output means the whole fixture did.
+ * Values taken from the fixture itself — the phone, national ID, company number
+ * and email on four particular records in resources/js/demo/. Any one of them
+ * appearing in the output means the whole fixture did. They have to be kept in
+ * step with those records: a marker no record carries any more can never fire.
  */
 const FIXTURE_MARKERS = [
-    ['a phone number', '052-886-4546'],
-    ['a national ID', '029384756'],
-    ['a company number', '513874902'],
-    ['a practitioner email', 'dan@ether.co.il'],
+    ['a phone number', '052-000-4546'],
+    ['a national ID', '929384756'],
+    ['a company number', '813874902'],
+    ['a practitioner email', 'dan@ether.example'],
     // Not personal data, but demo-only all the same: the development progress
     // article, whose route is folded out of an api build in router/index.js.
     ['the development article', 'dev-progress-article-v2'],
@@ -87,4 +88,4 @@ if (found.length) {
     process.exit(1);
 }
 
-console.log('✓ no fabricated personal data in the built output');
+console.log('✓ no demo-only data in the built output');
