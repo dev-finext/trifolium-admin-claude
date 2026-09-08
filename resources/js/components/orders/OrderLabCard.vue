@@ -26,7 +26,7 @@ const orders = useOrdersStore();
 
 /** The roles are marked while the order is on the lab's bench or being packed. */
 const editable = computed(() =>
-    ['in_production', 'ready'].includes(statusOf(props.order)),
+    ['lab', 'packed'].includes(statusOf(props.order)),
 );
 
 const roles = computed(() =>

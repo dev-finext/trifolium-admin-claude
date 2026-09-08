@@ -1,8 +1,28 @@
 // Order status model.
 //
-// These are the seven values `U_OrderState` actually holds in SAP today, and
-// nothing else. The number is what the field stores; the id is what this
-// console passes around, so the mapping in either direction is one line.
+// These are the eight values `ORDR.U_OrderState` actually holds, read from the
+// field's own definition in the restored database (`CUFD` + `UFD1`, TableID
+// `ORDR`, AliasID `OrderState`) and cross-checked against all 355,046 rows of
+// `ORDR`:
+//
+//     code  SAP label      orders
+//     1     הזמנה חדשה      20,289
+//     2     בטיפול              10
+//     3     מעבדה              865
+//     4     ארוז                 5
+//     5     נשלח           109,886
+//     6     סגור           210,468
+//     7     מושהה               92
+//     8     מבוטל           13,431
+//
+// Three corrections against the list this file used to carry, which came from
+// the old PHP site's own English glosses rather than from SAP:
+//
+//   * there is no state 0. Not one order has it.
+//   * state 6 סגור was missing, and it is the most common state in the whole
+//     system — 59% of every order ever placed. State 7 מושהה was missing too.
+//   * everything from 3 upwards was shifted by one: 3 is the lab, not "ready";
+//     4 is packed, not "shipped"; 5 is sent, not "delivered".
 //
 // Two things this file deliberately does NOT have, because SAP does not:
 //
@@ -14,12 +34,13 @@
 // Display text is not here: it lives in the locale catalogs under `status.*`,
 // so the same id renders in Hebrew or English without touching this file.
 export const ORDER_STATUSES = [
-    { id: 'pending', code: 0, tone: 'amber' },
-    { id: 'confirmed', code: 1, tone: 'gray' },
-    { id: 'in_production', code: 2, tone: 'blue' },
-    { id: 'ready', code: 3, tone: 'teal' },
-    { id: 'shipped', code: 4, tone: 'blue' },
-    { id: 'delivered', code: 5, tone: 'green' },
+    { id: 'new', code: 1, tone: 'amber' },
+    { id: 'in_process', code: 2, tone: 'gray' },
+    { id: 'lab', code: 3, tone: 'blue' },
+    { id: 'packed', code: 4, tone: 'teal' },
+    { id: 'sent', code: 5, tone: 'blue' },
+    { id: 'closed', code: 6, tone: 'green' },
+    { id: 'on_hold', code: 7, tone: 'gray' },
     { id: 'cancelled', code: 8, tone: 'red' },
 ];
 
@@ -37,15 +58,28 @@ export const ORDER_STATUS_BY_CODE = Object.fromEntries(
 /** The id → the value `U_OrderState` stores. */
 export const orderStatusCode = (id) => ORDER_STATUS[id]?.code ?? null;
 
-/** The happy path, in order — drives the progress rail on an order. */
+/**
+ * The happy path, in order — drives the progress rail on an order.
+ *
+ * `on_hold` and `cancelled` sit off the path: an order can enter either from
+ * anywhere, and neither is a step towards being finished.
+ */
 export const ORDER_FLOW = [
-    'pending',
-    'confirmed',
-    'in_production',
-    'ready',
-    'shipped',
-    'delivered',
+    'new',
+    'in_process',
+    'lab',
+    'packed',
+    'sent',
+    'closed',
 ];
+
+/**
+ * States that exist in SAP and are barely used — ten orders for בטיפול, five
+ * for ארוז, ninety-two for מושהה, out of 355,046. They are here because they
+ * are real, and marked because a screen that gives them equal weight would be
+ * lying about where the work actually sits.
+ */
+export const RARE_STATUS_IDS = ['in_process', 'packed', 'on_hold'];
 
 /**
  * Payment, which is a field of its own and never a step in the flow.
@@ -75,13 +109,17 @@ export const isSettled = (order) => paymentStateOf(order) !== 'unpaid';
 /** Reasons an order can sit on hold before it goes to the lab. */
 export const HOLD_REASON_IDS = ['unpaid', 'awaiting_customer', 'draft'];
 
-/** Statuses that mean the order is finished and needs no further action. */
-export const TERMINAL_STATUS_IDS = ['delivered', 'cancelled'];
+/**
+ * Statuses that mean the order is finished and needs no further action.
+ *
+ * סגור is the pharmacy's own end state; נשלח still has a delivery in flight.
+ */
+export const TERMINAL_STATUS_IDS = ['closed', 'cancelled'];
 
 /** Statuses a delivery screen cares about. */
-export const DELIVERY_STATUS_IDS = ['ready', 'shipped', 'delivered'];
+export const DELIVERY_STATUS_IDS = ['packed', 'sent', 'closed'];
 
-/** Where an order sits along the flow; `-1` for cancelled. */
+/** Where an order sits along the flow; `-1` for anything off it. */
 export function statusIndex(id) {
     return ORDER_FLOW.indexOf(id);
 }

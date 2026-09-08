@@ -266,7 +266,7 @@ function itemSummary(order) {
                 </AButton>
                 <AButton
                     v-if="
-                        statusOf(row) === 'ready' &&
+                        statusOf(row) === 'packed' &&
                         row.deliveryType === 'courier'
                     "
                     sm

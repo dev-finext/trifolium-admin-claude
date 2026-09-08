@@ -283,20 +283,20 @@ async function print(order) {
             <FilterKpi
                 icon="beaker"
                 :label="t('lab.kpi.inLab')"
-                :value="tally((order) => statusOf(order) === 'in_production')"
+                :value="tally((order) => statusOf(order) === 'lab')"
                 :sub="t('lab.kpi.inLabSub')"
-                :active="state.stage.includes('in_production')"
-                @click="filters.toggle('stage', 'in_production')"
+                :active="state.stage.includes('lab')"
+                @click="filters.toggle('stage', 'lab')"
             />
             <FilterKpi
                 icon="package"
                 :label="t('lab.kpi.ready')"
                 :value="
-                    tally((order) => statusOf(order) === 'ready')
+                    tally((order) => statusOf(order) === 'packed')
                 "
                 :sub="t('lab.kpi.readySub')"
-                :active="state.stage.includes('ready')"
-                @click="filters.toggle('stage', 'ready')"
+                :active="state.stage.includes('packed')"
+                @click="filters.toggle('stage', 'packed')"
             />
             <FilterKpi
                 icon="alert"

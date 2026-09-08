@@ -33,7 +33,7 @@ import { useDatasetStore } from '@/stores/dataset';
 import { statusOf } from '@/stores/orders';
 
 /** The status at which an order joins the deliveries desk. */
-const DESK_ENTRY_STATUS = 'in_production';
+const DESK_ENTRY_STATUS = 'lab';
 
 /**
  * The statuses that put an order on the deliveries desk: everything from the
@@ -50,7 +50,7 @@ export const DESK_STATUS_IDS = [
  */
 const PRE_DISPATCH_STATUS_IDS = ORDER_FLOW.slice(
     ORDER_FLOW.indexOf(DESK_ENTRY_STATUS),
-    ORDER_FLOW.indexOf('shipped'),
+    ORDER_FLOW.indexOf('sent'),
 );
 
 /**
@@ -63,27 +63,27 @@ export const DELIVERY_STAGES = [
     {
         id: 'assign',
         match: (order) =>
-            statusOf(order) === 'ready' &&
+            statusOf(order) === 'packed' &&
             order.deliveryType === 'courier' &&
             !order.courier,
     },
     {
         id: 'handed',
         match: (order) =>
-            statusOf(order) === 'ready' &&
+            statusOf(order) === 'packed' &&
             order.deliveryType === 'courier' &&
             Boolean(order.courier),
     },
-    { id: 'transit', match: (order) => statusOf(order) === 'shipped' },
+    { id: 'transit', match: (order) => statusOf(order) === 'sent' },
     {
         id: 'pickup',
         match: (order) =>
             order.deliveryType === 'pickup' &&
-            ['in_production', 'ready'].includes(statusOf(order)),
+            ['lab', 'packed'].includes(statusOf(order)),
     },
     {
         id: 'done',
-        match: (order) => statusOf(order) === 'delivered',
+        match: (order) => statusOf(order) === 'closed',
     },
 ];
 
@@ -264,7 +264,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         deskOrders.value.filter(
             (order) =>
                 order.pickupPoint === id &&
-                ['in_production', 'ready'].includes(
+                ['lab', 'packed'].includes(
                     statusOf(order),
                 ),
         );
@@ -282,7 +282,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
                     point,
                     orders: waiting,
                     ready: waiting.filter(
-                        (order) => statusOf(order) === 'ready',
+                        (order) => statusOf(order) === 'packed',
                     ),
                 };
             }),
@@ -307,7 +307,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
             (order) =>
                 order.deliveryType === 'courier' &&
                 order.courier === courierId &&
-                statusOf(order) === 'ready',
+                statusOf(order) === 'packed',
         );
 
     function bag(name) {
@@ -460,7 +460,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
             return false;
         }
 
-        order.status = 'shipped';
+        order.status = 'sent';
         order.sentOn = sentOn || isoDaysAgo(0);
         clearFlag(order, 'courier');
 

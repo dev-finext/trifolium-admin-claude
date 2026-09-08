@@ -1,0 +1,37 @@
+[
+ {
+  "code": "01",
+  "name": "מחסן כללי",
+  "inactive": "N"
+ },
+ {
+  "code": "02",
+  "name": "מחסן חיצוני",
+  "inactive": "N"
+ },
+ {
+  "code": "1",
+  "name": "מעבדה",
+  "inactive": "N"
+ },
+ {
+  "code": "2",
+  "name": "חומרים",
+  "inactive": "N"
+ },
+ {
+  "code": "3",
+  "name": "צמחים",
+  "inactive": "N"
+ },
+ {
+  "code": "4",
+  "name": "דלפק",
+  "inactive": "N"
+ },
+ {
+  "code": "5",
+  "name": "סולו חומרים טבעיים",
+  "inactive": "N"
+ }
+]

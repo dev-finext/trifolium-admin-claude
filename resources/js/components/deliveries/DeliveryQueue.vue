@@ -103,7 +103,7 @@ const courierCode = (id) => COURIER[id]?.code || '';
 function canShip(order) {
     return (
         order.deliveryType === 'courier' &&
-        order.status === 'ready' &&
+        order.status === 'packed' &&
         Boolean(order.courier)
     );
 }

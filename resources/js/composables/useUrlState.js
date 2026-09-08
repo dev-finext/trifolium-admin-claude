@@ -5,7 +5,7 @@
 // opened identically by whoever receives it:
 //
 //     const view = useUrlState({ tab: 'open', status: [], q: '', page: 1 });
-//     view.status = ['paid', 'shipped'];   // → ?tab=open&status=paid,shipped
+//     view.status = ['paid', 'sent'];   // → ?tab=open&status=paid,shipped
 //
 // The rules, so every screen behaves the same way:
 //

@@ -1,0 +1,2402 @@
+[
+ {
+  "code": "100001",
+  "fromQty": 1,
+  "price": 0.7,
+  "currency": "₪"
+ },
+ {
+  "code": "100001",
+  "fromQty": 1000,
+  "price": 0.65,
+  "currency": "₪"
+ },
+ {
+  "code": "100001",
+  "fromQty": 3000,
+  "price": 0.6,
+  "currency": "₪"
+ },
+ {
+  "code": "100002",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100002",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100003",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100003",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100004",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100004",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100005",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100005",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100006",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100006",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100007",
+  "fromQty": 1,
+  "price": 2.0513,
+  "currency": "₪"
+ },
+ {
+  "code": "100007",
+  "fromQty": 1000,
+  "price": 2.0513,
+  "currency": "₪"
+ },
+ {
+  "code": "100008",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100008",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100009",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100009",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100010",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100010",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100011",
+  "fromQty": 1,
+  "price": 0.7692,
+  "currency": "₪"
+ },
+ {
+  "code": "100011",
+  "fromQty": 1000,
+  "price": 0.7692,
+  "currency": "₪"
+ },
+ {
+  "code": "100012",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100012",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100014",
+  "fromQty": 1,
+  "price": 0.4359,
+  "currency": "₪"
+ },
+ {
+  "code": "100014",
+  "fromQty": 1000,
+  "price": 0.4359,
+  "currency": "₪"
+ },
+ {
+  "code": "100015",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100015",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100016",
+  "fromQty": 1,
+  "price": 0.5641,
+  "currency": "₪"
+ },
+ {
+  "code": "100016",
+  "fromQty": 1000,
+  "price": 0.5641,
+  "currency": "₪"
+ },
+ {
+  "code": "100017",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100017",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100018",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100018",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100019",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100019",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100020",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100020",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100021",
+  "fromQty": 1,
+  "price": 0.5983,
+  "currency": "₪"
+ },
+ {
+  "code": "100021",
+  "fromQty": 1000,
+  "price": 0.5983,
+  "currency": "₪"
+ },
+ {
+  "code": "100022",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100022",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100023",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100023",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100024",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100024",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100025",
+  "fromQty": 1,
+  "price": 1.453,
+  "currency": "₪"
+ },
+ {
+  "code": "100025",
+  "fromQty": 1000,
+  "price": 1.453,
+  "currency": "₪"
+ },
+ {
+  "code": "100026",
+  "fromQty": 1,
+  "price": 1.2821,
+  "currency": "₪"
+ },
+ {
+  "code": "100026",
+  "fromQty": 1000,
+  "price": 1.2821,
+  "currency": "₪"
+ },
+ {
+  "code": "100027",
+  "fromQty": 1,
+  "price": 0.5983,
+  "currency": "₪"
+ },
+ {
+  "code": "100027",
+  "fromQty": 1000,
+  "price": 0.5983,
+  "currency": "₪"
+ },
+ {
+  "code": "100028",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100028",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100029",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100029",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100030",
+  "fromQty": 1,
+  "price": 0.735,
+  "currency": "₪"
+ },
+ {
+  "code": "100030",
+  "fromQty": 1000,
+  "price": 0.735,
+  "currency": "₪"
+ },
+ {
+  "code": "100031",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100031",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100032",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100032",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100033",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100033",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100034",
+  "fromQty": 1,
+  "price": 0.6838,
+  "currency": "₪"
+ },
+ {
+  "code": "100034",
+  "fromQty": 1000,
+  "price": 0.6838,
+  "currency": "₪"
+ },
+ {
+  "code": "100035",
+  "fromQty": 1,
+  "price": 0.2564,
+  "currency": "₪"
+ },
+ {
+  "code": "100035",
+  "fromQty": 1000,
+  "price": 0.2564,
+  "currency": "₪"
+ },
+ {
+  "code": "100036",
+  "fromQty": 1,
+  "price": 0.2991,
+  "currency": "₪"
+ },
+ {
+  "code": "100036",
+  "fromQty": 1000,
+  "price": 0.2991,
+  "currency": "₪"
+ },
+ {
+  "code": "100037",
+  "fromQty": 1,
+  "price": 0,
+  "currency": "₪"
+ },
+ {
+  "code": "100037",
+  "fromQty": 1000,
+  "price": 0,
+  "currency": "₪"
+ },
+ {
+  "code": "100038",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100038",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100039",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100039",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100040",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100040",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100045",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100045",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100046",
+  "fromQty": 1,
+  "price": 1.8803,
+  "currency": "₪"
+ },
+ {
+  "code": "100046",
+  "fromQty": 1000,
+  "price": 1.8803,
+  "currency": "₪"
+ },
+ {
+  "code": "100047",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100047",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100048",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100048",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100049",
+  "fromQty": 1,
+  "price": 0.3846,
+  "currency": "₪"
+ },
+ {
+  "code": "100049",
+  "fromQty": 1000,
+  "price": 0.3846,
+  "currency": "₪"
+ },
+ {
+  "code": "100050",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100050",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100052",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100052",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100053",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100053",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100054",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100054",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100055",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100055",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100056",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100056",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100057",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100057",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100058",
+  "fromQty": 1,
+  "price": 0.5128,
+  "currency": "₪"
+ },
+ {
+  "code": "100058",
+  "fromQty": 1000,
+  "price": 0.5128,
+  "currency": "₪"
+ },
+ {
+  "code": "100059",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100059",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100060",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100060",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100061",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100061",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100062",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100062",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100063",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100063",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100064",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100064",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100065",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100065",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100066",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100066",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100067",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100067",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100068",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100068",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100070",
+  "fromQty": 1,
+  "price": 1.5385,
+  "currency": "₪"
+ },
+ {
+  "code": "100070",
+  "fromQty": 1000,
+  "price": 1.5385,
+  "currency": "₪"
+ },
+ {
+  "code": "100071",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100071",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100072",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100072",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100073",
+  "fromQty": 1,
+  "price": 4.2735,
+  "currency": "₪"
+ },
+ {
+  "code": "100073",
+  "fromQty": 1000,
+  "price": 4.2735,
+  "currency": "₪"
+ },
+ {
+  "code": "100074",
+  "fromQty": 1,
+  "price": 0.8205,
+  "currency": "₪"
+ },
+ {
+  "code": "100074",
+  "fromQty": 1000,
+  "price": 0.8205,
+  "currency": "₪"
+ },
+ {
+  "code": "100075",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100075",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100076",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100076",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100078",
+  "fromQty": 1,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100078",
+  "fromQty": 1000,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100079",
+  "fromQty": 1,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100079",
+  "fromQty": 1000,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100080",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100080",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100081",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100081",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100082",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100082",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100083",
+  "fromQty": 1,
+  "price": 0.4274,
+  "currency": "₪"
+ },
+ {
+  "code": "100083",
+  "fromQty": 1000,
+  "price": 0.4274,
+  "currency": "₪"
+ },
+ {
+  "code": "100084",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100084",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100085",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100085",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100086",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100086",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100087",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100087",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100089",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100089",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100090",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100090",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100091",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100091",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100093",
+  "fromQty": 1,
+  "price": 5.1282,
+  "currency": "₪"
+ },
+ {
+  "code": "100093",
+  "fromQty": 1000,
+  "price": 5.1282,
+  "currency": "₪"
+ },
+ {
+  "code": "100094",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100094",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100095",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100095",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100096",
+  "fromQty": 1,
+  "price": 0.5299,
+  "currency": "₪"
+ },
+ {
+  "code": "100096",
+  "fromQty": 1000,
+  "price": 0.5299,
+  "currency": "₪"
+ },
+ {
+  "code": "100097",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100097",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100098",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100098",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100099",
+  "fromQty": 1,
+  "price": 0.5128,
+  "currency": "₪"
+ },
+ {
+  "code": "100099",
+  "fromQty": 1000,
+  "price": 0.5128,
+  "currency": "₪"
+ },
+ {
+  "code": "100100",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100100",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100101",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100101",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100102",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100102",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100103",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100103",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100104",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100104",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100105",
+  "fromQty": 1,
+  "price": 0.3846,
+  "currency": "₪"
+ },
+ {
+  "code": "100105",
+  "fromQty": 1000,
+  "price": 0.3846,
+  "currency": "₪"
+ },
+ {
+  "code": "100106",
+  "fromQty": 1,
+  "price": 0.5812,
+  "currency": "₪"
+ },
+ {
+  "code": "100106",
+  "fromQty": 1000,
+  "price": 0.5812,
+  "currency": "₪"
+ },
+ {
+  "code": "100107",
+  "fromQty": 1,
+  "price": 1.2821,
+  "currency": "₪"
+ },
+ {
+  "code": "100107",
+  "fromQty": 1000,
+  "price": 1.2821,
+  "currency": "₪"
+ },
+ {
+  "code": "100108",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100108",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100109",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100109",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100110",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100110",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100111",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100111",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100112",
+  "fromQty": 1,
+  "price": 0.7094,
+  "currency": "₪"
+ },
+ {
+  "code": "100112",
+  "fromQty": 1000,
+  "price": 0.7094,
+  "currency": "₪"
+ },
+ {
+  "code": "100113",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100113",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100114",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100114",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100116",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100116",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100117",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100117",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100118",
+  "fromQty": 1,
+  "price": 0.812,
+  "currency": "₪"
+ },
+ {
+  "code": "100118",
+  "fromQty": 1000,
+  "price": 0.812,
+  "currency": "₪"
+ },
+ {
+  "code": "100119",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100119",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100120",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100120",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100121",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100121",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100122",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100122",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100123",
+  "fromQty": 1,
+  "price": 0.812,
+  "currency": "₪"
+ },
+ {
+  "code": "100123",
+  "fromQty": 1000,
+  "price": 0.812,
+  "currency": "₪"
+ },
+ {
+  "code": "100124",
+  "fromQty": 1,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100124",
+  "fromQty": 1000,
+  "price": 0.641,
+  "currency": "₪"
+ },
+ {
+  "code": "100125",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100125",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100126",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100126",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100127",
+  "fromQty": 1,
+  "price": 1.2821,
+  "currency": "₪"
+ },
+ {
+  "code": "100127",
+  "fromQty": 1000,
+  "price": 1.2821,
+  "currency": "₪"
+ },
+ {
+  "code": "100128",
+  "fromQty": 1,
+  "price": 29.9145,
+  "currency": "₪"
+ },
+ {
+  "code": "100128",
+  "fromQty": 1000,
+  "price": 29.9145,
+  "currency": "₪"
+ },
+ {
+  "code": "100129",
+  "fromQty": 1,
+  "price": 0.2991,
+  "currency": "₪"
+ },
+ {
+  "code": "100129",
+  "fromQty": 1000,
+  "price": 0.2991,
+  "currency": "₪"
+ },
+ {
+  "code": "100130",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100130",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100131",
+  "fromQty": 1,
+  "price": 0.7692,
+  "currency": "₪"
+ },
+ {
+  "code": "100131",
+  "fromQty": 1000,
+  "price": 0.7692,
+  "currency": "₪"
+ },
+ {
+  "code": "100132",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100132",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100133",
+  "fromQty": 1,
+  "price": 0.7265,
+  "currency": "₪"
+ },
+ {
+  "code": "100133",
+  "fromQty": 1000,
+  "price": 0.7265,
+  "currency": "₪"
+ },
+ {
+  "code": "100135",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100135",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100136",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100136",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100140",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100140",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100141",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100141",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100142",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100142",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100143",
+  "fromQty": 1,
+  "price": 0.7265,
+  "currency": "₪"
+ },
+ {
+  "code": "100143",
+  "fromQty": 1000,
+  "price": 0.7265,
+  "currency": "₪"
+ },
+ {
+  "code": "100144",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100144",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100145",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100145",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100147",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100147",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100148",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100148",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100149",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100149",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100150",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100150",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100151",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100151",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100152",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100152",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100153",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100153",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100155",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100155",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100156",
+  "fromQty": 1,
+  "price": 1.4103,
+  "currency": "₪"
+ },
+ {
+  "code": "100156",
+  "fromQty": 1000,
+  "price": 1.4103,
+  "currency": "₪"
+ },
+ {
+  "code": "100157",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100157",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100158",
+  "fromQty": 1,
+  "price": 1.8803,
+  "currency": "₪"
+ },
+ {
+  "code": "100158",
+  "fromQty": 1000,
+  "price": 1.8803,
+  "currency": "₪"
+ },
+ {
+  "code": "100159",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100159",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100160",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100160",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100161",
+  "fromQty": 1,
+  "price": 1.0256,
+  "currency": "₪"
+ },
+ {
+  "code": "100161",
+  "fromQty": 1000,
+  "price": 1.0256,
+  "currency": "₪"
+ },
+ {
+  "code": "100162",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100162",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100163",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100163",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100164",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100164",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100165",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100165",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100166",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100166",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100167",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100167",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100168",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100168",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100169",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100169",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100170",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100170",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100171",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100171",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100172",
+  "fromQty": 1,
+  "price": 0.3846,
+  "currency": "₪"
+ },
+ {
+  "code": "100172",
+  "fromQty": 1000,
+  "price": 0.3846,
+  "currency": "₪"
+ },
+ {
+  "code": "100173",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100173",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100174",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100174",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100176",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100176",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100177",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100177",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100178",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100178",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100179",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100179",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100180",
+  "fromQty": 1,
+  "price": 0.359,
+  "currency": "₪"
+ },
+ {
+  "code": "100180",
+  "fromQty": 1000,
+  "price": 0.359,
+  "currency": "₪"
+ },
+ {
+  "code": "100181",
+  "fromQty": 1,
+  "price": 0.5983,
+  "currency": "₪"
+ },
+ {
+  "code": "100181",
+  "fromQty": 1000,
+  "price": 0.5983,
+  "currency": "₪"
+ },
+ {
+  "code": "100182",
+  "fromQty": 1,
+  "price": 0.5983,
+  "currency": "₪"
+ },
+ {
+  "code": "100182",
+  "fromQty": 1000,
+  "price": 0.5983,
+  "currency": "₪"
+ },
+ {
+  "code": "100183",
+  "fromQty": 1,
+  "price": 0.7692,
+  "currency": "₪"
+ },
+ {
+  "code": "100183",
+  "fromQty": 1000,
+  "price": 0.7692,
+  "currency": "₪"
+ },
+ {
+  "code": "100184",
+  "fromQty": 1,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100184",
+  "fromQty": 1000,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100185",
+  "fromQty": 1,
+  "price": 4.2735,
+  "currency": "₪"
+ },
+ {
+  "code": "100185",
+  "fromQty": 1000,
+  "price": 4.2735,
+  "currency": "₪"
+ },
+ {
+  "code": "100186",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100186",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100187",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100187",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100188",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100188",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100189",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100189",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100190",
+  "fromQty": 1,
+  "price": 1.0256,
+  "currency": "₪"
+ },
+ {
+  "code": "100190",
+  "fromQty": 1000,
+  "price": 1.0256,
+  "currency": "₪"
+ },
+ {
+  "code": "100191",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100191",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100193",
+  "fromQty": 1,
+  "price": 0.7009,
+  "currency": "₪"
+ },
+ {
+  "code": "100193",
+  "fromQty": 1000,
+  "price": 0.7009,
+  "currency": "₪"
+ },
+ {
+  "code": "100194",
+  "fromQty": 1,
+  "price": 0.9402,
+  "currency": "₪"
+ },
+ {
+  "code": "100194",
+  "fromQty": 1000,
+  "price": 0.9402,
+  "currency": "₪"
+ },
+ {
+  "code": "100195",
+  "fromQty": 1,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100195",
+  "fromQty": 1000,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100196",
+  "fromQty": 1,
+  "price": 1.6239,
+  "currency": "₪"
+ },
+ {
+  "code": "100196",
+  "fromQty": 1000,
+  "price": 1.6239,
+  "currency": "₪"
+ },
+ {
+  "code": "100197",
+  "fromQty": 1,
+  "price": 0.7692,
+  "currency": "₪"
+ },
+ {
+  "code": "100197",
+  "fromQty": 1000,
+  "price": 0.7692,
+  "currency": "₪"
+ },
+ {
+  "code": "100198",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100198",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100199",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100199",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100201",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100201",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100202",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100202",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100203",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100203",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100204",
+  "fromQty": 1,
+  "price": 0.4274,
+  "currency": "₪"
+ },
+ {
+  "code": "100204",
+  "fromQty": 1000,
+  "price": 0.4274,
+  "currency": "₪"
+ },
+ {
+  "code": "100205",
+  "fromQty": 1,
+  "price": 0.3932,
+  "currency": "₪"
+ },
+ {
+  "code": "100205",
+  "fromQty": 1000,
+  "price": 0.3932,
+  "currency": "₪"
+ },
+ {
+  "code": "100206",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100206",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100207",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100207",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100208",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100208",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100209",
+  "fromQty": 1,
+  "price": 1.3675,
+  "currency": "₪"
+ },
+ {
+  "code": "100209",
+  "fromQty": 1000,
+  "price": 1.3675,
+  "currency": "₪"
+ },
+ {
+  "code": "100210",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100210",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100211",
+  "fromQty": 1,
+  "price": 0.812,
+  "currency": "₪"
+ },
+ {
+  "code": "100211",
+  "fromQty": 1000,
+  "price": 0.812,
+  "currency": "₪"
+ },
+ {
+  "code": "100212",
+  "fromQty": 1,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100212",
+  "fromQty": 1000,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100213",
+  "fromQty": 1,
+  "price": 0.5128,
+  "currency": "₪"
+ },
+ {
+  "code": "100213",
+  "fromQty": 1000,
+  "price": 0.5128,
+  "currency": "₪"
+ },
+ {
+  "code": "100214",
+  "fromQty": 1,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100214",
+  "fromQty": 1000,
+  "price": 0.8547,
+  "currency": "₪"
+ },
+ {
+  "code": "100215",
+  "fromQty": 1,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100215",
+  "fromQty": 1000,
+  "price": 0.5556,
+  "currency": "₪"
+ },
+ {
+  "code": "100217",
+  "fromQty": 1,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100217",
+  "fromQty": 1000,
+  "price": 0.4701,
+  "currency": "₪"
+ },
+ {
+  "code": "100218",
+  "fromQty": 1,
+  "price": 0.6838,
+  "currency": "₪"
+ },
+ {
+  "code": "100218",
+  "fromQty": 1000,
+  "price": 0.6838,
+  "currency": "₪"
+ },
+ {
+  "code": "100219",
+  "fromQty": 1,
+  "price": 0.3419,
+  "currency": "₪"
+ },
+ {
+  "code": "100219",
+  "fromQty": 1000,
+  "price": 0.3419,
+  "currency": "₪"
+ },
+ {
+  "code": "100220",
+  "fromQty": 1,
+  "price": 0.8974,
+  "currency": "₪"
+ },
+ {
+  "code": "100220",
+  "fromQty": 1000,
+  "price": 0.8974,
+  "currency": "₪"
+ },
+ {
+  "code": "100221",
+  "fromQty": 1,
+  "price": 0.6838,
+  "currency": "₪"
+ }
+]

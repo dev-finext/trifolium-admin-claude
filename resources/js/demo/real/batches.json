@@ -1,0 +1,1202 @@
+[
+ {
+  "batch": "crs-c-a201156",
+  "code": "120177",
+  "itemName": "Panax quinquefolium rd DE",
+  "receivedOn": "2024-04-16",
+  "expiresOn": "2040-12-31",
+  "producedOn": "2024-04-08",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2500585",
+  "code": "100224",
+  "itemName": "Hypericum perforatum flos",
+  "receivedOn": "2025-02-27",
+  "expiresOn": "2040-12-31",
+  "producedOn": "2025-02-27",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "10248",
+  "code": "230011",
+  "itemName": "ביניים פורמולה ויתניה",
+  "receivedOn": "2023-02-06",
+  "expiresOn": "2036-02-06",
+  "producedOn": "2023-02-06",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "38a24",
+  "code": "300027",
+  "itemName": "חמר ירוק",
+  "receivedOn": "2024-10-07",
+  "expiresOn": "2033-10-01",
+  "producedOn": "2024-10-01",
+  "quantity": 0.56,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2402205",
+  "code": "200682",
+  "itemName": "דבש בפורמולה",
+  "receivedOn": "2024-11-06",
+  "expiresOn": "2030-11-06",
+  "producedOn": "2024-11-06",
+  "quantity": 11.95,
+  "warehouse": "01"
+ },
+ {
+  "batch": "5431565",
+  "code": "300010",
+  "itemName": "קפסולות",
+  "receivedOn": "2026-06-10",
+  "expiresOn": "2030-10-21",
+  "producedOn": "2026-06-15",
+  "quantity": 12000,
+  "warehouse": "01"
+ },
+ {
+  "batch": "5430029",
+  "code": "300010",
+  "itemName": "קפסולות",
+  "receivedOn": "2026-08-03",
+  "expiresOn": "2030-10-21",
+  "producedOn": "2026-01-29",
+  "quantity": 100000,
+  "warehouse": "01"
+ },
+ {
+  "batch": "1020",
+  "code": "200576",
+  "itemName": "Siegesbeckia orientalis hb T",
+  "receivedOn": "2021-08-15",
+  "expiresOn": "2030-10-08",
+  "producedOn": "2025-10-08",
+  "quantity": 3.5233,
+  "warehouse": "01"
+ },
+ {
+  "batch": "1020",
+  "code": "200576",
+  "itemName": "Siegesbeckia orientalis hb T",
+  "receivedOn": "2021-08-15",
+  "expiresOn": "2030-10-08",
+  "producedOn": "2025-10-08",
+  "quantity": 0,
+  "warehouse": "1"
+ },
+ {
+  "batch": "1451",
+  "code": "200413",
+  "itemName": "Sophora japonicus immaturus flos T",
+  "receivedOn": null,
+  "expiresOn": "2030-10-08",
+  "producedOn": "2025-10-08",
+  "quantity": 2.998,
+  "warehouse": "01"
+ },
+ {
+  "batch": "4167",
+  "code": "200089",
+  "itemName": "Centaurium erythraea hb T",
+  "receivedOn": null,
+  "expiresOn": "2030-10-08",
+  "producedOn": "2025-10-08",
+  "quantity": 4.435,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16475",
+  "code": "200164",
+  "itemName": "Eleutherococcus senticosus rd T",
+  "receivedOn": "2026-06-22",
+  "expiresOn": "2030-09-22",
+  "producedOn": "2026-06-22",
+  "quantity": 33.215,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14696",
+  "code": "200473",
+  "itemName": "Viburnum opulus cortex T",
+  "receivedOn": "2025-09-17",
+  "expiresOn": "2030-09-17",
+  "producedOn": "2025-09-17",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14697",
+  "code": "200282",
+  "itemName": "Morinda officinalis rd T",
+  "receivedOn": "2025-09-17",
+  "expiresOn": "2030-09-17",
+  "producedOn": "2025-09-17",
+  "quantity": 2.6588,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14699",
+  "code": "200397",
+  "itemName": "Sanguisorba officinalis rd T",
+  "receivedOn": "2025-09-17",
+  "expiresOn": "2030-09-17",
+  "producedOn": "2025-09-17",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14707",
+  "code": "230023",
+  "itemName": "ביניים פורמולה שיח אברהם",
+  "receivedOn": "2025-09-17",
+  "expiresOn": "2030-09-17",
+  "producedOn": "2025-09-17",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14682",
+  "code": "230001",
+  "itemName": "ביניים פורמולה אכיניצאה",
+  "receivedOn": "2025-09-16",
+  "expiresOn": "2030-09-16",
+  "producedOn": "2025-09-16",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14672",
+  "code": "200416",
+  "itemName": "Spatholobus suberectus rd T",
+  "receivedOn": "2025-09-15",
+  "expiresOn": "2030-09-15",
+  "producedOn": "2025-09-15",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14674",
+  "code": "200164",
+  "itemName": "Eleutherococcus senticosus rd T",
+  "receivedOn": "2025-09-15",
+  "expiresOn": "2030-09-15",
+  "producedOn": "2025-09-15",
+  "quantity": 2.6174,
+  "warehouse": "01"
+ },
+ {
+  "batch": "4680",
+  "code": "200440",
+  "itemName": "Thymus vulgaris hb T",
+  "receivedOn": "2025-09-15",
+  "expiresOn": "2030-09-15",
+  "producedOn": "2025-09-15",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14680",
+  "code": "200440",
+  "itemName": "Thymus vulgaris hb T",
+  "receivedOn": "2025-09-15",
+  "expiresOn": "2030-09-15",
+  "producedOn": "2025-09-15",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14664",
+  "code": "200012",
+  "itemName": "Albizia julibrissin cortex T",
+  "receivedOn": "2025-09-14",
+  "expiresOn": "2030-09-14",
+  "producedOn": "2025-09-14",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14667",
+  "code": "230025",
+  "itemName": "ביניים פורמולה אכיניצאה מנודף",
+  "receivedOn": "2025-09-14",
+  "expiresOn": "2030-09-14",
+  "producedOn": "2025-09-14",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14587",
+  "code": "230004",
+  "itemName": "ביניים תרסיס גרון לילדים",
+  "receivedOn": "2025-09-18",
+  "expiresOn": "2030-09-01",
+  "producedOn": "2025-09-01",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "5429398/1",
+  "code": "300010",
+  "itemName": "קפסולות",
+  "receivedOn": "2026-07-12",
+  "expiresOn": "2030-08-27",
+  "producedOn": "2026-07-01",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14488",
+  "code": "200494",
+  "itemName": "Cordyceps sinensis  T-T",
+  "receivedOn": "2025-08-06",
+  "expiresOn": "2030-08-06",
+  "producedOn": "2025-08-06",
+  "quantity": 3.0498,
+  "warehouse": "01"
+ },
+ {
+  "batch": "5429398",
+  "code": "300010",
+  "itemName": "קפסולות",
+  "receivedOn": "2025-12-03",
+  "expiresOn": "2030-08-01",
+  "producedOn": "2025-08-28",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14291",
+  "code": "200052",
+  "itemName": "Artemisia vulgaris fol T",
+  "receivedOn": "2025-07-01",
+  "expiresOn": "2030-07-01",
+  "producedOn": "2025-07-01",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14292",
+  "code": "200046",
+  "itemName": "Artemisia absinthium fol T",
+  "receivedOn": "2025-07-01",
+  "expiresOn": "2030-07-01",
+  "producedOn": "2025-07-01",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "14147",
+  "code": "500655",
+  "itemName": "מארז לבטן",
+  "receivedOn": "2025-06-11",
+  "expiresOn": "2030-06-11",
+  "producedOn": "2025-06-11",
+  "quantity": 3,
+  "warehouse": "01"
+ },
+ {
+  "batch": "5429394",
+  "code": "300010",
+  "itemName": "קפסולות",
+  "receivedOn": "2025-12-21",
+  "expiresOn": "2030-06-09",
+  "producedOn": "2025-06-09",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "pm260465",
+  "code": "300060",
+  "itemName": "אלכוהול 70%",
+  "receivedOn": "2026-06-24",
+  "expiresOn": "2030-02-28",
+  "producedOn": "2026-06-01",
+  "quantity": 2,
+  "warehouse": "01"
+ },
+ {
+  "batch": "B465685",
+  "code": "100466",
+  "itemName": "Turnera diffusa hb",
+  "receivedOn": "2026-05-17",
+  "expiresOn": "2030-02-09",
+  "producedOn": "2026-05-11",
+  "quantity": 2,
+  "warehouse": "01"
+ },
+ {
+  "batch": "5428290",
+  "code": "300010",
+  "itemName": "קפסולות",
+  "receivedOn": "2025-11-02",
+  "expiresOn": "2029-12-31",
+  "producedOn": "2025-11-01",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "5428291",
+  "code": "300010",
+  "itemName": "קפסולות",
+  "receivedOn": "2025-08-13",
+  "expiresOn": "2029-12-26",
+  "producedOn": "2024-12-26",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "1081225",
+  "code": "500002",
+  "itemName": "פורמולה אכיניצאה וסמבוק פלוס 100 מ''ל",
+  "receivedOn": "2025-12-15",
+  "expiresOn": "2029-12-01",
+  "producedOn": "2025-12-10",
+  "quantity": 376,
+  "warehouse": "01"
+ },
+ {
+  "batch": "3071225",
+  "code": "500621",
+  "itemName": "תמצית שיח אברהם 100 מ\"ל  Vitex agnus",
+  "receivedOn": "2025-12-15",
+  "expiresOn": "2029-12-01",
+  "producedOn": "2025-12-10",
+  "quantity": 243,
+  "warehouse": "01"
+ },
+ {
+  "batch": "3071225",
+  "code": "500621",
+  "itemName": "תמצית שיח אברהם 100 מ\"ל  Vitex agnus",
+  "receivedOn": "2025-12-15",
+  "expiresOn": "2029-12-01",
+  "producedOn": "2025-12-10",
+  "quantity": 224,
+  "warehouse": "02"
+ },
+ {
+  "batch": "3671461",
+  "code": "300010",
+  "itemName": "קפסולות",
+  "receivedOn": "2025-07-07",
+  "expiresOn": "2029-11-14",
+  "producedOn": "2024-11-15",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "616A231016",
+  "code": "100038",
+  "itemName": "Arctium lappa rd",
+  "receivedOn": "2025-06-16",
+  "expiresOn": "2029-10-31",
+  "producedOn": "2025-06-05",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "B462946",
+  "code": "100180",
+  "itemName": "Filipendula ulmaria fol",
+  "receivedOn": "2026-04-05",
+  "expiresOn": "2029-10-15",
+  "producedOn": "2026-03-26",
+  "quantity": 25,
+  "warehouse": "01"
+ },
+ {
+  "batch": "260211",
+  "code": "300016",
+  "itemName": "חמאת קקאו",
+  "receivedOn": "2026-07-16",
+  "expiresOn": "2029-09-30",
+  "producedOn": "2026-07-09",
+  "quantity": 3,
+  "warehouse": "01"
+ },
+ {
+  "batch": "A216225",
+  "code": "100066",
+  "itemName": "Azadirachta indica fol",
+  "receivedOn": "2025-10-16",
+  "expiresOn": "2029-09-30",
+  "producedOn": "2025-09-30",
+  "quantity": 0.123,
+  "warehouse": "01"
+ },
+ {
+  "batch": "3668380",
+  "code": "300010",
+  "itemName": "קפסולות",
+  "receivedOn": "2025-03-09",
+  "expiresOn": "2029-09-26",
+  "producedOn": "2024-09-27",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "B460458",
+  "code": "100280",
+  "itemName": "Matricaria recutita flos",
+  "receivedOn": "2026-04-05",
+  "expiresOn": "2029-09-17",
+  "producedOn": "2026-03-26",
+  "quantity": 6.6107,
+  "warehouse": "01"
+ },
+ {
+  "batch": "5425472",
+  "code": "300010",
+  "itemName": "קפסולות",
+  "receivedOn": "2024-12-16",
+  "expiresOn": "2029-09-12",
+  "producedOn": "2024-12-01",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "250901BH0004",
+  "code": "100060",
+  "itemName": "Astragalus membranaceus rd",
+  "receivedOn": "2026-04-05",
+  "expiresOn": "2029-09-01",
+  "producedOn": "2025-09-01",
+  "quantity": 9.8199,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2601153",
+  "code": "100408",
+  "itemName": "Sanguisorba officinalis rd",
+  "receivedOn": "2026-06-18",
+  "expiresOn": "2029-08-18",
+  "producedOn": "2026-08-18",
+  "quantity": 0.06,
+  "warehouse": "01"
+ },
+ {
+  "batch": "B458584",
+  "code": "100327",
+  "itemName": "Paullinia cupana sem",
+  "receivedOn": "2026-05-03",
+  "expiresOn": "2029-08-13",
+  "producedOn": "2026-04-23",
+  "quantity": 2,
+  "warehouse": "01"
+ },
+ {
+  "batch": "11128",
+  "code": "200289",
+  "itemName": "Morus alba fol T",
+  "receivedOn": "2024-08-02",
+  "expiresOn": "2029-08-07",
+  "producedOn": "2026-08-07",
+  "quantity": 1.0156,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16644",
+  "code": "200452",
+  "itemName": "Turnera diffusa hb T",
+  "receivedOn": "2026-08-04",
+  "expiresOn": "2029-08-04",
+  "producedOn": "2026-08-04",
+  "quantity": 9.25,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16646",
+  "code": "200666",
+  "itemName": "Hericium erinaceus fungi T-T",
+  "receivedOn": "2026-08-04",
+  "expiresOn": "2029-08-04",
+  "producedOn": "2026-08-04",
+  "quantity": 29,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16634",
+  "code": "500023",
+  "itemName": "פורמולה סרפד 100 מ\"ל",
+  "receivedOn": "2026-08-04",
+  "expiresOn": "2029-08-03",
+  "producedOn": "2026-08-03",
+  "quantity": 15,
+  "warehouse": "01"
+ },
+ {
+  "batch": "22K19",
+  "code": "300027",
+  "itemName": "חמר ירוק",
+  "receivedOn": "2021-10-13",
+  "expiresOn": "2029-07-31",
+  "producedOn": "2029-10-13",
+  "quantity": 0,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2601336",
+  "code": "100654",
+  "itemName": "Lysimachia vulgare fol",
+  "receivedOn": "2026-07-30",
+  "expiresOn": "2029-07-28",
+  "producedOn": "2026-07-28",
+  "quantity": 0.036,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16625",
+  "code": "200338",
+  "itemName": "Pistacia lentiscus res T",
+  "receivedOn": "2026-07-28",
+  "expiresOn": "2029-07-28",
+  "producedOn": "2026-07-28",
+  "quantity": 9,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16627",
+  "code": "200194",
+  "itemName": "Gentiana macrophylla rd T",
+  "receivedOn": "2026-07-28",
+  "expiresOn": "2029-07-28",
+  "producedOn": "2026-07-28",
+  "quantity": 1.75,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16628",
+  "code": "209057",
+  "itemName": "Sheng Mai San (Tincture-Tang)",
+  "receivedOn": "2026-07-28",
+  "expiresOn": "2029-07-28",
+  "producedOn": "2026-07-28",
+  "quantity": 1.5,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16629",
+  "code": "200351",
+  "itemName": "Polygonatum sibiricum rd T",
+  "receivedOn": "2026-07-28",
+  "expiresOn": "2029-07-28",
+  "producedOn": "2026-07-28",
+  "quantity": 0.85,
+  "warehouse": "01"
+ },
+ {
+  "batch": "B459923",
+  "code": "100474",
+  "itemName": "Urtica dioica rd",
+  "receivedOn": "2025-11-23",
+  "expiresOn": "2029-07-28",
+  "producedOn": "2025-11-11",
+  "quantity": 3.4987,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16619",
+  "code": "200607",
+  "itemName": "Citrus paradisi sem GSE T",
+  "receivedOn": "2026-07-27",
+  "expiresOn": "2029-07-27",
+  "producedOn": "2026-06-27",
+  "quantity": 3,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16621",
+  "code": "200204",
+  "itemName": "Glycyrrhiza uralensis (prep.) rd T",
+  "receivedOn": "2026-07-27",
+  "expiresOn": "2029-07-27",
+  "producedOn": "2026-07-27",
+  "quantity": 6.3,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16622",
+  "code": "140214",
+  "itemName": "Hamamelis virginiana fol HYD",
+  "receivedOn": "2026-07-27",
+  "expiresOn": "2029-07-27",
+  "producedOn": "2026-07-27",
+  "quantity": 1.625,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16623",
+  "code": "200247",
+  "itemName": "Leonurus heterophyllus hb T",
+  "receivedOn": "2026-07-27",
+  "expiresOn": "2029-07-27",
+  "producedOn": "2026-07-27",
+  "quantity": 3.5,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16624",
+  "code": "200247",
+  "itemName": "Leonurus heterophyllus hb T",
+  "receivedOn": "2026-07-27",
+  "expiresOn": "2029-07-27",
+  "producedOn": "2026-07-27",
+  "quantity": 4.25,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16615",
+  "code": "200253",
+  "itemName": "Lilium lancifolium bulb T",
+  "receivedOn": "2026-07-27",
+  "expiresOn": "2029-07-27",
+  "producedOn": "2026-07-27",
+  "quantity": 1.35,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16616",
+  "code": "209049",
+  "itemName": "Liu Jun Zi tang (Tincture-Tang)",
+  "receivedOn": "2026-07-27",
+  "expiresOn": "2029-07-27",
+  "producedOn": "2026-07-27",
+  "quantity": 3,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16617",
+  "code": "200365",
+  "itemName": "Prunus mume ft T",
+  "receivedOn": "2026-07-27",
+  "expiresOn": "2029-07-27",
+  "producedOn": "2026-07-27",
+  "quantity": 3.6,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16589",
+  "code": "500142",
+  "itemName": "Li Zhong Tincture Tang 100ml",
+  "receivedOn": "2026-07-27",
+  "expiresOn": "2029-07-26",
+  "producedOn": "2026-07-26",
+  "quantity": 7,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16613",
+  "code": "230038",
+  "itemName": "ביניים תרסיס פרג קליפורניה",
+  "receivedOn": "2026-07-26",
+  "expiresOn": "2029-07-26",
+  "producedOn": "2026-07-26",
+  "quantity": 3,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16610",
+  "code": "230032",
+  "itemName": "ביניים תרסיס לגרון",
+  "receivedOn": "2026-07-26",
+  "expiresOn": "2029-07-26",
+  "producedOn": "2026-07-26",
+  "quantity": 5,
+  "warehouse": "01"
+ },
+ {
+  "batch": "B457390",
+  "code": "100133",
+  "itemName": "Crataegus spp flos",
+  "receivedOn": "2026-05-17",
+  "expiresOn": "2029-07-24",
+  "producedOn": "2026-05-01",
+  "quantity": 2,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2601301",
+  "code": "100114",
+  "itemName": "Citrus reticulata pericarpium ft",
+  "receivedOn": "2026-07-23",
+  "expiresOn": "2029-07-23",
+  "producedOn": "2026-07-23",
+  "quantity": 0.71,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16609",
+  "code": "210016",
+  "itemName": "Matricaria recutita flos O",
+  "receivedOn": "2026-07-23",
+  "expiresOn": "2029-07-23",
+  "producedOn": "2026-07-23",
+  "quantity": 1.25,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2601317",
+  "code": "100430",
+  "itemName": "Stachys betonica fol",
+  "receivedOn": "2026-07-23",
+  "expiresOn": "2029-07-23",
+  "producedOn": "2026-07-23",
+  "quantity": 0.06,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2601314",
+  "code": "100684",
+  "itemName": "Paeonia alba rd - Dry Fried",
+  "receivedOn": "2026-07-23",
+  "expiresOn": "2029-07-23",
+  "producedOn": "2026-07-23",
+  "quantity": 0.27,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2601300",
+  "code": "100110",
+  "itemName": "Citrus aurantium ft",
+  "receivedOn": "2026-07-23",
+  "expiresOn": "2029-07-23",
+  "producedOn": "2026-07-23",
+  "quantity": 0.35,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16598",
+  "code": "200467",
+  "itemName": "Valeriana officinalis rd T",
+  "receivedOn": "2026-07-22",
+  "expiresOn": "2029-07-22",
+  "producedOn": "2026-07-22",
+  "quantity": 72,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16595",
+  "code": "200189",
+  "itemName": "Garcinia cambogia ft T",
+  "receivedOn": "2026-07-21",
+  "expiresOn": "2029-07-21",
+  "producedOn": "2026-07-21",
+  "quantity": 3.5,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16596",
+  "code": "200557",
+  "itemName": "Dictamnus dasycarpus cortex T",
+  "receivedOn": "2026-07-21",
+  "expiresOn": "2029-07-21",
+  "producedOn": "2026-07-21",
+  "quantity": 1.15,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16597",
+  "code": "200367",
+  "itemName": "Pseudostllaria rd T",
+  "receivedOn": "2026-07-21",
+  "expiresOn": "2029-07-21",
+  "producedOn": "2026-07-21",
+  "quantity": 0.85,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2601292",
+  "code": "100047",
+  "itemName": "Artemisia absithium fol",
+  "receivedOn": "2026-07-20",
+  "expiresOn": "2029-07-20",
+  "producedOn": "2026-07-20",
+  "quantity": 0.13,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16583",
+  "code": "200130",
+  "itemName": "Crataegus pinnatifida ft T",
+  "receivedOn": "2026-07-19",
+  "expiresOn": "2029-07-19",
+  "producedOn": "2026-07-19",
+  "quantity": 4.25,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16586",
+  "code": "200404",
+  "itemName": "Scutellaria baicalensis rd T",
+  "receivedOn": "2026-07-19",
+  "expiresOn": "2029-07-19",
+  "producedOn": "2026-07-19",
+  "quantity": 21.5,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16587",
+  "code": "200052",
+  "itemName": "Artemisia vulgaris fol T",
+  "receivedOn": "2026-07-19",
+  "expiresOn": "2029-07-19",
+  "producedOn": "2026-07-19",
+  "quantity": 17,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16565",
+  "code": "500033",
+  "itemName": "תרסיס לגרון",
+  "receivedOn": "2026-07-26",
+  "expiresOn": "2029-07-19",
+  "producedOn": "2026-07-19",
+  "quantity": 100,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16557",
+  "code": "500065",
+  "itemName": "פורמולה בפטיסיה איסטיס 125 מ\"ל",
+  "receivedOn": "2026-07-19",
+  "expiresOn": "2029-07-16",
+  "producedOn": "2026-07-16",
+  "quantity": 20,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16581",
+  "code": "209050",
+  "itemName": "Bi Yan Pian (Tincture-Tang)",
+  "receivedOn": "2026-07-16",
+  "expiresOn": "2029-07-16",
+  "producedOn": "2026-07-16",
+  "quantity": 23,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16582",
+  "code": "200220",
+  "itemName": "Hypericum perforatum flos T",
+  "receivedOn": "2026-07-16",
+  "expiresOn": "2029-07-16",
+  "producedOn": "2026-07-16",
+  "quantity": 24.5,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16575",
+  "code": "200085",
+  "itemName": "Carum carvi sem T",
+  "receivedOn": "2026-07-15",
+  "expiresOn": "2029-07-15",
+  "producedOn": "2026-07-15",
+  "quantity": 0.8,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16576",
+  "code": "200382",
+  "itemName": "Rhodiola rosea rd T",
+  "receivedOn": "2026-07-15",
+  "expiresOn": "2029-07-15",
+  "producedOn": "2026-07-15",
+  "quantity": 17,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16577",
+  "code": "200306",
+  "itemName": "Origanum vulgare fol T",
+  "receivedOn": "2026-07-15",
+  "expiresOn": "2029-07-15",
+  "producedOn": "2026-07-15",
+  "quantity": 6.5,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16578",
+  "code": "200029",
+  "itemName": "Angelica archangelica rd T",
+  "receivedOn": "2026-07-15",
+  "expiresOn": "2029-07-15",
+  "producedOn": "2026-07-15",
+  "quantity": 4.1,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16580",
+  "code": "209027",
+  "itemName": "Long Dan Xie Gan tang mod (Tincture-Tang)",
+  "receivedOn": "2026-07-15",
+  "expiresOn": "2029-07-15",
+  "producedOn": "2026-07-15",
+  "quantity": 6.5,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16573",
+  "code": "500133",
+  "itemName": "Ban Xia Xie Xin Tincture Tang 100ml",
+  "receivedOn": "2026-07-19",
+  "expiresOn": "2029-07-15",
+  "producedOn": "2026-07-15",
+  "quantity": 5,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16574",
+  "code": "500152",
+  "itemName": "Yi Guan Jian Tincture Tang 100ml",
+  "receivedOn": "2026-07-19",
+  "expiresOn": "2029-07-15",
+  "producedOn": "2026-07-15",
+  "quantity": 8,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16558",
+  "code": "500010",
+  "itemName": "פורמולה ויתניה 100 מ\"ל",
+  "receivedOn": "2026-07-16",
+  "expiresOn": "2029-07-13",
+  "producedOn": "2026-07-13",
+  "quantity": 20,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16572",
+  "code": "230011",
+  "itemName": "ביניים פורמולה ויתניה",
+  "receivedOn": "2026-07-13",
+  "expiresOn": "2029-07-13",
+  "producedOn": "2026-07-13",
+  "quantity": 2,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16568",
+  "code": "200621",
+  "itemName": "Coriolus versicolor fungi T-T",
+  "receivedOn": "2026-07-13",
+  "expiresOn": "2029-07-13",
+  "producedOn": "2026-07-13",
+  "quantity": 17,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16569",
+  "code": "200079",
+  "itemName": "Calendula officinalis 30%  flos T",
+  "receivedOn": "2026-07-13",
+  "expiresOn": "2029-07-13",
+  "producedOn": "2026-07-13",
+  "quantity": 15.25,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16566",
+  "code": "500034",
+  "itemName": "תרסיס פרג קליפורניה",
+  "receivedOn": "2026-07-26",
+  "expiresOn": "2029-07-12",
+  "producedOn": "2026-07-12",
+  "quantity": 100,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16564",
+  "code": "500095",
+  "itemName": "תרסיס DRY לחלל הפה",
+  "receivedOn": "2026-08-04",
+  "expiresOn": "2029-07-12",
+  "producedOn": "2026-07-12",
+  "quantity": 10,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16547",
+  "code": "200059",
+  "itemName": "Astragalus membranaceus rd T",
+  "receivedOn": "2026-07-08",
+  "expiresOn": "2029-07-08",
+  "producedOn": "2026-07-08",
+  "quantity": 70,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16545",
+  "code": "200494",
+  "itemName": "Cordyceps sinensis  T-T",
+  "receivedOn": "2026-07-07",
+  "expiresOn": "2029-07-07",
+  "producedOn": "2026-07-07",
+  "quantity": 17.666,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16543",
+  "code": "200305",
+  "itemName": "Opuntia ficus indica flos T",
+  "receivedOn": "2026-07-07",
+  "expiresOn": "2029-07-07",
+  "producedOn": "2026-07-07",
+  "quantity": 3.25,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16544",
+  "code": "200313",
+  "itemName": "Paeoniae rubra rd T",
+  "receivedOn": "2026-07-07",
+  "expiresOn": "2029-07-07",
+  "producedOn": "2026-07-07",
+  "quantity": 7.25,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16542",
+  "code": "200300",
+  "itemName": "Ocimum tenuiflorum/sanctum hb T",
+  "receivedOn": "2026-07-07",
+  "expiresOn": "2029-07-07",
+  "producedOn": "2026-07-07",
+  "quantity": 12.5,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2601238",
+  "code": "100130",
+  "itemName": "Cornus officinalis ft",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 0.39,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2601234",
+  "code": "100030",
+  "itemName": "Angelica archangelica rd",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 0.23,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2601220",
+  "code": "100127",
+  "itemName": "Coptis chinensis rd",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 1.13,
+  "warehouse": "01"
+ },
+ {
+  "batch": "2601244",
+  "code": "100194",
+  "itemName": "Gastrodia elata rd",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 0.17,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16533",
+  "code": "200364",
+  "itemName": "Prunus armeniacae sem T",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 1.7,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16534",
+  "code": "200675",
+  "itemName": "Angelica sinensis rd - dry fried T",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 4.25,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16535",
+  "code": "200501",
+  "itemName": "Phyllostachys nigra T",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 2.6,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16536",
+  "code": "200417",
+  "itemName": "Stachys betonica fol T",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 7,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16537",
+  "code": "200112",
+  "itemName": "Citrus reticulata pericarpium  ft T",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 13.5,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16538",
+  "code": "200304",
+  "itemName": "Ophiopogon japonicus rd T",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 8.8891,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16539",
+  "code": "200065",
+  "itemName": "Azadirachta indica fol T",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 1.3748,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16540",
+  "code": "200630",
+  "itemName": "Ziziphus spinosa sem T",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 18,
+  "warehouse": "01"
+ },
+ {
+  "batch": "16541",
+  "code": "240030",
+  "itemName": "ביניים תרסיס ולריאןמרכז טיקלס  RLX",
+  "receivedOn": "2026-07-06",
+  "expiresOn": "2029-07-06",
+  "producedOn": "2026-07-06",
+  "quantity": 0,
+  "warehouse": "01"
+ }
+]

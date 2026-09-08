@@ -1,0 +1,909 @@
+[
+ {
+  "parent": "100684",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Paeonia alba rd - Dry Fried",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100316",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Paeoniae alba rd",
+    "componentForeign": "Bai Shao"
+   },
+   {
+    "component": "990011",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "עיבוד CHAO - מרשם פרטי",
+    "componentForeign": "עיבוד CHAO"
+   }
+  ]
+ },
+ {
+  "parent": "110007",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Albizia julibrissin cortex 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100012",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "albizia julibrissin cortex",
+    "componentForeign": "He Huan Pi"
+   }
+  ]
+ },
+ {
+  "parent": "110013",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Alisma orientalis rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100015",
+    "quantity": 0.0418,
+    "warehouse": "01",
+    "componentName": "Alisma orientalis rd",
+    "componentForeign": "Ze Xie"
+   }
+  ]
+ },
+ {
+  "parent": "110019",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Althaea officinalis rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100023",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Althaea officinalis rd",
+    "componentForeign": "Althaea officinalis rd"
+   }
+  ]
+ },
+ {
+  "parent": "110028",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Angelica sinensis rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100032",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Angelica sinensis rd",
+    "componentForeign": "Dang Gui"
+   }
+  ]
+ },
+ {
+  "parent": "110051",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Asparagus racemosus rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100057",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Asparagus racemosus rd",
+    "componentForeign": "Asparagus racemosus rd"
+   }
+  ]
+ },
+ {
+  "parent": "110054",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Astragalus membranaceus rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100060",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Astragalus membranaceus rd",
+    "componentForeign": "Huang Qi"
+   }
+  ]
+ },
+ {
+  "parent": "110056",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Atractylodis macrocephala rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100062",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Atractylodis macrocephala rd",
+    "componentForeign": "Bai Zhu"
+   }
+  ]
+ },
+ {
+  "parent": "110058",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Avena sativa flos 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100064",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Avena sativa flos",
+    "componentForeign": "Avena sativa flos"
+   }
+  ]
+ },
+ {
+  "parent": "110071",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Bupleurum chinense rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100079",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Bupleurum chinense rd",
+    "componentForeign": "Chai Hu"
+   }
+  ]
+ },
+ {
+  "parent": "110082",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Centella asiatica fol 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100090",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Centella asiatica fol",
+    "componentForeign": "Ji Xue Cao"
+   }
+  ]
+ },
+ {
+  "parent": "110095",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Cinnamomum cassia ram cortex 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100104",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Cinnamomum cassia ramulus cortex",
+    "componentForeign": "Gui Zhi"
+   }
+  ]
+ },
+ {
+  "parent": "110099",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Citrus aurantium immaturus ft 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100109",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Citrus aurantium immaturus ft",
+    "componentForeign": "Zhi Shi"
+   }
+  ]
+ },
+ {
+  "parent": "110104",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Citrus reticulate pericarpium ft 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100114",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Citrus reticulata pericarpium ft",
+    "componentForeign": "Chen Pi"
+   }
+  ]
+ },
+ {
+  "parent": "110113",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Concha Margaritifera Usta min 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100125",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Concha margaritifera usta min",
+    "componentForeign": "Zhen Zhu Mu"
+   }
+  ]
+ },
+ {
+  "parent": "110115",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Coptis chinensis rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100127",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Coptis chinensis rd",
+    "componentForeign": "Huang Lian"
+   }
+  ]
+ },
+ {
+  "parent": "110118",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Cornus officinalis ft 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100130",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Cornus officinalis ft",
+    "componentForeign": "Shan Zhu Yu"
+   }
+  ]
+ },
+ {
+  "parent": "110119",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Corydalis ambigua rd  1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100131",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Corydalis ambigua rd",
+    "componentForeign": "Yan Hu Suo"
+   }
+  ]
+ },
+ {
+  "parent": "110134",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Cyperus rotundus rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100147",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Cyperus rotundus rd",
+    "componentForeign": "Xiang Fu"
+   }
+  ]
+ },
+ {
+  "parent": "110139",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Dioscorea opposita / japonica rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100152",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Dioscorea opposita/japonica rd",
+    "componentForeign": "Shan Yao"
+   }
+  ]
+ },
+ {
+  "parent": "110140",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Dioscorea villosa rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100153",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Dioscorea villosa rd",
+    "componentForeign": "Dioscorea villosa rd"
+   }
+  ]
+ },
+ {
+  "parent": "110152",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Eleutherococcus senticosus rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100165",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Eleutherococcus senticosus rd",
+    "componentForeign": "Ci Wu Jia"
+   }
+  ]
+ },
+ {
+  "parent": "110160",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Eucommia ulmoides cortex 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100173",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Eucommia ulmoides cortex",
+    "componentForeign": "Du Zhong"
+   }
+  ]
+ },
+ {
+  "parent": "110167",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Foeniculum vulgare sem 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100181",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Foeniculum vulgare sem",
+    "componentForeign": "Xiao Hui Xiang"
+   }
+  ]
+ },
+ {
+  "parent": "110179",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Gardenia jasminoides ft 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100193",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Gardenia jasminoides ft",
+    "componentForeign": "Zhi Zi"
+   }
+  ]
+ },
+ {
+  "parent": "110187",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Ginkgo biloba fol 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100201",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Ginkgo biloba fol",
+    "componentForeign": "Yin Xing Ye"
+   }
+  ]
+ },
+ {
+  "parent": "110191",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Glycyrrhiza glabra rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100205",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Glycyrrhiza glabra rd",
+    "componentForeign": "Glycyrrhiza glabra rd"
+   }
+  ]
+ },
+ {
+  "parent": "110192",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Glycyrrhiza uralensis (prep.) rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100206",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Glycyrrhiza uralensis (prep.) rd",
+    "componentForeign": "Zhi Gan Cao"
+   }
+  ]
+ },
+ {
+  "parent": "110194",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Grifola frondosa fungi 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100208",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Grifola frondosa fungi",
+    "componentForeign": "Hui Shu Hua"
+   }
+  ]
+ },
+ {
+  "parent": "110196",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Gymnema silvestre fol 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100210",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Gymnema silvestre fol",
+    "componentForeign": "Gymnema silvestre fol"
+   }
+  ]
+ },
+ {
+  "parent": "110210",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Hypericum perforatum flos 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100224",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Hypericum perforatum flos",
+    "componentForeign": "Guan Ye Lian Qiao"
+   }
+  ]
+ },
+ {
+  "parent": "110239",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Lepidium meyenii rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100252",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Lepidium meyenii rd קיים רק כאבקה",
+    "componentForeign": "Lepidium meyenii rd FEN"
+   }
+  ]
+ },
+ {
+  "parent": "110242",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Ligusticum wallichii rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100255",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Ligusticum wallichii rd",
+    "componentForeign": "Chuan Xiong"
+   }
+  ]
+ },
+ {
+  "parent": "110266",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Matricaria recutita flos 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100280",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Matricaria recutita flos",
+    "componentForeign": "Matricaria recutita flos"
+   }
+  ]
+ },
+ {
+  "parent": "110299",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Fossilia ossis mastodi 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100258",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Fossilia ossis mastodi min",
+    "componentForeign": "Long Gu"
+   }
+  ]
+ },
+ {
+  "parent": "110301",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Paeoniae alba rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100316",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Paeoniae alba rd",
+    "componentForeign": "Bai Shao"
+   }
+  ]
+ },
+ {
+  "parent": "110302",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Paeoniae suffruticosa rad 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100317",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Paeoniae suffruticosa rd",
+    "componentForeign": "Mu Dan Pi"
+   }
+  ]
+ },
+ {
+  "parent": "110319",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Phellodendron amurense cortex 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100335",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Phellodendron amurense cortex",
+    "componentForeign": "Huang Bai"
+   }
+  ]
+ },
+ {
+  "parent": "110332",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Plantago major fol 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100348",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Plantago major fol",
+    "componentForeign": "Plantago major fol"
+   }
+  ]
+ },
+ {
+  "parent": "110348",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Poria cocos fungi 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100366",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Poria cocos fungi",
+    "componentForeign": "Fu Ling"
+   }
+  ]
+ },
+ {
+  "parent": "110368",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Rhamnus frangula cortex 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100387",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Rhamnus frangula cortex",
+    "componentForeign": "Rhamnus frangula cortex"
+   }
+  ]
+ },
+ {
+  "parent": "110370",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Rheum palmatum rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100390",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Rheum palmatum rd",
+    "componentForeign": "Da Huang"
+   }
+  ]
+ },
+ {
+  "parent": "110383",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Salvia miltiorrhiza rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100404",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Salvia miltiorrhiza rd",
+    "componentForeign": "Dan Shen"
+   }
+  ]
+ },
+ {
+  "parent": "110393",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Schisandra chinensis ft 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100414",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Schisandra chinensis ft",
+    "componentForeign": "Wu Wei Zi"
+   }
+  ]
+ },
+ {
+  "parent": "110396",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Scutellaria baicalensis rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100417",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Scutellaria baicalensis rd",
+    "componentForeign": "Huang Qin"
+   }
+  ]
+ },
+ {
+  "parent": "110398",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Scutellaria lateriflora fol 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100419",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Scutellaria lateriflora fol",
+    "componentForeign": "Scutellaria lateriflora fol"
+   }
+  ]
+ },
+ {
+  "parent": "110399",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Serenoa serrulata repens ft 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100420",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Serenoa  serrulata repens ft",
+    "componentForeign": "Ju Ye Zong"
+   }
+  ]
+ },
+ {
+  "parent": "110400",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Silybum marianum sem 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100421",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Silybum marianum sem",
+    "componentForeign": "Shui Fei Ji"
+   }
+  ]
+ },
+ {
+  "parent": "110424",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Taraxacum officinalis rd 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100444",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Taraxacum officinalis rd",
+    "componentForeign": "Taraxacum officinalis rd"
+   }
+  ]
+ },
+ {
+  "parent": "110429",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Terminalia chebula ft 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100449",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Terminalia chebula ft",
+    "componentForeign": "He Zi"
+   }
+  ]
+ }
+]

@@ -100,7 +100,7 @@ export function canSendToLab(order) {
         return false;
     }
 
-    if (!['pending', 'confirmed'].includes(statusOf(order))) {
+    if (!['new', 'new'].includes(statusOf(order))) {
         return false;
     }
 
@@ -554,11 +554,11 @@ export const useOrdersStore = defineStore('orders', () => {
             resolved.add('link_expiring');
         }
 
-        if (status !== 'in_production') {
+        if (status !== 'lab') {
             resolved.add('lab');
         }
 
-        if (status !== 'ready' || order.courier) {
+        if (status !== 'packed' || order.courier) {
             resolved.add('courier');
         }
 
@@ -629,7 +629,7 @@ export const useOrdersStore = defineStore('orders', () => {
             return null;
         }
 
-        return setStatus(id, 'in_production', reason);
+        return setStatus(id, 'lab', reason);
     }
 
     /** Ids in a selection that are cleared for the lab. */
@@ -1197,7 +1197,7 @@ export const STATUS_ACTIONS = {
             id: 'send_to_lab',
             icon: 'beaker',
             primary: true,
-            statusTo: 'in_production',
+            statusTo: 'lab',
             effects: ['batchesAllocated', 'msgByTrigger'],
         },
         { id: 'print_prep_sheet', icon: 'printer', instant: true },
@@ -1207,7 +1207,7 @@ export const STATUS_ACTIONS = {
             id: 'send_to_lab',
             icon: 'beaker',
             primary: true,
-            statusTo: 'in_production',
+            statusTo: 'lab',
             effects: ['batchesAllocated', 'stillOnDebt'],
         },
         {
@@ -1227,7 +1227,7 @@ export const STATUS_ACTIONS = {
             id: 'mark_ready',
             icon: 'check',
             primary: true,
-            statusTo: 'ready',
+            statusTo: 'packed',
             effects: ['batchesDeducted', 'showsOnDeliveries'],
         },
         { id: 'print_label', icon: 'printer', instant: true },
@@ -1250,7 +1250,7 @@ export const STATUS_ACTIONS = {
         {
             id: 'mark_shipped',
             icon: 'send',
-            statusTo: 'shipped',
+            statusTo: 'sent',
             effects: ['shipDateRecorded', 'msgWithTracking'],
         },
     ],
@@ -1260,7 +1260,7 @@ export const STATUS_ACTIONS = {
             id: 'mark_delivered',
             icon: 'check',
             primary: true,
-            statusTo: 'delivered',
+            statusTo: 'closed',
             effects: ['pointsAccrue', 'docEmailedToCustomer'],
         },
     ],
@@ -1301,7 +1301,7 @@ const COLLECTION_ACTION = {
 };
 
 /** Statuses at which an unpaid credit order has already left the lab. */
-const AFTER_LAB = ['in_production', 'ready', 'shipped', 'delivered'];
+const AFTER_LAB = ['lab', 'packed', 'sent', 'closed'];
 
 /**
  * The actions an order offers right now.
@@ -1320,7 +1320,7 @@ export function actionsFor(order) {
             ...list.filter((action) => action.id !== 'print_receipt'),
             {
                 ...COLLECTION_ACTION,
-                primary: status === 'delivered',
+                primary: status === 'closed',
             },
         ];
     }
@@ -1333,7 +1333,7 @@ export function actionsFor(order) {
  * order is closed; a cancelled one cannot be cancelled twice.
  */
 export function isCancellable(order) {
-    return !['cancelled', 'delivered'].includes(statusOf(order));
+    return !['cancelled', 'closed'].includes(statusOf(order));
 }
 
 /**

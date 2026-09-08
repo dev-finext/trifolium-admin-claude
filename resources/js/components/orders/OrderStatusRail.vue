@@ -36,7 +36,7 @@ const cancelled = computed(() => status.value === 'cancelled');
 const flow = computed(() =>
     trackedItems(props.order).length
         ? ORDER_FLOW
-        : ORDER_FLOW.filter((id) => id !== 'in_production'),
+        : ORDER_FLOW.filter((id) => id !== 'lab'),
 );
 
 const activeIndex = computed(() => {
