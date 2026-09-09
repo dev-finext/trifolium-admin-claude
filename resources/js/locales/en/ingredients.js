@@ -92,6 +92,18 @@ export default {
         noGroup: '— none —',
     },
 
+    // The ingredient card — components/ingredients/IngredientDrawer.vue.
+    card: {
+        buying: 'Buying and supply',
+        prep: 'Preparation and safety',
+        pricing: 'Pricing',
+        priceSku: 'Pricing SKU',
+        listPrice: 'List price',
+        tiersHint:
+            'The price comes from the quantity bands of “{group}” — edited on the Pricing screen.',
+        files: 'Files on this ingredient',
+    },
+
     action: {
         add: 'New ingredient',
         edit: 'Edit',

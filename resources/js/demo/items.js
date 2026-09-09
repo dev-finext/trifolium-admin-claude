@@ -250,6 +250,16 @@ const CHINESE_PREP = [
 // ------------------------------------------------------------------ items
 
 /** Stock kind → item family. Shelf stock rows are the pharmacy's own formulas. */
+/**
+ * The unit an item is bought in, given the unit it is kept in. A herb counted
+ * in grams is bought by the kilo; one SAP already counts by the kilo is bought
+ * by the kilo, and there is nothing to convert.
+ */
+const PURCHASE_UOM = { g: 'kg', ml: 'l' };
+
+/** How many of the stock unit go into one purchase unit. */
+const UOM_FACTOR = { 'kg:g': 1000, 'l:ml': 1000 };
+
 const FAMILY_OF_KIND = {
     raw: 'herb',
     base: 'consumable',
@@ -362,19 +372,11 @@ export function buildItems(stock, products, suppliers) {
             familyOfCode(row.sku) || FAMILY_OF_KIND[row.kind] || 'consumable';
         const isHerb = family === 'herb';
         const isFormula = family === 'formula';
-        const purchaseUom = isHerb
-            ? 'kg'
-            : family === 'consumable'
-              ? 'l'
-              : family === 'packaging'
-                ? 'pack'
-                : 'unit';
+        const purchaseUom = PURCHASE_UOM[row.unit] || row.unit || 'unit';
         const factor =
-            isHerb || family === 'consumable'
-                ? 1000
-                : family === 'packaging'
-                  ? spread(`${row.sku}:factor`, 1, 5) * 100
-                  : 1;
+            row.kind === 'pack'
+                ? spread(`${row.sku}:factor`, 1, 5) * 100
+                : UOM_FACTOR[`${purchaseUom}:${row.unit}`] || 1;
         const imported = isHerb && chance(`${row.sku}:imported`, 0.3);
         const supplierKind = SUPPLIER_KIND_OF_FAMILY[family] || 'raw_materials';
         const preferred = supplierOf(

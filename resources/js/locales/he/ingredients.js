@@ -92,6 +92,18 @@ export default {
         noGroup: '— ללא —',
     },
 
+    // The ingredient card — components/ingredients/IngredientDrawer.vue.
+    card: {
+        buying: 'רכש ואספקה',
+        prep: 'הכנה ובטיחות',
+        pricing: 'תמחור',
+        priceSku: 'מק״ט תמחור',
+        listPrice: 'מחיר מחירון',
+        tiersHint:
+            'המחיר נגזר ממדרגות הכמות של ״{group}״ — נערך במסך המחירונים.',
+        files: 'קבצים על הרכיב',
+    },
+
     action: {
         add: 'רכיב חדש',
         edit: 'עריכה',

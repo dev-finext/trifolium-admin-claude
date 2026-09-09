@@ -8,6 +8,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import IngredientDrawer from '@/components/ingredients/IngredientDrawer.vue';
 import IngredientEditor from '@/components/ingredients/IngredientEditor.vue';
 import PageHead from '@/components/layout/PageHead.vue';
 import AButton from '@/components/ui/AButton.vue';
@@ -61,6 +62,9 @@ const state = useUrlState({
 });
 
 const editing = ref(null);
+
+/** The row whose card is open. Clicking a row reads; the card offers to edit. */
+const viewing = ref(null);
 const removing = ref(null);
 
 /** Every ingredient, plus its resolved pricing group. */
@@ -371,7 +375,7 @@ function exportRows() {
             :empty-title="t('ingredients.empty.title')"
             :empty-sub="t('ingredients.empty.hint')"
             @update:sort="onSort"
-            @row="editing = $event"
+            @row="viewing = $event"
         >
             <template #cell-sku="{ row }">
                 <span class="a-code a-tag">{{ row.sku }}</span>
@@ -452,6 +456,17 @@ function exportRows() {
             @clear="clear"
             @patch="filters.patch"
             @save="savedViews?.openSave()"
+        />
+
+        <IngredientDrawer
+            :row="viewing"
+            @close="viewing = null"
+            @edit="
+                (row) => {
+                    viewing = null;
+                    editing = row;
+                }
+            "
         />
 
         <IngredientEditor
