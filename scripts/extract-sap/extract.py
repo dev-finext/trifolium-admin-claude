@@ -38,8 +38,8 @@ OUT = os.path.join(
 # How many of each the fixture carries. Small enough to read, large enough that
 # a filter, a sort and a pager all have something to do.
 COUNTS = {
-    'ingredients': 200,
-    'products': 100,
+    'ingredients': 320,
+    'products': 180,
     'boms': 50,
     'practitioners': 30,
     'patients': 60,
@@ -48,37 +48,56 @@ COUNTS = {
     'batches': 120,
 }
 
-# Item code prefix → the family the console groups by.
+# Item code prefix -> the family the console groups by. Kept in step with
+# ITEM_FAMILIES in resources/js/config/items.js; the counts beside each line are
+# what the catalogue held when this was last read (items / of them active).
+#
+# The family is read from the code and never from the item group: SAP's group
+# names carry a number that frequently disagrees with what is filed under them.
+#
+# 54 is absent on purpose: 39 items, none of them active. 55 is the medicines
+# still being sold.
 FAMILY_BY_PREFIX = {
-    '10': 'herb',
-    '11': 'herb_1to1',
-    '12': 'extract',
-    '13': 'extract',
-    '14': 'hydrosol',
-    '15': 'essential_oil',
-    '16': 'supplement',
-    '20': 'tincture',
-    '21': 'infused_oil',
-    '23': 'formula',
-    '24': 'formula',
-    '27': 'private_label',
-    '30': 'consumable',
-    '40': 'packaging',
-    '41': 'packaging',
-    '42': 'packaging',
-    '43': 'packaging',
-    '46': 'packaging',
-    '47': 'packaging',
-    '48': 'admin',
-    '50': 'shelf',
-    '54': 'bought_shelf',
-    '55': 'bought_shelf',
-    '60': 'workshop',
-    '99': 'labour',
+    '10': 'herb',           # 626 / 507
+    '11': 'herb_1to1',      # 628 / 506
+    '12': 'extract',        # 297 / 187
+    '13': 'extract',        # 109 /  66  classical Chinese DE
+    '14': 'hydrosol',       # 111 / 100
+    '15': 'essential_oil',  # 107 /  56
+    '16': 'supplement',     #  54 /  30
+    '20': 'tincture',       # 691 / 615
+    '21': 'infused_oil',    #  30 /  27
+    '22': 'homeopathy',     #   5 /   4
+    '23': 'formula',        #  71 /  67
+    '24': 'formula',        #  32 /  27  oil formulas
+    '26': 'formula',        #  10 /   0  herb formulas
+    '27': 'private_label',  #  95 /  75
+    '30': 'consumable',     #  64 /  57
+    '40': 'glass',          #   8 /   6
+    '41': 'plastic',        #  21 /  17
+    '42': 'cap',            #  13 /  12
+    '43': 'box',            #   6 /   1
+    '46': 'jar',            #  10 /   8
+    '47': 'packaging',      # 257 / 242  packaging and item labels
+    '48': 'admin',          #  85 /  85
+    '49': 'shelf',          #   5 /   5  shelf products numbered outside 50
+    '50': 'shelf',          # 380 / 229
+    '55': 'bought_shelf',   # 259 /  87
+    '60': 'workshop',       #   4 /   4
+    '99': 'labour',         #  60 /  56
 }
 
-INGREDIENT_PREFIXES = ('10', '11', '12', '13', '14', '15', '30')
-PRODUCT_PREFIXES = ('50', '55', '16')
+# What the ingredient catalogue is made of: everything that goes into a
+# preparation, plus everything it is made and packed with. Every prefix the
+# console knows is drawn from, so no family arrives on screen empty.
+INGREDIENT_PREFIXES = (
+    '10', '11', '12', '13', '14', '15', '20', '21', '22', '30',
+    '40', '41', '42', '43', '46', '47', '48', '99',
+)
+
+# The finished goods: shelf products, medicines, supplements, house formulas
+# and the private label.
+PRODUCT_PREFIXES = ('50', '49', '55', '16', '23', '24', '26', '27', '60')
 
 
 def family_of(code):

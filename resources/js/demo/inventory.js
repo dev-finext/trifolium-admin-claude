@@ -122,11 +122,21 @@ const KIND_BY_FAMILY = {
     herb_1to1: 'raw',
     extract: 'raw',
     tincture: 'raw',
+    homeopathy: 'raw',
     hydrosol: 'base',
     essential_oil: 'base',
+    infused_oil: 'base',
     consumable: 'base',
+    glass: 'pack',
+    plastic: 'pack',
+    cap: 'pack',
+    box: 'pack',
+    jar: 'pack',
     packaging: 'pack',
     shelf: 'shelf',
+    formula: 'shelf',
+    private_label: 'shelf',
+    bought_shelf: 'shelf',
 };
 
 /**
@@ -259,7 +269,11 @@ const RECEIPT_NOTES = [
     L('אריזה אחת פגומה, לא נקלטה', 'One package damaged, not received'),
 ];
 
-const RECEIVERS = [DEMO_ACTORS.orit, DEMO_ACTORS.amit, DEMO_ACTORS.hadarMizrahi];
+const RECEIVERS = [
+    DEMO_ACTORS.orit,
+    DEMO_ACTORS.amit,
+    DEMO_ACTORS.hadarMizrahi,
+];
 
 /** Goods receipts — the single entry point of all stock. */
 export function buildReceipts(stock) {

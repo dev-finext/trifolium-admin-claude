@@ -25,24 +25,6 @@
   ]
  },
  {
-  "parent": "110007",
-  "quantity": 1,
-  "warehouse": "01",
-  "parentName": "Albizia julibrissin cortex 1:1",
-  "alcoholPct": 0,
-  "oilPct": 0,
-  "extractionRatio": null,
-  "components": [
-   {
-    "component": "100012",
-    "quantity": 1,
-    "warehouse": "01",
-    "componentName": "albizia julibrissin cortex",
-    "componentForeign": "He Huan Pi"
-   }
-  ]
- },
- {
   "parent": "110013",
   "quantity": 1,
   "warehouse": "01",
@@ -817,24 +799,6 @@
   ]
  },
  {
-  "parent": "110398",
-  "quantity": 1,
-  "warehouse": "01",
-  "parentName": "Scutellaria lateriflora fol 1:1",
-  "alcoholPct": 0,
-  "oilPct": 0,
-  "extractionRatio": null,
-  "components": [
-   {
-    "component": "100419",
-    "quantity": 1,
-    "warehouse": "01",
-    "componentName": "Scutellaria lateriflora fol",
-    "componentForeign": "Scutellaria lateriflora fol"
-   }
-  ]
- },
- {
   "parent": "110399",
   "quantity": 1,
   "warehouse": "01",
@@ -889,20 +853,56 @@
   ]
  },
  {
-  "parent": "110429",
+  "parent": "110449",
   "quantity": 1,
   "warehouse": "01",
-  "parentName": "Terminalia chebula ft 1:1",
+  "parentName": "Ulmus rubra cortex 1:1",
   "alcoholPct": 0,
   "oilPct": 0,
   "extractionRatio": null,
   "components": [
    {
-    "component": "100449",
+    "component": "100469",
     "quantity": 1,
     "warehouse": "01",
-    "componentName": "Terminalia chebula ft",
-    "componentForeign": "He Zi"
+    "componentName": "Ulmus rubra cortex",
+    "componentForeign": "Chi Yu"
+   }
+  ]
+ },
+ {
+  "parent": "110466",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Verbena officinalis hb 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100486",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Verbena officinalis hb",
+    "componentForeign": "Ma Bian Cao"
+   }
+  ]
+ },
+ {
+  "parent": "110474",
+  "quantity": 1,
+  "warehouse": "01",
+  "parentName": "Vitex agnus castus ft 1:1",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "components": [
+   {
+    "component": "100494",
+    "quantity": 1,
+    "warehouse": "01",
+    "componentName": "Vitex agnus castus ft",
+    "componentForeign": "Vitex agnus castus ft"
    }
   ]
  }

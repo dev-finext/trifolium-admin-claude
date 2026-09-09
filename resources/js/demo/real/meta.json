@@ -1,7 +1,7 @@
 {
  "source": "TR_backup_2026_08_05_180002_6205496.bak (SAP Business One)",
  "database": "TR",
- "extractedOn": "2026-09-08",
+ "extractedOn": "2026-09-09",
  "rows": {
   "orderStates": 8,
   "prepTypes": 17,
@@ -11,8 +11,8 @@
   "pickupPoints": 10,
   "contentSizes": 16,
   "valueLists": 1,
-  "ingredients": 200,
-  "products": 100,
+  "ingredients": 320,
+  "products": 180,
   "boms": 50,
   "priceTiers": 400,
   "batches": 120,

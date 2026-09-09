@@ -7,7 +7,7 @@
 // suppliers, preparation suitability, safety restrictions, the two kinds of note,
 // the consumer-site fields and a shelf location. A few items stand alone with no
 // stock row at all: consumables that are received and never deducted.
-import { ITEM_FAMILY } from '@/config/items';
+import { familyOfCode, ITEM_FAMILY } from '@/config/items';
 import { at, chance, pickFrom, spread } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
 import REAL_CATEGORIES from '@/demo/real/categories.json';
@@ -356,7 +356,10 @@ export function buildItems(stock, products, suppliers) {
     };
 
     const fromStock = stock.map((row, i) => {
-        const family = FAMILY_OF_KIND[row.kind] || 'consumable';
+        // The code says what the item is. `kind` only says where it is counted,
+        // and it has four values where the catalogue has twenty-three.
+        const family =
+            familyOfCode(row.sku) || FAMILY_OF_KIND[row.kind] || 'consumable';
         const isHerb = family === 'herb';
         const isFormula = family === 'formula';
         const purchaseUom = isHerb
@@ -469,7 +472,8 @@ export function buildItems(stock, products, suppliers) {
 
     const fromProducts = products.map((product) => {
         // Family 50 is what the pharmacy makes; 55 and 16 are bought in.
-        const family = product.family || 'bought_shelf';
+        const family =
+            product.family || familyOfCode(product.sku) || 'bought_shelf';
         const house = family === 'shelf';
         const preferred = house
             ? null
@@ -619,7 +623,11 @@ export function buildItems(stock, products, suppliers) {
 
 // ------------------------------------------------------------------- BOMs
 
-const BOM_EDITORS = [DEMO_ACTORS.orit, DEMO_ACTORS.amit, DEMO_ACTORS.hadarMizrahi];
+const BOM_EDITORS = [
+    DEMO_ACTORS.orit,
+    DEMO_ACTORS.amit,
+    DEMO_ACTORS.hadarMizrahi,
+];
 
 /**
  * Bills of materials, on the SAP model: a parent item and its components with a
@@ -749,7 +757,11 @@ export function buildBoms(stock, products) {
 
 // ------------------------------------------------------------ attachments
 
-const UPLOADERS = [DEMO_ACTORS.orit, DEMO_ACTORS.amit, DEMO_ACTORS.hadarMizrahi];
+const UPLOADERS = [
+    DEMO_ACTORS.orit,
+    DEMO_ACTORS.amit,
+    DEMO_ACTORS.hadarMizrahi,
+];
 
 /**
  * Files on record. In the fixture a file is its metadata — name, type, size, who
