@@ -2,12 +2,6 @@
 export default {
     // The V2 review markers — demo only. `badge` is the literal on the red pill.
     // The demo switch that refuses every write, to show the failure state
-    fail: {
-        on: 'Writes failing',
-        off: 'Simulate failure',
-        hint: 'Demo only: turns every save into a failure, to see what the screen does when an action does not go through. Actions on the save guard put themselves back and offer to try again.',
-    },
-
     v2: {
         badge: 'V2',
         tip: 'New in version 2 — click for the explanation in “Spec progress”',
@@ -96,17 +90,6 @@ export default {
         messaging: '{n} failed messages',
         inventory: '{n} items below their minimum',
         integrations: '{n} external services are down',
-    },
-
-    health: {
-        ok: 'External services healthy',
-        slow: 'External services · {n} slow',
-        down: 'External services · {n} down',
-        unknown: 'External service state unknown',
-        okHint: 'Every endpoint answered on the recorded check',
-        unknownHint: 'No check on record — nothing to report',
-        upOf: '{ok} of {total} services answered',
-        lastChecked: 'Last checked {time}',
     },
 
     me: {

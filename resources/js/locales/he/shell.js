@@ -7,13 +7,6 @@
 // ids in config/nav.js.
 export default {
     // The V2 review markers — demo only. `badge` is the literal on the red pill.
-    // מתג הדמו שמסרב לכל כתיבה, כדי להראות את מצב הכישלון
-    fail: {
-        on: 'כתיבה נכשלת',
-        off: 'הדמיית כשל',
-        hint: 'דמו בלבד: הופך כל שמירה לכישלון, כדי לראות מה המסך עושה כשפעולה לא עוברת. פעולות שעברו לשכבת השמירה יחזירו את עצמן ויציעו לנסות שוב.',
-    },
-
     v2: {
         badge: 'V2',
         tip: 'חדש בגרסה 2 — לחיצה פותחת את ההסבר בעמוד ״התקדמות אפיון״',
@@ -104,20 +97,6 @@ export default {
         messaging: '{n} הודעות שנכשלו',
         inventory: '{n} פריטים מתחת למינימום',
         integrations: '{n} שירותי חוץ מושבתים',
-    },
-
-    // The pill reports the reading the data layer holds and nothing else: no
-    // self-refresh, no invented latency, no last-checked time unless one was
-    // recorded.
-    health: {
-        ok: 'מערכות חוץ תקינות',
-        slow: 'מערכות חוץ · {n} איטיים',
-        down: 'מערכות חוץ · {n} מושבתים',
-        unknown: 'מצב מערכות חוץ לא ידוע',
-        okHint: 'כל נקודות הקצה ענו בבדיקה שנרשמה',
-        unknownHint: 'לא נרשמה בדיקה — אין נתון להציג',
-        upOf: '{ok} מתוך {total} שירותים ענו',
-        lastChecked: 'נבדק לאחרונה {time}',
     },
 
     me: {
