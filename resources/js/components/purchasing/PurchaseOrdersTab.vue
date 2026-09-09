@@ -23,7 +23,12 @@ import {
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
-import { PO_FILTER_FIELDS, PO_FILTER_GROUPS, PO_STATE } from '@/config';
+import {
+    CURRENCY_SYMBOL,
+    PO_FILTER_FIELDS,
+    PO_FILTER_GROUPS,
+    PO_STATE,
+} from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { num } from '@/lib/money';
 import { usePurchasingStore } from '@/stores/purchasing';
@@ -116,6 +121,67 @@ const spec = computed(() => ({
         return field;
     }),
 }));
+
+function clear() {
+    state.pq = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(state, filterDefaults(SPEC), { pq: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
+
+/** An order's money, in the currency the order itself was placed in. */
+const money = (row, value) =>
+    `${CURRENCY_SYMBOL[row.currency] || ''}${num(value, 0)}`;
+
+const cols = computed(() => [
+    { k: 'id', label: t('purchasing.col.id'), nowrap: true, sortable: true },
+    {
+        k: 'supplier',
+        label: t('purchasing.col.supplier'),
+        sortable: true,
+        sortValue: (row) => loc(row.supplier),
+    },
+    {
+        k: 'state',
+        label: t('purchasing.col.state'),
+        nowrap: true,
+        sortable: true,
+    },
+    { k: 'lines', label: t('purchasing.col.lines') },
+    {
+        k: 'value',
+        label: t('purchasing.col.value'),
+        nowrap: true,
+        sortable: true,
+        sortValue: (row) => row.value,
+    },
+    {
+        k: 'eta',
+        label: t('purchasing.col.eta'),
+        nowrap: true,
+        sortable: true,
+        sortValue: (row) => row.eta || '',
+    },
+    {
+        k: 'created',
+        label: t('purchasing.col.created'),
+        nowrap: true,
+        sortable: true,
+        sortValue: (row) => row.created.iso,
+    },
+]);
 </script>
 
 <template>

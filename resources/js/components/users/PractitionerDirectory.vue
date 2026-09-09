@@ -108,6 +108,11 @@ const spec = computed(() => ({
     ),
 }));
 
+function clear() {
+    view.q = '';
+    filters.clear();
+}
+
 function applyView(patch) {
     Object.assign(view, filterDefaults(SPEC), { q: '' }, patch);
 }

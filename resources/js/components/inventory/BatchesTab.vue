@@ -117,6 +117,71 @@ const spec = computed(() => ({
         return field;
     }),
 }));
+
+function clear() {
+    view.bq = '';
+    filters.clear();
+}
+
+function applyView(patch) {
+    Object.assign(view, filterDefaults(SPEC), { bq: '' }, patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
+
+/** How long until the batch expires, or how long since it did. */
+function expiryNote(batch) {
+    return batch.daysToExp < 0
+        ? t('inventory.batches.expiredAgo', { n: -batch.daysToExp })
+        : t('inventory.batches.expiresIn', { n: batch.daysToExp });
+}
+
+const cols = computed(() => [
+    {
+        k: 'id',
+        label: t('inventory.batches.col.id'),
+        nowrap: true,
+        sortable: true,
+    },
+    { k: 'name', label: t('inventory.batches.col.name'), sortable: true },
+    { k: 'supplier', label: t('inventory.batches.col.supplier') },
+    {
+        k: 'qty',
+        label: t('inventory.batches.col.qty'),
+        nowrap: true,
+        sortable: true,
+        sortValue: (row) => row.remaining,
+    },
+    {
+        k: 'expiry',
+        label: t('inventory.batches.col.expiry'),
+        nowrap: true,
+        sortable: true,
+        sortValue: (row) => row.daysToExp,
+    },
+    {
+        k: 'state',
+        label: t('inventory.batches.col.state'),
+        nowrap: true,
+        sortable: true,
+    },
+    { k: 'receipt', label: t('inventory.batches.col.receipt'), nowrap: true },
+    {
+        k: 'use',
+        label: t('inventory.batches.col.use'),
+        nowrap: true,
+        sortable: true,
+        sortValue: (row) => inventory.useOfBatch(row.id).length,
+    },
+]);
 </script>
 
 <template>

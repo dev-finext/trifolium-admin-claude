@@ -5,16 +5,16 @@
 // The stock block is where the card drills down: "committed" opens to the orders
 // holding the quantity, "on order" to the purchase orders bringing it in, and
 // every batch still open is listed with its expiry.
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import ItemBomPanel from '@/components/items/ItemBomPanel.vue';
+import ItemStockPanel from '@/components/items/ItemStockPanel.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
-import ADataTable from '@/components/ui/ADataTable.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
-import ANum from '@/components/ui/ANum.vue';
 import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import {
@@ -26,7 +26,6 @@ import {
 import { fmtISO } from '@/lib/dates';
 import { ils, num, priceParts } from '@/lib/money';
 import { useCatalogStore } from '@/stores/catalog';
-import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 
 const props = defineProps({
@@ -39,11 +38,7 @@ const emit = defineEmits(['close', 'edit', 'open-bom', 'open-item']);
 const { t } = useI18n();
 const { loc } = useLocalized();
 const store = useItemsStore();
-const inventory = useInventoryStore();
 const catalog = useCatalogStore();
-
-/** Which of the three stock lists is expanded. */
-const stockPanel = ref('committed');
 
 const name = computed(() =>
     props.row
@@ -55,25 +50,6 @@ const name = computed(() =>
 );
 
 const uomLabel = (id) => (id ? t(`items.uom.${id}`) : t('items.card.notSet'));
-
-const committed = computed(() =>
-    props.row ? store.committedOf(props.row.sku) : [],
-);
-const onOrder = computed(() =>
-    props.row ? store.onOrderOf(props.row.sku) : [],
-);
-const onOrderQty = computed(() =>
-    onOrder.value.reduce((sum, line) => sum + (line.qtySales ?? line.qty), 0),
-);
-const batches = computed(() =>
-    props.row ? inventory.openBatchesOf(props.row.sku) : [],
-);
-const parentOf = computed(() =>
-    props.row ? store.bomsOfParent(props.row.sku) : [],
-);
-const usedIn = computed(() =>
-    props.row ? store.bomsUsing(props.row.sku) : [],
-);
 
 const priceGroup = computed(() => {
     const priceSku = props.row?.stock?.priceSku;
@@ -117,34 +93,6 @@ const categories = computed(() =>
 );
 
 const fieldLabel = (id) => t(`items.mandatory.${id}`);
-
-const committedCols = computed(() => [
-    { k: 'order', label: t('items.card.colOrder'), nowrap: true },
-    { k: 'item', label: t('items.card.colItem') },
-    { k: 'practitioner', label: t('items.card.colPractitioner') },
-    { k: 'qty', label: t('items.card.colQty'), nowrap: true },
-]);
-
-const onOrderCols = computed(() => [
-    { k: 'po', label: t('items.card.colPo'), nowrap: true },
-    { k: 'supplier', label: t('items.card.colSupplier') },
-    { k: 'qty', label: t('items.card.colQty'), nowrap: true },
-    { k: 'eta', label: t('items.card.colEta'), nowrap: true },
-]);
-
-const batchCols = computed(() => [
-    { k: 'id', label: t('items.card.colBatch'), nowrap: true },
-    { k: 'remaining', label: t('items.card.colRemaining'), nowrap: true },
-    { k: 'expiry', label: t('items.card.colExpiry'), nowrap: true },
-]);
-
-function parentName(bom) {
-    const parent = store.itemBySku(bom.parentSku);
-
-    return parent
-        ? loc({ he: parent.names.he, en: parent.names.en || parent.names.he })
-        : bom.parentSku;
-}
 </script>
 
 <template>
@@ -461,244 +409,13 @@ function parentName(bom) {
                     </AKeyValue>
                 </ACard>
 
-                <ACard :title="t('items.card.stock')" icon="grid" class="span2">
-                    <template v-if="row.tracked">
-                        <div class="stock-tiles">
-                            <div class="tile">
-                                <div class="tile-l">
-                                    {{ t('items.card.onHand') }}
-                                </div>
-                                <div class="tile-v num">
-                                    {{ num(row.onHand) }}
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                class="tile is-btn"
-                                :class="{ 'is-on': stockPanel === 'committed' }"
-                                @click="stockPanel = 'committed'"
-                            >
-                                <div class="tile-l">
-                                    {{ t('items.card.committed') }}
-                                </div>
-                                <div class="tile-v num">
-                                    {{ num(row.alloc) }}
-                                </div>
-                                <div class="tile-s">
-                                    {{
-                                        t('items.card.drill', {
-                                            n: committed.length,
-                                        })
-                                    }}
-                                </div>
-                            </button>
-                            <button
-                                type="button"
-                                class="tile is-btn"
-                                :class="{ 'is-on': stockPanel === 'onOrder' }"
-                                @click="stockPanel = 'onOrder'"
-                            >
-                                <div class="tile-l">
-                                    {{ t('items.card.onOrder') }}
-                                </div>
-                                <div class="tile-v num">
-                                    {{ num(onOrderQty) }}
-                                </div>
-                                <div class="tile-s">
-                                    {{
-                                        t('items.card.drill', {
-                                            n: onOrder.length,
-                                        })
-                                    }}
-                                </div>
-                            </button>
-                            <div class="tile">
-                                <div class="tile-l">
-                                    {{ t('items.card.avail') }}
-                                </div>
-                                <div
-                                    class="tile-v num"
-                                    :class="{ 'is-low': row.low }"
-                                >
-                                    {{ num(row.avail) }}
-                                </div>
-                                <div class="tile-s">
-                                    {{
-                                        t('items.card.minText', {
-                                            n: num(row.min ?? 0),
-                                        })
-                                    }}
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                class="tile is-btn"
-                                :class="{ 'is-on': stockPanel === 'batches' }"
-                                @click="stockPanel = 'batches'"
-                            >
-                                <div class="tile-l">
-                                    {{ t('items.card.batches') }}
-                                </div>
-                                <div class="tile-v num">
-                                    {{ batches.length }}
-                                </div>
-                                <div class="tile-s">
-                                    {{ uomLabel(row.uom?.sales) }}
-                                </div>
-                            </button>
-                        </div>
+                <ItemStockPanel :row="row" class="span2" />
 
-                        <ADataTable
-                            v-if="stockPanel === 'committed'"
-                            :cols="committedCols"
-                            :rows="committed"
-                            row-key="id"
-                            :max-height="260"
-                        >
-                            <template #empty>
-                                <p class="t-sub inset">
-                                    {{ t('items.card.noCommitted') }}
-                                </p>
-                            </template>
-                            <template #cell-order="{ row: line }">
-                                <RouterLink
-                                    class="a-linkbtn"
-                                    :to="{
-                                        name: 'order',
-                                        params: { id: line.order },
-                                    }"
-                                >
-                                    <ANum>{{ line.order }}</ANum>
-                                </RouterLink>
-                            </template>
-                            <template #cell-item="{ row: line }">
-                                <div>{{ loc(line.itemName) }}</div>
-                                <div v-if="line.status" class="t-sub">
-                                    {{ t(`status.${line.status}`) }}
-                                </div>
-                            </template>
-                            <template #cell-practitioner="{ row: line }">{{
-                                loc(line.practitioner)
-                            }}</template>
-                            <template #cell-qty="{ row: line }">
-                                <ANum>{{ num(line.qty) }}</ANum>
-                                {{ uomLabel(line.unit) }}
-                            </template>
-                        </ADataTable>
-
-                        <ADataTable
-                            v-else-if="stockPanel === 'onOrder'"
-                            :cols="onOrderCols"
-                            :rows="onOrder"
-                            row-key="id"
-                            :max-height="260"
-                        >
-                            <template #empty>
-                                <p class="t-sub inset">
-                                    {{ t('items.card.noOnOrder') }}
-                                </p>
-                            </template>
-                            <template #cell-po="{ row: line }"
-                                ><ANum>{{ line.po }}</ANum></template
-                            >
-                            <template #cell-supplier="{ row: line }">{{
-                                loc(line.supplier)
-                            }}</template>
-                            <template #cell-qty="{ row: line }">
-                                <ANum>{{ num(line.qty) }}</ANum>
-                                {{ uomLabel(line.uom) }}
-                            </template>
-                            <template #cell-eta="{ row: line }">
-                                <ANum>{{
-                                    line.eta ? fmtISO(line.eta) : '—'
-                                }}</ANum>
-                            </template>
-                        </ADataTable>
-
-                        <ADataTable
-                            v-else
-                            :cols="batchCols"
-                            :rows="batches"
-                            row-key="id"
-                            :max-height="260"
-                        >
-                            <template #empty>
-                                <p class="t-sub inset">
-                                    {{ t('items.card.noBatches') }}
-                                </p>
-                            </template>
-                            <template #cell-id="{ row: batch }"
-                                ><ANum>{{ batch.id }}</ANum></template
-                            >
-                            <template #cell-remaining="{ row: batch }">
-                                <ANum>{{ num(batch.remaining) }}</ANum>
-                                {{ t(`inventory.unit.${batch.unit}`) }}
-                            </template>
-                            <template #cell-expiry="{ row: batch }">
-                                <ANum>{{ fmtISO(batch.expiry) }}</ANum>
-                                <AChip
-                                    v-if="batch.state !== 'active'"
-                                    size="sm"
-                                    tone="amber"
-                                >
-                                    {{ t(`batchState.${batch.state}`) }}
-                                </AChip>
-                            </template>
-                        </ADataTable>
-                    </template>
-                    <p v-else class="t-sub">{{ t('items.card.notTracked') }}</p>
-                </ACard>
-
-                <ACard :title="t('items.card.boms')" icon="layers">
-                    <div class="a-lbl">{{ t('items.card.parentOf') }}</div>
-                    <ul v-if="parentOf.length" class="bom-list">
-                        <li v-for="bom in parentOf" :key="bom.id">
-                            <button
-                                type="button"
-                                class="a-linkbtn"
-                                @click="emit('open-bom', bom.id)"
-                            >
-                                {{ loc(bom.name) }}
-                            </button>
-                            <span class="t-sub">{{
-                                t('items.bom.n', { n: bom.components.length })
-                            }}</span>
-                        </li>
-                    </ul>
-                    <div v-else class="t-sub">{{ t('items.card.noBoms') }}</div>
-
-                    <div class="a-lbl safety-l">
-                        {{ t('items.card.usedIn') }}
-                    </div>
-                    <ul v-if="usedIn.length" class="bom-list">
-                        <li v-for="bom in usedIn" :key="bom.id">
-                            <button
-                                type="button"
-                                class="a-linkbtn"
-                                @click="emit('open-bom', bom.id)"
-                            >
-                                {{ parentName(bom) }}
-                            </button>
-                            <span class="t-sub">
-                                {{
-                                    t('items.card.usedQty', {
-                                        qty: num(
-                                            bom.components.find(
-                                                (c) => c.sku === row.sku,
-                                            )?.qty || 0,
-                                        ),
-                                        uom: uomLabel(
-                                            bom.components.find(
-                                                (c) => c.sku === row.sku,
-                                            )?.uom,
-                                        ),
-                                    })
-                                }}
-                            </span>
-                        </li>
-                    </ul>
-                    <div v-else class="t-sub">{{ t('items.card.noBoms') }}</div>
-                </ACard>
+                <ItemBomPanel
+                    :row="row"
+                    @open-bom="(id) => emit('open-bom', id)"
+                    @open-item="(sku) => emit('open-item', sku)"
+                />
 
                 <AttachmentsPanel
                     entity="item"

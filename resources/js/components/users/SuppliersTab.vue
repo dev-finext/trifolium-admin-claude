@@ -80,6 +80,13 @@ const { paged, total } = usePaged(rows, view);
 
 const dirty = computed(() => filters.dirty || Boolean(view.sq));
 
+/** The supplier the drawer is showing — the one whose code is in the address. */
+const openSupplier = computed(
+    () =>
+        system.suppliers.find((supplier) => supplier.code === view.supplier) ||
+        null,
+);
+
 const spec = computed(() => ({
     id: 'suppliers',
     ns: 'systemContacts.suppliers',
