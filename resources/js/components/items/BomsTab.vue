@@ -14,6 +14,7 @@ import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
 import { num } from '@/lib/money';
 import { useItemsStore } from '@/stores/items';
+import { useProductionStore } from '@/stores/production';
 
 defineProps({
     selected: { type: String, default: '' },
@@ -24,8 +25,15 @@ const emit = defineEmits(['open', 'open-item']);
 const { t } = useI18n();
 const { loc, searchHaystack } = useLocalized();
 const store = useItemsStore();
+const production = useProductionStore();
 
 const state = useUrlState({ bq: '' });
+
+const prepName = (id) => {
+    const type = store.prepTypeById(id);
+
+    return type ? loc(type.name) : id || '—';
+};
 
 const itemName = (sku) => {
     const item = store.itemBySku(sku);
@@ -80,6 +88,9 @@ const cols = computed(() => [
         sortValue: (row) => row.name.he,
     },
     { k: 'components', label: t('items.bom.col.components') },
+    { k: 'prep', label: t('boms.col.prepType'), nowrap: true },
+    { k: 'yield', label: t('boms.col.yield'), nowrap: true },
+    { k: 'runs', label: t('boms.col.canProduce'), nowrap: true },
     { k: 'alcohol', label: t('items.bom.col.alcohol'), nowrap: true },
     { k: 'oil', label: t('items.bom.col.oil'), nowrap: true },
     { k: 'ratio', label: t('items.bom.col.ratio'), nowrap: true },
@@ -135,6 +146,22 @@ const cols = computed(() => [
                         t('items.bom.viaComponent', { name: itemName(row.via) })
                     }}
                 </AChip>
+            </template>
+            <template #cell-prep="{ row }">
+                <AChip tone="gray" size="sm" :dot="false">
+                    {{ prepName(row.prepType) }}
+                </AChip>
+            </template>
+            <template #cell-yield="{ row }">
+                <ANum>{{ num(row.yield?.qty || 1) }}</ANum>
+                {{
+                    row.yield?.uom === 'unit'
+                        ? t('boms.perUnit')
+                        : row.yield?.uom
+                }}
+            </template>
+            <template #cell-runs="{ row }">
+                <ANum>{{ num(production.canProduce(row)) }}</ANum>
             </template>
             <template #cell-components="{ row }">
                 <div class="t-sub">

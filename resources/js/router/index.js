@@ -73,6 +73,24 @@ const routes = [
         component: () => import('@/views/IngredientsView.vue'),
     },
     {
+        path: '/boms',
+        name: 'boms',
+        meta: { titleKey: 'nav.item.boms' },
+        component: () => import('@/views/BomsView.vue'),
+    },
+    {
+        path: '/prep-types',
+        name: 'prepTypes',
+        meta: { titleKey: 'nav.item.prepTypes' },
+        component: () => import('@/views/PrepTypesView.vue'),
+    },
+    {
+        path: '/production',
+        name: 'production',
+        meta: { titleKey: 'nav.item.production' },
+        component: () => import('@/views/ProductionView.vue'),
+    },
+    {
         path: '/items',
         name: 'items',
         meta: { titleKey: 'nav.item.items' },

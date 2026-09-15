@@ -20,7 +20,7 @@ const props = defineProps({
     bom: { type: Object, default: null },
 });
 
-const emit = defineEmits(['close', 'edit', 'open-item', 'removed']);
+const emit = defineEmits(['close', 'edit', 'open-item', 'produce', 'removed']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -115,6 +115,9 @@ async function confirmRemove(reason) {
                             @click="emit('edit', bom)"
                         >
                             {{ t('items.bom.drawer.edit') }}
+                        </AButton>
+                        <AButton sm icon="plus" @click="emit('produce', bom)">
+                            {{ t('boms.produce') }}
                         </AButton>
                         <AButton
                             sm

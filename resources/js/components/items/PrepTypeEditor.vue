@@ -10,6 +10,7 @@ import AButton from '@/components/ui/AButton.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ASelect from '@/components/ui/ASelect.vue';
+import ASwitch from '@/components/ui/ASwitch.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { PREP_CONTAINS_IDS, PREP_UNIT_IDS } from '@/config';
 import { useItemsStore } from '@/stores/items';
@@ -35,6 +36,7 @@ const form = reactive({
         props.type.expiryMonths != null
             ? String(props.type.expiryMonths)
             : '24',
+    acceptsWaste: Boolean(props.type.acceptsWaste),
     labelText: {
         he: props.type.labelText?.he || '',
         en: props.type.labelText?.en || '',
@@ -95,6 +97,7 @@ async function save() {
             name: { he, en: form.name.en.trim() || he },
             unit: form.unit,
             expiryMonths: Number(form.expiryMonths),
+            acceptsWaste: form.acceptsWaste,
             labelText: form.labelText.he.trim()
                 ? {
                       he: form.labelText.he.trim(),
@@ -179,6 +182,22 @@ const title = computed(() =>
                     </div>
                     <div v-else class="a-hint">
                         {{ t('items.prep.editor.expiryHint') }}
+                    </div>
+                </div>
+                <div>
+                    <label class="a-lbl">{{
+                        t('items.prep.editor.acceptsWaste')
+                    }}</label>
+                    <label class="a-check">
+                        <ASwitch v-model="form.acceptsWaste" />
+                        <span>{{
+                            form.acceptsWaste
+                                ? t('items.prep.editor.acceptsWasteOn')
+                                : t('items.prep.editor.acceptsWasteOff')
+                        }}</span>
+                    </label>
+                    <div class="a-hint">
+                        {{ t('items.prep.editor.acceptsWasteHint') }}
                     </div>
                 </div>
             </div>

@@ -20,16 +20,28 @@ export const NAV_GROUPS = [
             { id: 'wallet', icon: 'coin' },
         ],
     },
+    // The item card, split by who works there and at what rhythm: the buyer
+    // and the lab in items, the site in products, pricing on its own, the
+    // recipes and the preparation types as their own pages. One record
+    // underneath, several windows onto it.
+    {
+        id: 'item_card',
+        separated: true,
+        items: [
+            { id: 'ingredients', icon: 'tag' },
+            { id: 'products', icon: 'package' },
+            { id: 'pricing', icon: 'layers' },
+            { id: 'boms', icon: 'layers' },
+            { id: 'prepTypes', icon: 'beaker' },
+            // V2 — the unified card, kept until its last field has moved to
+            // the pages above. `v2` names its progress section.
+            { id: 'items', icon: 'tag', v2: 'item-card' },
+        ],
+    },
     {
         id: 'operations',
         separated: true,
         items: [
-            { id: 'products', icon: 'package' },
-            { id: 'pricing', icon: 'layers' },
-            { id: 'ingredients', icon: 'beaker' },
-            // V2 — the unified item card, alongside the three screens above
-            // until one replaces the other. `v2` names its progress section.
-            { id: 'items', icon: 'tag', v2: 'item-card' },
             // Still being built: shown, greyed, and not a link.
             { id: 'lab', icon: 'zoom', v2: 'prep-sheet', inDevelopment: true },
             // V2 — the stickers module: template editor, print run, notes pool, log
@@ -37,6 +49,8 @@ export const NAV_GROUPS = [
             { id: 'inventory', icon: 'grid' },
             // V2 — purchase orders, supplier delivery notes, consumption report
             { id: 'purchasing', icon: 'inbox', v2: 'purchase-orders' },
+            // V2 — production orders: a recipe run that opens a batch
+            { id: 'production', icon: 'beaker' },
             // V2 — the reports whose data is already in the console
             { id: 'reports', icon: 'chart', v2: 'reports' },
         ],

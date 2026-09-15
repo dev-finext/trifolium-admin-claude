@@ -404,6 +404,11 @@ export default {
             expiry: 'Default shelf life (months)',
             expiryHint:
                 'Calculated automatically on receipt from production · can be overridden per batch',
+            acceptsWaste: 'Grinding waste',
+            acceptsWasteOn: 'Waste may go into this type',
+            acceptsWasteOff: 'No waste — full batches only',
+            acceptsWasteHint:
+                'When a recipe of this type is issued, the components’ waste batches join the FEFO pick. Powders and capsules usually do; tinctures do not.',
             labelHe: 'Fixed label text (Hebrew)',
             labelHint:
                 'Printed on every preparation label of this type — “Shake before use”',
