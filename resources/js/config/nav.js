@@ -28,14 +28,11 @@ export const NAV_GROUPS = [
         id: 'item_card',
         separated: true,
         items: [
-            { id: 'ingredients', icon: 'tag' },
+            { id: 'items', icon: 'tag' },
             { id: 'products', icon: 'package' },
             { id: 'pricing', icon: 'layers' },
             { id: 'boms', icon: 'layers' },
             { id: 'prepTypes', icon: 'beaker' },
-            // V2 — the unified card, kept until its last field has moved to
-            // the pages above. `v2` names its progress section.
-            { id: 'items', icon: 'tag', v2: 'item-card' },
         ],
     },
     {

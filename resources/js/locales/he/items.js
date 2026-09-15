@@ -102,7 +102,17 @@ export default {
         mushroom: 'פטריות',
     },
 
+    count: {
+        title: 'ספירת מלאי · {name}',
+        qty: 'כמות שנספרה',
+        qtyHint: 'במערכת כרגע {qty} {uom} — ההפרש יירשם כתנועת ספירה',
+        note: 'הערה',
+        save: 'רישום הספירה',
+    },
+
     kpi: {
+        internal: 'רכיבים פנימיים',
+        internalSub: 'מיוצרים אצלנו מעץ מוצר',
         all: 'כל הפריטים',
         allSub: 'לחיצה מציגה הכל',
         missing: 'שדות חובה חסרים',
@@ -123,6 +133,10 @@ export default {
     },
 
     filter: {
+        batchState: { yes: 'מנוהל אצווה', no: 'לא מנוהל אצווה' },
+        internalState: { yes: 'רכיב פנימי', no: 'נקנה או נמכר כפי שהוא' },
+        priceGroupFixed: 'מחיר קבוע',
+        priceGroupInherit: 'לפי קידומת המק״ט',
         noun: 'פריטים',
         field: {
             fam: 'משפחה',
@@ -175,6 +189,8 @@ export default {
     },
 
     col: {
+        sale: 'מחיר מכירה',
+        priceGroup: 'מחירון מדורג',
         code: 'קוד',
         name: 'פריט',
         family: 'משפחה',
@@ -188,6 +204,8 @@ export default {
     },
 
     cell: {
+        fixedPrice: 'קבוע',
+        inheritGroup: 'לפי קידומת',
         uom: '{purchase} ← {sales} · 1 = {factor}',
         committed: 'בהתחייבות {n}',
         noStock: 'לא מנוהל במלאי',
@@ -200,6 +218,42 @@ export default {
     },
 
     card: {
+        ladder: 'מחירון מדורג',
+        productionRuns: 'ייצור',
+        recipe: 'עץ מוצר',
+        noRecipe: 'אין עץ מוצר — לא ניתן לפתוח הוראת ייצור',
+        canProduce: 'אפשר לייצר',
+        canProduceValue: '{n} ריצות של {qty} {uom}',
+        lastUnitCost: 'עלות ייצור אחרונה ליחידה',
+        lastRuns: 'הוראות ייצור אחרונות',
+        noRuns: 'עוד לא יוצר',
+        produce: 'הוראת ייצור חדשה',
+        consumption: 'צריכה לפי זמן',
+        consumptionRule: 'קצב',
+        consumptionRuleValue: '{qty} {uom} כל {days} ימים',
+        countedOn: 'ספירה אחרונה',
+        countedOnValue: '{when} · נספרו {qty}',
+        runOut: 'צפי סיום המלאי',
+        runOutNever: 'לא ניתן לחשב',
+        count: 'ספירה',
+        wasteOf: 'מזה פחת: {n}',
+        mergeWaste: 'איחוד פחת',
+        mergeTitle: 'איחוד אצוות פחת',
+        mergeBody:
+            '{n} אצוות פחת ({qty}) יתאחדו לאצווה אחת חדשה. התוקף יהיה המוקדם מביניהן, והאצוות המקוריות יישארו ביומן.',
+        mergeConfirm: 'איחוד',
+        remove: 'מחיקת הפריט',
+        removeTitle: 'מחיקת פריט',
+        removeBody: '{name} יימחק יחד עם שורת המלאי שלו. הרשומה נשמרת ביומן.',
+        removeBlocked: 'לא ניתן למחוק את {name} — עדיין תלויים בו:',
+        removeEffectStock: 'שורת המלאי נמחקת יחד עם הכרטיס',
+        removeEffectLog: 'הפעולה נרשמת ביומן המערכת עם הסיבה',
+        removeDepStock: 'מלאי במחסן: {qty}',
+        removeDepBatches: '{n} אצוות פתוחות',
+        removeDepBoms: '{n} עצי מוצר',
+        removeDepOrders: '{n} שורות בהזמנות רכש פתוחות',
+        removeDepFormulas: '{n} תבניות פורמולה',
+        removeConfirm: 'מחיקה',
         notSet: 'לא הוגדר',
         yes: 'כן',
         no: 'לא',
@@ -296,6 +350,28 @@ export default {
     },
 
     editor: {
+        stockKind: 'סוג מלאי',
+        stockSystem: 'מסורת',
+        stockWh: 'מחסן',
+        stockMin: 'מינימום במלאי',
+        stockMinHint: 'מתחת לכמות הזאת הפריט מסומן כחסר',
+        internalHint:
+            'רכיב פנימי מיוצר אצלנו מעץ מוצר, ולכן תמיד מנוהל אצווה — כל הוראת ייצור פותחת אצווה חדשה.',
+        consumption: 'צריכה לפי זמן',
+        consumptionOn: 'המלאי יורד לפי לוח שנה',
+        consumptionHint:
+            'לציוד שאף אחד לא סופר בהזמנה — נייר, כפפות. המערכת רושמת צריכה תקופתית, וספירה מתקנת.',
+        consumptionQty: 'כמות לתקופה',
+        consumptionPeriod: 'אורך התקופה בימים',
+        priceGroup: 'מחירון מדורג',
+        priceGroupInherit: 'לפי קידומת המק״ט (ברירת מחדל)',
+        priceGroupFixed: 'מחיר קבוע — ללא מחירון',
+        priceGroupHint:
+            'המחירון קובע רק את סולם ההנחה; המחיר ליחידה הוא של הפריט',
+        calculator: 'המחיר לפי כמות',
+        expiryMonths: 'תוקף לאצוות ייצור (חודשים)',
+        expiryMonthsHint:
+            'ריק — לפי סוג ההכנה של העץ, ואם אין, לפי ברירת המחדל של המשפחה',
         newTitle: 'פריט חדש',
         editTitle: 'עריכת פריט · {name}',
         createConfirm: 'הקם פריט',
@@ -337,7 +413,7 @@ export default {
 
         prep: 'הכנה ובטיחות',
         notes: 'הערות',
-        internalHint: 'למשרד ולמחסן בלבד — לא מודפס',
+        internalFlagHint: 'למשרד ולמחסן בלבד — לא מודפס',
         productionHint: 'מודפס לדף ההכנה, לרוקח',
 
         site: 'אתר צרכני',
@@ -515,6 +591,10 @@ export default {
     },
 
     toast: {
+        counted: 'הספירה נרשמה',
+        countedBody: 'במלאי {qty} · הפרש {delta}',
+        removed: 'הפריט נמחק',
+        removedBody: '{name} · סיבה: {reason}',
         created: 'הפריט הוקם',
         createdBody: '{name} · קוד {code} · {sku}',
         updated: 'הפריט עודכן',

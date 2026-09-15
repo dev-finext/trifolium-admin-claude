@@ -100,7 +100,18 @@ export default {
         mushroom: 'Mushrooms',
     },
 
+    count: {
+        title: 'Stock count · {name}',
+        qty: 'Counted quantity',
+        qtyHint:
+            'The system holds {qty} {uom} — the gap is written as a count movement',
+        note: 'Note',
+        save: 'Record the count',
+    },
+
     kpi: {
+        internal: 'Internal components',
+        internalSub: 'Made in-house from a recipe',
         all: 'All items',
         allSub: 'Click shows all',
         missing: 'Mandatory fields missing',
@@ -121,6 +132,13 @@ export default {
     },
 
     filter: {
+        batchState: { yes: 'Batch-managed', no: 'Not batch-managed' },
+        internalState: {
+            yes: 'Internal component',
+            no: 'Bought or sold as is',
+        },
+        priceGroupFixed: 'Fixed price',
+        priceGroupInherit: 'By code prefix',
         noun: 'items',
         field: {
             fam: 'Family',
@@ -173,6 +191,8 @@ export default {
     },
 
     col: {
+        sale: 'Sale price',
+        priceGroup: 'Tiered list',
         code: 'Code',
         name: 'Item',
         family: 'Family',
@@ -186,6 +206,8 @@ export default {
     },
 
     cell: {
+        fixedPrice: 'Fixed',
+        inheritGroup: 'By prefix',
         uom: '{purchase} → {sales} · 1 = {factor}',
         committed: 'committed {n}',
         noStock: 'Not stock-managed',
@@ -198,6 +220,43 @@ export default {
     },
 
     card: {
+        ladder: 'Tiered list',
+        productionRuns: 'Production',
+        recipe: 'Bill of materials',
+        noRecipe: 'No recipe — a production order cannot be opened',
+        canProduce: 'Can produce',
+        canProduceValue: '{n} runs of {qty} {uom}',
+        lastUnitCost: 'Last production cost per unit',
+        lastRuns: 'Latest production orders',
+        noRuns: 'Not produced yet',
+        produce: 'New production order',
+        consumption: 'Consumption over time',
+        consumptionRule: 'Pace',
+        consumptionRuleValue: '{qty} {uom} every {days} days',
+        countedOn: 'Last count',
+        countedOnValue: '{when} · counted {qty}',
+        runOut: 'Expected run-out',
+        runOutNever: 'Cannot be worked out',
+        count: 'Count',
+        wasteOf: 'of which waste: {n}',
+        mergeWaste: 'Merge waste',
+        mergeTitle: 'Merge waste batches',
+        mergeBody:
+            '{n} waste batches ({qty}) fold into one new batch. It keeps the earliest expiry; the originals stay in the ledger.',
+        mergeConfirm: 'Merge',
+        remove: 'Delete item',
+        removeTitle: 'Delete item',
+        removeBody:
+            '{name} is deleted together with its stock row. The record stays in the log.',
+        removeBlocked: '{name} cannot be deleted — these still depend on it:',
+        removeEffectStock: 'The stock row goes with the card',
+        removeEffectLog: 'The action is logged with its reason',
+        removeDepStock: 'Stock on hand: {qty}',
+        removeDepBatches: '{n} open batches',
+        removeDepBoms: '{n} bills of materials',
+        removeDepOrders: '{n} lines on open purchase orders',
+        removeDepFormulas: '{n} formula templates',
+        removeConfirm: 'Delete',
         notSet: 'Not set',
         yes: 'Yes',
         no: 'No',
@@ -295,6 +354,28 @@ export default {
     },
 
     editor: {
+        stockKind: 'Stock kind',
+        stockSystem: 'Tradition',
+        stockWh: 'Warehouse',
+        stockMin: 'Minimum in stock',
+        stockMinHint: 'Below this the item is flagged as low',
+        internalHint:
+            'An internal component is made in-house from a recipe, so it is always batch-managed — every production order opens a new batch.',
+        consumption: 'Consumption over time',
+        consumptionOn: 'Stock falls by the calendar',
+        consumptionHint:
+            'For supplies nobody counts per order — paper, gloves. The system posts a periodic consumption; a count corrects it.',
+        consumptionQty: 'Quantity per period',
+        consumptionPeriod: 'Period length in days',
+        priceGroup: 'Tiered list',
+        priceGroupInherit: 'By code prefix (default)',
+        priceGroupFixed: 'Fixed price — no list',
+        priceGroupHint:
+            'The list sets only the discount ladder; the unit price is the item’s own',
+        calculator: 'Price by quantity',
+        expiryMonths: 'Shelf life of produced batches (months)',
+        expiryMonthsHint:
+            'Empty — by the recipe’s preparation type, else by the family default',
         newTitle: 'New item',
         editTitle: 'Edit item · {name}',
         createConfirm: 'Create item',
@@ -337,7 +418,7 @@ export default {
 
         prep: 'Preparation & safety',
         notes: 'Notes',
-        internalHint: 'Office and warehouse only — never printed',
+        internalFlagHint: 'Office and warehouse only — never printed',
         productionHint: 'Printed on the prep sheet, for the pharmacist',
 
         site: 'Consumer site',
@@ -520,6 +601,10 @@ export default {
     },
 
     toast: {
+        counted: 'Count recorded',
+        countedBody: 'In stock {qty} · difference {delta}',
+        removed: 'Item deleted',
+        removedBody: '{name} · reason: {reason}',
         created: 'Item created',
         createdBody: '{name} · code {code} · {sku}',
         updated: 'Item updated',

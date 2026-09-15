@@ -1,87 +1,55 @@
 <script setup>
-// פריטים — the unified item card, the managed preparation types and the bills
-// of materials. Second-version material, built alongside the three first-version
-// catalogue screens (ingredients, shelf products, price lists) so the two can be
-// compared before one replaces the other.
+// פריטים — every item the pharmacy buys, makes, stocks or sells, one card each.
+// The first of the "item card" screens: the buyer and the pharmacist work here;
+// the site works on shelf products, pricing on the ladders, recipes and
+// preparation types have pages of their own. One record underneath them all.
 //
-// The active tab, the open item and the open tree live in the query string; the
-// editors are actions and stay local.
+// The open item lives in the query string; the editor and the two small
+// dialogs are actions and stay local.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
-import BomDrawer from '@/components/items/BomDrawer.vue';
-import BomEditor from '@/components/items/BomEditor.vue';
-import BomsTab from '@/components/items/BomsTab.vue';
+import CountModal from '@/components/items/CountModal.vue';
 import ItemDrawer from '@/components/items/ItemDrawer.vue';
 import ItemEditor from '@/components/items/ItemEditor.vue';
 import ItemsTab from '@/components/items/ItemsTab.vue';
-import PrepTypeEditor from '@/components/items/PrepTypeEditor.vue';
-import PrepTypesTab from '@/components/items/PrepTypesTab.vue';
 import PageHead from '@/components/layout/PageHead.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AErrorState from '@/components/ui/AErrorState.vue';
 import ASkeleton from '@/components/ui/ASkeleton.vue';
-import ATabs from '@/components/ui/ATabs.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
+import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
 
 const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
+const router = useRouter();
 const dataset = useDatasetStore();
 const store = useItemsStore();
 
-const view = useUrlState({ tab: 'items', item: '', bom: '' });
+const view = useUrlState({ item: '' });
 
-/** Editors are actions, not addresses. `{}` opens an empty form. */
-const editingItem = ref(null);
-const editingPrep = ref(null);
-const editingBom = ref(null);
+/** Editors and dialogs are actions, not addresses. `{}` opens an empty form. */
+const editing = ref(null);
+const counting = ref(null);
+const removing = ref(null);
 
 const missingCount = computed(
     () => store.rows.filter((row) => row.missing.length).length,
 );
 
-const tabs = computed(() => [
-    {
-        id: 'items',
-        label: t('items.tab.items'),
-        icon: 'tag',
-        n: store.items.length,
-    },
-    {
-        id: 'prep',
-        label: t('items.tab.prep'),
-        icon: 'beaker',
-        n: store.prepTypes.length,
-    },
-    {
-        id: 'boms',
-        label: t('items.tab.boms'),
-        icon: 'layers',
-        n: store.boms.length,
-    },
-]);
-
 const openItem = computed(() => (view.item ? store.rowBySku(view.item) : null));
-const openBom = computed(() => (view.bom ? store.bomById(view.bom) : null));
 
-/** One drawer at a time. */
-function showItem(sku) {
-    view.bom = '';
-    view.item = sku;
-}
+const itemName = (row) =>
+    loc({ he: row.names.he, en: row.names.en || row.names.he });
 
-function showBom(id) {
-    view.item = '';
-    view.bom = id;
-}
-
-function onItemSaved(result) {
+function onSaved(result) {
     push(
         result.created
             ? {
@@ -93,142 +61,159 @@ function onItemSaved(result) {
                   body: t('items.toast.updatedBody', result),
               },
     );
-    editingItem.value = null;
+    editing.value = null;
 
     if (result.created) {
-        showItem(result.sku);
+        view.item = result.sku;
     }
 }
 
-function onPrepSaved(result) {
-    push(
-        result.created
-            ? { title: t('items.prep.toast.created'), body: result.name }
-            : { title: t('items.prep.toast.updated'), body: result.name },
-    );
-    editingPrep.value = null;
+function openBom(id) {
+    router.push({ name: 'boms', query: { bom: id } });
 }
 
-function onBomSaved(result) {
-    push(
-        result.created
-            ? {
-                  title: t('items.bom.toast.created'),
-                  body: loc(result.bom.name),
-              }
-            : {
-                  title: t('items.bom.toast.updated'),
-                  body: loc(result.bom.name),
-              },
-    );
-    editingBom.value = null;
-    showBom(result.bom.id);
+/** "Make more of this": the production page opens its create form on the recipe. */
+function produce(row) {
+    const bom = store.bomsOfParent(row.sku)[0];
+
+    router.push({
+        name: 'production',
+        query: bom ? { order: 'new', bom: bom.id } : { order: 'new' },
+    });
 }
 
-function onBomRemoved(bom) {
+function onCounted(result) {
+    counting.value = null;
     push({
-        title: t('items.bom.toast.removed'),
-        body: loc(bom.name),
+        title: t('items.toast.counted'),
+        body: t('items.toast.countedBody', {
+            qty: num(result.counted),
+            delta: num(result.delta),
+        }),
+    });
+}
+
+// ---- delete ---------------------------------------------------------------
+
+const removeBlock = computed(() =>
+    removing.value ? store.itemBlock(removing.value.sku) : null,
+);
+
+const removeEffects = computed(() => {
+    const block = removeBlock.value;
+
+    if (!block) {
+        return [
+            t('items.card.removeEffectStock'),
+            t('items.card.removeEffectLog'),
+        ];
+    }
+
+    const parts = [];
+
+    if (block.onHand > 0) {
+        parts.push(t('items.card.removeDepStock', { qty: num(block.onHand) }));
+    }
+
+    if (block.batches) {
+        parts.push(t('items.card.removeDepBatches', { n: block.batches }));
+    }
+
+    if (block.boms) {
+        parts.push(t('items.card.removeDepBoms', { n: block.boms }));
+    }
+
+    if (block.onOrder) {
+        parts.push(t('items.card.removeDepOrders', { n: block.onOrder }));
+    }
+
+    if (block.formulas) {
+        parts.push(t('items.card.removeDepFormulas', { n: block.formulas }));
+    }
+
+    return parts;
+});
+
+async function confirmRemove(reason) {
+    const row = removing.value;
+
+    removing.value = null;
+    await store.removeItem(row.sku, reason);
+    view.item = '';
+    push({
+        title: t('items.toast.removed'),
+        body: t('items.toast.removedBody', { name: itemName(row), reason }),
         bad: true,
     });
-    view.bom = '';
 }
-
-function primaryAction() {
-    if (view.tab === 'prep') {
-        editingPrep.value = {};
-    } else if (view.tab === 'boms') {
-        editingBom.value = {};
-    } else {
-        editingItem.value = {};
-    }
-}
-
-const primaryLabel = computed(() => {
-    if (view.tab === 'prep') {
-        return t('items.action.addPrep');
-    }
-
-    if (view.tab === 'boms') {
-        return t('items.action.addBom');
-    }
-
-    return t('items.action.add');
-});
 </script>
 
 <template>
     <PageHead
-        :crumbs="[t('nav.group.operations'), t('nav.item.items')]"
+        :crumbs="[t('nav.group.item_card'), t('nav.item.items')]"
         :title="t('items.title')"
         :sub="
             t('items.sub', { total: store.items.length, missing: missingCount })
         "
     >
-        <template #badge>
-            <V2Badge id="item-card" />
-        </template>
         <template #actions>
-            <AButton kind="p" icon="plus" @click="primaryAction">
-                {{ primaryLabel }}
+            <AButton kind="p" icon="plus" @click="editing = {}">
+                {{ t('items.action.add') }}
             </AButton>
         </template>
     </PageHead>
 
-    <ATabs v-model="view.tab" :tabs="tabs" />
-
     <ASkeleton v-if="dataset.isBusy" />
     <AErrorState v-else-if="dataset.isError" @retry="dataset.load(true)" />
-    <template v-else>
-        <ItemsTab
-            v-if="view.tab === 'items'"
-            :selected="view.item"
-            @open="showItem"
-            @edit="editingItem = $event"
-        />
-        <PrepTypesTab
-            v-else-if="view.tab === 'prep'"
-            @edit="editingPrep = $event"
-        />
-        <BomsTab
-            v-else-if="view.tab === 'boms'"
-            :selected="view.bom"
-            @open="showBom"
-            @open-item="showItem"
-        />
-    </template>
+    <ItemsTab
+        v-else
+        :selected="view.item"
+        @open="view.item = $event"
+        @edit="editing = $event"
+    />
 
     <ItemDrawer
         :row="openItem"
         @close="view.item = ''"
-        @edit="editingItem = $event"
-        @open-bom="showBom"
-        @open-item="showItem"
-    />
-    <BomDrawer
-        :bom="openBom"
-        @close="view.bom = ''"
-        @edit="editingBom = $event"
-        @open-item="showItem"
-        @removed="onBomRemoved"
+        @edit="editing = $event"
+        @open-bom="openBom"
+        @open-item="view.item = $event"
+        @produce="produce"
+        @count="counting = $event"
+        @remove="removing = $event"
     />
 
     <ItemEditor
-        v-if="editingItem"
-        :item="editingItem"
-        @close="editingItem = null"
-        @saved="onItemSaved"
+        v-if="editing"
+        :item="editing"
+        @close="editing = null"
+        @saved="onSaved"
     />
-    <PrepTypeEditor
-        v-if="editingPrep"
-        :type="editingPrep"
-        @close="editingPrep = null"
-        @saved="onPrepSaved"
+
+    <CountModal
+        v-if="counting"
+        :row="counting"
+        @close="counting = null"
+        @counted="onCounted"
     />
-    <BomEditor
-        v-if="editingBom"
-        :bom="editingBom"
-        @close="editingBom = null"
-        @saved="onBomSaved"
+
+    <ConfirmDialog
+        :open="Boolean(removing)"
+        :title="t('items.card.removeTitle')"
+        :body="
+            removing
+                ? removeBlock
+                    ? t('items.card.removeBlocked', {
+                          name: itemName(removing),
+                      })
+                    : t('items.card.removeBody', { name: itemName(removing) })
+                : ''
+        "
+        :effects="removeEffects"
+        :confirm-label="t('items.card.removeConfirm')"
+        danger
+        reason
+        @close="removing = null"
+        @confirm="removeBlock ? (removing = null) : confirmRemove($event)"
     />
 </template>

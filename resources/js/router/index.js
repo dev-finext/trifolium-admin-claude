@@ -66,12 +66,8 @@ const routes = [
         meta: { titleKey: 'nav.item.pricing' },
         component: () => import('@/views/PricingView.vue'),
     },
-    {
-        path: '/ingredients',
-        name: 'ingredients',
-        meta: { titleKey: 'nav.item.ingredients' },
-        component: () => import('@/views/IngredientsView.vue'),
-    },
+    // The ingredients screen became the items screen; old links still land.
+    { path: '/ingredients', redirect: { name: 'items' } },
     {
         path: '/boms',
         name: 'boms',
@@ -95,6 +91,10 @@ const routes = [
         name: 'items',
         meta: { titleKey: 'nav.item.items' },
         component: () => import('@/views/ItemsView.vue'),
+        // The preparation types used to be a tab here; a link that still asks
+        // for the tab is sent to their page.
+        beforeEnter: (to) =>
+            to.query.tab === 'prep' ? { name: 'prepTypes' } : true,
     },
     {
         path: '/lab',

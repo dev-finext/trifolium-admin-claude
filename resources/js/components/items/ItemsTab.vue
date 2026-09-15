@@ -26,10 +26,11 @@ import {
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { CURRENCY_SYMBOL } from '@/config';
+import { CURRENCY_SYMBOL, ITEM_FLAG_IDS } from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
-import { num } from '@/lib/money';
+import { ils, num } from '@/lib/money';
+import { useCatalogStore } from '@/stores/catalog';
 import {
     ITEM_FILTER_FIELDS,
     ITEM_FILTER_GROUPS,
@@ -49,6 +50,7 @@ const { t } = useI18n();
 const { loc, searchHaystack } = useLocalized();
 const { push } = useToast();
 const store = useItemsStore();
+const catalog = useCatalogStore();
 const drawerOpen = ref(false);
 const savedViews = ref(null);
 
@@ -98,15 +100,38 @@ function supplierLabel(code) {
     return hit?.preferred ? loc(hit.preferred.name) : String(code);
 }
 
+/** A ladder's name, or the two values that are not a ladder. */
+function priceGroupLabel(id) {
+    if (id === 'fixed') {
+        return t('items.filter.priceGroupFixed');
+    }
+
+    if (id === 'inherit') {
+        return t('items.filter.priceGroupInherit');
+    }
+
+    const group = catalog.groupById(id);
+
+    return group ? loc(group.name) : String(id);
+}
+
 const spec = computed(() => ({
     id: 'items',
     ns: 'items',
     noun: t('items.filter.noun'),
     groups: ITEM_FILTER_GROUPS,
     units: { price: '₪' },
-    fields: ITEM_FILTER_FIELDS.map((field) =>
-        field.key === 'sup' ? { ...field, optionLabel: supplierLabel } : field,
-    ),
+    fields: ITEM_FILTER_FIELDS.map((field) => {
+        if (field.key === 'sup') {
+            return { ...field, optionLabel: supplierLabel };
+        }
+
+        if (field.key === 'pg') {
+            return { ...field, optionLabel: priceGroupLabel };
+        }
+
+        return field;
+    }),
 }));
 
 const rows = computed(() => filters.rows);
@@ -145,6 +170,14 @@ const cols = computed(() => [
         sortValue: (row) => row.price?.lastPurchase ?? -1,
     },
     { k: 'supplier', label: t('items.col.supplier') },
+    {
+        k: 'sale',
+        label: t('items.col.sale'),
+        nowrap: true,
+        sortable: true,
+        sortValue: (row) => row.price?.sale ?? -1,
+    },
+    { k: 'pg', label: t('items.col.priceGroup'), nowrap: true },
     { k: 'site', label: t('items.col.site'), nowrap: true },
     { k: 'complete', label: t('items.col.complete'), nowrap: true },
 ]);
@@ -276,6 +309,14 @@ function exportRows() {
                 :sub="t('items.kpi.noSupplierSub')"
                 :active="state.sup.includes('none')"
                 @click="filters.toggle('sup', 'none')"
+            />
+            <FilterKpi
+                icon="beaker"
+                :label="t('items.kpi.internal')"
+                :value="tally((row) => row.flags?.internal)"
+                :sub="t('items.kpi.internalSub')"
+                :active="state.internal.includes('yes')"
+                @click="filters.toggle('internal', 'yes')"
             />
             <FilterKpi
                 icon="external"
@@ -412,6 +453,29 @@ function exportRows() {
             <template #cell-supplier="{ row }">
                 <span v-if="row.preferred">{{ loc(row.preferred.name) }}</span>
                 <span v-else class="t-sub">—</span>
+            </template>
+
+            <template #cell-sale="{ row }">
+                <template v-if="row.price?.sale != null">
+                    <ANum>{{ ils(row.price.sale, 2) }}</ANum>
+                    <span class="t-sub"> / {{ uomLabel(row.uom?.sales) }}</span>
+                </template>
+                <span v-else class="t-sub">—</span>
+            </template>
+
+            <template #cell-pg="{ row }">
+                <span v-if="row.priceGroup === 'none'" class="t-sub">
+                    {{ t('items.cell.fixedPrice') }}
+                </span>
+                <template v-else-if="catalog.groupForItem(row)">
+                    <span>{{ loc(catalog.groupForItem(row).name) }}</span>
+                    <div v-if="!row.priceGroup" class="t-sub">
+                        {{ t('items.cell.inheritGroup') }}
+                    </div>
+                </template>
+                <span v-else class="t-sub">{{
+                    t('items.cell.fixedPrice')
+                }}</span>
             </template>
 
             <template #cell-site="{ row }">

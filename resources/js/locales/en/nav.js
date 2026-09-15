@@ -19,7 +19,7 @@ export default {
         products: 'Shelf products',
         pricing: 'Tiered price lists',
         ingredients: 'Formula ingredients',
-        items: 'Unified item card',
+        items: 'Items',
         boms: 'Bills of materials',
         prepTypes: 'Preparation types',
         production: 'Production orders',

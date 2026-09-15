@@ -127,6 +127,30 @@ export const ITEM_FILTER_FIELDS = [
         values: (row) => ITEM_FLAG_IDS.filter((id) => row.flags?.[id]),
     },
     {
+        key: 'batch',
+        group: 'what',
+        kind: 'set',
+        prefix: 'items.filter.batchState',
+        values: (row) => [row.flags?.batch ? 'yes' : 'no'],
+    },
+    {
+        key: 'internal',
+        group: 'what',
+        kind: 'set',
+        prefix: 'items.filter.internalState',
+        values: (row) => [row.flags?.internal ? 'yes' : 'no'],
+    },
+    {
+        // The ladder an item is priced by: a group it names, the one its code
+        // prefix resolves to, or none — a fixed price. Labelled by the screen.
+        key: 'pg',
+        group: 'supply',
+        kind: 'set',
+        values: (row) => [
+            row.priceGroup === 'none' ? 'fixed' : row.priceGroup || 'inherit',
+        ],
+    },
+    {
         key: 'uom',
         group: 'what',
         kind: 'set',
@@ -644,6 +668,25 @@ export const useItemsStore = defineStore('items', () => {
     }
 
     /**
+     * A physical count of a time-consumed item: the inventory store moves the
+     * stock, the card remembers when and what was counted so the clock restarts.
+     */
+    async function recordCount(sku, countedQty, note = '') {
+        const result = await inventory.recordCount(sku, countedQty, note);
+        const item = itemBySku(sku);
+
+        if (item?.consumption) {
+            item.consumption = {
+                ...item.consumption,
+                countedOn: result.countedOn,
+                countedQty: result.counted,
+            };
+        }
+
+        return result;
+    }
+
+    /**
      * Why an item cannot be deleted, or null when it can: stock on hand, live
      * batches, recipes that use it or are it, open purchase-order lines.
      */
@@ -940,6 +983,7 @@ export const useItemsStore = defineStore('items', () => {
         onOrderOf,
 
         saveItem,
+        recordCount,
         itemBlock,
         removeItem,
         savePrepType,

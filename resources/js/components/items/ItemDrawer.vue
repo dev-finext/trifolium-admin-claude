@@ -10,6 +10,7 @@ import { useI18n } from 'vue-i18n';
 
 import ItemBomPanel from '@/components/items/ItemBomPanel.vue';
 import ItemStockPanel from '@/components/items/ItemStockPanel.vue';
+import LadderCalculator from '@/components/pricing/LadderCalculator.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
@@ -25,20 +26,30 @@ import {
 } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { ils, num, priceParts } from '@/lib/money';
-import { useCatalogStore } from '@/stores/catalog';
+import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
+import { useProductionStore } from '@/stores/production';
 
 const props = defineProps({
     /** The joined row from the items store, or null while the drawer is closed. */
     row: { type: Object, default: null },
 });
 
-const emit = defineEmits(['close', 'edit', 'open-bom', 'open-item']);
+const emit = defineEmits([
+    'close',
+    'edit',
+    'open-bom',
+    'open-item',
+    'produce',
+    'count',
+    'remove',
+]);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
 const store = useItemsStore();
-const catalog = useCatalogStore();
+const inventory = useInventoryStore();
+const production = useProductionStore();
 
 const name = computed(() =>
     props.row
@@ -51,11 +62,26 @@ const name = computed(() =>
 
 const uomLabel = (id) => (id ? t(`items.uom.${id}`) : t('items.card.notSet'));
 
-const priceGroup = computed(() => {
-    const priceSku = props.row?.stock?.priceSku;
+/** The recipe an internal item is made from, and what the runs of it say. */
+const recipe = computed(() =>
+    props.row ? store.bomsOfParent(props.row.sku)[0] || null : null,
+);
+const runs = computed(() =>
+    props.row ? production.ordersOf(props.row.sku).slice(0, 4) : [],
+);
+const canProduce = computed(() =>
+    recipe.value ? production.canProduce(recipe.value) : 0,
+);
+const lastUnitCost = computed(() =>
+    props.row ? production.lastUnitCost(props.row.sku) : null,
+);
 
-    return priceSku ? catalog.resolveSku(priceSku)?.group || null : null;
-});
+/** When time-consumed stock runs out at the current pace. */
+const runOut = computed(() =>
+    props.row?.consumption
+        ? inventory.runOutOn(props.row.sku, props.row.consumption)
+        : null,
+);
 
 const salePrice = computed(() => {
     const sale = props.row?.price?.sale;
@@ -166,6 +192,14 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                         >
                             {{ t('items.action.edit') }}
                         </AButton>
+                        <AButton
+                            sm
+                            kind="ghost"
+                            icon="trash"
+                            :title="t('items.card.remove')"
+                            :aria-label="t('items.card.remove')"
+                            @click="emit('remove', row)"
+                        />
                         <AButton sm icon="x" @click="emit('close')">{{
                             t('ui.close')
                         }}</AButton>
@@ -284,14 +318,10 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                                     ? loc(row.last.name)
                                     : t('items.card.notSet'),
                             ],
-                            [
-                                t('items.card.priceGroup'),
-                                priceGroup
-                                    ? loc(priceGroup.name)
-                                    : t('items.card.noPriceGroup'),
-                            ],
                         ]"
                     />
+                    <div class="a-lbl calc-l">{{ t('items.card.ladder') }}</div>
+                    <LadderCalculator :item="row" compact />
                 </ACard>
 
                 <ACard :title="t('items.card.prep')" icon="beaker">
@@ -409,6 +439,110 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                     </AKeyValue>
                 </ACard>
 
+                <ACard
+                    v-if="row.flags?.internal"
+                    :title="t('items.card.productionRuns')"
+                    icon="beaker"
+                >
+                    <AKeyValue
+                        :rows="[
+                            [
+                                t('items.card.recipe'),
+                                recipe
+                                    ? loc(recipe.name)
+                                    : t('items.card.noRecipe'),
+                            ],
+                            [
+                                t('items.card.canProduce'),
+                                recipe
+                                    ? t('items.card.canProduceValue', {
+                                          n: num(canProduce),
+                                          qty: num(recipe.yield?.qty || 1),
+                                          uom: recipe.yield?.uom || '',
+                                      })
+                                    : '—',
+                            ],
+                            [
+                                t('items.card.lastUnitCost'),
+                                lastUnitCost != null
+                                    ? ils(lastUnitCost, 2)
+                                    : t('items.card.notSet'),
+                            ],
+                        ]"
+                    />
+                    <div class="a-lbl calc-l">
+                        {{ t('items.card.lastRuns') }}
+                    </div>
+                    <div v-if="runs.length" class="runs">
+                        <div v-for="run in runs" :key="run.id" class="run">
+                            <span class="a-code a-tag">{{ run.id }}</span>
+                            <span>{{
+                                t(`production.state.${run.state}`)
+                            }}</span>
+                            <span class="t-sub">
+                                {{
+                                    run.completedOn?.stamp ||
+                                    run.issuedOn?.stamp ||
+                                    run.createdOn?.stamp
+                                }}
+                            </span>
+                        </div>
+                    </div>
+                    <div v-else class="t-sub">{{ t('items.card.noRuns') }}</div>
+                    <AButton
+                        sm
+                        icon="plus"
+                        class="calc-l"
+                        @click="emit('produce', row)"
+                    >
+                        {{ t('items.card.produce') }}
+                    </AButton>
+                </ACard>
+
+                <ACard
+                    v-if="row.consumption"
+                    :title="t('items.card.consumption')"
+                    icon="grid"
+                >
+                    <AKeyValue
+                        :rows="[
+                            [
+                                t('items.card.consumptionRule'),
+                                t('items.card.consumptionRuleValue', {
+                                    qty: num(row.consumption.qty),
+                                    uom: uomLabel(row.uom?.sales),
+                                    days: num(row.consumption.periodDays),
+                                }),
+                            ],
+                            [
+                                t('items.card.countedOn'),
+                                row.consumption.countedOn
+                                    ? t('items.card.countedOnValue', {
+                                          when: fmtISO(
+                                              row.consumption.countedOn,
+                                          ),
+                                          qty: num(row.consumption.countedQty),
+                                      })
+                                    : t('items.card.notSet'),
+                            ],
+                            [
+                                t('items.card.runOut'),
+                                runOut
+                                    ? fmtISO(runOut)
+                                    : t('items.card.runOutNever'),
+                            ],
+                        ]"
+                    />
+                    <AButton
+                        sm
+                        icon="check"
+                        class="calc-l"
+                        @click="emit('count', row)"
+                    >
+                        {{ t('items.card.count') }}
+                    </AButton>
+                </ACard>
+
                 <ItemStockPanel :row="row" class="span2" />
 
                 <ItemBomPanel
@@ -461,8 +595,22 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
     gap: 4px;
 }
 
-.safety-l {
+.safety-l,
+.calc-l {
     margin-top: 14px;
+}
+
+.runs {
+    display: grid;
+    gap: 6px;
+}
+
+.run {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    flex-wrap: wrap;
+    font-size: 13.5px;
 }
 
 .safety {

@@ -8,6 +8,7 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import LadderCalculator from '@/components/pricing/LadderCalculator.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ActionGate from '@/components/ui/ActionGate.vue';
 import AInput from '@/components/ui/AInput.vue';
@@ -18,16 +19,22 @@ import ATextarea from '@/components/ui/ATextarea.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import {
     CURRENCY_IDS,
+    INGREDIENT_KINDS,
     ITEM_FAMILY_IDS,
     ITEM_FLAG_IDS,
     ITEM_UOM_IDS,
     SAFETY_CONTEXT_IDS,
     SAFETY_LEVEL_IDS,
     SITE_CATEGORY_SLOTS,
+    WAREHOUSE_IDS,
 } from '@/config';
 import { isLocalized, L } from '@/lib/localized';
+import { useCatalogStore } from '@/stores/catalog';
 import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
+
+/** The two traditions an ingredient is filed under. */
+const SYSTEM_IDS = ['west', 'chinese'];
 
 const props = defineProps({
     /** The item (or joined row) being edited; `{}` for a new one. */
@@ -40,6 +47,7 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const dataset = useDatasetStore();
 const store = useItemsStore();
+const catalog = useCatalogStore();
 
 const isNew = computed(() => !props.item.sku);
 const touched = reactive({});
@@ -88,7 +96,33 @@ const form = reactive({
         inventory: source.flags?.inventory ?? true,
         batch: source.flags?.batch ?? true,
         consumable: source.flags?.consumable ?? false,
+        internal: source.flags?.internal ?? false,
     },
+    // The stock row's own fields — where it is counted and the minimum that
+    // raises the low-stock flag. Only meaningful while the item is stocked.
+    stock: {
+        kind: source.stock?.kind || 'raw',
+        system: source.stock?.system || 'west',
+        wh: source.stock?.wh || 'raw',
+        min: source.stock?.min != null ? String(source.stock.min) : '0',
+    },
+    // Which ladder prices it: '' inherits by code prefix, 'none' is a fixed
+    // price, an id names a group.
+    priceGroup: source.priceGroup || '',
+    // Supplies consumed by the calendar — only when not batch-managed.
+    consumption: {
+        on: Boolean(source.consumption),
+        qty:
+            source.consumption?.qty != null
+                ? String(source.consumption.qty)
+                : '',
+        periodDays:
+            source.consumption?.periodDays != null
+                ? String(source.consumption.periodDays)
+                : '7',
+    },
+    expiryMonths:
+        source.expiryMonths != null ? String(source.expiryMonths) : '',
     location: {
         cabinet:
             source.location?.cabinet != null
@@ -133,6 +167,16 @@ const form = reactive({
     },
     waived: [...(source.waived || [])],
 });
+
+// What the pharmacy makes itself is always batch-managed.
+watch(
+    () => form.flags.internal,
+    (internal) => {
+        if (internal) {
+            form.flags.batch = true;
+        }
+    },
+);
 
 // A new item's code follows its family until the code is typed by hand.
 watch(
@@ -255,8 +299,51 @@ const draft = computed(() => ({
         qty: form.site.qty === '' ? null : Number(form.site.qty),
         unit: form.site.unit || null,
     },
+    stock: form.flags.inventory ? { ...form.stock } : null,
+    priceGroup: form.priceGroup || null,
+    consumption:
+        form.flags.inventory && !form.flags.batch && form.consumption.on
+            ? {
+                  mode: 'time',
+                  qty: form.consumption.qty,
+                  periodDays: form.consumption.periodDays,
+                  countedOn: source.consumption?.countedOn || null,
+                  countedQty: source.consumption?.countedQty ?? null,
+              }
+            : null,
+    expiryMonths: form.expiryMonths === '' ? null : Number(form.expiryMonths),
     waived: [],
 }));
+
+const kindOptions = computed(() =>
+    INGREDIENT_KINDS.map((id) => ({
+        value: id,
+        label: t(`ingredients.kind.${id}`),
+    })),
+);
+
+const warehouseOptions = computed(() =>
+    WAREHOUSE_IDS.map((id) => ({
+        value: id,
+        label: t(`warehouse.${id}.name`),
+    })),
+);
+
+const systemOptions = computed(() =>
+    SYSTEM_IDS.map((id) => ({
+        value: id,
+        label: t(`ingredients.system.${id}`),
+    })),
+);
+
+const priceGroupOptions = computed(() => [
+    { value: '', label: t('items.editor.priceGroupInherit') },
+    { value: 'none', label: t('items.editor.priceGroupFixed') },
+    ...catalog.priceGroups.map((group) => ({
+        value: group.id,
+        label: loc(group.name),
+    })),
+]);
 
 /** Mandatory fields of this family still empty — the waiver list. */
 const missing = computed(() => store.missingOf(draft.value));
@@ -559,6 +646,96 @@ const title = computed(() =>
                         }}</span>
                     </label>
                 </div>
+                <div v-if="form.flags.inventory" class="a-3col top">
+                    <div>
+                        <label class="a-lbl">{{
+                            t('items.editor.stockKind')
+                        }}</label>
+                        <ASelect
+                            v-model="form.stock.kind"
+                            :options="kindOptions"
+                            class="a-w100"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl">{{
+                            t('items.editor.stockSystem')
+                        }}</label>
+                        <ASelect
+                            v-model="form.stock.system"
+                            :options="systemOptions"
+                            class="a-w100"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl">{{
+                            t('items.editor.stockWh')
+                        }}</label>
+                        <ASelect
+                            v-model="form.stock.wh"
+                            :options="warehouseOptions"
+                            class="a-w100"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl">{{
+                            t('items.editor.stockMin')
+                        }}</label>
+                        <AInput
+                            v-model="form.stock.min"
+                            type="number"
+                            ltr
+                            class="a-w100"
+                        />
+                        <div class="a-hint">
+                            {{ t('items.editor.stockMinHint') }}
+                        </div>
+                    </div>
+                </div>
+                <div v-if="form.flags.internal" class="a-note a-note--info top">
+                    {{ t('items.editor.internalFlagHint') }}
+                </div>
+                <div
+                    v-if="form.flags.inventory && !form.flags.batch"
+                    class="a-3col top"
+                >
+                    <div>
+                        <label class="a-lbl">{{
+                            t('items.editor.consumption')
+                        }}</label>
+                        <label class="check switch">
+                            <ASwitch v-model="form.consumption.on" />
+                            {{ t('items.editor.consumptionOn') }}
+                        </label>
+                        <div class="a-hint">
+                            {{ t('items.editor.consumptionHint') }}
+                        </div>
+                    </div>
+                    <template v-if="form.consumption.on">
+                        <div>
+                            <label class="a-lbl">{{
+                                t('items.editor.consumptionQty')
+                            }}</label>
+                            <AInput
+                                v-model="form.consumption.qty"
+                                type="number"
+                                ltr
+                                class="a-w100"
+                            />
+                        </div>
+                        <div>
+                            <label class="a-lbl">{{
+                                t('items.editor.consumptionPeriod')
+                            }}</label>
+                            <AInput
+                                v-model="form.consumption.periodDays"
+                                type="number"
+                                ltr
+                                class="a-w100"
+                            />
+                        </div>
+                    </template>
+                </div>
             </section>
 
             <!-- pricing & suppliers -->
@@ -632,6 +809,27 @@ const title = computed(() =>
                         </div>
                     </div>
                 </ActionGate>
+                <div class="a-3col top">
+                    <div>
+                        <label class="a-lbl">{{
+                            t('items.editor.priceGroup')
+                        }}</label>
+                        <ASelect
+                            v-model="form.priceGroup"
+                            :options="priceGroupOptions"
+                            class="a-w100"
+                        />
+                        <div class="a-hint">
+                            {{ t('items.editor.priceGroupHint') }}
+                        </div>
+                    </div>
+                    <div class="calc">
+                        <label class="a-lbl">{{
+                            t('items.editor.calculator')
+                        }}</label>
+                        <LadderCalculator :item="draft" compact />
+                    </div>
+                </div>
             </section>
 
             <!-- preparation & safety -->
@@ -663,6 +861,22 @@ const title = computed(() =>
                             :options="safetyOptions"
                             class="a-w100"
                         />
+                    </div>
+                </div>
+                <div class="a-3col top">
+                    <div>
+                        <label class="a-lbl">{{
+                            t('items.editor.expiryMonths')
+                        }}</label>
+                        <AInput
+                            v-model="form.expiryMonths"
+                            type="number"
+                            ltr
+                            class="a-w100"
+                        />
+                        <div class="a-hint">
+                            {{ t('items.editor.expiryMonthsHint') }}
+                        </div>
                     </div>
                 </div>
             </section>
@@ -807,6 +1021,10 @@ const title = computed(() =>
 </template>
 
 <style scoped>
+.calc {
+    grid-column: span 2;
+}
+
 .ie {
     display: grid;
     gap: 22px;

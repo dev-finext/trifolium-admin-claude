@@ -22,7 +22,7 @@ export default {
         products: 'מוצרי מדף',
         pricing: 'מחירונים מדורגים',
         ingredients: 'רכיבי פורמולה',
-        items: 'כרטיס פריט מאוחד',
+        items: 'פריטים',
         boms: 'עצי מוצר',
         prepTypes: 'סוגי הכנה',
         production: 'הוראות ייצור',
