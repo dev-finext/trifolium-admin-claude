@@ -25,7 +25,7 @@ import {
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { CURRENCY_SYMBOL, ITEM_FLAG_IDS } from '@/config';
+import { CURRENCY_SYMBOL, ITEM_FAMILIES, ITEM_FLAG_IDS } from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
 import { ils, num } from '@/lib/money';
@@ -67,6 +67,15 @@ function tally(predicate) {
     return all.value.filter(predicate).length;
 }
 
+/** SAP's item groups in code order, each with how many items it holds. */
+const families = computed(() =>
+    ITEM_FAMILIES.map((family) => ({
+        id: family.id,
+        prefix: family.prefix,
+        n: tally((row) => row.family === family.id),
+    })).filter((family) => family.n > 0),
+);
+
 /** Free text first, then the field filters — the shared engine does the rest. */
 const searched = computed(() => {
     const term = state.q.trim().toLowerCase();
@@ -83,6 +92,19 @@ const searched = computed(() => {
 });
 
 const filters = useListFilters(SPEC, state, searched);
+
+const onlyFamily = (id) => state.fam.length === 1 && state.fam[0] === id;
+
+/** One group at a time, as SAP's group list reads; the same group again shows all. */
+function pickFamily(id) {
+    const wasOn = onlyFamily(id);
+
+    filters.clearField('fam');
+
+    if (!wasOn) {
+        filters.toggle('fam', id);
+    }
+}
 
 /** The supplier's own name, and the two values that are not a supplier. */
 function supplierLabel(code) {
@@ -358,6 +380,31 @@ function exportRows() {
             @clear="clear"
         />
 
+        <!-- the table split by family: SAP's item groups, one tab each -->
+        <div class="fam-strip">
+            <button
+                type="button"
+                class="fam"
+                :class="{ 'is-on': !state.fam.length }"
+                @click="filters.clearField('fam')"
+            >
+                {{ t('items.filter.allFamilies') }}
+                <span class="fam-n">{{ all.length }}</span>
+            </button>
+            <button
+                v-for="family in families"
+                :key="family.id"
+                type="button"
+                class="fam"
+                :class="{ 'is-on': onlyFamily(family.id) }"
+                @click="pickFamily(family.id)"
+            >
+                <span class="fam-p">{{ family.prefix }}</span>
+                {{ t(`items.family.${family.id}`) }}
+                <span class="fam-n">{{ family.n }}</span>
+            </button>
+        </div>
+
         <ADataTable
             :cols="cols"
             :rows="paged"
@@ -497,6 +544,49 @@ function exportRows() {
 .search {
     width: 320px;
     max-width: 100%;
+}
+
+.fam-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0 12px;
+}
+
+.fam {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--a-line);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.fam.is-on {
+    border-color: var(--a-tint-2);
+    background: var(--a-tint);
+    color: var(--a-accent-2);
+}
+
+.fam-p {
+    font-family: var(--a-mono, monospace);
+    font-size: 11.5px;
+    color: var(--a-ink-4);
+}
+
+.fam.is-on .fam-p,
+.fam.is-on .fam-n {
+    color: inherit;
+}
+
+.fam-n {
+    font-variant-numeric: tabular-nums;
+    color: var(--a-ink-4);
 }
 
 .flags {

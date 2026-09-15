@@ -103,6 +103,7 @@ export default {
         quality: 'שלמות הכרטיס',
     },
     filter: {
+        allFamilies: 'כל המשפחות',
         batchState: {
             yes: 'מנוהל אצווה',
             no: 'לא מנוהל אצווה',

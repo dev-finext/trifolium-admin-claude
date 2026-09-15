@@ -104,6 +104,7 @@ export default {
         quality: 'Card completeness',
     },
     filter: {
+        allFamilies: 'All families',
         batchState: {
             yes: 'Batch-managed',
             no: 'Not batch-managed',
