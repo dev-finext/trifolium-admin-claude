@@ -21,7 +21,6 @@ import PatientsTab from '@/components/users/PatientsTab.vue';
 import PendingApprovals from '@/components/users/PendingApprovals.vue';
 import PractitionerCard from '@/components/users/PractitionerCard.vue';
 import PractitionerDirectory from '@/components/users/PractitionerDirectory.vue';
-import SuppliersTab from '@/components/users/SuppliersTab.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
@@ -72,13 +71,6 @@ const tabs = computed(() => [
         icon: 'user',
         n: people.patients.length,
     },
-    {
-        // The icon reports whether the cards are open, exactly as the gate does.
-        id: 'suppliers',
-        label: t('users.tab.suppliers'),
-        icon: system.supplierCardsUnlocked ? 'truck' : 'lock',
-        n: system.suppliers.length,
-    },
 ]);
 
 /**
@@ -88,12 +80,6 @@ const tabs = computed(() => [
 const exportAction = computed(() => {
     if (view.tab === 'customers') {
         return { label: t('users.export.customers'), kind: 'customers' };
-    }
-
-    if (view.tab === 'suppliers') {
-        return system.supplierCardsUnlocked
-            ? { label: t('users.export.suppliers'), kind: 'suppliers' }
-            : null;
     }
 
     if (view.tab === 'directory') {
@@ -222,8 +208,6 @@ function openPractitioner(code) {
         :selected="view.pr"
         @open="(code) => (view.pr = code)"
     />
-
-    <SuppliersTab v-else-if="view.tab === 'suppliers'" @ask="ask = $event" />
 
     <PatientsTab
         v-else-if="view.tab === 'customers'"

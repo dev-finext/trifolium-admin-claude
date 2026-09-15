@@ -117,7 +117,7 @@ async function confirmRemove(reason) {
                             {{ t('items.bom.drawer.edit') }}
                         </AButton>
                         <AButton sm icon="plus" @click="emit('produce', bom)">
-                            {{ t('boms.produce') }}
+                            {{ t('items.card.produce') }}
                         </AButton>
                         <AButton
                             sm

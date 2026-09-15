@@ -5,7 +5,6 @@
 // language and missing in the other is a bug, not a fallback.
 import admins from '@/locales/he/admins';
 import attachments from '@/locales/he/attachments';
-import boms from '@/locales/he/boms';
 import common from '@/locales/he/common';
 import content from '@/locales/he/content';
 import crm from '@/locales/he/crm';
@@ -25,7 +24,6 @@ import log from '@/locales/he/log';
 import messaging from '@/locales/he/messaging';
 import nav from '@/locales/he/nav';
 import orders from '@/locales/he/orders';
-import prepTypes from '@/locales/he/prepTypes';
 import pricing from '@/locales/he/pricing';
 import production from '@/locales/he/production';
 import products from '@/locales/he/products';
@@ -34,6 +32,7 @@ import reports from '@/locales/he/reports';
 import safety from '@/locales/he/safety';
 import shell from '@/locales/he/shell';
 import stickers from '@/locales/he/stickers';
+import suppliers from '@/locales/he/suppliers';
 import systemContacts from '@/locales/he/systemContacts';
 import ui from '@/locales/he/ui';
 import users from '@/locales/he/users';
@@ -45,7 +44,6 @@ export default {
     ...enums,
     admins,
     attachments,
-    boms,
     content,
     crm,
     deliveries,
@@ -63,7 +61,6 @@ export default {
     messaging,
     nav,
     orders,
-    prepTypes,
     pricing,
     production,
     products,
@@ -72,6 +69,7 @@ export default {
     safety,
     shell,
     stickers,
+    suppliers,
     ui,
     users,
     systemContacts,

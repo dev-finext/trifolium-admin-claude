@@ -10,6 +10,8 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
+import BomDrawer from '@/components/items/BomDrawer.vue';
+import BomEditor from '@/components/items/BomEditor.vue';
 import CountModal from '@/components/items/CountModal.vue';
 import ItemDrawer from '@/components/items/ItemDrawer.vue';
 import ItemEditor from '@/components/items/ItemEditor.vue';
@@ -33,10 +35,11 @@ const router = useRouter();
 const dataset = useDatasetStore();
 const store = useItemsStore();
 
-const view = useUrlState({ item: '' });
+const view = useUrlState({ item: '', bom: '' });
 
 /** Editors and dialogs are actions, not addresses. `{}` opens an empty form. */
 const editing = ref(null);
+const editingBom = ref(null);
 const counting = ref(null);
 const removing = ref(null);
 
@@ -45,6 +48,9 @@ const missingCount = computed(
 );
 
 const openItem = computed(() => (view.item ? store.rowBySku(view.item) : null));
+const openBomRecord = computed(() =>
+    view.bom ? store.bomById(view.bom) : null,
+);
 
 const itemName = (row) =>
     loc({ he: row.names.he, en: row.names.en || row.names.he });
@@ -68,8 +74,34 @@ function onSaved(result) {
     }
 }
 
+/** A recipe opens over the card; the card stays where it was. */
 function openBom(id) {
-    router.push({ name: 'boms', query: { bom: id } });
+    view.bom = id;
+}
+
+function onBomSaved(result) {
+    push(
+        result.created
+            ? {
+                  title: t('items.bom.toast.created'),
+                  body: loc(result.bom.name),
+              }
+            : {
+                  title: t('items.bom.toast.updated'),
+                  body: loc(result.bom.name),
+              },
+    );
+    editingBom.value = null;
+    view.bom = result.bom.id;
+}
+
+function onBomRemoved(bom) {
+    push({
+        title: t('items.bom.toast.removed'),
+        body: loc(bom.name),
+        bad: true,
+    });
+    view.bom = '';
 }
 
 /** "Make more of this": the production page opens its create form on the recipe. */
@@ -150,7 +182,7 @@ async function confirmRemove(reason) {
 
 <template>
     <PageHead
-        :crumbs="[t('nav.group.item_card'), t('nav.item.items')]"
+        :crumbs="[t('nav.group.operations'), t('nav.item.items')]"
         :title="t('items.title')"
         :sub="
             t('items.sub', { total: store.items.length, missing: missingCount })
@@ -183,11 +215,27 @@ async function confirmRemove(reason) {
         @remove="removing = $event"
     />
 
+    <BomDrawer
+        :bom="openBomRecord"
+        @close="view.bom = ''"
+        @edit="editingBom = $event"
+        @open-item="((view.bom = ''), (view.item = $event))"
+        @produce="produce({ sku: $event.parentSku })"
+        @removed="onBomRemoved"
+    />
+
     <ItemEditor
         v-if="editing"
         :item="editing"
         @close="editing = null"
         @saved="onSaved"
+    />
+
+    <BomEditor
+        v-if="editingBom"
+        :bom="editingBom"
+        @close="editingBom = null"
+        @saved="onBomSaved"
     />
 
     <CountModal

@@ -54,11 +54,15 @@ const routes = [
         meta: { titleKey: 'nav.item.wallet' },
         component: () => import('@/views/WalletView.vue'),
     },
+    // Shelf products, recipes and preparation types live on the item card now.
+    { path: '/products', redirect: { name: 'items' } },
+    { path: '/boms', redirect: { name: 'items' } },
+    { path: '/prep-types', redirect: { name: 'items' } },
     {
-        path: '/products',
-        name: 'products',
-        meta: { titleKey: 'nav.item.products' },
-        component: () => import('@/views/ProductsView.vue'),
+        path: '/suppliers',
+        name: 'suppliers',
+        meta: { titleKey: 'nav.item.suppliers' },
+        component: () => import('@/views/SuppliersView.vue'),
     },
     {
         path: '/pricing',
@@ -68,18 +72,6 @@ const routes = [
     },
     // The ingredients screen became the items screen; old links still land.
     { path: '/ingredients', redirect: { name: 'items' } },
-    {
-        path: '/boms',
-        name: 'boms',
-        meta: { titleKey: 'nav.item.boms' },
-        component: () => import('@/views/BomsView.vue'),
-    },
-    {
-        path: '/prep-types',
-        name: 'prepTypes',
-        meta: { titleKey: 'nav.item.prepTypes' },
-        component: () => import('@/views/PrepTypesView.vue'),
-    },
     {
         path: '/production',
         name: 'production',
@@ -91,10 +83,6 @@ const routes = [
         name: 'items',
         meta: { titleKey: 'nav.item.items' },
         component: () => import('@/views/ItemsView.vue'),
-        // The preparation types used to be a tab here; a link that still asks
-        // for the tab is sent to their page.
-        beforeEnter: (to) =>
-            to.query.tab === 'prep' ? { name: 'prepTypes' } : true,
     },
     {
         path: '/lab',

@@ -20,25 +20,16 @@ export const NAV_GROUPS = [
             { id: 'wallet', icon: 'coin' },
         ],
     },
-    // The item card, split by who works there and at what rhythm: the buyer
-    // and the lab in items, the site in products, pricing on its own, the
-    // recipes and the preparation types as their own pages. One record
-    // underneath, several windows onto it.
-    {
-        id: 'item_card',
-        separated: true,
-        items: [
-            { id: 'items', icon: 'tag' },
-            { id: 'products', icon: 'package' },
-            { id: 'pricing', icon: 'layers' },
-            { id: 'boms', icon: 'layers' },
-            { id: 'prepTypes', icon: 'beaker' },
-        ],
-    },
     {
         id: 'operations',
         separated: true,
         items: [
+            // One item card for everything the pharmacy buys, makes, stocks or
+            // sells — one table, split by family, as SAP's item master is. Shelf
+            // products and bills of materials are sections of the card.
+            { id: 'items', icon: 'tag' },
+            { id: 'pricing', icon: 'layers' },
+            { id: 'suppliers', icon: 'truck' },
             // Still being built: shown, greyed, and not a link.
             { id: 'lab', icon: 'zoom', v2: 'prep-sheet', inDevelopment: true },
             // V2 — the stickers module: template editor, print run, notes pool, log
