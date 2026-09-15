@@ -94,6 +94,9 @@ const ENUM_NAMESPACES = [
     ['@/config/finance', 'AGING_BUCKETS', 'agingBucket'],
     ['@/config/finance', 'DOC_STATE_IDS', 'docState'],
     ['@/config/finance', 'DOC_TYPES', 'docType', 'name'],
+    ['@/config/finance', 'PAY_TERMINALS', 'payTerminal'],
+    ['@/config/finance', 'ALLOCATION_STATE_IDS', 'allocationState'],
+    ['@/config/finance', 'DOC_LINE_KIND_IDS', 'finance.preview.kind'],
     ['@/config/finance', 'LINK_STATE_IDS', 'finance.linkState'],
     ['@/config/finance', 'PAYMENT_METHODS', 'paymentMethod'],
     [

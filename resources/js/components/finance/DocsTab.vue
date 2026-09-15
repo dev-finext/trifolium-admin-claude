@@ -8,6 +8,8 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+const emit = defineEmits(['preview']);
+
 import DocReissuePanel from '@/components/finance/DocReissuePanel.vue';
 import SearchField from '@/components/finance/SearchField.vue';
 import AButton from '@/components/ui/AButton.vue';
@@ -166,6 +168,7 @@ const cols = computed(() => [
         sortValue: (row) => -row.when.daysAgo,
     },
     { k: 'status', label: t('finance.docs.state'), nowrap: true },
+    { k: 'terminal', label: t('finance.docs.terminal'), nowrap: true },
     { k: 'act', label: '', nowrap: true },
 ]);
 
@@ -369,8 +372,22 @@ function exportRows() {
                 <div v-if="row.err" class="t-sub ltr">{{ row.err }}</div>
             </template>
 
+            <template #cell-terminal="{ row }">
+                <span v-if="row.terminal" class="t-sub">
+                    {{ t(`payTerminal.${row.terminal}`) }}
+                </span>
+                <span v-else class="t-sub">—</span>
+            </template>
             <template #cell-act="{ row }">
                 <div class="a-rowbtns" @click.stop>
+                    <AButton
+                        v-if="row.lines?.length"
+                        sm
+                        icon="file_text"
+                        @click="emit('preview', row.id)"
+                    >
+                        {{ t('finance.docs.preview') }}
+                    </AButton>
                     <AButton
                         v-if="row.status === 'failed'"
                         sm

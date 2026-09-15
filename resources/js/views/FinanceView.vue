@@ -14,10 +14,12 @@ import { useRoute, useRouter } from 'vue-router';
 
 import BalancesTab from '@/components/finance/BalancesTab.vue';
 import CollectionLinkModal from '@/components/finance/CollectionLinkModal.vue';
+import DocPreviewDrawer from '@/components/finance/DocPreviewDrawer.vue';
 import DocsTab from '@/components/finance/DocsTab.vue';
 import ManualPaymentModal from '@/components/finance/ManualPaymentModal.vue';
 import OverviewTab from '@/components/finance/OverviewTab.vue';
 import PaymentsTab from '@/components/finance/PaymentsTab.vue';
+import ReconcileTab from '@/components/finance/ReconcileTab.vue';
 import StatementDrawer from '@/components/finance/StatementDrawer.vue';
 import PageHead from '@/components/layout/PageHead.vue';
 import AButton from '@/components/ui/AButton.vue';
@@ -38,7 +40,14 @@ const money = useMoneyStore();
 const route = useRoute();
 const router = useRouter();
 
-const view = useUrlState({ tab: 'overview', practitioner: '' });
+const view = useUrlState({ tab: 'overview', practitioner: '', doc: '' });
+
+/** The document whose preview is open. */
+const previewDoc = computed(() =>
+    view.doc
+        ? money.documents.find((document) => document.id === view.doc) || null
+        : null,
+);
 
 /** The collection link and the manual payment are actions, not addresses. */
 const linkCode = ref('');
@@ -63,6 +72,15 @@ const tabs = computed(() => [
         label: t('finance.tab.docs'),
         icon: 'file_text',
         n: money.failedDocuments.length || undefined,
+    },
+    {
+        id: 'reconcile',
+        label: t('finance.tab.reconcile'),
+        icon: 'check',
+        n:
+            money.paidWithoutDocument.length +
+                money.documentsWithoutOrder.length +
+                money.amountMismatches.length || undefined,
     },
 ]);
 
@@ -160,7 +178,13 @@ function exportLedger() {
         @payment="(code) => (paymentCode = code)"
     />
     <PaymentsTab v-else-if="view.tab === 'payments'" />
-    <DocsTab v-else-if="view.tab === 'docs'" />
+    <DocsTab v-else-if="view.tab === 'docs'" @preview="view.doc = $event" />
+    <ReconcileTab
+        v-else-if="view.tab === 'reconcile'"
+        @preview="view.doc = $event"
+    />
+
+    <DocPreviewDrawer :doc="previewDoc" @close="view.doc = ''" />
 
     <ADrawer :open="Boolean(statement)" @close="view.practitioner = ''">
         <StatementDrawer

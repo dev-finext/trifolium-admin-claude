@@ -119,6 +119,22 @@ export default {
             when: 'ביטול לאחר תשלום או זיכוי פריט',
         },
     },
+    // config/finance.js PAY_TERMINALS — which of the three card terminals took
+    // the payment. A field for now; the reconciliation per terminal comes later.
+    payTerminal: {
+        consumer_site: 'אתר צרכני',
+        practitioner_site: 'אתר מטפלים',
+        physical: 'מסוף פיזי',
+    },
+
+    // config/finance.js ALLOCATION_STATE_IDS — the tax authority's allocation number
+    allocationState: {
+        granted: 'הקצאה התקבלה',
+        not_required: 'לא נדרשת הקצאה',
+        refused: 'הקצאה נדחתה',
+        pending: 'ממתין להקצאה',
+    },
+
     docState: {
         issued: 'הופק',
         failed: 'הפקה נכשלה',

@@ -115,6 +115,22 @@ export default {
             when: 'Cancellation after payment, or an item refund',
         },
     },
+    // config/finance.js PAY_TERMINALS — which of the three card terminals took
+    // the payment. A field for now; the reconciliation per terminal comes later.
+    payTerminal: {
+        consumer_site: 'Consumer site',
+        practitioner_site: 'Practitioner site',
+        physical: 'Physical terminal',
+    },
+
+    // config/finance.js ALLOCATION_STATE_IDS — the tax authority's allocation number
+    allocationState: {
+        granted: 'Allocation granted',
+        not_required: 'No allocation required',
+        refused: 'Allocation refused',
+        pending: 'Awaiting allocation',
+    },
+
     docState: {
         issued: 'Issued',
         failed: 'Issuing failed',
