@@ -95,7 +95,15 @@ export const ITEM_FLAG_IDS = [
     'inventory',
     'batch',
     'internal',
+    // SAP's item property 19 — the practitioner discount the site grants.
+    'therapistDiscount',
 ];
+
+/** SAP's item type: an item that is stocked, or labour that never is. */
+export const ITEM_TYPE_IDS = ['I', 'L'];
+
+/** SAP's tree type: no bill of materials, or a production one. */
+export const TREE_TYPE_IDS = ['N', 'P'];
 
 /**
  * How a stock-tracked item that nobody counts per order is consumed. `time`
@@ -132,51 +140,6 @@ export const SAFETY_LEVEL = Object.fromEntries(
 );
 
 export const SAFETY_LEVEL_IDS = SAFETY_LEVELS.map((level) => level.id);
-
-/**
- * Fields the mandatory-field policy can require. Which ones a family requires is
- * ITEM_MANDATORY below; a creator may record a waiver on any of them, and the
- * waiver is shown on the card rather than the item silently passing.
- */
-export const ITEM_MANDATORY_FIELD_IDS = [
-    'lat',
-    'purchaseUom',
-    'prepTypes',
-    'safety',
-    'location',
-    'siteName',
-    'categories',
-    'salePrice',
-    'supplier',
-    'bom',
-];
-
-/**
- * Mandatory fields a flag adds on top of the family's: anything sold needs its
- * unit price, anything produced in-house needs at least one bill of materials.
- */
-export const ITEM_MANDATORY_BY_FLAG = {
-    sales: ['salePrice'],
-    internal: ['bom'],
-};
-
-/** Mandatory fields per family. A family missing here requires nothing. */
-export const ITEM_MANDATORY = {
-    herb: ['lat', 'purchaseUom', 'prepTypes', 'safety', 'location'],
-    herb_1to1: ['lat', 'purchaseUom', 'prepTypes', 'safety', 'location'],
-    extract: ['lat', 'prepTypes', 'safety'],
-    hydrosol: ['prepTypes', 'safety'],
-    essential_oil: ['lat', 'safety', 'location'],
-    supplement: ['supplier', 'salePrice'],
-    tincture: ['lat', 'prepTypes', 'safety', 'location'],
-    infused_oil: ['lat', 'safety'],
-    formula: ['salePrice', 'siteName'],
-    private_label: ['salePrice', 'siteName', 'categories'],
-    consumable: ['supplier', 'purchaseUom'],
-    packaging: ['supplier', 'purchaseUom'],
-    shelf: ['salePrice', 'siteName', 'categories'],
-    bought_shelf: ['salePrice', 'siteName', 'categories', 'supplier'],
-};
 
 /** The four branches of the consumer site's category tree. */
 export const SITE_CATEGORY_GROUP_IDS = [

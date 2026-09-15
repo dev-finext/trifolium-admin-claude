@@ -1,6 +1,8 @@
 <script setup>
-// The item card. Everything the pharmacy knows about one item, on one panel —
-// what SAP shows on one screen and the first version spread over three.
+// The item card. Everything SAP holds on one item, on one panel — the item
+// master's own fields, then what this console adds around them: the stock with
+// its batches, the recipes the item is made from or goes into, the runs, the
+// files.
 //
 // The stock block is where the card drills down: "committed" opens to the orders
 // holding the quantity, "on order" to the purchase orders bringing it in, and
@@ -60,7 +62,10 @@ const name = computed(() =>
         : '',
 );
 
-const uomLabel = (id) => (id ? t(`items.uom.${id}`) : t('items.card.notSet'));
+const notSet = () => t('items.card.notSet');
+const uomLabel = (id) => (id ? t(`items.uom.${id}`) : notSet());
+const orNotSet = (value) =>
+    value === null || value === undefined || value === '' ? notSet() : value;
 
 /** The recipe an internal item is made from, and what the runs of it say. */
 const recipe = computed(() =>
@@ -94,7 +99,7 @@ function purchaseText(row) {
         row.price?.lastPurchase === null ||
         row.price?.lastPurchase === undefined
     ) {
-        return t('items.card.notSet');
+        return notSet();
     }
 
     return `${CURRENCY_SYMBOL[row.price.currency] || ''}${num(row.price.lastPurchase, 2)} / ${uomLabel(row.uom?.purchase)}`;
@@ -117,8 +122,6 @@ const categories = computed(() =>
             : id;
     }),
 );
-
-const fieldLabel = (id) => t(`items.mandatory.${id}`);
 </script>
 
 <template>
@@ -134,53 +137,24 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                                 t(`items.family.${row.family}`)
                             }}</AChip>
                             <AChip
-                                v-if="row.missing.length"
-                                tone="amber"
+                                v-if="row.active === false"
+                                tone="gray"
                                 size="sm"
                             >
-                                {{
-                                    t('items.card.missing', {
-                                        n: row.missing.length,
-                                    })
-                                }}
-                            </AChip>
-                            <AChip v-else tone="green" size="sm" :dot="false">
-                                {{ t('items.card.complete') }}
+                                {{ t('items.card.activeNo') }}
                             </AChip>
                         </div>
                         <div class="a-dhead-m">
-                            <span class="ltr">{{ row.sku }}</span>
-                            <span v-if="row.names.lat" class="ltr">{{
-                                row.names.lat
+                            <span v-if="row.names.en" class="ltr">{{
+                                row.names.en
                             }}</span>
-                            <span v-if="row.names.cn">{{ row.names.cn }}</span>
-                            <span v-if="row.location">
-                                {{ t('items.card.locationText', row.location) }}
+                            <span v-if="row.updated">
+                                {{
+                                    t('items.card.updatedOn', {
+                                        when: fmtISO(row.updated),
+                                    })
+                                }}
                             </span>
-                        </div>
-                        <div
-                            v-if="row.missing.length"
-                            class="a-note a-note--warn card-note"
-                        >
-                            {{
-                                t('items.card.missingList', {
-                                    fields: row.missing
-                                        .map(fieldLabel)
-                                        .join(' · '),
-                                })
-                            }}
-                        </div>
-                        <div
-                            v-if="row.waivedMissing.length"
-                            class="a-note a-note--info card-note"
-                        >
-                            {{
-                                t('items.card.waivedNote', {
-                                    fields: row.waivedMissing
-                                        .map(fieldLabel)
-                                        .join(' · '),
-                                })
-                            }}
                         </div>
                     </div>
                     <div class="a-dhead-a">
@@ -212,31 +186,28 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                     <AKeyValue
                         :rows="[
                             [t('items.card.nameHe'), row.names.he],
-                            [
-                                t('items.card.nameEn'),
-                                row.names.en || t('items.card.notSet'),
-                            ],
-                            [
-                                t('items.card.lat'),
-                                row.names.lat || t('items.card.notSet'),
-                            ],
-                            [
-                                t('items.card.cn'),
-                                row.names.cn || t('items.card.notSet'),
-                            ],
+                            [t('items.card.nameEn'), orNotSet(row.names.en)],
                             [
                                 t('items.card.siteName'),
-                                row.names.site || t('items.card.notSet'),
+                                orNotSet(row.names.site),
                             ],
                             [
-                                t('items.card.sourceLabel'),
-                                t(`items.card.source.${row.source}`),
+                                t('items.card.itemType'),
+                                t(`items.itemType.${row.itemType || 'I'}`),
                             ],
                             [
-                                t('items.card.location'),
-                                row.location
-                                    ? t('items.card.locationText', row.location)
-                                    : t('items.card.notSet'),
+                                t('items.card.treeType'),
+                                t(`items.treeType.${row.treeType || 'N'}`),
+                            ],
+                            [
+                                t('items.card.active'),
+                                row.active === false
+                                    ? t('items.card.activeNo')
+                                    : t('items.card.activeYes'),
+                            ],
+                            [
+                                t('items.card.created'),
+                                row.created ? fmtISO(row.created) : notSet(),
                             ],
                         ]"
                     />
@@ -254,23 +225,35 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                                 uomLabel(row.uom?.sales),
                             ],
                             [
+                                t('items.card.stockUom'),
+                                uomLabel(row.uom?.stock || row.uom?.sales),
+                            ],
+                            [
                                 t('items.card.factor'),
                                 t('items.card.factorText', {
                                     purchase: uomLabel(row.uom?.purchase),
                                     factor: num(row.uom?.factor || 1),
-                                    sales: uomLabel(row.uom?.sales),
+                                    stock: uomLabel(
+                                        row.uom?.stock || row.uom?.sales,
+                                    ),
                                 }),
                             ],
-                            [t('items.card.flags'), ''],
                             [
-                                t('items.card.consumable'),
-                                row.flags?.consumable
-                                    ? t('items.card.consumableYes')
-                                    : t('items.card.no'),
+                                t('items.card.minLevel'),
+                                row.levels?.min != null
+                                    ? `${num(row.levels.min)} ${uomLabel(row.uom?.stock || row.uom?.sales)}`
+                                    : notSet(),
                             ],
+                            [
+                                t('items.card.maxLevel'),
+                                row.levels?.max != null
+                                    ? `${num(row.levels.max)} ${uomLabel(row.uom?.stock || row.uom?.sales)}`
+                                    : notSet(),
+                            ],
+                            [t('items.card.flags'), ''],
                         ]"
                     >
-                        <template #value-3>
+                        <template #value-6>
                             <span class="chips">
                                 <AChip
                                     v-for="id in ITEM_FLAG_IDS"
@@ -292,8 +275,8 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                             [
                                 t('items.card.salePrice'),
                                 salePrice
-                                    ? ils(salePrice.net)
-                                    : t('items.card.byTiers'),
+                                    ? `${ils(salePrice.net)} / ${uomLabel(row.uom?.sales)}`
+                                    : notSet(),
                             ],
                             salePrice && [
                                 t('items.card.salePriceInc'),
@@ -304,19 +287,26 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                                 t('items.card.lastPurchaseOn'),
                                 row.price?.lastPurchaseOn
                                     ? fmtISO(row.price.lastPurchaseOn)
-                                    : t('items.card.notSet'),
+                                    : notSet(),
                             ],
                             [
                                 t('items.card.preferredSupplier'),
                                 row.preferred
                                     ? loc(row.preferred.name)
-                                    : t('items.card.notSet'),
+                                    : notSet(),
                             ],
                             [
                                 t('items.card.lastSupplier'),
-                                row.last
-                                    ? loc(row.last.name)
-                                    : t('items.card.notSet'),
+                                row.last ? loc(row.last.name) : notSet(),
+                            ],
+                            [
+                                t('items.card.catalogNum'),
+                                orNotSet(row.catalogNum),
+                            ],
+                            [t('items.card.barcode'), orNotSet(row.barcode)],
+                            [
+                                t('items.card.packageSize'),
+                                orNotSet(row.packageSize),
                             ],
                         ]"
                     />
@@ -358,27 +348,22 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                             >
                                 {{ t(`items.safetyLevel.${row.safety[ctx]}`) }}
                             </AChip>
-                            <span v-else class="t-sub">{{
-                                t('items.card.notSet')
-                            }}</span>
+                            <span v-else class="t-sub">{{ notSet() }}</span>
                         </div>
                     </div>
-                </ACard>
 
-                <ACard :title="t('items.card.notes')" icon="edit">
                     <AKeyValue
+                        class="safety-l"
                         :rows="[
                             [
-                                t('items.card.internal'),
-                                row.notes?.internal
-                                    ? loc(row.notes.internal)
-                                    : t('items.card.noNote'),
+                                t('items.card.alcoholPct'),
+                                row.lab?.alcoholPct != null
+                                    ? `${num(row.lab.alcoholPct)}%`
+                                    : notSet(),
                             ],
                             [
-                                t('items.card.production'),
-                                row.notes?.production
-                                    ? loc(row.notes.production)
-                                    : t('items.card.noNote'),
+                                t('items.card.extractionRatio'),
+                                orNotSet(row.lab?.extractionRatio),
                             ],
                         ]"
                     />
@@ -399,13 +384,11 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                                 t('items.card.siteQty'),
                                 row.site?.qty
                                     ? `${num(row.site.qty)} ${uomLabel(row.site.unit)}`
-                                    : t('items.card.notSet'),
+                                    : notSet(),
                             ],
                             [
-                                t('items.card.marketing'),
-                                row.site?.marketing
-                                    ? loc(row.site.marketing)
-                                    : t('items.card.notSet'),
+                                t('items.card.siteComments'),
+                                orNotSet(row.site?.comments),
                             ],
                         ]"
                     >
@@ -466,7 +449,7 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                                 t('items.card.lastUnitCost'),
                                 lastUnitCost != null
                                     ? ils(lastUnitCost, 2)
-                                    : t('items.card.notSet'),
+                                    : notSet(),
                             ],
                         ]"
                     />
@@ -510,7 +493,9 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                                 t('items.card.consumptionRule'),
                                 t('items.card.consumptionRuleValue', {
                                     qty: num(row.consumption.qty),
-                                    uom: uomLabel(row.uom?.sales),
+                                    uom: uomLabel(
+                                        row.uom?.stock || row.uom?.sales,
+                                    ),
                                     days: num(row.consumption.periodDays),
                                 }),
                             ],
@@ -523,7 +508,7 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
                                           ),
                                           qty: num(row.consumption.countedQty),
                                       })
-                                    : t('items.card.notSet'),
+                                    : notSet(),
                             ],
                             [
                                 t('items.card.runOut'),
@@ -565,11 +550,6 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
 .a-dhead-h {
     margin: 0;
     font-size: 24px;
-}
-
-.card-note {
-    margin-top: 10px;
-    font-size: 13.5px;
 }
 
 .card-grid {

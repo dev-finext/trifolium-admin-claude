@@ -402,7 +402,7 @@ export const useProductionStore = defineStore('production', () => {
         const stockUnit = parent?.unit || order.uom;
         const outputQty = round2(toStockUnits(yieldQty, order.uom, stockUnit));
         const output = inventory.openBatch({
-            id: inventory.nextBatchIn('production'),
+            id: inventory.nextBatchFor(order.parentSku),
             sku: order.parentSku,
             name: parent ? parent.name : order.name,
             unit: stockUnit,
@@ -445,7 +445,7 @@ export const useProductionStore = defineStore('production', () => {
             );
 
             waste = inventory.openBatch({
-                id: inventory.nextBatchIn('waste'),
+                id: inventory.nextBatchFor(order.parentSku, { waste: true }),
                 sku: order.parentSku,
                 name: output.name,
                 unit: stockUnit,

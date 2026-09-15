@@ -144,7 +144,7 @@ async function confirmRemove(reason) {
                         ],
                         [
                             t('items.bom.drawer.notes'),
-                            bom.notes ? loc(bom.notes) : t('items.card.noNote'),
+                            bom.notes ? loc(bom.notes) : t('items.card.notSet'),
                         ],
                     ]"
                 >
@@ -191,9 +191,6 @@ async function confirmRemove(reason) {
                             <span class="a-code a-tag">{{
                                 itemOf(row.sku)?.code || row.sku
                             }}</span>
-                            <span v-if="itemOf(row.sku)?.names.lat" class="ltr">
-                                · {{ itemOf(row.sku).names.lat }}</span
-                            >
                         </div>
                     </template>
                     <template #cell-qty="{ row }">

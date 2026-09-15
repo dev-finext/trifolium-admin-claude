@@ -1,14 +1,12 @@
-// פריטים — the unified item card, preparation types and bills of materials (V2).
+// פריטים — the item card (SAP's item master), the bills of materials and the count.
 export default {
     title: 'פריטים',
-    sub: '{total} פריטים · {missing} עם שדות חובה חסרים · כרטיס אחד לכל פריט — צמח, טינקטורה, מוצר מדף או חומר עזר',
-
+    sub: '{total} פריטים · כרטיס אחד לכל פריט — צמח, טינקטורה, מוצר מדף או חומר עזר',
     tab: {
         items: 'פריטים',
         prep: 'סוגי הכנה',
         boms: 'עצי מוצר',
     },
-
     action: {
         add: 'פריט חדש',
         edit: 'עריכת פריט',
@@ -17,8 +15,6 @@ export default {
         editPrep: 'עריכה',
         addBom: 'עץ מוצר חדש',
     },
-
-    // SAP item groups, by code prefix
     family: {
         herb: 'צמחים',
         herb_1to1: 'צמחים 1:1',
@@ -44,33 +40,29 @@ export default {
         workshop: 'סדנאות',
         labour: 'עבודה ומשלוח',
     },
-
     flag: {
         purchase: 'רכש',
         sales: 'מכירה',
         inventory: 'מלאי',
         batch: 'אצוות',
         internal: 'רכיב פנימי',
+        therapistDiscount: 'הנחת מטפלים',
     },
-
     safetyContext: {
         pregnancy: 'היריון',
         lactation: 'הנקה',
         under2: 'מתחת לגיל שנתיים',
     },
-
     safetyLevel: {
         none: 'ללא הגבלה',
         caution: 'לא מומלץ',
         forbidden: 'אסור',
     },
-
     currency: {
         ILS: '₪ שקל',
         EUR: '€ אירו',
         USD: '$ דולר',
     },
-
     uom: {
         g: 'גרם',
         kg: 'ק״ג',
@@ -80,28 +72,12 @@ export default {
         pack: 'אריזה',
         capsule: 'קפסולות',
     },
-
-    // The fields the mandatory-field policy can require
-    mandatory: {
-        lat: 'שם לטיני',
-        purchaseUom: 'יחידת קנייה',
-        prepTypes: 'סוגי הכנה',
-        safety: 'הגבלות בטיחות',
-        location: 'מיקום במחסן',
-        siteName: 'שם לאתר',
-        categories: 'קטגוריות אתר',
-        salePrice: 'מחיר מכירה',
-        supplier: 'ספק קבוע',
-        bom: 'עץ מוצר',
-    },
-
     siteGroup: {
         condition: 'מצב בריאותי',
         system: 'מערכות הגוף',
         chinese_series: 'סדרה סינית',
         mushroom: 'פטריות',
     },
-
     count: {
         title: 'ספירת מלאי · {name}',
         qty: 'כמות שנספרה',
@@ -109,21 +85,16 @@ export default {
         note: 'הערה',
         save: 'רישום הספירה',
     },
-
     kpi: {
         internal: 'רכיבים פנימיים',
         internalSub: 'מיוצרים אצלנו מעץ מוצר',
         all: 'כל הפריטים',
         allSub: 'לחיצה מציגה הכל',
-        missing: 'שדות חובה חסרים',
-        missingSub: 'לפי מדיניות המשפחה',
         noSupplier: 'ללא ספק קבוע',
         noSupplierSub: 'פריטי רכש בלבד',
         site: 'מסונכרנים לאתר',
         siteSub: 'דגל סנכרון פעיל',
     },
-
-    // מערכת הסינון
     filterGroup: {
         what: 'מה זה',
         stock: 'מלאי',
@@ -131,10 +102,15 @@ export default {
         site: 'אתר צרכני',
         quality: 'שלמות הכרטיס',
     },
-
     filter: {
-        batchState: { yes: 'מנוהל אצווה', no: 'לא מנוהל אצווה' },
-        internalState: { yes: 'רכיב פנימי', no: 'נקנה או נמכר כפי שהוא' },
+        batchState: {
+            yes: 'מנוהל אצווה',
+            no: 'לא מנוהל אצווה',
+        },
+        internalState: {
+            yes: 'רכיב פנימי',
+            no: 'נקנה או נמכר כפי שהוא',
+        },
         priceGroupFixed: 'מחיר קבוע',
         priceGroupInherit: 'לפי קידומת המק״ט',
         noun: 'פריטים',
@@ -147,7 +123,6 @@ export default {
             sup: 'ספק קבוע',
             price: 'מחיר קנייה אחרון',
             site: 'סנכרון לאתר',
-            miss: 'שדות חובה',
             bom: 'עץ מוצר',
             files: 'קבצים מצורפים',
         },
@@ -161,10 +136,6 @@ export default {
             on: 'מסונכרן',
             off: 'לא מסונכרן',
         },
-        missState: {
-            yes: 'חסרים שדות',
-            no: 'כרטיס שלם',
-        },
         bomState: {
             yes: 'יש עץ מוצר',
             no: 'אין עץ מוצר',
@@ -176,18 +147,14 @@ export default {
         noSupplier: 'ללא ספק קבוע',
         supplierNa: 'לא פריט קנייה',
         count: 'פריטים · מתוך {total}',
-        search: 'שם · לטיני · סיני · קוד · מק״ט · ספק',
+        search: 'שם · שם לועזי · מספר פריט · ספק',
         family: 'משפחה — הכל',
         flag: 'דגל — הכל',
         supplier: 'ספק קבוע — הכל',
         site: 'אתר — הכל',
         siteOn: 'מסונכרן לאתר',
         siteOff: 'לא מסונכרן',
-        missing: 'שלמות — הכל',
-        missingYes: 'חסרים שדות חובה',
-        missingNo: 'כרטיס שלם',
     },
-
     col: {
         sale: 'מחיר מכירה',
         priceGroup: 'מחירון מדורג',
@@ -200,9 +167,7 @@ export default {
         price: 'קניה אחרונה',
         supplier: 'ספק קבוע',
         site: 'אתר',
-        complete: 'שלמות',
     },
-
     cell: {
         fixedPrice: 'קבוע',
         inheritGroup: 'לפי קידומת',
@@ -212,11 +177,7 @@ export default {
         noPrice: '—',
         siteOn: 'מסונכרן',
         siteOff: '—',
-        missingN: '{n} חסרים',
-        complete: 'שלם',
-        waived: 'עם ויתור',
     },
-
     card: {
         ladder: 'מחירון מדורג',
         productionRuns: 'ייצור',
@@ -257,35 +218,16 @@ export default {
         notSet: 'לא הוגדר',
         yes: 'כן',
         no: 'לא',
-        missing: '{n} שדות חובה חסרים',
-        complete: 'כרטיס שלם',
-        missingList: 'חסרים לפי מדיניות המשפחה: {fields}',
-        waivedNote: 'ויתור מסומן על: {fields}',
-
-        identity: 'זהות ושמות',
+        identity: 'כללי',
         nameHe: 'שם בעברית',
-        nameEn: 'שם באנגלית',
-        lat: 'שם לטיני',
-        cn: 'שם סיני',
+        nameEn: 'שם לועזי',
         siteName: 'שם לאתר הצרכני',
-        sourceLabel: 'מקור הרשומה',
-        source: {
-            stock: 'שורת מלאי (רכיבי פורמולה / מדף)',
-            product: 'מוצר בקטלוג הצרכני',
-            item: 'פריט ללא מלאי',
-        },
-        location: 'מיקום במחסן',
-        locationText: 'ארון {cabinet} · מדף {shelf}',
-
-        units: 'יחידות ודגלים',
+        units: 'יחידות, דגלים ורמות מלאי',
         purchaseUom: 'יחידת קנייה',
-        salesUom: 'יחידת מכירה / מלאי',
+        salesUom: 'יחידת מכירה',
         factor: 'המרה',
-        factorText: '1 {purchase} = {factor} {sales}',
+        factorText: '1 {purchase} = {factor} {stock}',
         flags: 'משתתף ב-',
-        consumable: 'צריכה שוטפת',
-        consumableYes: 'נקלט ולא נגרע',
-
         pricing: 'מחירים וספקים',
         salePrice: 'מחיר מכירה לפני מע״מ',
         salePriceInc: 'כולל מע״מ (מעוגל)',
@@ -296,17 +238,10 @@ export default {
         lastSupplier: 'ספק אחרון',
         priceGroup: 'קבוצת תמחור',
         noPriceGroup: 'ללא',
-
         prep: 'הכנה ובטיחות',
         prepTypes: 'מתאים לסוגי הכנה',
         noPrepTypes: 'לא הוגדר — הפריט לא יוצע בפורטל להכנה',
         safety: 'הגבלות בטיחות',
-
-        notes: 'הערות',
-        internal: 'הערות פנימיות',
-        production: 'הערות ייצור (מודפסות לדף ההכנה)',
-        noNote: 'אין',
-
         site: 'אתר צרכני',
         sync: 'סנכרון לאתר',
         syncOn: 'מסונכרן',
@@ -315,8 +250,6 @@ export default {
         noCategories: 'לא נבחרו',
         promo: 'מבצע החודש',
         siteQty: 'כמות ויחידה לאתר',
-        marketing: 'טקסט שיווקי',
-
         stock: 'מלאי',
         onHand: 'במלאי',
         committed: 'בהתחייבות',
@@ -339,24 +272,30 @@ export default {
         colBatch: 'אצווה',
         colRemaining: 'נותר',
         colExpiry: 'תוקף',
-
         boms: 'עצי מוצר',
         parentOf: 'הפריט הזה הוא אב של',
         usedIn: 'הפריט הזה רכיב ב-',
         noBoms: 'אין',
         usedQty: '{qty} {uom} ליחידה',
-
         files: 'קבצים על הפריט',
+        itemType: 'סוג פריט',
+        treeType: 'עץ מוצר',
+        active: 'סטטוס',
+        activeYes: 'פעיל',
+        activeNo: 'לא פעיל',
+        created: 'הוקם',
+        updatedOn: 'עודכן {when}',
+        stockUom: 'יחידת מלאי',
+        minLevel: 'מלאי מינימום',
+        maxLevel: 'מלאי מקסימום',
+        catalogNum: 'מק״ט ספק',
+        barcode: 'ברקוד',
+        packageSize: 'גודל אריזה',
+        alcoholPct: 'אחוז אלכוהול',
+        extractionRatio: 'יחס מיצוי',
+        siteComments: 'הערות לאתר',
     },
-
     editor: {
-        stockKind: 'סוג מלאי',
-        stockSystem: 'מסורת',
-        stockWh: 'מחסן',
-        stockMin: 'מינימום במלאי',
-        stockMinHint: 'מתחת לכמות הזאת הפריט מסומן כחסר',
-        internalHint:
-            'רכיב פנימי מיוצר אצלנו מעץ מוצר, ולכן תמיד מנוהל אצווה — כל הוראת ייצור פותחת אצווה חדשה.',
         consumption: 'צריכה לפי זמן',
         consumptionOn: 'המלאי יורד לפי לוח שנה',
         consumptionHint:
@@ -369,74 +308,52 @@ export default {
         priceGroupHint:
             'המחירון קובע רק את סולם ההנחה; המחיר ליחידה הוא של הפריט',
         calculator: 'המחיר לפי כמות',
-        expiryMonths: 'תוקף לאצוות ייצור (חודשים)',
-        expiryMonthsHint:
-            'ריק — לפי סוג ההכנה של העץ, ואם אין, לפי ברירת המחדל של המשפחה',
         newTitle: 'פריט חדש',
         editTitle: 'עריכת פריט · {name}',
         createConfirm: 'הקם פריט',
         saveConfirm: 'שמור שינויים',
         fixErrors: 'יש לתקן את השדות המסומנים',
-        missing: 'חסר לפי המדיניות: {fields} — למלא או לסמן ויתור',
         none: '—',
         notSet: 'לא הוגדר',
         noSupplier: 'ללא ספק',
         noCategory: 'ללא',
-
-        identity: 'זהות ושמות',
         family: 'משפחה',
-        familyHint: 'שדות חובה במשפחה זו: {fields}',
-        code: 'קוד פריט',
-        codeHint: '6 ספרות · שתי הראשונות לפי המשפחה',
-        sku: 'מק״ט מלאי',
-        skuHint: 'ספרות, אותיות לטיניות ומקף · 3–20 תווים',
+        code: 'מספר פריט',
+        codeHint:
+            'הוקצה אוטומטית בבלוק המשפחה · 6 ספרות · ניתן לשינוי לפני ההקמה',
         nameHe: 'שם בעברית',
-        nameEn: 'שם באנגלית',
-        lat: 'שם לטיני',
-        cn: 'שם סיני / פין-יין',
+        nameEn: 'שם לועזי',
         siteName: 'שם לאתר',
         siteNameHint: 'כפי שיופיע באתר הצרכני — יכול להיות שונה מהשם הפנימי',
-        location: 'מיקום במחסן',
-        cabinet: 'ארון',
-        shelf: 'מדף',
-
-        units: 'יחידות ודגלים',
+        units: 'יחידות, דגלים ורמות מלאי',
         purchaseUom: 'יחידת קנייה',
-        salesUom: 'יחידת מכירה / מלאי',
-        factor: 'המרה — כמה יחידות מכירה ביחידת קנייה',
-        consumableHint: 'נקלט למלאי ולא נגרע בהזמנות',
-
+        salesUom: 'יחידת מכירה',
+        factor: 'המרה — כמה יחידות מלאי ביחידת קנייה',
         pricing: 'מחירים וספקים',
-        salePriceHint: 'ריק — הפריט מתומחר לפי מדרגות הכמות',
+        salePriceHint: 'ל-{uom} אחד, לפני מע״מ · ריק — לפי מדרגות הכמות',
         lastPurchaseHint: 'מתעדכן אוטומטית בכל קליטה למלאי',
         lastSupplierHint: 'מתעדכן אוטומטית בכל הזמנת רכש',
-
         prep: 'הכנה ובטיחות',
-        notes: 'הערות',
         internalFlagHint: 'למשרד ולמחסן בלבד — לא מודפס',
-        productionHint: 'מודפס לדף ההכנה, לרוקח',
-
         site: 'אתר צרכני',
-
-        policy: 'מדיניות שדות חובה',
-        policyHint:
-            'למשפחה זו חסרים השדות הבאים. אפשר לשמור בכל זאת — כל ויתור נרשם ומוצג בכרטיס.',
-        waive: 'ויתור — לשמור ללא השדה',
-        policyOk: 'כל שדות החובה של המשפחה מולאו',
+        general: 'כללי',
+        active: 'סטטוס',
+        itemType: 'סוג פריט',
+        treeType: 'עץ מוצר',
+        nameEnHint: 'השם הבוטני, הפין-יין או השם באנגלית — כמו בסאפ',
+        stockUom: 'יחידת מלאי',
+        minLevel: 'מלאי מינימום',
+        minLevelHint: 'מתחת לכמות הזאת הפריט מסומן כחסר',
+        maxLevel: 'מלאי מקסימום',
     },
-
     validate: {
         nameShort: 'נא להזין שם פריט',
         nameLong: 'עד 120 תווים',
-        skuMissing: 'נא להזין מק״ט',
-        skuFormat: 'ספרות, אותיות לטיניות ומקף · 3–20 תווים',
-        skuTaken: 'המק״ט כבר קיים',
-        codeFormat: 'קוד פריט הוא 6 ספרות',
-        codeTaken: 'הקוד כבר משויך לפריט אחר',
+        codeFormat: 'מספר פריט הוא 6 ספרות',
+        codeTaken: 'המספר כבר משויך לפריט אחר',
         factor: 'מספר גדול או שווה ל-1',
         number: 'מספר חיובי',
     },
-
     prep: {
         sub: '{n} סוגי הכנה · הטקסט הקבוע למדבקה, התוקף ו״מכיל״ נערכים כאן ולא בקוד',
         usage: '{n} פריטים מתאימים',
@@ -446,7 +363,6 @@ export default {
         recipeSteps: '{n} שלבים',
         legacyYes: 'גרסה 1',
         legacyNo: 'חדש',
-
         col: {
             name: 'סוג הכנה',
             unit: 'יחידה',
@@ -457,7 +373,6 @@ export default {
             legacy: 'מקור',
             actions: 'פעולות',
         },
-
         contains: {
             alcohol: 'אלכוהול רפואי',
             glycerin: 'גליצרין',
@@ -467,7 +382,6 @@ export default {
             water: 'מים',
             oil: 'שמן',
         },
-
         editor: {
             newTitle: 'סוג הכנה חדש',
             editTitle: 'עריכת סוג הכנה · {name}',
@@ -495,27 +409,23 @@ export default {
             minutes: 'דקות',
             addStep: 'הוספת שלב',
         },
-
         validate: {
             id: 'מזהה באותיות לטיניות קטנות, 3–30 תווים',
             idTaken: 'המזהה כבר קיים',
             name: 'נא להזין שם',
             expiry: 'מספר חודשים שלם, 1–999',
         },
-
         toast: {
             created: 'סוג ההכנה הוקם',
             updated: 'סוג ההכנה עודכן',
         },
     },
-
     bom: {
         sub: '{n} עצי מוצר · חיפוש לפי פריט אב או לפי רכיב',
         count: 'עצים · מתוך {total}',
         search: 'אב · רכיב · קוד · תיאור סיני',
         n: '{n} רכיבים',
         viaComponent: 'נמצא דרך הרכיב: {name}',
-
         col: {
             parent: 'פריט אב',
             components: 'רכיבים',
@@ -525,12 +435,10 @@ export default {
             updated: 'עודכן',
             uomShort: 'יחידה',
         },
-
         issue: {
             backflush: 'אוטומטית (backflush)',
             manual: 'ידנית',
         },
-
         drawer: {
             parent: 'פריט האב',
             parentItem: 'פריט',
@@ -548,7 +456,6 @@ export default {
             edit: 'עריכה',
             remove: 'מחיקה',
         },
-
         editor: {
             newTitle: 'עץ מוצר חדש',
             editTitle: 'עריכת עץ מוצר · {name}',
@@ -564,7 +471,6 @@ export default {
             yieldHint: 'כמה יחידות אב מייצר העץ — הכמויות ברכיבים הן לתפוקה זו',
             addComponent: 'הוספת רכיב',
         },
-
         validate: {
             parent: 'נא לבחור פריט אב',
             name: 'נא להזין תיאור',
@@ -574,7 +480,6 @@ export default {
             duplicate: 'רכיב מופיע פעמיים',
             pct: 'אחוז בין 0 ל-100',
         },
-
         remove: {
             title: 'מחיקת עץ מוצר',
             body: 'העץ ״{name}״ יימחק.',
@@ -582,24 +487,30 @@ export default {
             effectLog: 'המחיקה, הסיבה והמבצע יירשמו ביומן',
             confirm: 'מחק עץ',
         },
-
         toast: {
             created: 'עץ המוצר הוקם',
             updated: 'עץ המוצר עודכן',
             removed: 'עץ המוצר נמחק',
         },
     },
-
     toast: {
         counted: 'הספירה נרשמה',
         countedBody: 'במלאי {qty} · הפרש {delta}',
         removed: 'הפריט נמחק',
         removedBody: '{name} · סיבה: {reason}',
         created: 'הפריט הוקם',
-        createdBody: '{name} · קוד {code} · {sku}',
+        createdBody: '{name} · מספר פריט {code}',
         updated: 'הפריט עודכן',
         updatedBody: '{name} · {sku}',
         exported: 'הייצוא הוכן',
         exportedBody: '{n} שורות · {file}',
+    },
+    itemType: {
+        I: 'פריט',
+        L: 'עבודה / שירות',
+    },
+    treeType: {
+        N: 'ללא עץ מוצר',
+        P: 'עץ ייצור',
     },
 };

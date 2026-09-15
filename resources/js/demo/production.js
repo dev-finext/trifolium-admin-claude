@@ -5,6 +5,7 @@
 // components' batches, really opened a `P-` batch (and a `W-` waste batch)
 // on the parent, and left the movements behind; an issued run has really
 // reserved its components. What the screens add up is what happened.
+import { familyOfCode, ITEM_FAMILY } from '@/config/items';
 import { PRODUCTION_SERIES } from '@/config/production';
 import { at, fraction, pickFrom, spread } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
@@ -12,7 +13,9 @@ import { daysSince, isoDaysAgo } from '@/lib/dates';
 import { L } from '@/lib/localized';
 
 const FIRST_ORDER_NUMBER = 2601;
-const FIRST_BATCH_NUMBER = 2610;
+// Production batches number in each family's own series, above the serials
+// the goods receipts have reached.
+const FIRST_BATCH_NUMBER = 3001;
 
 /** The state mix the screens were designed against, one run per slot. */
 const STATE_MIX = [
@@ -311,10 +314,10 @@ export function buildProductionOrders({
         const outputQty = round2(
             toStockUnits(yieldQty, bom.yield.uom, stockUnit),
         );
-        const outputId = `${settings.batchSeries.production}${batchNo}`;
-        const wasteId = wasteQty
-            ? `${settings.batchSeries.waste}${batchNo}`
-            : null;
+        const prefix = ITEM_FAMILY[familyOfCode(bom.parentSku)]?.prefix || '00';
+        const serial = String(batchNo).padStart(5, '0');
+        const outputId = `${prefix}-${serial}`;
+        const wasteId = wasteQty ? `${prefix}-${serial}W` : null;
 
         batchNo += 1;
 

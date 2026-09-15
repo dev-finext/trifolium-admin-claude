@@ -34,7 +34,7 @@ const uomLabel = (id) => (id ? t(`items.uom.${id}`) : t('items.card.notSet'));
 
 /** The sales unit every quantity tile counts in — empty until the item has one. */
 const salesUom = computed(() =>
-    props.row?.uom?.sales ? t(`items.uom.${props.row.uom.sales}`) : '',
+    props.row?.uom?.stock ? t(`items.uom.${props.row.uom.stock}`) : '',
 );
 
 /** Which of the three lists is expanded. */
@@ -53,7 +53,9 @@ const onOrderQty = computed(() =>
 );
 
 const batches = computed(() =>
-    props.row ? inventory.openBatchesOf(props.row.sku, { allowWaste: true }) : [],
+    props.row
+        ? inventory.openBatchesOf(props.row.sku, { allowWaste: true })
+        : [],
 );
 
 /** Waste of this item still on the shelf, and the batches it sits in. */

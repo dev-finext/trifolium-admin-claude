@@ -33,11 +33,29 @@ const items = useItemsStore();
 const store = usePurchasingStore();
 const uid = useId();
 
-/** The batch number `offset` places after the next free one in the series. */
-function batchNoAt(offset) {
-    const parts = String(inventory.nextBatchNo).match(/^(\D*)(\d+)$/);
+/**
+ * The batch number line `i` opens: the item family's next serial, counting
+ * the earlier lines of this receipt that open a batch in the same family.
+ */
+function batchFor(i) {
+    const line = form.lines[i];
 
-    return parts ? `${parts[1]}${Number(parts[2]) + offset}` : '';
+    if (!line?.sku || line.existingBatch) {
+        return '';
+    }
+
+    const next = inventory.nextBatchFor(line.sku);
+    const head = next.slice(0, next.indexOf('-') + 1);
+    const ahead = form.lines
+        .slice(0, i)
+        .filter(
+            (other) =>
+                other.sku &&
+                !other.existingBatch &&
+                inventory.nextBatchFor(other.sku).startsWith(head),
+        ).length;
+
+    return `${head}${String(Number(next.slice(head.length)) + ahead).padStart(5, '0')}`;
 }
 
 const openLines = props.po.lines.filter(
@@ -48,7 +66,7 @@ const form = reactive({
     docNum: '',
     date: isoDaysAgo(0),
     note: '',
-    lines: openLines.map((line, i) => {
+    lines: openLines.map((line) => {
         const item = items.itemBySku(line.sku);
         const stock = inventory.itemBySku(line.sku);
         const factor = item?.uom?.factor || 1;
@@ -60,7 +78,7 @@ const form = reactive({
             openPurchase: line.qty - (line.received || 0),
             uom: line.uom,
             qty: String(Math.round((line.qty - (line.received || 0)) * factor)),
-            batch: batchNoAt(i),
+            batch: '',
             existingBatch: '',
             supplierBatch: '',
             expiry: suggested?.iso || '',
@@ -69,17 +87,21 @@ const form = reactive({
             currency: props.po.currency,
             labels: '1',
             wh: stock?.wh || 'raw',
-            stockUnit: stock?.unit || item?.uom?.sales || 'unit',
+            stockUnit: stock?.unit || item?.uom?.stock || 'unit',
         };
     }),
 });
 
 const lineOk = (line) =>
     Number(line.qty) > 0 &&
-    (line.existingBatch || line.batch.trim()) &&
+    (line.existingBatch || line.batch) &&
     Boolean(line.expiry);
 
-const good = computed(() => form.lines.filter(lineOk));
+const good = computed(() =>
+    form.lines
+        .map((line, i) => ({ ...line, batch: batchFor(i) }))
+        .filter(lineOk),
+);
 const valid = computed(
     () => Boolean(form.docNum.trim()) && good.value.length > 0,
 );
@@ -250,18 +272,15 @@ async function save() {
                         />
                     </div>
                     <div>
-                        <label class="a-lbl" :for="`${uid}-b${i}`"
-                            >{{ t('purchasing.receive.col.batch') }}
-                            <span v-if="!line.existingBatch" class="req"
-                                >*</span
-                            ></label
-                        >
-                        <AInput
-                            :id="`${uid}-b${i}`"
-                            v-model="line.batch"
-                            ltr
-                            :disabled="Boolean(line.existingBatch)"
-                        />
+                        <label class="a-lbl">{{
+                            t('purchasing.receive.col.batch')
+                        }}</label>
+                        <div class="a-code a-tag batch-ro">
+                            {{ line.existingBatch || batchFor(i) || '—' }}
+                        </div>
+                        <div class="a-hint">
+                            {{ t('purchasing.receive.batchAuto') }}
+                        </div>
                     </div>
                     <div>
                         <label class="a-lbl" :for="`${uid}-sb${i}`">{{
@@ -347,5 +366,10 @@ async function save() {
 
 .lines {
     margin-top: 16px;
+}
+
+.batch-ro {
+    display: inline-block;
+    margin-top: 8px;
 }
 </style>

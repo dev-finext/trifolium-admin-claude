@@ -1,24 +1,21 @@
 <script setup>
 // The batch-handling settings, edited where batches live: the pick rule (FEFO
-// by expiry, or FIFO by receipt), the default shelf life per item family that a
-// new batch takes unless overridden, and the prefix each batch source numbers
-// under. Second-version material — the first version had these as constants.
+// by expiry, or FIFO by receipt) and the default shelf life per item family
+// that a new batch takes unless overridden. Batch numbers are not a setting:
+// they run per item family, and the card says so.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import ACard from '@/components/ui/ACard.vue';
-import ANum from '@/components/ui/ANum.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
-import { BATCH_SOURCE_IDS, ITEM_FAMILY_IDS, PICK_MODE_IDS } from '@/config';
-import { useInventoryStore } from '@/stores/inventory';
+import { ITEM_FAMILY_IDS, PICK_MODE_IDS } from '@/config';
 import { usePurchasingStore } from '@/stores/purchasing';
 
 const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
-const inventory = useInventoryStore();
 const store = usePurchasingStore();
 
 const settings = computed(() => store.settings);
@@ -62,32 +59,6 @@ async function setExpiry(family, value) {
         body: t(`items.family.${family}`),
     });
 }
-
-async function setSeries(source, value) {
-    const prefix = String(value).trim().toUpperCase();
-
-    if (!prefix || settings.value?.batchSeries?.[source] === prefix) {
-        return;
-    }
-
-    await store.updateSettings(
-        { batchSeries: { [source]: prefix } },
-        `${source}: ${prefix}`,
-    );
-    push({
-        title: t('inventory.settings.saved'),
-        body: t(`inventory.batchSource.${source}`),
-    });
-}
-
-/** The next number each series would issue — the supplier series is live, the rest start fresh. */
-function nextOf(source) {
-    if (source === 'supplier') {
-        return inventory.nextBatchNo;
-    }
-
-    return `${settings.value?.batchSeries?.[source] || ''}1`;
-}
 </script>
 
 <template>
@@ -129,28 +100,6 @@ function nextOf(source) {
 
                 <div class="a-sect-t series-t">
                     {{ t('inventory.settings.seriesTitle') }}
-                </div>
-                <div class="series">
-                    <div
-                        v-for="source in BATCH_SOURCE_IDS"
-                        :key="source"
-                        class="series-row"
-                    >
-                        <span>{{ t(`inventory.batchSource.${source}`) }}</span>
-                        <input
-                            class="a-input a-ltr-input prefix"
-                            :value="settings.batchSeries?.[source] || ''"
-                            :aria-label="t(`inventory.batchSource.${source}`)"
-                            @change="setSeries(source, $event.target.value)"
-                        />
-                        <span class="t-sub"
-                            ><ANum>{{
-                                t('inventory.settings.next', {
-                                    id: nextOf(source),
-                                })
-                            }}</ANum></span
-                        >
-                    </div>
                 </div>
                 <p class="a-hint">{{ t('inventory.settings.seriesHint') }}</p>
             </section>

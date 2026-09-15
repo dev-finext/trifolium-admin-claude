@@ -1,8 +1,7 @@
 <script setup>
 // The item list: every item in one table, whatever list it came from, with the
 // figures a buyer, a pharmacist and the site manager each look for first —
-// units, stock, last purchase price, supplier, site state and whether the card
-// is complete under the family's mandatory-field policy.
+// units, stock, last purchase price, supplier and site state.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -179,7 +178,6 @@ const cols = computed(() => [
     },
     { k: 'pg', label: t('items.col.priceGroup'), nowrap: true },
     { k: 'site', label: t('items.col.site'), nowrap: true },
-    { k: 'complete', label: t('items.col.complete'), nowrap: true },
 ]);
 
 const sortModel = computed(() => ({ key: state.sort, dir: state.dir }));
@@ -246,7 +244,6 @@ function exportRows() {
         t('items.col.price'),
         t('items.col.supplier'),
         t('items.col.site'),
-        t('items.col.complete'),
     ];
     const n = downloadCsv(
         file,
@@ -265,9 +262,6 @@ function exportRows() {
             priceText(row),
             row.preferred ? loc(row.preferred.name) : '',
             row.site?.sync ? t('items.cell.siteOn') : '',
-            row.missing.length
-                ? t('items.cell.missingN', { n: row.missing.length })
-                : t('items.cell.complete'),
         ]),
     );
 
@@ -288,14 +282,6 @@ function exportRows() {
                 :sub="t('items.kpi.allSub')"
                 :active="!dirty"
                 @click="clear"
-            />
-            <FilterKpi
-                icon="alert"
-                :label="t('items.kpi.missing')"
-                :value="tally((row) => row.missing.length)"
-                :sub="t('items.kpi.missingSub')"
-                :active="state.miss.includes('yes')"
-                @click="filters.toggle('miss', 'yes')"
             />
             <FilterKpi
                 icon="truck"
@@ -395,8 +381,8 @@ function exportRows() {
                         })
                     }}
                 </div>
-                <div v-if="row.names.lat" class="t-sub ltr">
-                    {{ row.names.lat }}
+                <div v-if="row.names.en" class="t-sub ltr">
+                    {{ row.names.en }}
                 </div>
             </template>
 
@@ -420,9 +406,6 @@ function exportRows() {
                         :title="t(`items.flag.${id}`)"
                     >
                         {{ t(`items.flag.${id}`) }}
-                    </span>
-                    <span v-if="row.flags?.consumable" class="flag is-cons">
-                        {{ t('items.card.consumable') }}
                     </span>
                 </span>
             </template>
@@ -483,18 +466,6 @@ function exportRows() {
                     {{ t('items.cell.siteOn') }}
                 </AChip>
                 <span v-else class="t-sub">{{ t('items.cell.siteOff') }}</span>
-            </template>
-
-            <template #cell-complete="{ row }">
-                <AChip v-if="row.missing.length" tone="amber" size="sm">
-                    {{ t('items.cell.missingN', { n: row.missing.length }) }}
-                </AChip>
-                <AChip v-else tone="green" size="sm" :dot="false">
-                    {{ t('items.cell.complete') }}
-                </AChip>
-                <div v-if="row.waivedMissing.length" class="t-sub">
-                    {{ t('items.cell.waived') }}
-                </div>
             </template>
         </ADataTable>
 

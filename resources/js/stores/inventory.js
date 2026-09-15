@@ -14,7 +14,13 @@
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
-import { ADJUST_REASON, BATCH_EXPIRY_WARN_DAYS, BATCH_PICK } from '@/config';
+import {
+    ADJUST_REASON,
+    BATCH_EXPIRY_WARN_DAYS,
+    BATCH_PICK,
+    familyOfCode,
+    ITEM_FAMILY,
+} from '@/config';
 import { persist } from '@/data/source';
 import { daysSince, fmtISO, hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { isLocalized } from '@/lib/localized';
@@ -25,7 +31,6 @@ import { useDatasetStore } from '@/stores/dataset';
  * once one exists, the next number is derived from the highest one already used.
  */
 const RECEIPT_SERIES = 'GR-';
-const BATCH_SERIES = 'B-';
 const FIRST_SERIAL = 1;
 
 /** The highest trailing number in a set of ids, plus one. */
@@ -353,41 +358,27 @@ export const useInventoryStore = defineStore('inventory', () => {
     const liveBatchCount = (sku) =>
         batchesOf(sku).filter((batch) => batch.remaining > 0).length;
 
-    /** The prefix supplier batches are numbered under — a setting since V2. */
-    const batchSeries = computed(
-        () =>
-            dataset.data.inventorySettings?.batchSeries?.supplier ||
-            BATCH_SERIES,
-    );
-
     /**
-     * The next number in one batch series — `supplier`, `production` or
-     * `waste` — read off the batches that already carry its prefix.
+     * The batch number an item's next batch opens under: the family's code
+     * prefix, a dash and a five-digit serial that runs per family —
+     * `10-00124`. Nobody types it. A waste batch carries a W.
      */
-    const nextBatchIn = (source) => {
-        const series =
-            dataset.data.inventorySettings?.batchSeries?.[source] ||
-            BATCH_SERIES;
+    const nextBatchFor = (sku, { waste = false } = {}) => {
+        const prefix = ITEM_FAMILY[familyOfCode(sku)]?.prefix || '00';
+        const head = `${prefix}-`;
+        const highest = batches.value.reduce((top, batch) => {
+            const id = String(batch.id);
 
-        return nextSerial(
-            batches.value
-                .map((batch) => batch.id)
-                .filter((batchId) => String(batchId).startsWith(series)),
-            series,
-        );
+            return id.startsWith(head)
+                ? Math.max(
+                      top,
+                      Number(id.slice(head.length).replace(/\D+$/, '')) || 0,
+                  )
+                : top;
+        }, 0);
+
+        return `${head}${String(highest + 1).padStart(5, '0')}${waste ? 'W' : ''}`;
     };
-
-    /** The batch number the next receipt line would open. */
-    const nextBatchNo = computed(() =>
-        nextSerial(
-            batches.value
-                .map((batch) => batch.id)
-                .filter((batchId) =>
-                    String(batchId).startsWith(batchSeries.value),
-                ),
-            batchSeries.value,
-        ),
-    );
 
     /** Distinct suppliers and receivers across the receipts, with their counts. */
     const facet = (pick) =>
@@ -733,14 +724,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         }
 
         const row = itemBySku(sku);
-        const series =
-            dataset.data.inventorySettings?.batchSeries?.waste || 'W-';
-        const id = nextSerial(
-            batches.value
-                .map((batch) => batch.id)
-                .filter((batchId) => String(batchId).startsWith(series)),
-            series,
-        );
+        const id = nextBatchFor(sku, { waste: true });
         const qty = parts.reduce((sum, batch) => sum + batch.remaining, 0);
         const earliest = parts.reduce((best, batch) =>
             batch.daysToExp < best.daysToExp ? batch : best,
@@ -1151,8 +1135,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         receiptSuppliers,
         receiptReceivers,
         supplierHints,
-        nextBatchNo,
-        batchSeries,
+        nextBatchFor,
         pickMode,
 
         itemBySku,
@@ -1160,7 +1143,6 @@ export const useInventoryStore = defineStore('inventory', () => {
         receiptById,
         batchesOf,
         openBatchesOf,
-        nextBatchIn,
         openBatch,
         syncRow,
         syncBatch,

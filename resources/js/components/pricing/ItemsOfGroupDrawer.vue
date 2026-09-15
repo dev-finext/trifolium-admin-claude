@@ -116,9 +116,6 @@ function priceAtTop(item) {
                 <div class="t-strong">
                     {{ loc(row.names?.he || row.names) }}
                 </div>
-                <div v-if="row.names?.lat" class="t-sub">
-                    {{ row.names.lat }}
-                </div>
             </template>
             <template #cell-uom="{ row }">
                 <span v-if="row.uom?.sales">

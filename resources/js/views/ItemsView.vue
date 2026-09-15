@@ -43,10 +43,6 @@ const editingBom = ref(null);
 const counting = ref(null);
 const removing = ref(null);
 
-const missingCount = computed(
-    () => store.rows.filter((row) => row.missing.length).length,
-);
-
 const openItem = computed(() => (view.item ? store.rowBySku(view.item) : null));
 const openBomRecord = computed(() =>
     view.bom ? store.bomById(view.bom) : null,
@@ -184,9 +180,7 @@ async function confirmRemove(reason) {
     <PageHead
         :crumbs="[t('nav.group.operations'), t('nav.item.items')]"
         :title="t('items.title')"
-        :sub="
-            t('items.sub', { total: store.items.length, missing: missingCount })
-        "
+        :sub="t('items.sub', { total: store.items.length })"
     >
         <template #actions>
             <AButton kind="p" icon="plus" @click="editing = {}">

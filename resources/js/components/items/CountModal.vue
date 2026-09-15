@@ -29,7 +29,7 @@ const note = ref('');
 const saving = ref(false);
 
 const uom = computed(() =>
-    props.row.uom?.sales ? t(`items.uom.${props.row.uom.sales}`) : '',
+    props.row.uom?.stock ? t(`items.uom.${props.row.uom.stock}`) : '',
 );
 
 const ok = computed(() => qty.value !== '' && Number(qty.value) >= 0);

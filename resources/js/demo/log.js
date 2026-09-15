@@ -252,7 +252,7 @@ const LOG_DEFS = [
         ent: 'batch',
         by: 'agent',
         src: 'manual',
-        ref: ({ slot }) => `B-26${spread(`${slot}:batch`, 10, 99)}`,
+        ref: ({ slot }) => `10-026${spread(`${slot}:batch`, 10, 99)}`,
         values: ({ slot }) => {
             const kg = spread(`${slot}:kg`, 4, 40);
 
@@ -272,7 +272,7 @@ const LOG_DEFS = [
         values: ({ slot }) => ({
             valueType: 'plain',
             from: TEXT.noBatch,
-            to: `B-26${spread(`${slot}:batch`, 10, 99)}`,
+            to: `10-026${spread(`${slot}:batch`, 10, 99)}`,
         }),
     },
     {

@@ -21,7 +21,6 @@ import { L } from '@/lib/localized';
  */
 export const INVENTORY_SETTINGS = {
     pickMode: 'fefo',
-    batchSeries: { supplier: 'B-', production: 'P-', waste: 'W-' },
     defaultExpiryMonths: {
         herb: 24,
         herb_1to1: 24,

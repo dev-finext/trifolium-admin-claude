@@ -78,9 +78,13 @@ export const usePurchasingStore = defineStore('purchasing', () => {
     const paymentById = (id) =>
         supplierPayments.value.find((payment) => payment.id === id) || null;
     const invoicesOf = (code) =>
-        supplierInvoices.value.filter((invoice) => invoice.supplierCode === code);
+        supplierInvoices.value.filter(
+            (invoice) => invoice.supplierCode === code,
+        );
     const paymentsOf = (code) =>
-        supplierPayments.value.filter((payment) => payment.supplierCode === code);
+        supplierPayments.value.filter(
+            (payment) => payment.supplierCode === code,
+        );
 
     /** Invoices still owed something, oldest due first. */
     const openInvoices = computed(() =>
@@ -105,7 +109,9 @@ export const usePurchasingStore = defineStore('purchasing', () => {
                 supplierInvoiceOpen,
             ),
             overdue: sum(
-                open.filter((invoice) => invoiceDueState(invoice) === 'overdue'),
+                open.filter(
+                    (invoice) => invoiceDueState(invoice) === 'overdue',
+                ),
                 supplierInvoiceOpen,
             ),
             overdueCount: open.filter(
@@ -164,12 +170,18 @@ export const usePurchasingStore = defineStore('purchasing', () => {
             rows: rows.reverse(),
             balance,
             open: round2(
-                open.reduce((sum, invoice) => sum + supplierInvoiceOpen(invoice), 0),
+                open.reduce(
+                    (sum, invoice) => sum + supplierInvoiceOpen(invoice),
+                    0,
+                ),
             ),
             overdue: round2(
                 open
                     .filter((invoice) => invoiceDueState(invoice) === 'overdue')
-                    .reduce((sum, invoice) => sum + supplierInvoiceOpen(invoice), 0),
+                    .reduce(
+                        (sum, invoice) => sum + supplierInvoiceOpen(invoice),
+                        0,
+                    ),
             ),
         };
     };
@@ -651,7 +663,10 @@ export const usePurchasingStore = defineStore('purchasing', () => {
             supplier: supplier.name,
             date: moment(form.date || null),
             amount: round2(
-                allocations.reduce((sum, allocation) => sum + allocation.amount, 0),
+                allocations.reduce(
+                    (sum, allocation) => sum + allocation.amount,
+                    0,
+                ),
             ),
             currency: invoiceById(allocations[0].invoice)?.currency || 'ILS',
             method: form.method || 'transfer',
@@ -743,7 +758,6 @@ export const usePurchasingStore = defineStore('purchasing', () => {
         if (!dataset.data.inventorySettings) {
             dataset.data.inventorySettings = {
                 pickMode: 'fefo',
-                batchSeries: {},
                 defaultExpiryMonths: {},
             };
         }
@@ -844,7 +858,7 @@ export const usePurchasingStore = defineStore('purchasing', () => {
                         ? { he: row.names.he, en: row.names.en || row.names.he }
                         : stock?.name || entry.sku,
                     family: row?.family || null,
-                    unit: stock?.unit || row?.uom?.sales || 'unit',
+                    unit: stock?.unit || row?.uom?.stock || 'unit',
                     total,
                     monthly,
                     avail,

@@ -1,14 +1,12 @@
 // English mirror of he/items.js — same keys, real translations.
 export default {
     title: 'Items',
-    sub: '{total} items · {missing} with mandatory fields missing · one card per item — herb, tincture, shelf product or consumable',
-
+    sub: '{total} items · one card per item — herb, tincture, shelf product or consumable',
     tab: {
         items: 'Items',
         prep: 'Preparation types',
         boms: 'Bills of materials',
     },
-
     action: {
         add: 'New item',
         edit: 'Edit item',
@@ -17,7 +15,6 @@ export default {
         editPrep: 'Edit',
         addBom: 'New bill of materials',
     },
-
     family: {
         herb: 'Herbs',
         herb_1to1: 'Herbs 1:1',
@@ -43,33 +40,29 @@ export default {
         workshop: 'Workshops',
         labour: 'Labour & shipping',
     },
-
     flag: {
         purchase: 'Purchase',
         sales: 'Sales',
         inventory: 'Inventory',
         batch: 'Batches',
         internal: 'Internal component',
+        therapistDiscount: 'Practitioner discount',
     },
-
     safetyContext: {
         pregnancy: 'Pregnancy',
         lactation: 'Lactation',
         under2: 'Under two years',
     },
-
     safetyLevel: {
         none: 'No restriction',
         caution: 'Not recommended',
         forbidden: 'Forbidden',
     },
-
     currency: {
         ILS: '₪ Shekel',
         EUR: '€ Euro',
         USD: '$ Dollar',
     },
-
     uom: {
         g: 'g',
         kg: 'kg',
@@ -79,27 +72,12 @@ export default {
         pack: 'pack',
         capsule: 'capsules',
     },
-
-    mandatory: {
-        lat: 'Latin name',
-        purchaseUom: 'Purchase unit',
-        prepTypes: 'Preparation types',
-        safety: 'Safety restrictions',
-        location: 'Warehouse location',
-        siteName: 'Site name',
-        categories: 'Site categories',
-        salePrice: 'Sale price',
-        supplier: 'Preferred supplier',
-        bom: 'Bill of materials',
-    },
-
     siteGroup: {
         condition: 'Health condition',
         system: 'Body systems',
         chinese_series: 'Chinese series',
         mushroom: 'Mushrooms',
     },
-
     count: {
         title: 'Stock count · {name}',
         qty: 'Counted quantity',
@@ -108,21 +86,16 @@ export default {
         note: 'Note',
         save: 'Record the count',
     },
-
     kpi: {
         internal: 'Internal components',
         internalSub: 'Made in-house from a recipe',
         all: 'All items',
         allSub: 'Click shows all',
-        missing: 'Mandatory fields missing',
-        missingSub: 'By the family policy',
         noSupplier: 'No preferred supplier',
         noSupplierSub: 'Purchase items only',
         site: 'Synced to the site',
         siteSub: 'Sync flag on',
     },
-
-    // The filter system
     filterGroup: {
         what: 'What it is',
         stock: 'Stock',
@@ -130,9 +103,11 @@ export default {
         site: 'Consumer site',
         quality: 'Card completeness',
     },
-
     filter: {
-        batchState: { yes: 'Batch-managed', no: 'Not batch-managed' },
+        batchState: {
+            yes: 'Batch-managed',
+            no: 'Not batch-managed',
+        },
         internalState: {
             yes: 'Internal component',
             no: 'Bought or sold as is',
@@ -149,7 +124,6 @@ export default {
             sup: 'Standing supplier',
             price: 'Last purchase price',
             site: 'Site sync',
-            miss: 'Mandatory fields',
             bom: 'Bill of materials',
             files: 'Attachments',
         },
@@ -163,10 +137,6 @@ export default {
             on: 'Synced',
             off: 'Not synced',
         },
-        missState: {
-            yes: 'Fields missing',
-            no: 'Card complete',
-        },
         bomState: {
             yes: 'Has a BOM',
             no: 'No BOM',
@@ -178,18 +148,14 @@ export default {
         noSupplier: 'No standing supplier',
         supplierNa: 'Not a purchase item',
         count: 'items · of {total}',
-        search: 'Name · Latin · Chinese · code · SKU · supplier',
+        search: 'Name · foreign name · item number · supplier',
         family: 'Family — all',
         flag: 'Flag — all',
         supplier: 'Preferred supplier — all',
         site: 'Site — all',
         siteOn: 'Synced to site',
         siteOff: 'Not synced',
-        missing: 'Completeness — all',
-        missingYes: 'Mandatory fields missing',
-        missingNo: 'Complete card',
     },
-
     col: {
         sale: 'Sale price',
         priceGroup: 'Tiered list',
@@ -202,9 +168,7 @@ export default {
         price: 'Last purchase',
         supplier: 'Preferred supplier',
         site: 'Site',
-        complete: 'Completeness',
     },
-
     cell: {
         fixedPrice: 'Fixed',
         inheritGroup: 'By prefix',
@@ -214,11 +178,7 @@ export default {
         noPrice: '—',
         siteOn: 'Synced',
         siteOff: '—',
-        missingN: '{n} missing',
-        complete: 'Complete',
-        waived: 'with waiver',
     },
-
     card: {
         ladder: 'Tiered list',
         productionRuns: 'Production',
@@ -260,35 +220,16 @@ export default {
         notSet: 'Not set',
         yes: 'Yes',
         no: 'No',
-        missing: '{n} mandatory fields missing',
-        complete: 'Complete card',
-        missingList: 'Missing under the family policy: {fields}',
-        waivedNote: 'Waiver recorded on: {fields}',
-
-        identity: 'Identity & names',
+        identity: 'General',
         nameHe: 'Hebrew name',
-        nameEn: 'English name',
-        lat: 'Latin name',
-        cn: 'Chinese name',
+        nameEn: 'Foreign name',
         siteName: 'Consumer-site name',
-        sourceLabel: 'Record source',
-        source: {
-            stock: 'Stock row (ingredients / shelf)',
-            product: 'Consumer catalogue product',
-            item: 'Item without stock',
-        },
-        location: 'Warehouse location',
-        locationText: 'Cabinet {cabinet} · shelf {shelf}',
-
-        units: 'Units & flags',
+        units: 'Units, flags and stock levels',
         purchaseUom: 'Purchase unit',
-        salesUom: 'Sales / stock unit',
+        salesUom: 'Sales unit',
         factor: 'Conversion',
-        factorText: '1 {purchase} = {factor} {sales}',
+        factorText: '1 {purchase} = {factor} {stock}',
         flags: 'Takes part in',
-        consumable: 'Consumable',
-        consumableYes: 'Received, never deducted',
-
         pricing: 'Prices & suppliers',
         salePrice: 'Sale price before VAT',
         salePriceInc: 'Incl. VAT (rounded)',
@@ -299,18 +240,11 @@ export default {
         lastSupplier: 'Last supplier',
         priceGroup: 'Price group',
         noPriceGroup: 'None',
-
         prep: 'Preparation & safety',
         prepTypes: 'Suitable preparation types',
         noPrepTypes:
             'Not set — the item is not offered for compounding in the portal',
         safety: 'Safety restrictions',
-
-        notes: 'Notes',
-        internal: 'Internal notes',
-        production: 'Production notes (printed on the prep sheet)',
-        noNote: 'None',
-
         site: 'Consumer site',
         sync: 'Sync to site',
         syncOn: 'Synced',
@@ -319,8 +253,6 @@ export default {
         noCategories: 'None chosen',
         promo: 'Promotion of the month',
         siteQty: 'Site quantity & unit',
-        marketing: 'Marketing text',
-
         stock: 'Stock',
         onHand: 'On hand',
         committed: 'Committed',
@@ -343,24 +275,30 @@ export default {
         colBatch: 'Batch',
         colRemaining: 'Remaining',
         colExpiry: 'Expiry',
-
         boms: 'Bills of materials',
         parentOf: 'This item is the parent of',
         usedIn: 'This item is a component in',
         noBoms: 'None',
         usedQty: '{qty} {uom} per unit',
-
         files: 'Files on the item',
+        itemType: 'Item type',
+        treeType: 'Bill of materials',
+        active: 'Status',
+        activeYes: 'Active',
+        activeNo: 'Inactive',
+        created: 'Created',
+        updatedOn: 'Updated {when}',
+        stockUom: 'Stock unit',
+        minLevel: 'Minimum stock',
+        maxLevel: 'Maximum stock',
+        catalogNum: 'Supplier catalogue no.',
+        barcode: 'Barcode',
+        packageSize: 'Package size',
+        alcoholPct: 'Alcohol %',
+        extractionRatio: 'Extraction ratio',
+        siteComments: 'Site notes',
     },
-
     editor: {
-        stockKind: 'Stock kind',
-        stockSystem: 'Tradition',
-        stockWh: 'Warehouse',
-        stockMin: 'Minimum in stock',
-        stockMinHint: 'Below this the item is flagged as low',
-        internalHint:
-            'An internal component is made in-house from a recipe, so it is always batch-managed — every production order opens a new batch.',
         consumption: 'Consumption over time',
         consumptionOn: 'Stock falls by the calendar',
         consumptionHint:
@@ -373,75 +311,55 @@ export default {
         priceGroupHint:
             'The list sets only the discount ladder; the unit price is the item’s own',
         calculator: 'Price by quantity',
-        expiryMonths: 'Shelf life of produced batches (months)',
-        expiryMonthsHint:
-            'Empty — by the recipe’s preparation type, else by the family default',
         newTitle: 'New item',
         editTitle: 'Edit item · {name}',
         createConfirm: 'Create item',
         saveConfirm: 'Save changes',
         fixErrors: 'Fix the marked fields',
-        missing: 'Missing under the policy: {fields} — fill in or waive',
         none: '—',
         notSet: 'Not set',
         noSupplier: 'No supplier',
         noCategory: 'None',
-
-        identity: 'Identity & names',
         family: 'Family',
-        familyHint: 'Mandatory in this family: {fields}',
-        code: 'Item code',
-        codeHint: '6 digits · the first two follow the family',
-        sku: 'Stock SKU',
-        skuHint: 'Digits, Latin letters and hyphen · 3–20 characters',
+        code: 'Item number',
+        codeHint:
+            'Assigned automatically in the family’s block · 6 digits · editable before creation',
         nameHe: 'Hebrew name',
-        nameEn: 'English name',
-        lat: 'Latin name',
-        cn: 'Chinese name / pinyin',
+        nameEn: 'Foreign name',
         siteName: 'Site name',
         siteNameHint:
             'As shown on the consumer site — may differ from the internal name',
-        location: 'Warehouse location',
-        cabinet: 'Cabinet',
-        shelf: 'Shelf',
-
-        units: 'Units & flags',
+        units: 'Units, flags and stock levels',
         purchaseUom: 'Purchase unit',
-        salesUom: 'Sales / stock unit',
-        factor: 'Conversion — sales units per purchase unit',
-        consumableHint: 'Received into stock and never deducted by orders',
-
+        salesUom: 'Sales unit',
+        factor: 'Conversion — stock units per purchase unit',
         pricing: 'Prices & suppliers',
-        salePriceHint: 'Empty — the item is priced by quantity tiers',
+        salePriceHint:
+            'Per {uom}, before VAT · empty — priced by the quantity tiers',
         lastPurchaseHint: 'Updated automatically on every goods receipt',
         lastSupplierHint: 'Updated automatically on every purchase order',
-
         prep: 'Preparation & safety',
-        notes: 'Notes',
         internalFlagHint: 'Office and warehouse only — never printed',
-        productionHint: 'Printed on the prep sheet, for the pharmacist',
-
         site: 'Consumer site',
-
-        policy: 'Mandatory-field policy',
-        policyHint:
-            'This family still lacks the fields below. You can save anyway — every waiver is recorded and shown on the card.',
-        waive: 'Waive — save without this field',
-        policyOk: 'Every mandatory field of the family is filled',
+        general: 'General',
+        active: 'Status',
+        itemType: 'Item type',
+        treeType: 'Bill of materials',
+        nameEnHint:
+            'The botanical name, the pinyin or the English name — as in SAP',
+        stockUom: 'Stock unit',
+        minLevel: 'Minimum stock',
+        minLevelHint: 'Below this quantity the item is flagged as low',
+        maxLevel: 'Maximum stock',
     },
-
     validate: {
         nameShort: 'Enter an item name',
         nameLong: 'Up to 120 characters',
-        skuMissing: 'Enter a SKU',
-        skuFormat: 'Digits, Latin letters and hyphen · 3–20 characters',
-        skuTaken: 'This SKU already exists',
-        codeFormat: 'An item code is 6 digits',
-        codeTaken: 'This code belongs to another item',
+        codeFormat: 'An item number is 6 digits',
+        codeTaken: 'This number already belongs to another item',
         factor: 'A number of 1 or more',
         number: 'A positive number',
     },
-
     prep: {
         sub: '{n} preparation types · the fixed label text, shelf life and “contains” are edited here, not in code',
         usage: '{n} suitable items',
@@ -451,7 +369,6 @@ export default {
         recipeSteps: '{n} steps',
         legacyYes: 'Version 1',
         legacyNo: 'New',
-
         col: {
             name: 'Preparation type',
             unit: 'Unit',
@@ -462,7 +379,6 @@ export default {
             legacy: 'Origin',
             actions: 'Actions',
         },
-
         contains: {
             alcohol: 'Medical alcohol',
             glycerin: 'Glycerin',
@@ -472,7 +388,6 @@ export default {
             water: 'Water',
             oil: 'Oil',
         },
-
         editor: {
             newTitle: 'New preparation type',
             editTitle: 'Edit preparation type · {name}',
@@ -502,27 +417,23 @@ export default {
             minutes: 'Minutes',
             addStep: 'Add a step',
         },
-
         validate: {
             id: 'Identifier in lower-case Latin letters, 3–30 characters',
             idTaken: 'This identifier already exists',
             name: 'Enter a name',
             expiry: 'A whole number of months, 1–999',
         },
-
         toast: {
             created: 'Preparation type created',
             updated: 'Preparation type updated',
         },
     },
-
     bom: {
         sub: '{n} bills of materials · search by parent item or by component',
         count: 'trees · of {total}',
         search: 'Parent · component · code · Chinese description',
         n: '{n} components',
         viaComponent: 'Found through component: {name}',
-
         col: {
             parent: 'Parent item',
             components: 'Components',
@@ -532,12 +443,10 @@ export default {
             updated: 'Updated',
             uomShort: 'Unit',
         },
-
         issue: {
             backflush: 'Automatic (backflush)',
             manual: 'Manual',
         },
-
         drawer: {
             parent: 'Parent item',
             parentItem: 'Item',
@@ -555,7 +464,6 @@ export default {
             edit: 'Edit',
             remove: 'Delete',
         },
-
         editor: {
             newTitle: 'New bill of materials',
             editTitle: 'Edit bill of materials · {name}',
@@ -572,7 +480,6 @@ export default {
                 'How many parent units the tree makes — component quantities are for this yield',
             addComponent: 'Add a component',
         },
-
         validate: {
             parent: 'Choose a parent item',
             name: 'Enter a description',
@@ -582,7 +489,6 @@ export default {
             duplicate: 'A component appears twice',
             pct: 'A percentage between 0 and 100',
         },
-
         remove: {
             title: 'Delete bill of materials',
             body: 'The tree “{name}” will be deleted.',
@@ -592,24 +498,30 @@ export default {
                 'The deletion, the reason and who did it are written to the log',
             confirm: 'Delete tree',
         },
-
         toast: {
             created: 'Bill of materials created',
             updated: 'Bill of materials updated',
             removed: 'Bill of materials deleted',
         },
     },
-
     toast: {
         counted: 'Count recorded',
         countedBody: 'In stock {qty} · difference {delta}',
         removed: 'Item deleted',
         removedBody: '{name} · reason: {reason}',
         created: 'Item created',
-        createdBody: '{name} · code {code} · {sku}',
+        createdBody: '{name} · item number {code}',
         updated: 'Item updated',
         updatedBody: '{name} · {sku}',
         exported: 'Export ready',
         exportedBody: '{n} rows · {file}',
+    },
+    itemType: {
+        I: 'Item',
+        L: 'Labour / service',
+    },
+    treeType: {
+        N: 'No bill of materials',
+        P: 'Production tree',
     },
 };

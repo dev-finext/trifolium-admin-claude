@@ -56,18 +56,36 @@ const date = ref(isoDaysAgo(0));
 const note = ref('');
 const lines = ref([]);
 
-/** The batch number `offset` places after the next free one in the series. */
-function batchNoAt(offset) {
-    const parts = String(inventory.nextBatchNo).match(/^(\D*)(\d+)$/);
+/**
+ * The batch number line `i` opens: the item family's next serial, counting
+ * the earlier lines of this receipt that open a batch in the same family.
+ */
+function batchFor(i) {
+    const line = lines.value[i];
 
-    return parts ? `${parts[1]}${Number(parts[2]) + offset}` : '';
+    if (!line?.sku || line.existingBatch) {
+        return '';
+    }
+
+    const next = inventory.nextBatchFor(line.sku);
+    const head = next.slice(0, next.indexOf('-') + 1);
+    const ahead = lines.value
+        .slice(0, i)
+        .filter(
+            (other) =>
+                other.sku &&
+                !other.existingBatch &&
+                inventory.nextBatchFor(other.sku).startsWith(head),
+        ).length;
+
+    return `${head}${String(Number(next.slice(head.length)) + ahead).padStart(5, '0')}`;
 }
 
-function emptyLine(offset = 0) {
+function emptyLine() {
     return {
         sku: '',
         qty: '',
-        batch: batchNoAt(offset),
+        batch: '',
         existingBatch: '',
         supplierBatch: '',
         expiry: '',
@@ -123,10 +141,14 @@ const warehouses = computed(() =>
 const lineOk = (line) =>
     Boolean(line.sku) &&
     Number(line.qty) > 0 &&
-    Boolean(line.existingBatch || line.batch.trim()) &&
+    Boolean(line.existingBatch || line.batch) &&
     Boolean(line.expiry);
 
-const good = computed(() => lines.value.filter(lineOk));
+const good = computed(() =>
+    lines.value
+        .map((line, i) => ({ ...line, batch: batchFor(i) }))
+        .filter(lineOk),
+);
 const valid = computed(
     () =>
         Boolean(supplier.value.trim()) &&
@@ -199,7 +221,7 @@ function priceHint(line) {
 }
 
 function addLine() {
-    lines.value.push(emptyLine(lines.value.length));
+    lines.value.push(emptyLine());
 }
 
 function removeLine(index) {
@@ -403,21 +425,20 @@ async function save() {
                         />
                     </div>
                     <div>
-                        <label class="a-lbl" :for="`${uid}-b${i}`">
+                        <label class="a-lbl">
                             {{ t('inventory.receipt.col.batch') }}
-                            <span v-if="!line.existingBatch" class="a-req">
-                                {{ t('labels.required') }}
-                            </span>
                         </label>
-                        <AInput
-                            :id="`${uid}-b${i}`"
-                            v-model="line.batch"
-                            ltr
-                            :disabled="Boolean(line.existingBatch)"
+                        <div
+                            class="a-code a-tag batch-ro"
                             :aria-label="
                                 t('inventory.receipt.aria.batch', { n: i + 1 })
                             "
-                        />
+                        >
+                            {{ line.existingBatch || batchFor(i) || '—' }}
+                        </div>
+                        <div class="a-hint">
+                            {{ t('inventory.receipt.batchAuto') }}
+                        </div>
                     </div>
                     <div>
                         <label class="a-lbl" :for="`${uid}-sb${i}`">
@@ -566,5 +587,10 @@ async function save() {
     font-size: 13px;
     color: var(--a-ink-4);
     line-height: 1.5;
+}
+
+.batch-ro {
+    display: inline-block;
+    margin-top: 8px;
 }
 </style>

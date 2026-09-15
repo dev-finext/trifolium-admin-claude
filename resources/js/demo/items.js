@@ -1,18 +1,19 @@
-// The unified item catalogue, the managed preparation types, the bills of
-// materials and the attached files — second-version fixture content.
+// The unified item catalogue, the preparation types, the bills of materials
+// and the attached files — second-version fixture content.
 //
-// Items here do not replace the stock rows or the products: each item record
-// EXTENDS one of them (matched by sku) with what the first version never held —
-// three-language names, purchase vs sales units, flags, last purchase price,
-// suppliers, preparation suitability, safety restrictions, the two kinds of note,
-// the consumer-site fields and a shelf location. A few items stand alone with no
-// stock row at all: consumables that are received and never deducted.
-import { familyOfCode, ITEM_FAMILY } from '@/config/items';
+// An item record here is SAP's item master row (OITM) for that item number,
+// read straight off demo/real: names, units, flags, levels, prices, supplier
+// fields, the safety limits and the consumer-site fields. The few stock rows
+// the extract missed and the consumables that exist in no other list are
+// filled in with the same shape.
+import { familyOfCode } from '@/config/items';
 import { at, chance, pickFrom, spread } from '@/demo/fixture';
 import { CONSUMABLE_USAGE } from '@/demo/inventory';
 import { DEMO_ACTORS } from '@/demo/people';
 import REAL_CATEGORIES from '@/demo/real/categories.json';
+import REAL_INGREDIENTS from '@/demo/real/ingredients.json';
 import REAL_TIERS from '@/demo/real/priceTiers.json';
+import REAL_PRODUCTS from '@/demo/real/products.json';
 import { isoDaysAgo } from '@/lib/dates';
 import { L } from '@/lib/localized';
 
@@ -306,49 +307,6 @@ const SUPPLIER_KIND_OF_FAMILY = {
     admin: 'services',
 };
 
-const INTERNAL_NOTES = [
-    null,
-    null,
-    L(
-        'פחת של כ-20% בטחינה — להזמין בהתאם',
-        'About 20% loss in grinding — order accordingly',
-    ),
-    L(
-        'הספק מחליף מקור לפי עונה — לבדוק COA בכל קבלה',
-        'The supplier changes origin by season — check the COA on every receipt',
-    ),
-    null,
-    L('נמכר גם למטפלים בתפזורת', 'Also sold loose to practitioners'),
-];
-
-const PRODUCTION_NOTES = [
-    null,
-    L('לטחון לפני שימוש', 'Grind before use'),
-    L('לסנן פעמיים', 'Filter twice'),
-    null,
-    L('לא לחמם מעל 40°', 'Do not heat above 40°'),
-];
-
-const MARKETING = [
-    L(
-        'פורמולה מסורתית בהכנה ידנית, בבקבוק זכוכית כהה.',
-        'A traditional formula, prepared by hand, in an amber glass bottle.',
-    ),
-    L(
-        'ללא חומרים משמרים · טבעוני · מיוצר בישראל.',
-        'No preservatives · vegan · made in Israel.',
-    ),
-    L(
-        'מומלץ על ידי מטפלים. מתאים לשימוש יומיומי.',
-        'Recommended by practitioners. Suitable for daily use.',
-    ),
-];
-
-/** `10` + `0012` → `100012`. */
-function itemCode(family, n) {
-    return `${ITEM_FAMILY[family].prefix}${String(n).padStart(4, '0')}`;
-}
-
 /** Deterministic pick of one supplier of a kind, or the first supplier at all. */
 function supplierOf(slot, suppliers, kind) {
     const pool = suppliers.filter((supplier) => supplier.kind === kind);
@@ -433,23 +391,114 @@ export function pickInternalParents(stock) {
     };
 }
 
+/** SAP's item master, by item number. */
+const REAL_BY_CODE = new Map(
+    [...REAL_INGREDIENTS, ...REAL_PRODUCTS].map((row) => [row.code, row]),
+);
+
+/** SAP's unit names → the console's unit ids. */
+const SAP_UOM = {
+    'ק"ג': 'kg',
+    ליטר: 'l',
+    'מ"ל': 'ml',
+    גרם: 'g',
+    "יח'": 'unit',
+    יח: 'unit',
+    "י''ח": 'unit',
+};
+
+/** SAP's three restriction values → the card's levels. */
+const SAP_LIMIT = {
+    None: 'none',
+    NotRecomended: 'caution',
+    NotAllowed: 'forbidden',
+};
+
+/** SAP property numbers → preparation-type ids (15, 19, 20 are flags). */
+const PREP_BY_SAP = new Map(PREP_TYPES.map((type) => [type.sap, type.id]));
+
+const yes = (value) => value === 'Y';
+const sapUom = (name, fallback) =>
+    SAP_UOM[String(name || '').trim()] || fallback;
+const sapLimit = (value) => SAP_LIMIT[value] || null;
+
+/** The fields an item takes straight off its SAP row. */
+function fromSap(real) {
+    return {
+        active: yes(real.active),
+        itemType: real.itemType || 'I',
+        treeType: real.treeType || 'N',
+        levels: { min: real.minLevel ?? null, max: real.maxLevel ?? null },
+        barcode: real.barcode || null,
+        catalogNum: real.supplierCatalogNum || null,
+        packageSize: real.packageSize || null,
+        lab: {
+            alcoholPct: real.alcoholPct || null,
+            extractionRatio: real.extractionRatio || null,
+        },
+        safety: {
+            pregnancy: sapLimit(real.pregnancyLimit),
+            lactation: sapLimit(real.breastfeedingLimit),
+            under2: sapLimit(real.under2Limit),
+        },
+        prepTypes: (real.prepTypes || [])
+            .map((n) => PREP_BY_SAP.get(n))
+            .filter(Boolean),
+        site: {
+            sync: yes(real.siteSync),
+            categories: [
+                real.category1,
+                real.category2,
+                real.category3,
+                real.category4,
+            ].filter(Boolean),
+            promo: yes(real.monthlyPromo),
+            comments: real.siteComments || null,
+            qty:
+                real.siteQuantity != null
+                    ? Number(real.siteQuantity) || null
+                    : null,
+            unit: sapUom(real.siteUom, null),
+        },
+        updated: real.updatedOn || null,
+    };
+}
+
+/** The same fields for a row the extract missed: what a new SAP item starts with. */
+function blankSap(row, isHerb) {
+    return {
+        active: true,
+        itemType: 'I',
+        treeType: 'N',
+        levels: { min: row.min ?? null, max: null },
+        barcode: null,
+        catalogNum: null,
+        packageSize: null,
+        lab: { alcoholPct: null, extractionRatio: null },
+        safety: isHerb
+            ? safetyOf(row.sku)
+            : { pregnancy: null, lactation: null, under2: null },
+        prepTypes: isHerb ? prepTypesOf(row) : [],
+        site: {
+            sync: false,
+            categories: [],
+            promo: false,
+            comments: null,
+            qty: null,
+            unit: null,
+        },
+        updated: null,
+    };
+}
+
 /**
  * Build the item catalogue over the stock rows and the consumer products, plus
  * the few consumables that exist in no other list.
  *
  * One item per SKU: a shelf product that is also a stock row becomes one
- * record (`source: 'both'`) carrying the product's site fields over the stock
- * row's purchasing fields. The item's code IS its SKU — SAP's item number —
- * except for the three standalone consumables that have no SAP number.
+ * record (`source: 'both'`). The item's code IS its SKU — SAP's item number.
  */
 export function buildItems(stock, products, suppliers) {
-    const perFamily = {};
-    const nextCode = (family) => {
-        perFamily[family] = (perFamily[family] || 0) + 1;
-
-        return itemCode(family, perFamily[family]);
-    };
-
     // SAP's consumer-site price per gram — the one real evidence of what an
     // ingredient sells for (demo/real/priceTiers.json, band 1).
     const tierPrice = new Map(
@@ -463,19 +512,24 @@ export function buildItems(stock, products, suppliers) {
         pickInternalParents(stock).all.map((row) => row.sku),
     );
 
-    const fromStock = stock.map((row, i) => {
+    const fromStock = stock.map((row) => {
+        const real = REAL_BY_CODE.get(row.sku) || null;
         // The code says what the item is. `kind` only says where it is counted,
         // and it has four values where the catalogue has twenty-three.
         const family =
             familyOfCode(row.sku) || FAMILY_OF_KIND[row.kind] || 'consumable';
         const isHerb = family === 'herb';
         const isFormula = family === 'formula';
-        const purchaseUom = PURCHASE_UOM[row.unit] || row.unit || 'unit';
-        const factor =
-            row.kind === 'pack'
-                ? spread(`${row.sku}:factor`, 1, 5) * 100
-                : UOM_FACTOR[`${purchaseUom}:${row.unit}`] || 1;
-        const imported = isHerb && chance(`${row.sku}:imported`, 0.3);
+        const stockUom = row.unit || 'unit';
+        const purchaseUom = real
+            ? sapUom(real.buyUom, stockUom)
+            : PURCHASE_UOM[stockUom] || stockUom;
+        const salesUom = real ? sapUom(real.salesUom, stockUom) : stockUom;
+        const factor = UOM_FACTOR[`${purchaseUom}:${stockUom}`] || 1;
+        const imported =
+            !real?.lastPurchasePrice &&
+            isHerb &&
+            chance(`${row.sku}:imported`, 0.3);
         const supplierKind = SUPPLIER_KIND_OF_FAMILY[family] || 'raw_materials';
         const preferred = supplierOf(
             `${row.sku}:supplier`,
@@ -485,20 +539,22 @@ export function buildItems(stock, products, suppliers) {
         const last = chance(`${row.sku}:lastsup`, 0.72)
             ? preferred
             : supplierOf(`${row.sku}:supplier:2`, suppliers, supplierKind);
-        const missingLat = isHerb && i % 11 === 5;
-        const missingLocation = isHerb && i % 7 === 3;
         const usage = usageBySku.get(row.sku) || null;
         const isInternal = internalSkus.has(row.sku);
         const sells = SOLD_FAMILIES.includes(family);
+        // SAP's own last purchase price where the row has one; a plausible
+        // figure per purchase unit where the extract left it empty.
         const lastPurchase = isFormula
             ? null
-            : isHerb
-              ? imported
-                  ? spread(`${row.sku}:price`, 30, 110)
-                  : spread(`${row.sku}:price`, 120, 480)
-              : family === 'consumable'
-                ? spread(`${row.sku}:price`, 20, 60)
-                : spread(`${row.sku}:price`, 12, 45) / 10;
+            : real?.lastPurchasePrice
+              ? real.lastPurchasePrice
+              : isHerb
+                ? imported
+                    ? spread(`${row.sku}:price`, 30, 110)
+                    : spread(`${row.sku}:price`, 120, 480)
+                : family === 'consumable'
+                  ? spread(`${row.sku}:price`, 20, 60)
+                  : spread(`${row.sku}:price`, 12, 45) / 10;
         const currency = imported ? 'EUR' : 'ILS';
         // The unit price: SAP's own where the catalogue has one, otherwise a
         // plausible markup on what the pharmacy last paid, per sales unit.
@@ -508,7 +564,9 @@ export function buildItems(stock, products, suppliers) {
               ? tierPrice.get(row.sku)
               : sells && lastPurchase
                 ? round05(
-                      ((lastPurchase * TO_ILS_RATE[currency]) / factor) * 2.2,
+                      ((lastPurchase * TO_ILS_RATE[currency]) /
+                          (UOM_FACTOR[`${purchaseUom}:${salesUom}`] || 1)) *
+                          2.2,
                   )
                 : null;
 
@@ -518,26 +576,33 @@ export function buildItems(stock, products, suppliers) {
             family,
             source: 'stock',
             names: {
-                he: row.name.he,
-                en: row.name.en,
-                lat: missingLat ? null : row.lat,
-                cn: row.cn || null,
-                site: isFormula
-                    ? `${row.name.he} · ${row.size} ${row.sizeUnit}`
-                    : null,
+                he: real?.nameHe || row.name.he,
+                en: real ? real.nameForeign || null : row.name.en || null,
+                site: real?.siteName || null,
             },
-            uom: { purchase: purchaseUom, sales: row.unit, factor },
+            uom: {
+                purchase: purchaseUom,
+                sales: salesUom,
+                stock: stockUom,
+                factor,
+            },
             flags: {
-                purchase: !isFormula && !isInternal,
-                sales: sells,
-                inventory: true,
+                purchase: real
+                    ? yes(real.purchase) && !isInternal
+                    : !isFormula && !isInternal,
+                sales: real ? yes(real.sell) : sells,
+                inventory: real ? yes(real.stockTracked) : true,
                 // Everything compounded is batch-managed; the supplies nobody
                 // counts per order (toilet paper, gloves) are not.
-                batch:
-                    !usage &&
-                    (isHerb || sells || family === 'consumable' || isInternal),
-                consumable: false,
+                batch: real
+                    ? (yes(real.batchManaged) && !usage) || isInternal
+                    : !usage &&
+                      (isHerb ||
+                          sells ||
+                          family === 'consumable' ||
+                          isInternal),
                 internal: isInternal,
+                therapistDiscount: real ? yes(real.therapistDiscount) : false,
             },
             price: {
                 sale,
@@ -566,52 +631,16 @@ export function buildItems(stock, products, suppliers) {
                       countedQty: usage.countedQty,
                   }
                 : null,
-            expiryMonths: null,
             suppliers: isFormula
                 ? { preferred: null, last: null }
                 : { preferred, last },
-            prepTypes: isHerb ? prepTypesOf(row) : [],
-            safety: isHerb
-                ? safetyOf(row.sku)
-                : { pregnancy: null, lactation: null, under2: null },
-            notes: {
-                internal: isHerb
-                    ? pickFrom(`${row.sku}:note:int`, INTERNAL_NOTES)
-                    : null,
-                production: isHerb
-                    ? pickFrom(`${row.sku}:note:prod`, PRODUCTION_NOTES)
-                    : null,
-            },
-            site: {
-                sync: isFormula && chance(`${row.sku}:sync`, 0.6),
-                categories: isFormula
-                    ? [pickFrom(`${row.sku}:cat`, SITE_CATEGORIES).id]
-                    : [],
-                promo: isFormula && chance(`${row.sku}:promo`, 0.2),
-                marketing: isFormula
-                    ? pickFrom(`${row.sku}:mkt`, MARKETING)
-                    : null,
-                qty: isFormula ? row.size : null,
-                unit: isFormula ? row.sizeUnit : null,
-            },
-            location: missingLocation
-                ? null
-                : isHerb
-                  ? {
-                        cabinet: spread(`${row.sku}:cab`, 1, 6),
-                        shelf: spread(`${row.sku}:shelf`, 1, 5),
-                    }
-                  : family === 'consumable'
-                    ? { cabinet: 7, shelf: spread(`${row.sku}:shelf`, 1, 2) }
-                    : isFormula
-                      ? { cabinet: 8, shelf: spread(`${row.sku}:shelf`, 1, 3) }
-                      : null,
-            waived: missingLat ? ['lat'] : [],
+            ...(real ? fromSap(real) : blankSap(row, isHerb)),
             created: row.created,
         };
     });
 
     const fromProducts = products.map((product) => {
+        const real = REAL_BY_CODE.get(product.sku) || null;
         // Family 50 is what the pharmacy makes; 55 and 16 are bought in.
         const family =
             product.family || familyOfCode(product.sku) || 'bought_shelf';
@@ -619,9 +648,7 @@ export function buildItems(stock, products, suppliers) {
         const preferred = house
             ? null
             : supplierOf(`${product.sku}:supplier`, suppliers, 'raw_materials');
-        // A product's labels are its site categories: SAP files both under
-        // the same `@CATEGORIES` code.
-        const categories = product.labels.slice(0, 4);
+        const stockUom = real ? sapUom(real.stockUom, 'unit') : 'unit';
 
         return {
             sku: product.sku,
@@ -629,33 +656,34 @@ export function buildItems(stock, products, suppliers) {
             family,
             source: 'product',
             names: {
-                he: product.name.he,
-                en: product.name.en,
-                lat: null,
-                cn: null,
-                site: product.content
-                    ? `${product.name.he} · ${product.content.he}`
-                    : product.name.he,
+                he: real?.nameHe || product.name.he,
+                en: real ? real.nameForeign || null : product.name.en || null,
+                site: real?.siteName || product.name.he,
             },
-            uom: { purchase: 'unit', sales: 'unit', factor: 1 },
+            uom: {
+                purchase: real ? sapUom(real.buyUom, stockUom) : 'unit',
+                sales: real ? sapUom(real.salesUom, stockUom) : 'unit',
+                stock: stockUom,
+                factor: 1,
+            },
             flags: {
-                purchase: !house,
-                sales: true,
-                inventory: true,
-                batch: house,
-                consumable: false,
+                purchase: real ? yes(real.purchase) : !house,
+                sales: real ? yes(real.sell) : true,
+                inventory: real ? yes(real.stockTracked) : true,
+                batch: real ? yes(real.batchManaged) : house,
                 // A shelf product is made ahead of time from its recipe, but it
                 // is a product, not a component of anything else.
                 internal: false,
-                // The 40 % practitioner discount the site grants on some shelf
-                // products — SAP's item property 19.
-                therapistDiscount: chance(`${product.sku}:tdisc`, 0.35),
+                therapistDiscount: real
+                    ? yes(real.therapistDiscount)
+                    : chance(`${product.sku}:tdisc`, 0.35),
             },
             price: {
                 sale: product.net,
                 lastPurchase: house
                     ? null
-                    : spread(`${product.sku}:price`, 18, 60),
+                    : (real?.lastPurchasePrice ??
+                      spread(`${product.sku}:price`, 18, 60)),
                 currency: 'ILS',
                 lastPurchaseOn: house
                     ? null
@@ -664,68 +692,59 @@ export function buildItems(stock, products, suppliers) {
             // A shelf product is sold at one price whatever the quantity.
             priceGroup: 'none',
             consumption: null,
-            // A few house products keep a shorter life than their recipe says.
-            expiryMonths:
-                house && chance(`${product.sku}:exp`, 0.3) ? 18 : null,
             suppliers: { preferred, last: preferred },
-            prepTypes: [],
-            safety: { pregnancy: null, lactation: null, under2: null },
-            notes: { internal: null, production: null },
-            site: {
-                sync: product.status === 'published',
-                categories,
-                promo: chance(`${product.sku}:promo`, 0.15),
-                marketing: pickFrom(`${product.sku}:mkt`, MARKETING),
-                qty: product.wVal,
-                unit: product.wUom,
-            },
-            location: null,
-            waived: [],
+            ...(real
+                ? fromSap(real)
+                : blankSap(
+                      { sku: product.sku, min: product.minStock ?? null },
+                      false,
+                  )),
             created: product.created,
         };
     });
 
-    // Received and never deducted: the "consumable" kind the spec asked for.
+    // Received and never deducted: the supplies that have no SAP stock row.
     const standalone = [
         {
-            sku: 'CS-9001',
+            sku: '300951',
             family: 'consumable',
-            names: {
-                he: 'כפפות ניטריל M',
-                en: 'Nitrile gloves M',
-                lat: null,
-                cn: null,
-                site: null,
+            names: { he: 'כפפות ניטריל M', en: 'Nitrile gloves M', site: null },
+            uom: {
+                purchase: 'pack',
+                sales: 'unit',
+                stock: 'unit',
+                factor: 100,
             },
-            uom: { purchase: 'pack', sales: 'unit', factor: 100 },
             supplierKind: 'packaging',
             lastPurchase: 42,
         },
         {
-            sku: 'CS-9002',
+            sku: '470951',
             family: 'packaging',
             names: {
                 he: 'מדבקות מדפסת 60×40 (גליל)',
                 en: 'Printer labels 60×40 (roll)',
-                lat: null,
-                cn: null,
                 site: null,
             },
-            uom: { purchase: 'pack', sales: 'unit', factor: 1000 },
+            uom: {
+                purchase: 'pack',
+                sales: 'unit',
+                stock: 'unit',
+                factor: 1000,
+            },
             supplierKind: 'packaging',
             lastPurchase: 68,
         },
         {
-            sku: 'AD-9101',
+            sku: '480951',
             family: 'admin',
-            names: {
-                he: 'נייר A4 (חבילה)',
-                en: 'A4 paper (pack)',
-                lat: null,
-                cn: null,
-                site: null,
+            names: { he: 'נייר A4 (חבילה)', en: 'A4 paper (pack)', site: null },
+            uom: {
+                purchase: 'pack',
+                sales: 'unit',
+                stock: 'unit',
+                factor: 500,
             },
-            uom: { purchase: 'pack', sales: 'unit', factor: 500 },
             supplierKind: 'services',
             lastPurchase: 24,
         },
@@ -738,19 +757,18 @@ export function buildItems(stock, products, suppliers) {
 
         return {
             ...item,
-            code: nextCode(item.family),
+            code: item.sku,
             source: 'item',
             flags: {
                 purchase: true,
                 sales: false,
                 inventory: false,
                 batch: false,
-                consumable: true,
                 internal: false,
+                therapistDiscount: false,
             },
             priceGroup: null,
             consumption: null,
-            expiryMonths: null,
             price: {
                 sale: null,
                 lastPurchase,
@@ -758,19 +776,7 @@ export function buildItems(stock, products, suppliers) {
                 lastPurchaseOn: isoDaysAgo(spread(`${item.sku}:bought`, 3, 90)),
             },
             suppliers: { preferred, last: preferred },
-            prepTypes: [],
-            safety: { pregnancy: null, lactation: null, under2: null },
-            notes: { internal: null, production: null },
-            site: {
-                sync: false,
-                categories: [],
-                promo: false,
-                marketing: null,
-                qty: null,
-                unit: null,
-            },
-            location: null,
-            waived: [],
+            ...blankSap({ sku: item.sku, min: null }, false),
             created: isoDaysAgo(spread(`${item.sku}:created`, 100, 600)),
         };
     });
@@ -796,13 +802,11 @@ export function buildItems(stock, products, suppliers) {
                 ...twin.flags,
                 sales: true,
                 batch: twin.flags.batch || product.flags.batch,
-                internal: twin.flags.internal,
                 therapistDiscount: product.flags.therapistDiscount,
             },
             price: { ...twin.price, sale: product.price.sale },
             site: product.site,
             priceGroup: 'none',
-            expiryMonths: product.expiryMonths,
         });
     });
 

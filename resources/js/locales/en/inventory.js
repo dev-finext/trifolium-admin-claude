@@ -134,8 +134,7 @@ export default {
         none: 'None',
         seriesTitle: 'Batch numbering',
         seriesHint:
-            'A prefix per batch source, and a running number — instead of the spreadsheet',
-        next: 'Next: {id}',
+            'Batch numbers are assigned automatically: the item family’s code prefix and a serial that runs per family — 10-00124, say. Waste batches carry a W.',
     },
 
     stock: {
@@ -346,6 +345,7 @@ export default {
     },
 
     receipt: {
+        batchAuto: 'Assigned automatically by item family',
         title: 'New goods receipt',
         supplier: 'Supplier',
         supplierPh: 'Supplier name as printed on the delivery note',

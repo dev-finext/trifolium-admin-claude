@@ -14,7 +14,6 @@ import {
     ITEM_CODE_DIGITS,
     ITEM_FAMILY,
     ITEM_FLAG_IDS,
-    ITEM_MANDATORY,
     TERMINAL_STATUS_IDS,
 } from '@/config';
 import { persist } from '@/data/source';
@@ -58,25 +57,23 @@ function nextSerial(ids, series) {
  */
 const sessionUrls = new Map();
 
-/** Is a mandatory field filled on an item? One rule per field id. */
-const FILLED = {
-    lat: (item) => Boolean(item.names?.lat),
-    purchaseUom: (item) => Boolean(item.uom?.purchase),
-    prepTypes: (item) => (item.prepTypes || []).length > 0,
-    safety: (item) =>
-        Boolean(
-            item.safety?.pregnancy &&
-            item.safety?.lactation &&
-            item.safety?.under2,
-        ),
-    location: (item) => Boolean(item.location?.cabinet),
-    siteName: (item) => Boolean(item.names?.site),
-    categories: (item) => (item.site?.categories || []).length > 0,
-    salePrice: (item) =>
-        item.price?.sale !== null && item.price?.sale !== undefined,
-    supplier: (item) => Boolean(item.suppliers?.preferred),
-    // An internal component is made from a recipe; the join hands the count in.
-    bom: (item) => (item.bomCount || 0) > 0,
+/** Where a new item's stock row is counted, by family — SAP's warehouse split. */
+const STOCK_KIND_OF_FAMILY = {
+    herb: 'raw',
+    herb_1to1: 'raw',
+    extract: 'raw',
+    hydrosol: 'raw',
+    essential_oil: 'raw',
+    tincture: 'raw',
+    infused_oil: 'raw',
+    homeopathy: 'raw',
+    consumable: 'base',
+    glass: 'pack',
+    plastic: 'pack',
+    cap: 'pack',
+    box: 'pack',
+    jar: 'pack',
+    packaging: 'pack',
 };
 
 /** A number typed into a form, or null when the field was left empty. */
@@ -195,13 +192,6 @@ export const ITEM_FILTER_FIELDS = [
         values: (row) => [row.site?.sync ? 'on' : 'off'],
     },
     {
-        key: 'miss',
-        group: 'quality',
-        kind: 'set',
-        prefix: 'items.filter.missState',
-        values: (row) => [row.missing.length ? 'yes' : 'no'],
-    },
-    {
         key: 'bom',
         group: 'quality',
         kind: 'set',
@@ -283,23 +273,6 @@ export const useItemsStore = defineStore('items', () => {
         return `${base}${base.endsWith('/') ? '' : '/'}${file.url}`;
     };
 
-    /** The mandatory fields of a family. */
-    const mandatoryOf = (family) => ITEM_MANDATORY[family] || [];
-
-    /** Mandatory fields an item lacks, waivers excluded. */
-    const missingOf = (item) =>
-        mandatoryOf(item.family).filter(
-            (field) =>
-                !(item.waived || []).includes(field) && !FILLED[field]?.(item),
-        );
-
-    /** Mandatory fields an item lacks that a waiver covers. */
-    const waivedOf = (item) =>
-        mandatoryOf(item.family).filter(
-            (field) =>
-                (item.waived || []).includes(field) && !FILLED[field]?.(item),
-        );
-
     /** The next free code in a family — `10` + `0026`. */
     const nextCode = (family) => {
         const prefix = ITEM_FAMILY[family]?.prefix || '00';
@@ -327,8 +300,8 @@ export const useItemsStore = defineStore('items', () => {
     // ---- the joined rows -----------------------------------------------------
 
     /**
-     * Every item with its stock figures, its resolved suppliers and its policy
-     * state — the row the screen lists and the card opens.
+     * Every item with its stock figures and its resolved suppliers — the row
+     * the screen lists and the card opens.
      */
     const rows = computed(() =>
         items.value.map((item) => {
@@ -358,14 +331,6 @@ export const useItemsStore = defineStore('items', () => {
                 min: stock ? stock.min : product ? product.minStock : null,
                 preferred: supplierByCode(item.suppliers?.preferred),
                 last: supplierByCode(item.suppliers?.last),
-                missing: missingOf({
-                    ...item,
-                    bomCount: bomsOfParent(item.sku).length,
-                }),
-                waivedMissing: waivedOf({
-                    ...item,
-                    bomCount: bomsOfParent(item.sku).length,
-                }),
                 bomCount: bomsOfParent(item.sku).length,
                 usedInCount: bomsUsing(item.sku).length,
                 fileCount: attachmentsOf('item', item.sku).length,
@@ -508,16 +473,38 @@ export const useItemsStore = defineStore('items', () => {
             flags.batch = true;
         }
 
+        // Batch-managed stock is stock.
+        if (flags.batch) {
+            flags.inventory = true;
+        }
+
         const record = {
-            sku: existingSku || form.sku,
-            code: form.code || existingSku || form.sku,
+            // SAP's item number is the one key: the code IS the sku.
+            sku: existingSku || form.code,
+            code: form.code || existingSku,
             family: form.family,
-            names: { ...form.names },
+            active: form.active ?? true,
+            itemType: form.itemType || 'I',
+            treeType: form.treeType || 'N',
+            names: {
+                he: form.names?.he || '',
+                en: form.names?.en || null,
+                site: form.names?.site || null,
+            },
             uom: {
-                ...form.uom,
+                purchase: form.uom?.purchase || 'unit',
+                sales: form.uom?.sales || 'unit',
+                stock: form.uom?.stock || form.uom?.sales || 'unit',
                 factor: numberOrNull(form.uom?.factor) ?? 1,
             },
             flags,
+            levels: {
+                min: numberOrNull(form.levels?.min),
+                max: numberOrNull(form.levels?.max),
+            },
+            barcode: form.barcode || null,
+            catalogNum: form.catalogNum || null,
+            packageSize: form.packageSize || null,
             price: {
                 ...form.price,
                 sale: numberOrNull(form.price?.sale),
@@ -526,18 +513,14 @@ export const useItemsStore = defineStore('items', () => {
             suppliers: { ...form.suppliers },
             prepTypes: [...(form.prepTypes || [])],
             safety: { ...form.safety },
-            notes: { ...form.notes },
+            lab: {
+                alcoholPct: numberOrNull(form.lab?.alcoholPct),
+                extractionRatio: form.lab?.extractionRatio || null,
+            },
             site: {
                 ...form.site,
                 categories: [...(form.site?.categories || [])],
             },
-            location: form.location?.cabinet
-                ? {
-                      cabinet: numberOrNull(form.location.cabinet),
-                      shelf: numberOrNull(form.location.shelf),
-                  }
-                : null,
-            waived: [...(form.waived || [])],
             // Which ladder prices it: null inherits by code prefix, 'none' is
             // a fixed price, an id names a group.
             priceGroup: form.priceGroup || null,
@@ -556,10 +539,8 @@ export const useItemsStore = defineStore('items', () => {
                               numberOrNull(form.consumption.countedQty) ?? 0,
                       }
                     : null,
-            expiryMonths: numberOrNull(form.expiryMonths),
+            updated: isoDaysAgo(0),
         };
-        // The stock row's own fields, when the form carries them.
-        const stockForm = form.stock || null;
 
         if (isNew) {
             const item = {
@@ -572,32 +553,21 @@ export const useItemsStore = defineStore('items', () => {
 
             if (item.flags.inventory && !inventory.itemBySku(item.sku)) {
                 const stockRows = bag('stock');
-                const min = numberOrNull(stockForm?.min) ?? 0;
+                const min = item.levels.min ?? 0;
+                const kind = STOCK_KIND_OF_FAMILY[item.family] || 'shelf';
                 const stockRow = {
                     sku: item.sku,
-                    herbId: item.family === 'herb' ? `ing-${item.sku}` : null,
-                    kind:
-                        stockForm?.kind ||
-                        (item.family === 'herb'
-                            ? 'raw'
-                            : item.family === 'packaging'
-                              ? 'pack'
-                              : item.family === 'consumable'
-                                ? 'base'
-                                : 'shelf'),
+                    herbId: item.family === 'herb' ? item.sku : null,
+                    kind,
                     name: {
                         he: item.names.he,
                         en: item.names.en || item.names.he,
                     },
-                    lat: item.names.lat || null,
-                    cn: item.names.cn || null,
-                    system: stockForm?.system || 'west',
-                    wh:
-                        stockForm?.wh ||
-                        (item.family === 'herb' || item.family === 'consumable'
-                            ? 'raw'
-                            : 'shelf'),
-                    unit: item.uom.sales,
+                    lat: null,
+                    cn: null,
+                    system: 'west',
+                    wh: kind === 'shelf' ? 'shelf' : 'raw',
+                    unit: item.uom.stock,
                     size: null,
                     sizeUnit: null,
                     price: item.price.sale,
@@ -641,18 +611,10 @@ export const useItemsStore = defineStore('items', () => {
                 he: item.names.he,
                 en: item.names.en || item.names.he,
             };
-            stockRow.lat = item.names.lat || null;
-            stockRow.cn = item.names.cn || null;
-            stockRow.unit = item.uom.sales;
+            stockRow.unit = item.uom.stock;
             stockRow.price = item.price.sale;
-
-            if (stockForm) {
-                stockRow.kind = stockForm.kind || stockRow.kind;
-                stockRow.system = stockForm.system || stockRow.system;
-                stockRow.wh = stockForm.wh || stockRow.wh;
-                stockRow.min = numberOrNull(stockForm.min) ?? stockRow.min;
-                stockRow.low = stockRow.avail < stockRow.min;
-            }
+            stockRow.min = item.levels.min ?? stockRow.min;
+            stockRow.low = stockRow.avail < stockRow.min;
         }
 
         writeLog({
@@ -973,9 +935,6 @@ export const useItemsStore = defineStore('items', () => {
         bomsUsing,
         attachmentsOf,
         attachmentUrl,
-        mandatoryOf,
-        missingOf,
-        waivedOf,
         nextCode,
         codeTaken,
         skuTaken,

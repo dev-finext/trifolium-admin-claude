@@ -1,10 +1,10 @@
 <script setup>
-// Add or edit one item — the whole card in one form.
+// Add or edit one item — SAP's item master, field for field.
 //
-// The mandatory-field policy is enforced here and nowhere else: the family says
-// which fields it requires, the form lists what is still missing, and the person
-// saving either fills the field or ticks a waiver for it. A waiver is recorded on
-// the item and shown on its card, so nothing is silently incomplete.
+// The card asks only what SAP asks: the item number, the names, the units and
+// flags, the levels, the prices and supplier fields, the safety limits and the
+// consumer-site fields. Nothing here is mandatory beyond a name and a valid
+// number; SAP does not stop a buyer either.
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -19,22 +19,18 @@ import ATextarea from '@/components/ui/ATextarea.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import {
     CURRENCY_IDS,
-    INGREDIENT_KINDS,
     ITEM_FAMILY_IDS,
     ITEM_FLAG_IDS,
+    ITEM_TYPE_IDS,
     ITEM_UOM_IDS,
     SAFETY_CONTEXT_IDS,
     SAFETY_LEVEL_IDS,
     SITE_CATEGORY_SLOTS,
-    WAREHOUSE_IDS,
+    TREE_TYPE_IDS,
 } from '@/config';
-import { isLocalized, L } from '@/lib/localized';
 import { useCatalogStore } from '@/stores/catalog';
 import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
-
-/** The two traditions an ingredient is filed under. */
-const SYSTEM_IDS = ['west', 'chinese'];
 
 const props = defineProps({
     /** The item (or joined row) being edited; `{}` for a new one. */
@@ -55,88 +51,57 @@ const codeTouched = ref(Boolean(props.item.code));
 
 const source = props.item;
 
-/** A note travels as `{ he, en }`; the form edits the Hebrew source and keeps the English. */
-function noteText(value) {
-    return isLocalized(value) ? value.he : value || '';
-}
-
-function noteRecord(text, previous) {
-    const typed = text.trim();
-
-    if (!typed) {
-        return null;
-    }
-
-    return isLocalized(previous) && previous.he !== typed
-        ? L(typed, previous.en || typed)
-        : isLocalized(previous)
-          ? previous
-          : L(typed, typed);
-}
+const text = (value) =>
+    value === null || value === undefined ? '' : String(value);
 
 const form = reactive({
     family: source.family || 'herb',
-    sku: source.sku || '',
+    // The item number: minted in the family's block until typed by hand.
     code: source.code || store.nextCode(source.family || 'herb'),
+    active: source.active ?? true,
+    itemType: source.itemType || 'I',
+    treeType: source.treeType || 'N',
     names: {
         he: source.names?.he || '',
         en: source.names?.en || '',
-        lat: source.names?.lat || '',
-        cn: source.names?.cn || '',
         site: source.names?.site || '',
     },
     uom: {
         purchase: source.uom?.purchase || 'kg',
         sales: source.uom?.sales || 'g',
-        factor: source.uom?.factor != null ? String(source.uom.factor) : '1000',
+        stock: source.uom?.stock || source.uom?.sales || 'kg',
+        factor: source.uom?.factor != null ? String(source.uom.factor) : '1',
     },
     flags: {
         purchase: source.flags?.purchase ?? true,
         sales: source.flags?.sales ?? true,
         inventory: source.flags?.inventory ?? true,
         batch: source.flags?.batch ?? true,
-        consumable: source.flags?.consumable ?? false,
         internal: source.flags?.internal ?? false,
+        therapistDiscount: source.flags?.therapistDiscount ?? false,
     },
-    // The stock row's own fields — where it is counted and the minimum that
-    // raises the low-stock flag. Only meaningful while the item is stocked.
-    stock: {
-        kind: source.stock?.kind || 'raw',
-        system: source.stock?.system || 'west',
-        wh: source.stock?.wh || 'raw',
-        min: source.stock?.min != null ? String(source.stock.min) : '0',
+    levels: {
+        min: text(source.levels?.min),
+        max: text(source.levels?.max),
     },
+    barcode: source.barcode || '',
+    catalogNum: source.catalogNum || '',
+    packageSize: source.packageSize || '',
     // Which ladder prices it: '' inherits by code prefix, 'none' is a fixed
     // price, an id names a group.
     priceGroup: source.priceGroup || '',
     // Supplies consumed by the calendar — only when not batch-managed.
     consumption: {
         on: Boolean(source.consumption),
-        qty:
-            source.consumption?.qty != null
-                ? String(source.consumption.qty)
-                : '',
+        qty: text(source.consumption?.qty),
         periodDays:
             source.consumption?.periodDays != null
                 ? String(source.consumption.periodDays)
                 : '7',
     },
-    expiryMonths:
-        source.expiryMonths != null ? String(source.expiryMonths) : '',
-    location: {
-        cabinet:
-            source.location?.cabinet != null
-                ? String(source.location.cabinet)
-                : '',
-        shelf:
-            source.location?.shelf != null ? String(source.location.shelf) : '',
-    },
     price: {
-        sale: source.price?.sale != null ? String(source.price.sale) : '',
-        lastPurchase:
-            source.price?.lastPurchase != null
-                ? String(source.price.lastPurchase)
-                : '',
+        sale: text(source.price?.sale),
+        lastPurchase: text(source.price?.lastPurchase),
         currency: source.price?.currency || 'ILS',
         lastPurchaseOn: source.price?.lastPurchaseOn || null,
     },
@@ -150,9 +115,9 @@ const form = reactive({
         lactation: source.safety?.lactation || '',
         under2: source.safety?.under2 || '',
     },
-    notes: {
-        internal: noteText(source.notes?.internal),
-        production: noteText(source.notes?.production),
+    lab: {
+        alcoholPct: text(source.lab?.alcoholPct),
+        extractionRatio: source.lab?.extractionRatio || '',
     },
     site: {
         sync: source.site?.sync ?? false,
@@ -161,14 +126,14 @@ const form = reactive({
             (_, i) => source.site?.categories?.[i] || '',
         ),
         promo: source.site?.promo ?? false,
-        marketing: noteText(source.site?.marketing),
-        qty: source.site?.qty != null ? String(source.site.qty) : '',
+        comments: source.site?.comments || '',
+        qty: text(source.site?.qty),
         unit: source.site?.unit || '',
     },
-    waived: [...(source.waived || [])],
 });
 
-// What the pharmacy makes itself is always batch-managed.
+// What the pharmacy makes itself is always batch-managed, and batch-managed
+// stock is stock.
 watch(
     () => form.flags.internal,
     (internal) => {
@@ -177,8 +142,16 @@ watch(
         }
     },
 );
+watch(
+    () => form.flags.batch,
+    (batch) => {
+        if (batch) {
+            form.flags.inventory = true;
+        }
+    },
+);
 
-// A new item's code follows its family until the code is typed by hand.
+// A new item's number follows its family until it is typed by hand.
 watch(
     () => form.family,
     (family) => {
@@ -192,9 +165,7 @@ function mark(field) {
     touched[field] = true;
 }
 
-const normalizedSku = computed(() =>
-    form.sku.toUpperCase().replace(/\s+/g, ''),
-);
+const nonNegative = (value) => value === '' || Number(value) >= 0;
 
 const errors = computed(() => {
     const he = form.names.he.trim();
@@ -208,15 +179,6 @@ const errors = computed(() => {
                 : he.length > 120
                   ? t('items.validate.nameLong')
                   : '',
-        sku: !isNew.value
-            ? ''
-            : !normalizedSku.value
-              ? t('items.validate.skuMissing')
-              : !/^[0-9A-Z-]{3,20}$/.test(normalizedSku.value)
-                ? t('items.validate.skuFormat')
-                : store.skuTaken(normalizedSku.value)
-                  ? t('items.validate.skuTaken')
-                  : '',
         code: !/^\d{6}$/.test(code)
             ? t('items.validate.codeFormat')
             : store.codeTaken(code, props.item.sku || null)
@@ -226,54 +188,56 @@ const errors = computed(() => {
             !Number.isFinite(factor) || factor < 1
                 ? t('items.validate.factor')
                 : '',
-        sale:
-            form.price.sale !== '' && !(Number(form.price.sale) >= 0)
-                ? t('items.validate.number')
-                : '',
-        lastPurchase:
-            form.price.lastPurchase !== '' &&
-            !(Number(form.price.lastPurchase) >= 0)
-                ? t('items.validate.number')
-                : '',
+        sale: nonNegative(form.price.sale) ? '' : t('items.validate.number'),
+        lastPurchase: nonNegative(form.price.lastPurchase)
+            ? ''
+            : t('items.validate.number'),
+        levels:
+            nonNegative(form.levels.min) && nonNegative(form.levels.max)
+                ? ''
+                : t('items.validate.number'),
     };
 });
 
 const hasErrors = computed(() => Object.values(errors.value).some(Boolean));
+const valid = computed(() => !hasErrors.value);
 
 function show(field) {
     return touched[field] ? errors.value[field] : '';
 }
 
-/** The record the store will receive, built once so the policy check sees it too. */
+const numberOrNull = (value) => (value === '' ? null : Number(value));
+
+/** The record the store will receive — also what the calculator prices. */
 const draft = computed(() => ({
-    sku: isNew.value ? normalizedSku.value : props.item.sku,
+    sku: isNew.value ? form.code.trim() : props.item.sku,
     code: form.code.trim(),
     family: form.family,
+    active: form.active,
+    itemType: form.itemType,
+    treeType: form.treeType,
     names: {
         he: form.names.he.trim(),
         en: form.names.en.trim() || null,
-        lat: form.names.lat.trim() || null,
-        cn: form.names.cn.trim() || null,
         site: form.names.site.trim() || null,
     },
     uom: {
         purchase: form.uom.purchase,
         sales: form.uom.sales,
+        stock: form.uom.stock,
         factor: Number(form.uom.factor) || 1,
     },
     flags: { ...form.flags },
-    location: form.location.cabinet.trim()
-        ? {
-              cabinet: form.location.cabinet.trim(),
-              shelf: form.location.shelf.trim() || null,
-          }
-        : null,
+    levels: {
+        min: numberOrNull(form.levels.min),
+        max: numberOrNull(form.levels.max),
+    },
+    barcode: form.barcode.trim() || null,
+    catalogNum: form.catalogNum.trim() || null,
+    packageSize: form.packageSize.trim() || null,
     price: {
-        sale: form.price.sale === '' ? null : Number(form.price.sale),
-        lastPurchase:
-            form.price.lastPurchase === ''
-                ? null
-                : Number(form.price.lastPurchase),
+        sale: numberOrNull(form.price.sale),
+        lastPurchase: numberOrNull(form.price.lastPurchase),
         currency: form.price.currency,
         lastPurchaseOn: form.price.lastPurchaseOn,
     },
@@ -287,19 +251,18 @@ const draft = computed(() => ({
         lactation: form.safety.lactation || null,
         under2: form.safety.under2 || null,
     },
-    notes: {
-        internal: noteRecord(form.notes.internal, source.notes?.internal),
-        production: noteRecord(form.notes.production, source.notes?.production),
+    lab: {
+        alcoholPct: numberOrNull(form.lab.alcoholPct),
+        extractionRatio: form.lab.extractionRatio.trim() || null,
     },
     site: {
         sync: form.site.sync,
         categories: form.site.categories.filter(Boolean),
         promo: form.site.promo,
-        marketing: noteRecord(form.site.marketing, source.site?.marketing),
-        qty: form.site.qty === '' ? null : Number(form.site.qty),
+        comments: form.site.comments.trim() || null,
+        qty: numberOrNull(form.site.qty),
         unit: form.site.unit || null,
     },
-    stock: form.flags.inventory ? { ...form.stock } : null,
     priceGroup: form.priceGroup || null,
     consumption:
         form.flags.inventory && !form.flags.batch && form.consumption.on
@@ -311,59 +274,7 @@ const draft = computed(() => ({
                   countedQty: source.consumption?.countedQty ?? null,
               }
             : null,
-    expiryMonths: form.expiryMonths === '' ? null : Number(form.expiryMonths),
-    waived: [],
 }));
-
-const kindOptions = computed(() =>
-    INGREDIENT_KINDS.map((id) => ({
-        value: id,
-        label: t(`ingredients.kind.${id}`),
-    })),
-);
-
-const warehouseOptions = computed(() =>
-    WAREHOUSE_IDS.map((id) => ({
-        value: id,
-        label: t(`warehouse.${id}.name`),
-    })),
-);
-
-const systemOptions = computed(() =>
-    SYSTEM_IDS.map((id) => ({
-        value: id,
-        label: t(`ingredients.system.${id}`),
-    })),
-);
-
-const priceGroupOptions = computed(() => [
-    { value: '', label: t('items.editor.priceGroupInherit') },
-    { value: 'none', label: t('items.editor.priceGroupFixed') },
-    ...catalog.priceGroups.map((group) => ({
-        value: group.id,
-        label: loc(group.name),
-    })),
-]);
-
-/** Mandatory fields of this family still empty — the waiver list. */
-const missing = computed(() => store.missingOf(draft.value));
-
-/** Waivers that still matter: a waiver on a field that got filled is dropped on save. */
-const liveWaived = computed(() =>
-    form.waived.filter((field) => missing.value.includes(field)),
-);
-
-const unwaived = computed(() =>
-    missing.value.filter((field) => !form.waived.includes(field)),
-);
-
-const valid = computed(() => !hasErrors.value && unwaived.value.length === 0);
-
-function toggleWaiver(field) {
-    form.waived = form.waived.includes(field)
-        ? form.waived.filter((id) => id !== field)
-        : [...form.waived, field];
-}
 
 function togglePrep(id) {
     form.prepTypes = form.prepTypes.includes(id)
@@ -374,7 +285,21 @@ function togglePrep(id) {
 const familyOptions = computed(() =>
     ITEM_FAMILY_IDS.map((id) => ({
         value: id,
-        label: t(`items.family.${id}`),
+        label: `${t(`items.family.${id}`)} · ${store.nextCode(id).slice(0, 2)}`,
+    })),
+);
+
+const itemTypeOptions = computed(() =>
+    ITEM_TYPE_IDS.map((id) => ({
+        value: id,
+        label: t(`items.itemType.${id}`),
+    })),
+);
+
+const treeTypeOptions = computed(() =>
+    TREE_TYPE_IDS.map((id) => ({
+        value: id,
+        label: t(`items.treeType.${id}`),
     })),
 );
 
@@ -415,19 +340,21 @@ const categoryOptions = computed(() => [
     })),
 ]);
 
-const mandatoryLabels = computed(() =>
-    store.mandatoryOf(form.family).map((id) => t(`items.mandatory.${id}`)),
-);
+const priceGroupOptions = computed(() => [
+    { value: '', label: t('items.editor.priceGroupInherit') },
+    { value: 'none', label: t('items.editor.priceGroupFixed') },
+    ...catalog.priceGroups.map((group) => ({
+        value: group.id,
+        label: loc(group.name),
+    })),
+]);
 
 async function save() {
     if (!valid.value) {
         return;
     }
 
-    const result = await store.saveItem(
-        { ...draft.value, waived: liveWaived.value },
-        props.item.sku || null,
-    );
+    const result = await store.saveItem(draft.value, props.item.sku || null);
 
     emit('saved', {
         created: result.created,
@@ -452,9 +379,9 @@ const title = computed(() =>
 <template>
     <AModal open :title="title" :width="960" @close="emit('close')">
         <div class="ie">
-            <!-- identity -->
+            <!-- general -->
             <section>
-                <div class="a-sect-t">{{ t('items.editor.identity') }}</div>
+                <div class="a-sect-t">{{ t('items.editor.general') }}</div>
                 <div class="a-3col">
                     <div>
                         <label class="a-lbl"
@@ -466,15 +393,6 @@ const title = computed(() =>
                             :options="familyOptions"
                             class="a-w100"
                         />
-                        <div class="a-hint">
-                            {{
-                                t('items.editor.familyHint', {
-                                    fields:
-                                        mandatoryLabels.join(' · ') ||
-                                        t('items.editor.none'),
-                                })
-                            }}
-                        </div>
                     </div>
                     <div>
                         <label class="a-lbl"
@@ -482,12 +400,16 @@ const title = computed(() =>
                             <span class="req">*</span></label
                         >
                         <AInput
+                            v-if="isNew"
                             v-model="form.code"
                             ltr
                             class="a-w100"
                             @input="codeTouched = true"
                             @blur="mark('code')"
                         />
+                        <div v-else class="a-code a-tag ro">
+                            {{ item.code }}
+                        </div>
                         <div v-if="show('code')" class="a-inv">
                             {{ show('code') }}
                         </div>
@@ -496,24 +418,17 @@ const title = computed(() =>
                         </div>
                     </div>
                     <div>
-                        <label class="a-lbl"
-                            >{{ t('items.editor.sku') }}
-                            <span v-if="isNew" class="req">*</span></label
-                        >
-                        <AInput
-                            v-if="isNew"
-                            v-model="form.sku"
-                            ltr
-                            class="a-w100"
-                            @blur="mark('sku')"
-                        />
-                        <div v-else class="a-code a-tag ro">{{ item.sku }}</div>
-                        <div v-if="show('sku')" class="a-inv">
-                            {{ show('sku') }}
-                        </div>
-                        <div v-else class="a-hint">
-                            {{ t('items.editor.skuHint') }}
-                        </div>
+                        <label class="a-lbl">{{
+                            t('items.editor.active')
+                        }}</label>
+                        <label class="check switch">
+                            <ASwitch v-model="form.active" />
+                            {{
+                                form.active
+                                    ? t('items.card.activeYes')
+                                    : t('items.card.activeNo')
+                            }}
+                        </label>
                     </div>
                 </div>
 
@@ -537,14 +452,9 @@ const title = computed(() =>
                             t('items.editor.nameEn')
                         }}</label>
                         <AInput v-model="form.names.en" ltr class="a-w100" />
-                    </div>
-                    <div>
-                        <label class="a-lbl">{{ t('items.editor.lat') }}</label>
-                        <AInput v-model="form.names.lat" ltr class="a-w100" />
-                    </div>
-                    <div>
-                        <label class="a-lbl">{{ t('items.editor.cn') }}</label>
-                        <AInput v-model="form.names.cn" class="a-w100" />
+                        <div class="a-hint">
+                            {{ t('items.editor.nameEnHint') }}
+                        </div>
                     </div>
                     <div>
                         <label class="a-lbl">{{
@@ -557,25 +467,28 @@ const title = computed(() =>
                     </div>
                     <div>
                         <label class="a-lbl">{{
-                            t('items.editor.location')
+                            t('items.editor.itemType')
                         }}</label>
-                        <div class="pair">
-                            <AInput
-                                v-model="form.location.cabinet"
-                                ltr
-                                :placeholder="t('items.editor.cabinet')"
-                            />
-                            <AInput
-                                v-model="form.location.shelf"
-                                ltr
-                                :placeholder="t('items.editor.shelf')"
-                            />
-                        </div>
+                        <ASelect
+                            v-model="form.itemType"
+                            :options="itemTypeOptions"
+                            class="a-w100"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl">{{
+                            t('items.editor.treeType')
+                        }}</label>
+                        <ASelect
+                            v-model="form.treeType"
+                            :options="treeTypeOptions"
+                            class="a-w100"
+                        />
                     </div>
                 </div>
             </section>
 
-            <!-- units & flags -->
+            <!-- units, flags & levels -->
             <section>
                 <div class="a-sect-t">{{ t('items.editor.units') }}</div>
                 <div class="a-3col">
@@ -601,6 +514,16 @@ const title = computed(() =>
                     </div>
                     <div>
                         <label class="a-lbl">{{
+                            t('items.editor.stockUom')
+                        }}</label>
+                        <ASelect
+                            v-model="form.uom.stock"
+                            :options="uomOptions"
+                            class="a-w100"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl">{{
                             t('items.editor.factor')
                         }}</label>
                         <AInput
@@ -620,10 +543,40 @@ const title = computed(() =>
                                         `items.uom.${form.uom.purchase}`,
                                     ),
                                     factor: form.uom.factor || 1,
-                                    sales: t(`items.uom.${form.uom.sales}`),
+                                    stock: t(`items.uom.${form.uom.stock}`),
                                 })
                             }}
                         </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl">{{
+                            t('items.editor.minLevel')
+                        }}</label>
+                        <AInput
+                            v-model="form.levels.min"
+                            type="number"
+                            ltr
+                            class="a-w100"
+                            @blur="mark('levels')"
+                        />
+                        <div v-if="show('levels')" class="a-inv">
+                            {{ show('levels') }}
+                        </div>
+                        <div v-else class="a-hint">
+                            {{ t('items.editor.minLevelHint') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl">{{
+                            t('items.editor.maxLevel')
+                        }}</label>
+                        <AInput
+                            v-model="form.levels.max"
+                            type="number"
+                            ltr
+                            class="a-w100"
+                            @blur="mark('levels')"
+                        />
                     </div>
                 </div>
                 <div class="flags">
@@ -635,62 +588,6 @@ const title = computed(() =>
                         />
                         {{ t(`items.flag.${id}`) }}
                     </label>
-                    <label class="check switch">
-                        <ASwitch
-                            v-model="form.flags.consumable"
-                            :label="t('items.card.consumable')"
-                        />
-                        {{ t('items.card.consumable') }}
-                        <span class="a-hint inline">{{
-                            t('items.editor.consumableHint')
-                        }}</span>
-                    </label>
-                </div>
-                <div v-if="form.flags.inventory" class="a-3col top">
-                    <div>
-                        <label class="a-lbl">{{
-                            t('items.editor.stockKind')
-                        }}</label>
-                        <ASelect
-                            v-model="form.stock.kind"
-                            :options="kindOptions"
-                            class="a-w100"
-                        />
-                    </div>
-                    <div>
-                        <label class="a-lbl">{{
-                            t('items.editor.stockSystem')
-                        }}</label>
-                        <ASelect
-                            v-model="form.stock.system"
-                            :options="systemOptions"
-                            class="a-w100"
-                        />
-                    </div>
-                    <div>
-                        <label class="a-lbl">{{
-                            t('items.editor.stockWh')
-                        }}</label>
-                        <ASelect
-                            v-model="form.stock.wh"
-                            :options="warehouseOptions"
-                            class="a-w100"
-                        />
-                    </div>
-                    <div>
-                        <label class="a-lbl">{{
-                            t('items.editor.stockMin')
-                        }}</label>
-                        <AInput
-                            v-model="form.stock.min"
-                            type="number"
-                            ltr
-                            class="a-w100"
-                        />
-                        <div class="a-hint">
-                            {{ t('items.editor.stockMinHint') }}
-                        </div>
-                    </div>
                 </div>
                 <div v-if="form.flags.internal" class="a-note a-note--info top">
                     {{ t('items.editor.internalFlagHint') }}
@@ -738,7 +635,7 @@ const title = computed(() =>
                 </div>
             </section>
 
-            <!-- pricing & suppliers -->
+            <!-- purchasing & pricing -->
             <section>
                 <div class="a-sect-t">{{ t('items.editor.pricing') }}</div>
                 <ActionGate id="item_price" compact>
@@ -758,7 +655,11 @@ const title = computed(() =>
                                 {{ show('sale') }}
                             </div>
                             <div v-else class="a-hint">
-                                {{ t('items.editor.salePriceHint') }}
+                                {{
+                                    t('items.editor.salePriceHint', {
+                                        uom: t(`items.uom.${form.uom.sales}`),
+                                    })
+                                }}
                             </div>
                         </div>
                         <div>
@@ -786,6 +687,19 @@ const title = computed(() =>
                         </div>
                         <div>
                             <label class="a-lbl">{{
+                                t('items.editor.priceGroup')
+                            }}</label>
+                            <ASelect
+                                v-model="form.priceGroup"
+                                :options="priceGroupOptions"
+                                class="a-w100"
+                            />
+                            <div class="a-hint">
+                                {{ t('items.editor.priceGroupHint') }}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="a-lbl">{{
                                 t('items.card.preferredSupplier')
                             }}</label>
                             <ASelect
@@ -807,28 +721,35 @@ const title = computed(() =>
                                 {{ t('items.editor.lastSupplierHint') }}
                             </div>
                         </div>
-                    </div>
-                </ActionGate>
-                <div class="a-3col top">
-                    <div>
-                        <label class="a-lbl">{{
-                            t('items.editor.priceGroup')
-                        }}</label>
-                        <ASelect
-                            v-model="form.priceGroup"
-                            :options="priceGroupOptions"
-                            class="a-w100"
-                        />
-                        <div class="a-hint">
-                            {{ t('items.editor.priceGroupHint') }}
+                        <div>
+                            <label class="a-lbl">{{
+                                t('items.card.catalogNum')
+                            }}</label>
+                            <AInput
+                                v-model="form.catalogNum"
+                                ltr
+                                class="a-w100"
+                            />
+                        </div>
+                        <div>
+                            <label class="a-lbl">{{
+                                t('items.card.barcode')
+                            }}</label>
+                            <AInput v-model="form.barcode" ltr class="a-w100" />
+                        </div>
+                        <div>
+                            <label class="a-lbl">{{
+                                t('items.card.packageSize')
+                            }}</label>
+                            <AInput v-model="form.packageSize" class="a-w100" />
                         </div>
                     </div>
-                    <div class="calc">
-                        <label class="a-lbl">{{
-                            t('items.editor.calculator')
-                        }}</label>
-                        <LadderCalculator :item="draft" compact />
-                    </div>
+                </ActionGate>
+                <div class="top">
+                    <label class="a-lbl">{{
+                        t('items.editor.calculator')
+                    }}</label>
+                    <LadderCalculator :item="draft" compact />
                 </div>
             </section>
 
@@ -862,54 +783,27 @@ const title = computed(() =>
                             class="a-w100"
                         />
                     </div>
-                </div>
-                <div class="a-3col top">
                     <div>
                         <label class="a-lbl">{{
-                            t('items.editor.expiryMonths')
+                            t('items.card.alcoholPct')
                         }}</label>
                         <AInput
-                            v-model="form.expiryMonths"
+                            v-model="form.lab.alcoholPct"
                             type="number"
                             ltr
                             class="a-w100"
                         />
-                        <div class="a-hint">
-                            {{ t('items.editor.expiryMonthsHint') }}
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- notes -->
-            <section>
-                <div class="a-sect-t">{{ t('items.editor.notes') }}</div>
-                <div class="a-2col">
-                    <div>
-                        <label class="a-lbl">{{
-                            t('items.card.internal')
-                        }}</label>
-                        <ATextarea
-                            v-model="form.notes.internal"
-                            :rows="3"
-                            class="a-w100"
-                        />
-                        <div class="a-hint">
-                            {{ t('items.editor.internalHint') }}
-                        </div>
                     </div>
                     <div>
                         <label class="a-lbl">{{
-                            t('items.card.production')
+                            t('items.card.extractionRatio')
                         }}</label>
-                        <ATextarea
-                            v-model="form.notes.production"
-                            :rows="3"
+                        <AInput
+                            v-model="form.lab.extractionRatio"
+                            ltr
                             class="a-w100"
+                            placeholder="1:5"
                         />
-                        <div class="a-hint">
-                            {{ t('items.editor.productionHint') }}
-                        </div>
                     </div>
                 </div>
             </section>
@@ -958,41 +852,16 @@ const title = computed(() =>
                     </div>
                     <div class="span2">
                         <label class="a-lbl">{{
-                            t('items.card.marketing')
+                            t('items.card.siteComments')
                         }}</label>
                         <ATextarea
-                            v-model="form.site.marketing"
+                            v-model="form.site.comments"
                             :rows="2"
                             class="a-w100"
                         />
                     </div>
                 </div>
             </section>
-
-            <!-- the policy -->
-            <section v-if="missing.length" class="policy">
-                <div class="a-sect-t">{{ t('items.editor.policy') }}</div>
-                <p class="a-hint">{{ t('items.editor.policyHint') }}</p>
-                <div class="waivers">
-                    <label v-for="field in missing" :key="field" class="check">
-                        <input
-                            type="checkbox"
-                            class="a-check"
-                            :checked="form.waived.includes(field)"
-                            @change="toggleWaiver(field)"
-                        />
-                        <span>
-                            <strong>{{ t(`items.mandatory.${field}`) }}</strong>
-                            <span class="t-sub">
-                                — {{ t('items.editor.waive') }}</span
-                            >
-                        </span>
-                    </label>
-                </div>
-            </section>
-            <p v-else class="a-note a-note--ok">
-                {{ t('items.editor.policyOk') }}
-            </p>
         </div>
 
         <template #footer>
@@ -1007,24 +876,11 @@ const title = computed(() =>
             <span v-if="hasErrors" class="a-rf-need">{{
                 t('items.editor.fixErrors')
             }}</span>
-            <span v-else-if="unwaived.length" class="a-rf-need">
-                {{
-                    t('items.editor.missing', {
-                        fields: unwaived
-                            .map((f) => t(`items.mandatory.${f}`))
-                            .join(' · '),
-                    })
-                }}
-            </span>
         </template>
     </AModal>
 </template>
 
 <style scoped>
-.calc {
-    grid-column: span 2;
-}
-
 .ie {
     display: grid;
     gap: 22px;
@@ -1067,10 +923,7 @@ const title = computed(() =>
 
 .check.switch {
     gap: 10px;
-}
-
-.a-hint.inline {
-    margin: 0;
+    margin-top: 6px;
 }
 
 .prep-grid {
@@ -1081,17 +934,5 @@ const title = computed(() =>
 
 .span2 {
     grid-column: span 2;
-}
-
-.policy {
-    padding: 14px 16px;
-    border-radius: var(--a-r);
-    background: var(--a-amber-bg);
-    border: 1px solid var(--a-amber-line);
-}
-
-.waivers {
-    display: grid;
-    gap: 8px;
 }
 </style>

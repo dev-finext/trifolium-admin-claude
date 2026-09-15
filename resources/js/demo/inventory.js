@@ -6,7 +6,12 @@
 // who received it. The receipts that were made against a purchase order carry
 // its id; the rest record the supplier's name and delivery-note number as
 // plain data.
-import { BATCH_EXPIRY_WARN_DAYS, convertQty, familyOfCode } from '@/config';
+import {
+    BATCH_EXPIRY_WARN_DAYS,
+    convertQty,
+    familyOfCode,
+    ITEM_FAMILY,
+} from '@/config';
 import { at, fraction, pickFrom, spread } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
 import { SHELF_ITEMS } from '@/demo/products';
@@ -16,7 +21,7 @@ import { DEMO_SUPPLIERS } from '@/demo/vendors';
 import { daysSince, isoDaysAgo } from '@/lib/dates';
 import { L } from '@/lib/localized';
 
-/** How many goods receipts the fixture carries, and the batch series they open. */
+/** How many goods receipts the fixture carries, and where each family's batch serial starts. */
 const RECEIPT_COUNT = 16;
 const FIRST_BATCH_NUMBER = 2610;
 
@@ -83,7 +88,10 @@ const BASE_AND_PACK = [
     {
         sku: '300903',
         kind: 'base',
-        name: L('שמן זית כתית — בסיס להשריה', 'Virgin olive oil — infusion base'),
+        name: L(
+            'שמן זית כתית — בסיס להשריה',
+            'Virgin olive oil — infusion base',
+        ),
         lat: 'Olea europaea oleum',
         wh: 'raw',
         unit: 'ml',
@@ -163,7 +171,10 @@ export const CONSUMABLE_USAGE = [
     },
     {
         sku: '300913',
-        name: L('מגבוני אלכוהול לחיטוי (אריזה)', 'Alcohol cleaning wipes (pack)'),
+        name: L(
+            'מגבוני אלכוהול לחיטוי (אריזה)',
+            'Alcohol cleaning wipes (pack)',
+        ),
         min: 10,
         qty: 3,
         periodDays: 14,
@@ -401,9 +412,14 @@ function buildBasesAndShelf(seen) {
                 sizeUnit: item.unit,
                 price: item.price,
                 onHand,
-                alloc: Math.min(onHand, spread(`stock:${item.sku}:alloc`, 0, 8)),
+                alloc: Math.min(
+                    onHand,
+                    spread(`stock:${item.sku}:alloc`, 0, 8),
+                ),
                 min: SHELF_MIN,
-                created: isoDaysAgo(spread(`stock:${item.sku}:created`, 60, 500)),
+                created: isoDaysAgo(
+                    spread(`stock:${item.sku}:created`, 60, 500),
+                ),
             };
         },
     );
@@ -529,8 +545,17 @@ function receiptQty(slot, row) {
 export function buildReceipts(stock) {
     const pool = receiptLinePool(stock);
     const receipts = [];
-    // Lines are dealt from the pool, and batch numbers run, oldest receipt
-    // first — the list itself is newest first, as every list here is.
+    // Lines are dealt from the pool, and batch numbers run per item family
+    // (`10-02610`), oldest receipt first — the list itself is newest first,
+    // as every list here is.
+    const serial = {};
+    const batchNoOf = (sku) => {
+        const prefix = ITEM_FAMILY[familyOfCode(sku)]?.prefix || '00';
+
+        serial[prefix] = (serial[prefix] || FIRST_BATCH_NUMBER - 1) + 1;
+
+        return `${prefix}-${String(serial[prefix]).padStart(5, '0')}`;
+    };
     const deal = [];
     let dealt = 0;
 
@@ -539,7 +564,7 @@ export function buildReceipts(stock) {
         dealt += deal[i].count;
     }
 
-    for (let i = 0; i < RECEIPT_COUNT; i += 1) {
+    for (let i = RECEIPT_COUNT - 1; i >= 0; i -= 1) {
         const slot = `receipt:${i}`;
         const supplier =
             DEMO_SUPPLIERS.find(
@@ -563,7 +588,7 @@ export function buildReceipts(stock) {
                 unit: item.unit,
                 qty: receiptQty(`${lineSlot}:qty`, item),
                 wh: item.wh,
-                batch: `B-${FIRST_BATCH_NUMBER + from + k}`,
+                batch: batchNoOf(item.sku),
                 expiry: isoDaysAgo(
                     -Math.round(shelfLifeMonths * 30) +
                         spread(`${lineSlot}:jitter`, 0, 180),
@@ -574,7 +599,7 @@ export function buildReceipts(stock) {
             });
         }
 
-        receipts.push({
+        receipts.unshift({
             id: `GR-26${70 + i * 2}`,
             supplier: supplier.name,
             supplierCode: supplier.code,
@@ -617,7 +642,8 @@ export function buildBatches(receipts, stock = []) {
                 receipt.when.daysAgo > 60
                     ? round2(
                           line.qty *
-                              (0.55 + fraction(`batch:${line.batch}:left`) * 0.4),
+                              (0.55 +
+                                  fraction(`batch:${line.batch}:left`) * 0.4),
                       )
                     : line.qty;
 
@@ -752,7 +778,9 @@ export function buildBatchUse(orders, batches, stock = []) {
                                 return;
                             }
 
-                            const take = round3(Math.min(batch.remaining, need));
+                            const take = round3(
+                                Math.min(batch.remaining, need),
+                            );
 
                             if (take <= 0) {
                                 return;

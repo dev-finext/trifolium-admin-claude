@@ -300,6 +300,7 @@ export default {
     },
 
     receive: {
+        batchAuto: 'Assigned automatically by item family',
         title: 'Receive goods against order {id}',
         hint: 'The lines are prefilled from the order — the open quantity, in stock units. Partial receipts are fine; the order closes when its last line is in. The price becomes the item’s last purchase price, and a supplier delivery note opens until the invoice arrives.',
         docNum: 'Supplier delivery note',
