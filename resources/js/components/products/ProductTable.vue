@@ -17,6 +17,7 @@ import { useLocalized } from '@/composables/useLocalized';
 import { DEFAULT_MIN_STOCK } from '@/config';
 import { ils, priceParts } from '@/lib/money';
 import { isBlockedForSale } from '@/stores/catalog';
+import { useItemsStore } from '@/stores/items';
 
 defineProps({
     rows: { type: Array, default: () => [] },
@@ -32,8 +33,12 @@ const emit = defineEmits(['row', 'edit', 'archive', 'restore', 'new', 'clear']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
+const items = useItemsStore();
 
 const grossOf = (row) => priceParts(row.net).display;
+
+/** The item card behind a product — site state, therapist discount, supplier. */
+const itemOf = (row) => items.rowBySku(row.sku);
 const minOf = (row) =>
     row.minStock == null ? DEFAULT_MIN_STOCK : row.minStock;
 const stockOf = (row) => (row.stock == null ? 0 : row.stock);
@@ -74,6 +79,8 @@ const cols = computed(() => [
         sortable: true,
         sortValue: stockOf,
     },
+    { k: 'site', label: t('products.table.site'), nowrap: true },
+    { k: 'supplier', label: t('products.table.supplier') },
     { k: 'act', label: '', nowrap: true },
 ]);
 </script>
@@ -130,6 +137,47 @@ const cols = computed(() => [
                     {{ t('products.table.minStock', { n: minOf(row) }) }}
                 </template>
             </div>
+        </template>
+
+        <template #cell-site="{ row }">
+            <span class="chips">
+                <AChip
+                    :tone="itemOf(row)?.site?.sync ? 'teal' : 'gray'"
+                    size="sm"
+                    :dot="false"
+                >
+                    {{
+                        itemOf(row)?.site?.sync
+                            ? t('items.card.syncOn')
+                            : t('items.card.syncOff')
+                    }}
+                </AChip>
+                <AChip
+                    v-if="itemOf(row)?.site?.promo"
+                    tone="amber"
+                    size="sm"
+                    :dot="false"
+                >
+                    {{ t('items.card.promo') }}
+                </AChip>
+                <AChip
+                    v-if="itemOf(row)?.flags?.therapistDiscount"
+                    tone="blue"
+                    size="sm"
+                    :dot="false"
+                >
+                    {{ t('products.table.therapistDiscount') }}
+                </AChip>
+            </span>
+        </template>
+
+        <template #cell-supplier="{ row }">
+            <span v-if="itemOf(row)?.preferred">
+                {{ loc(itemOf(row).preferred.name) }}
+            </span>
+            <span v-else class="t-sub">{{
+                t('products.drawer.madeHere')
+            }}</span>
         </template>
 
         <template #cell-act="{ row }">

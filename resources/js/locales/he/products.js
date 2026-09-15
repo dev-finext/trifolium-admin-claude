@@ -63,6 +63,13 @@ export default {
         price: 'מחיר',
     },
 
+    drawer: {
+        site: 'האתר הצרכני',
+        pricing: 'מחיר ורכש',
+        therapistDiscount: 'הנחת מטפלים 40%',
+        madeHere: 'ייצור עצמי',
+    },
+
     status: {
         published: 'מפורסם',
         archived: 'בארכיון',
@@ -90,6 +97,9 @@ export default {
         edit: 'עריכה',
         archive: 'ארכיון',
         restore: 'שחזור',
+        site: 'אתר',
+        supplier: 'ספק',
+        therapistDiscount: 'הנחת מטפלים',
     },
 
     empty: {

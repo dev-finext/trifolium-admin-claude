@@ -5,9 +5,11 @@
 // so a filtered catalogue can be pasted to a colleague and opens identically.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
 import PageHead from '@/components/layout/PageHead.vue';
 import LabelsManager from '@/components/products/LabelsManager.vue';
+import ProductDrawer from '@/components/products/ProductDrawer.vue';
 import ProductEditor from '@/components/products/ProductEditor.vue';
 import ProductTable from '@/components/products/ProductTable.vue';
 import AButton from '@/components/ui/AButton.vue';
@@ -49,6 +51,7 @@ const SKELETON_ROWS = 7;
 const NEW = 'new';
 
 const { t } = useI18n();
+const router = useRouter();
 const { loc } = useLocalized();
 const { push } = useToast();
 const dataset = useDatasetStore();
@@ -64,9 +67,15 @@ const view = useUrlState({
     ...filterDefaults(SPEC),
     ...PAGE_DEFAULTS,
     edit: '',
+    sku: '',
     full: false,
     manage: false,
 });
+
+/** The product whose card is open — a row click reads; the card offers to edit. */
+const openProduct = computed(
+    () => catalog.products.find((product) => product.sku === view.sku) || null,
+);
 
 /** The pending confirmation. Not a view state, so not in the URL. */
 const ask = ref(null);
@@ -184,12 +193,11 @@ function closeEditor() {
 
 /** A row click edits, except on an archived product, which offers a restore. */
 function onRow(product) {
-    if (product.status === 'archived') {
-        askRestore(product);
+    view.sku = product.sku;
+}
 
-        return;
-    }
-
+function editFromCard(product) {
+    view.sku = '';
     openEdit(product);
 }
 
@@ -427,6 +435,15 @@ function exportCatalog() {
                 @toggle-full="view.full = !view.full"
             />
         </ADrawer>
+
+        <ProductDrawer
+            :product="openProduct"
+            @close="view.sku = ''"
+            @edit="editFromCard"
+            @open-bom="
+                (id) => router.push({ name: 'boms', query: { bom: id } })
+            "
+        />
 
         <LabelsManager :open="view.manage" @close="view.manage = false" />
 

@@ -647,6 +647,9 @@ export function buildItems(stock, products, suppliers) {
                 // A shelf product is made ahead of time from its recipe, but it
                 // is a product, not a component of anything else.
                 internal: false,
+                // The 40 % practitioner discount the site grants on some shelf
+                // products — SAP's item property 19.
+                therapistDiscount: chance(`${product.sku}:tdisc`, 0.35),
             },
             price: {
                 sale: product.net,
@@ -794,6 +797,7 @@ export function buildItems(stock, products, suppliers) {
                 sales: true,
                 batch: twin.flags.batch || product.flags.batch,
                 internal: twin.flags.internal,
+                therapistDiscount: product.flags.therapistDiscount,
             },
             price: { ...twin.price, sale: product.price.sale },
             site: product.site,

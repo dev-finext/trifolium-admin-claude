@@ -62,6 +62,13 @@ export default {
         price: 'Price',
     },
 
+    drawer: {
+        site: 'Consumer site',
+        pricing: 'Price and buying',
+        therapistDiscount: '40% practitioner discount',
+        madeHere: 'Made in-house',
+    },
+
     status: {
         published: 'Published',
         archived: 'Archived',
@@ -89,6 +96,9 @@ export default {
         edit: 'Edit',
         archive: 'Archive',
         restore: 'Restore',
+        site: 'Site',
+        supplier: 'Supplier',
+        therapistDiscount: 'Practitioner discount',
     },
 
     empty: {
