@@ -52,6 +52,10 @@ export const LOG_ACTION_IDS = [
     'production_complete',
     'production_cancel',
     'supplier_note_close',
+    'supplier_invoice_capture',
+    'supplier_invoice_dispute',
+    'supplier_invoice_sent',
+    'supplier_payment',
     'inventory_settings_update',
     // orders & deliveries (V2)
     'order_urgent_set',

@@ -68,7 +68,7 @@ const searched = computed(() => {
             note.po,
             note.supplier,
             note.docNum,
-            note.invoice?.num,
+            store.invoiceById(note.invoice)?.num,
         ).includes(term),
     );
 });
@@ -260,8 +260,10 @@ async function confirmClose() {
             </template>
             <template #cell-invoice="{ row }">
                 <template v-if="row.invoice">
-                    <ANum>{{ row.invoice.num }}</ANum>
-                    <div class="t-sub">{{ row.invoice.when.stamp }}</div>
+                    <ANum>{{ store.invoiceById(row.invoice)?.num }}</ANum>
+                    <div class="t-sub">
+                        {{ store.invoiceById(row.invoice)?.date.stamp }}
+                    </div>
                 </template>
                 <AButton v-else sm icon="check" @click.stop="startClose(row)">
                     {{ t('purchasing.action.closeNote') }}

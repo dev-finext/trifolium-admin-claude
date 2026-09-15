@@ -268,9 +268,11 @@ async function confirmCancel(reason) {
                                 :key="note.id"
                                 class="map-node"
                             >
-                                <span class="num">{{ note.invoice.num }}</span>
+                                <span class="num">{{
+                                    store.invoiceById(note.invoice)?.num
+                                }}</span>
                                 <span class="t-sub">{{
-                                    note.invoice.when.stamp
+                                    store.invoiceById(note.invoice)?.date.stamp
                                 }}</span>
                             </span>
                         </div>

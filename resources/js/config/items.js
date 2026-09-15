@@ -89,7 +89,13 @@ export const ITEM_CODE_DIGITS = 4;
  * implications the store enforces on save: `internal` — produced in-house from a
  * bill of materials — forces `batch`, and `batch` forces `inventory`.
  */
-export const ITEM_FLAG_IDS = ['purchase', 'sales', 'inventory', 'batch', 'internal'];
+export const ITEM_FLAG_IDS = [
+    'purchase',
+    'sales',
+    'inventory',
+    'batch',
+    'internal',
+];
 
 /**
  * How a stock-tracked item that nobody counts per order is consumed. `time`
@@ -221,6 +227,9 @@ export const ATTACHMENT_ENTITY_IDS = [
     'purchase_order',
     'practitioner',
     'customer',
+    'supplier_invoice',
+    'supplier_payment',
+    'document',
 ];
 
 export const ATTACHMENT_RULES = {

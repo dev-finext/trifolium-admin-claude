@@ -7,13 +7,26 @@
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
-import { PO_RECEIVABLE_STATE_IDS } from '@/config';
+import {
+    invoiceDueState,
+    PAYMENT_TERM,
+    PO_RECEIVABLE_STATE_IDS,
+    SETTINGS,
+    supplierInvoiceOpen,
+    supplierInvoiceState,
+} from '@/config';
 import { persist } from '@/data/source';
 import { inRange } from '@/lib/dateRange';
 import { daysSince, fmtISO, hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
+import { supplierPaymentBlocked } from '@/stores/system';
+
+const round2 = (value) => Math.round(value * 100) / 100;
+
+/** The first day of the month a date falls in, as ISO. */
+const monthStart = (iso) => `${String(iso).slice(0, 7)}-01`;
 
 /** Orders whose shelf lines have left the pharmacy — what "sales" counts. */
 const SOLD_STATUS_IDS = ['sent', 'closed'];
@@ -53,7 +66,113 @@ export const usePurchasingStore = defineStore('purchasing', () => {
 
     const purchaseOrders = computed(() => list('purchaseOrders'));
     const supplierNotes = computed(() => list('supplierNotes'));
+    // The supplier's side of the money: what was billed for the deliveries,
+    // and what was paid against those bills (spec: payments hang off invoices,
+    // never off the purchase order — one payment may close several invoices).
+    const supplierInvoices = computed(() => list('supplierInvoices'));
+    const supplierPayments = computed(() => list('supplierPayments'));
     const settings = computed(() => dataset.data.inventorySettings || null);
+
+    const invoiceById = (id) =>
+        supplierInvoices.value.find((invoice) => invoice.id === id) || null;
+    const paymentById = (id) =>
+        supplierPayments.value.find((payment) => payment.id === id) || null;
+    const invoicesOf = (code) =>
+        supplierInvoices.value.filter((invoice) => invoice.supplierCode === code);
+    const paymentsOf = (code) =>
+        supplierPayments.value.filter((payment) => payment.supplierCode === code);
+
+    /** Invoices still owed something, oldest due first. */
+    const openInvoices = computed(() =>
+        supplierInvoices.value
+            .filter((invoice) => supplierInvoiceOpen(invoice) > 0)
+            .sort((a, b) => a.dueOn.localeCompare(b.dueOn)),
+    );
+
+    /** The payables desk in four figures. */
+    const payableKpis = computed(() => {
+        const today = isoDaysAgo(0);
+        const month = monthStart(today);
+        const sum = (rows, pick) =>
+            round2(rows.reduce((total, row) => total + pick(row), 0));
+        const open = openInvoices.value;
+
+        return {
+            open: sum(open, supplierInvoiceOpen),
+            openCount: open.length,
+            dueWeek: sum(
+                open.filter((invoice) => invoiceDueState(invoice) === 'week'),
+                supplierInvoiceOpen,
+            ),
+            overdue: sum(
+                open.filter((invoice) => invoiceDueState(invoice) === 'overdue'),
+                supplierInvoiceOpen,
+            ),
+            overdueCount: open.filter(
+                (invoice) => invoiceDueState(invoice) === 'overdue',
+            ).length,
+            paidThisMonth: sum(
+                supplierPayments.value.filter(
+                    (payment) => payment.date.iso >= month,
+                ),
+                (payment) => payment.amount,
+            ),
+        };
+    });
+
+    /**
+     * One supplier's ledger: invoices as charges, payments as credits, in date
+     * order with a running balance — what the card owes right now.
+     */
+    const supplierLedger = (code) => {
+        const rows = [
+            ...invoicesOf(code).map((invoice) => ({
+                id: invoice.id,
+                kind: 'invoice',
+                when: invoice.date,
+                ref: invoice.num,
+                charge: invoice.total,
+                credit: 0,
+                state: supplierInvoiceState(invoice),
+                due: invoiceDueState(invoice),
+            })),
+            ...paymentsOf(code).map((payment) => ({
+                id: payment.id,
+                kind: 'payment',
+                when: payment.date,
+                ref: payment.reference,
+                charge: 0,
+                credit: payment.amount,
+                state: payment.method,
+                due: null,
+            })),
+        ].sort((a, b) =>
+            `${a.when.iso}${a.id}`.localeCompare(`${b.when.iso}${b.id}`),
+        );
+        let balance = 0;
+
+        rows.forEach((row) => {
+            balance = round2(balance + row.charge - row.credit);
+            row.balance = balance;
+        });
+
+        const open = invoicesOf(code).filter(
+            (invoice) => supplierInvoiceOpen(invoice) > 0,
+        );
+
+        return {
+            rows: rows.reverse(),
+            balance,
+            open: round2(
+                open.reduce((sum, invoice) => sum + supplierInvoiceOpen(invoice), 0),
+            ),
+            overdue: round2(
+                open
+                    .filter((invoice) => invoiceDueState(invoice) === 'overdue')
+                    .reduce((sum, invoice) => sum + supplierInvoiceOpen(invoice), 0),
+            ),
+        };
+    };
 
     // ---- lookups -------------------------------------------------------------
 
@@ -344,6 +463,106 @@ export const usePurchasingStore = defineStore('purchasing', () => {
     }
 
     /** The invoice arrived: close the delivery note it covers. */
+    /** Net of a delivery note: its received lines at the order's prices. */
+    function noteNet(note) {
+        const po = poById(note.po);
+
+        return round2(
+            note.lines.reduce((sum, line) => {
+                const poLine = po?.lines.find((row) => row.sku === line.sku);
+
+                return sum + line.qty * (poLine?.price || 0);
+            }, 0),
+        );
+    }
+
+    /**
+     * Capture a supplier's invoice: the document that bills one or more
+     * delivery notes. The notes close on it; the amount defaults to their
+     * lines at the order's prices; the due date follows the supplier's terms.
+     *
+     * @param {{ supplierCode: string, num: string, date?: string,
+     *          notes?: string[], category: string, net?: number, vat?: number,
+     *          file?: File|null, note?: string }} form
+     */
+    async function captureSupplierInvoice(form) {
+        const supplier = supplierByCode(form.supplierCode);
+
+        if (!supplier || !String(form.num || '').trim()) {
+            throw new Error('A supplier invoice needs a supplier and a number');
+        }
+
+        const notes = (form.notes || [])
+            .map((id) => noteById(id))
+            .filter((note) => note && note.state !== 'closed');
+        const net = round2(
+            form.net !== '' && form.net !== null && form.net !== undefined
+                ? Number(form.net)
+                : notes.reduce((sum, note) => sum + noteNet(note), 0),
+        );
+        const vat = round2(
+            form.vat !== '' && form.vat !== null && form.vat !== undefined
+                ? Number(form.vat)
+                : net * SETTINGS.vatRate,
+        );
+        const rows = bag('supplierInvoices');
+        const date = moment(form.date || null);
+        const terms = PAYMENT_TERM[supplier.terms]?.days ?? 30;
+        const invoice = {
+            id: nextSerial(
+                rows.map((row) => row.id),
+                'SI-',
+            ),
+            supplierCode: supplier.code,
+            supplier: supplier.name,
+            num: String(form.num).trim(),
+            date,
+            dueOn: isoDaysAgo(date.daysAgo - terms),
+            notes: notes.map((note) => note.id),
+            category: form.category || 'other',
+            currency: poById(notes[0]?.po)?.currency || 'ILS',
+            net,
+            vat,
+            total: round2(net + vat),
+            paid: 0,
+            state: 'open',
+            file: null,
+            accounting: { sent: false, when: null, by: null },
+            by: dataset.me?.name || null,
+            note: form.note?.trim() || null,
+        };
+
+        if (form.file) {
+            const attachment = await items.addAttachment({
+                entity: 'supplier_invoice',
+                ref: invoice.id,
+                file: form.file,
+            });
+
+            invoice.file = attachment.id;
+        }
+
+        notes.forEach((note) => {
+            note.invoice = invoice.id;
+            note.state = 'closed';
+        });
+
+        rows.unshift(invoice);
+        writeLog({
+            act: 'supplier_invoice_capture',
+            entType: 'supplier_invoice',
+            ent: invoice.id,
+            to: `${invoice.num} · ${invoice.total}`,
+        });
+        await persist('supplier-invoices', invoice);
+
+        return invoice;
+    }
+
+    /**
+     * Close a delivery note by the invoice that bills it — the one-note
+     * shortcut the notes tab offers; the full form lives on the invoices tab.
+     */
     async function closeNote(noteId, invoiceNum, invoiceDate) {
         const note = noteById(noteId);
 
@@ -351,21 +570,172 @@ export const usePurchasingStore = defineStore('purchasing', () => {
             return false;
         }
 
-        note.invoice = {
-            num: String(invoiceNum).trim(),
-            when: moment(invoiceDate || null),
-        };
-        note.state = 'closed';
-
+        await captureSupplierInvoice({
+            supplierCode: note.supplierCode,
+            num: invoiceNum,
+            date: invoiceDate || null,
+            notes: [note.id],
+            category: 'raw_materials',
+        });
         writeLog({
             act: 'supplier_note_close',
             entType: 'purchase_order',
             ent: note.po,
-            to: `${note.id} · ${note.invoice.num}`,
+            to: `${note.id} · ${String(invoiceNum).trim()}`,
         });
-        await persist(`supplier-notes/${note.id}/close`, note.invoice);
 
         return true;
+    }
+
+    /**
+     * Why a payment to this supplier cannot be recorded right now, or null:
+     * a missing or expired bookkeeping certificate blocks payment (never
+     * purchasing), and an allocation may not exceed what the invoice still owes.
+     */
+    function paymentBlock(form) {
+        const supplier = supplierByCode(form.supplierCode);
+
+        if (!supplier) {
+            return 'supplier';
+        }
+
+        if (supplierPaymentBlocked(supplier)) {
+            return 'compliance';
+        }
+
+        const over = (form.allocations || []).some((allocation) => {
+            const invoice = invoiceById(allocation.invoice);
+
+            return (
+                !invoice ||
+                Number(allocation.amount) <= 0 ||
+                Number(allocation.amount) > supplierInvoiceOpen(invoice) + 0.005
+            );
+        });
+
+        if (over || !(form.allocations || []).length) {
+            return 'allocation';
+        }
+
+        return null;
+    }
+
+    /**
+     * Record a payment to a supplier and the invoices it closes. The amount is
+     * the sum of its allocations; the reference is the bank's (אסמכתא) or the
+     * cheque's number; the receipt file is attached to the payment.
+     *
+     * @param {{ supplierCode: string, date?: string, method: string,
+     *          reference: string, allocations: Array<{invoice: string, amount: number}>,
+     *          receipt?: File|null, note?: string }} form
+     */
+    async function recordSupplierPayment(form) {
+        const block = paymentBlock(form);
+
+        if (block) {
+            throw new Error(`Payment refused: ${block}`);
+        }
+
+        const supplier = supplierByCode(form.supplierCode);
+        const rows = bag('supplierPayments');
+        const allocations = form.allocations.map((allocation) => ({
+            invoice: allocation.invoice,
+            amount: round2(Number(allocation.amount)),
+        }));
+        const payment = {
+            id: nextSerial(
+                rows.map((row) => row.id),
+                'SP-',
+            ),
+            supplierCode: supplier.code,
+            supplier: supplier.name,
+            date: moment(form.date || null),
+            amount: round2(
+                allocations.reduce((sum, allocation) => sum + allocation.amount, 0),
+            ),
+            currency: invoiceById(allocations[0].invoice)?.currency || 'ILS',
+            method: form.method || 'transfer',
+            reference: String(form.reference || '').trim(),
+            allocations,
+            receipt: null,
+            by: dataset.me?.name || null,
+            note: form.note?.trim() || null,
+        };
+
+        if (form.receipt) {
+            const attachment = await items.addAttachment({
+                entity: 'supplier_payment',
+                ref: payment.id,
+                file: form.receipt,
+            });
+
+            payment.receipt = attachment.id;
+        }
+
+        allocations.forEach((allocation) => {
+            const invoice = invoiceById(allocation.invoice);
+
+            invoice.paid = round2(invoice.paid + allocation.amount);
+
+            if (invoice.state !== 'disputed') {
+                invoice.state = supplierInvoiceState(invoice);
+            }
+        });
+
+        rows.unshift(payment);
+        writeLog({
+            act: 'supplier_payment',
+            entType: 'supplier_payment',
+            ent: payment.id,
+            to: `${payment.reference} · ${payment.amount}`,
+        });
+        await persist('supplier-payments', payment);
+
+        return payment;
+    }
+
+    /** Mark an invoice disputed (a reason is kept), or lift the dispute. */
+    async function disputeInvoice(id, reason = '', on = true) {
+        const invoice = invoiceById(id);
+
+        if (!invoice) {
+            return null;
+        }
+
+        invoice.state = on ? 'disputed' : supplierInvoiceState(invoice);
+        invoice.note = on ? reason.trim() || invoice.note : invoice.note;
+        writeLog({
+            act: 'supplier_invoice_dispute',
+            entType: 'supplier_invoice',
+            ent: invoice.id,
+            to: on ? invoice.note : null,
+        });
+        await persist(`supplier-invoices/${id}/dispute`, { on, reason });
+
+        return invoice;
+    }
+
+    /** Hand invoices to the accountant's books: a stamp, not an export. */
+    async function markInvoicesSent(ids) {
+        const when = moment();
+        const by = dataset.me?.name || null;
+        const sent = ids
+            .map((id) => invoiceById(id))
+            .filter((invoice) => invoice && !invoice.accounting?.sent);
+
+        sent.forEach((invoice) => {
+            invoice.accounting = { sent: true, when, by };
+            writeLog({
+                act: 'supplier_invoice_sent',
+                entType: 'supplier_invoice',
+                ent: invoice.id,
+            });
+        });
+        await persist('supplier-invoices/sent', {
+            ids: sent.map((invoice) => invoice.id),
+        });
+
+        return sent.length;
     }
 
     /** Change one or more of the batch-handling settings. */
@@ -504,6 +874,21 @@ export const usePurchasingStore = defineStore('purchasing', () => {
         cancelPo,
         receiveAgainstPo,
         closeNote,
+        supplierInvoices,
+        supplierPayments,
+        invoiceById,
+        paymentById,
+        invoicesOf,
+        paymentsOf,
+        openInvoices,
+        payableKpis,
+        supplierLedger,
+        noteNet,
+        captureSupplierInvoice,
+        paymentBlock,
+        recordSupplierPayment,
+        disputeInvoice,
+        markInvoicesSent,
         updateSettings,
         consumption,
     };
