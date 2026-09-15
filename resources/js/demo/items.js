@@ -9,8 +9,10 @@
 // stock row at all: consumables that are received and never deducted.
 import { familyOfCode, ITEM_FAMILY } from '@/config/items';
 import { at, chance, pickFrom, spread } from '@/demo/fixture';
+import { CONSUMABLE_USAGE } from '@/demo/inventory';
 import { DEMO_ACTORS } from '@/demo/people';
 import REAL_CATEGORIES from '@/demo/real/categories.json';
+import REAL_TIERS from '@/demo/real/priceTiers.json';
 import { isoDaysAgo } from '@/lib/dates';
 import { L } from '@/lib/localized';
 
@@ -67,7 +69,9 @@ export const PREP_TYPES = [
         legacy: true,
         name: L('טינקטורה', 'Tincture'),
         unit: 'ml',
-        expiryMonths: 24,
+        expiryMonths: 36,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: false,
         labelText: L('לנער לפני שימוש', 'Shake before use'),
         contains: ['alcohol', 'water'],
         recipe: [],
@@ -79,6 +83,8 @@ export const PREP_TYPES = [
         name: L('טינקטורה בנידוף', 'Evaporated tincture'),
         unit: 'ml',
         expiryMonths: 12,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: false,
         labelText: L(
             'לנער לפני שימוש · לשמור בקירור לאחר פתיחה',
             'Shake before use · refrigerate after opening',
@@ -95,6 +101,8 @@ export const PREP_TYPES = [
         name: L('קפסולות', 'Capsules'),
         unit: 'capsule',
         expiryMonths: 24,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: true,
         labelText: null,
         contains: [],
         recipe: [],
@@ -106,6 +114,8 @@ export const PREP_TYPES = [
         name: L('אבקה', 'Powder'),
         unit: 'g',
         expiryMonths: 24,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: true,
         labelText: null,
         contains: [],
         recipe: [],
@@ -117,6 +127,8 @@ export const PREP_TYPES = [
         name: L('חליטה Raw', 'Raw infusion'),
         unit: 'g',
         expiryMonths: 12,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: true,
         labelText: L('לשמור בקירור לאחר פתיחה', 'Refrigerate after opening'),
         contains: [],
         recipe: [],
@@ -128,6 +140,8 @@ export const PREP_TYPES = [
         name: L('TANG — בישול אישי', 'TANG — personal decoction'),
         unit: 'ml',
         expiryMonths: 6,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: true,
         labelText: L(
             'לנער לפני שימוש · לשמור בקירור לאחר פתיחה',
             'Shake before use · refrigerate after opening',
@@ -145,6 +159,8 @@ export const PREP_TYPES = [
         ),
         unit: 'ml',
         expiryMonths: 24,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: false,
         labelText: L('לנער לפני שימוש', 'Shake before use'),
         contains: ['alcohol', 'water'],
         recipe: [],
@@ -156,6 +172,8 @@ export const PREP_TYPES = [
         name: L('הרכב סיני קלאסי — אבקה', 'Classic Chinese formula — powder'),
         unit: 'g',
         expiryMonths: 24,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: true,
         labelText: null,
         contains: [],
         recipe: [],
@@ -167,6 +185,8 @@ export const PREP_TYPES = [
         name: L('קרם', 'Cream'),
         unit: 'g',
         expiryMonths: 12,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: false,
         labelText: L('לשימוש חיצוני בלבד', 'External use only'),
         contains: ['oil', 'water'],
         recipe: [],
@@ -178,6 +198,8 @@ export const PREP_TYPES = [
         name: L('ג׳ל', 'Gel'),
         unit: 'g',
         expiryMonths: 12,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: false,
         labelText: L('לשימוש חיצוני בלבד', 'External use only'),
         contains: ['water'],
         recipe: [],
@@ -189,6 +211,8 @@ export const PREP_TYPES = [
         name: L('שמן מושרה', 'Infused oil'),
         unit: 'ml',
         expiryMonths: 12,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: false,
         labelText: L('לשימוש חיצוני בלבד', 'External use only'),
         contains: ['oil'],
         recipe: [],
@@ -200,6 +224,8 @@ export const PREP_TYPES = [
         name: L('שמן אתרי', 'Essential oil'),
         unit: 'ml',
         expiryMonths: 36,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: false,
         labelText: L(
             'לא לשימוש פנימי · להרחיק מעיניים',
             'Not for internal use · keep away from eyes',
@@ -214,6 +240,8 @@ export const PREP_TYPES = [
         name: L('הידרוסול', 'Hydrosol'),
         unit: 'ml',
         expiryMonths: 12,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: false,
         labelText: L('לשמור בקירור', 'Keep refrigerated'),
         contains: ['water'],
         recipe: [],
@@ -225,6 +253,8 @@ export const PREP_TYPES = [
         name: L('נרות', 'Suppositories'),
         unit: 'unit',
         expiryMonths: 6,
+        // Whether the waste of a grinding run may be folded into this type.
+        acceptsWaste: false,
         labelText: L('לשמור בקירור', 'Keep refrigerated'),
         contains: ['oil'],
         recipe: [],
@@ -354,8 +384,63 @@ function prepTypesOf(row) {
 }
 
 /**
+ * Families whose items are sold by quantity to practitioners and therefore
+ * carry a unit price and may be priced by a ladder.
+ */
+const SOLD_FAMILIES = [
+    'herb',
+    'herb_1to1',
+    'extract',
+    'tincture',
+    'hydrosol',
+    'essential_oil',
+    'infused_oil',
+    'homeopathy',
+    'formula',
+];
+
+/** A price settles on the nearest 5 agorot. */
+const round05 = (value) => Math.max(0.05, Math.round(value * 20) / 20);
+
+/** Rough shekels per foreign unit, for a price the supplier quotes abroad. */
+const TO_ILS_RATE = { ILS: 1, EUR: 4, USD: 3.7 };
+
+/**
+ * The items the pharmacy makes itself out of a bill of materials: three
+ * tinctures, one ground herb, one infused oil. Chosen deterministically from
+ * the stock rows so the BOM builder and the item builder agree.
+ */
+export function pickInternalParents(stock) {
+    const byPrefix = (prefix, unit) =>
+        stock
+            .filter(
+                (row) =>
+                    String(row.sku).startsWith(prefix) &&
+                    (!unit || row.unit === unit),
+            )
+            .sort((a, b) => String(a.sku).localeCompare(String(b.sku)));
+    const tinctures = byPrefix('20', 'l')
+        .filter((row) => !/גליצרין|אלכוהול/.test(row.name.he))
+        .slice(0, 3);
+    const [powder] = byPrefix('11', 'kg');
+    const [oil] = byPrefix('21', 'l');
+
+    return {
+        tinctures,
+        powder: powder || null,
+        oil: oil || null,
+        all: [...tinctures, powder, oil].filter(Boolean),
+    };
+}
+
+/**
  * Build the item catalogue over the stock rows and the consumer products, plus
  * the few consumables that exist in no other list.
+ *
+ * One item per SKU: a shelf product that is also a stock row becomes one
+ * record (`source: 'both'`) carrying the product's site fields over the stock
+ * row's purchasing fields. The item's code IS its SKU — SAP's item number —
+ * except for the three standalone consumables that have no SAP number.
  */
 export function buildItems(stock, products, suppliers) {
     const perFamily = {};
@@ -364,6 +449,19 @@ export function buildItems(stock, products, suppliers) {
 
         return itemCode(family, perFamily[family]);
     };
+
+    // SAP's consumer-site price per gram — the one real evidence of what an
+    // ingredient sells for (demo/real/priceTiers.json, band 1).
+    const tierPrice = new Map(
+        REAL_TIERS.filter((row) => row.fromQty === 1).map((row) => [
+            row.code,
+            row.price,
+        ]),
+    );
+    const usageBySku = new Map(CONSUMABLE_USAGE.map((use) => [use.sku, use]));
+    const internalSkus = new Set(
+        pickInternalParents(stock).all.map((row) => row.sku),
+    );
 
     const fromStock = stock.map((row, i) => {
         // The code says what the item is. `kind` only says where it is counted,
@@ -389,10 +487,34 @@ export function buildItems(stock, products, suppliers) {
             : supplierOf(`${row.sku}:supplier:2`, suppliers, supplierKind);
         const missingLat = isHerb && i % 11 === 5;
         const missingLocation = isHerb && i % 7 === 3;
+        const usage = usageBySku.get(row.sku) || null;
+        const isInternal = internalSkus.has(row.sku);
+        const sells = SOLD_FAMILIES.includes(family);
+        const lastPurchase = isFormula
+            ? null
+            : isHerb
+              ? imported
+                  ? spread(`${row.sku}:price`, 30, 110)
+                  : spread(`${row.sku}:price`, 120, 480)
+              : family === 'consumable'
+                ? spread(`${row.sku}:price`, 20, 60)
+                : spread(`${row.sku}:price`, 12, 45) / 10;
+        const currency = imported ? 'EUR' : 'ILS';
+        // The unit price: SAP's own where the catalogue has one, otherwise a
+        // plausible markup on what the pharmacy last paid, per sales unit.
+        const sale = isFormula
+            ? row.price
+            : tierPrice.has(row.sku)
+              ? tierPrice.get(row.sku)
+              : sells && lastPurchase
+                ? round05(
+                      ((lastPurchase * TO_ILS_RATE[currency]) / factor) * 2.2,
+                  )
+                : null;
 
         return {
             sku: row.sku,
-            code: nextCode(family),
+            code: row.sku,
             family,
             source: 'stock',
             names: {
@@ -406,28 +528,45 @@ export function buildItems(stock, products, suppliers) {
             },
             uom: { purchase: purchaseUom, sales: row.unit, factor },
             flags: {
-                purchase: !isFormula,
-                sales: isHerb || isFormula,
+                purchase: !isFormula && !isInternal,
+                sales: sells,
                 inventory: true,
-                batch: isHerb || family === 'consumable' || isFormula,
+                // Everything compounded is batch-managed; the supplies nobody
+                // counts per order (toilet paper, gloves) are not.
+                batch:
+                    !usage &&
+                    (isHerb || sells || family === 'consumable' || isInternal),
                 consumable: false,
+                internal: isInternal,
             },
             price: {
-                sale: isFormula ? row.price : null,
-                lastPurchase: isFormula
-                    ? null
-                    : isHerb
-                      ? imported
-                          ? spread(`${row.sku}:price`, 30, 110)
-                          : spread(`${row.sku}:price`, 120, 480)
-                      : family === 'consumable'
-                        ? spread(`${row.sku}:price`, 20, 60)
-                        : spread(`${row.sku}:price`, 12, 45) / 10,
-                currency: imported ? 'EUR' : 'ILS',
+                sale,
+                lastPurchase,
+                currency,
                 lastPurchaseOn: isFormula
                     ? null
                     : isoDaysAgo(spread(`${row.sku}:bought`, 8, 220)),
             },
+            // The ladder that prices it: most inherit their group from the
+            // code prefix; a third are fixed-price; a few name a group outright.
+            priceGroup: !sells
+                ? null
+                : chance(`${row.sku}:pgnone`, 0.33)
+                  ? 'none'
+                  : family === 'tincture' && chance(`${row.sku}:pgx`, 0.15)
+                    ? 'g3'
+                    : null,
+            // Supplies consumed by the calendar, not by orders.
+            consumption: usage
+                ? {
+                      mode: 'time',
+                      qty: usage.qty,
+                      periodDays: usage.periodDays,
+                      countedOn: isoDaysAgo(usage.countedDaysAgo),
+                      countedQty: usage.countedQty,
+                  }
+                : null,
+            expiryMonths: null,
             suppliers: isFormula
                 ? { preferred: null, last: null }
                 : { preferred, last },
@@ -486,7 +625,7 @@ export function buildItems(stock, products, suppliers) {
 
         return {
             sku: product.sku,
-            code: nextCode(family),
+            code: product.sku,
             family,
             source: 'product',
             names: {
@@ -505,6 +644,9 @@ export function buildItems(stock, products, suppliers) {
                 inventory: true,
                 batch: house,
                 consumable: false,
+                // A shelf product is made ahead of time from its recipe, but it
+                // is a product, not a component of anything else.
+                internal: false,
             },
             price: {
                 sale: product.net,
@@ -516,6 +658,12 @@ export function buildItems(stock, products, suppliers) {
                     ? null
                     : isoDaysAgo(spread(`${product.sku}:bought`, 5, 160)),
             },
+            // A shelf product is sold at one price whatever the quantity.
+            priceGroup: 'none',
+            consumption: null,
+            // A few house products keep a shorter life than their recipe says.
+            expiryMonths:
+                house && chance(`${product.sku}:exp`, 0.3) ? 18 : null,
             suppliers: { preferred, last: preferred },
             prepTypes: [],
             safety: { pregnancy: null, lactation: null, under2: null },
@@ -595,7 +743,11 @@ export function buildItems(stock, products, suppliers) {
                 inventory: false,
                 batch: false,
                 consumable: true,
+                internal: false,
             },
+            priceGroup: null,
+            consumption: null,
+            expiryMonths: null,
             price: {
                 sale: null,
                 lastPurchase,
@@ -620,7 +772,48 @@ export function buildItems(stock, products, suppliers) {
         };
     });
 
-    return [...fromStock, ...fromProducts, ...standalone];
+    // One record per SKU: a product that is also a stock row folds its site
+    // side into the stock row's item.
+    const bySku = new Map(fromStock.map((item) => [item.sku, item]));
+    const productOnly = [];
+
+    fromProducts.forEach((product) => {
+        const twin = bySku.get(product.sku);
+
+        if (!twin) {
+            productOnly.push(product);
+
+            return;
+        }
+
+        Object.assign(twin, {
+            source: 'both',
+            names: { ...twin.names, site: product.names.site },
+            flags: {
+                ...twin.flags,
+                sales: true,
+                batch: twin.flags.batch || product.flags.batch,
+                internal: twin.flags.internal,
+            },
+            price: { ...twin.price, sale: product.price.sale },
+            site: product.site,
+            priceGroup: 'none',
+            expiryMonths: product.expiryMonths,
+        });
+    });
+
+    const items = [...fromStock, ...productOnly, ...standalone];
+    const seen = new Set();
+
+    items.forEach((item) => {
+        if (seen.has(item.sku)) {
+            throw new Error(`buildItems: duplicate sku ${item.sku}`);
+        }
+
+        seen.add(item.sku);
+    });
+
+    return items;
 }
 
 // ------------------------------------------------------------------- BOMs
@@ -640,10 +833,11 @@ const BOM_EDITORS = [
  */
 export function buildBoms(stock, products) {
     const herbs = stock.filter((row) => row.kind === 'raw');
-    const alcohol = stock.find((row) => row.sku === 'BS-2001');
-    const glycerin = stock.find((row) => row.sku === 'BS-2002');
-    const bottle100 = stock.find((row) => row.sku === 'PK-3001');
-    const bottle50 = stock.find((row) => row.sku === 'PK-3002');
+    const alcohol = stock.find((row) => row.sku === '300901');
+    const glycerin = stock.find((row) => row.sku === '300902');
+    const carrier = stock.find((row) => row.sku === '300903');
+    const bottle100 = stock.find((row) => row.sku === '400101');
+    const bottle50 = stock.find((row) => row.sku === '400102');
 
     const parents = [
         ...stock
@@ -672,7 +866,7 @@ export function buildBoms(stock, products) {
         return [];
     }
 
-    return parents.map((parent, i) => {
+    const trees = parents.map((parent, i) => {
         const slot = `bom:${parent.sku}`;
         const count = spread(`${slot}:n`, 2, 4);
         const picked = [];
@@ -731,6 +925,15 @@ export function buildBoms(stock, products) {
             parentSku: parent.sku,
             name: parent.name,
             cn: parent.cn,
+            // What the recipe produces — it decides the shelf life of a batch
+            // made from it.
+            prepType: parent.liquid
+                ? parent.oil
+                    ? 'infused_oil'
+                    : 'tincture'
+                : 'capsule',
+            expectedWastePct: null,
+            version: 1,
             components,
             alcoholPct:
                 parent.liquid && !parent.oil
@@ -755,6 +958,113 @@ export function buildBoms(stock, products) {
             updatedBy: pickFrom(`${slot}:by`, BOM_EDITORS),
         };
     });
+
+    // The recipes of what the pharmacy makes for its own shelves: a tincture
+    // is herb macerated in alcohol and glycerin, a 1:1 is the herb ground, an
+    // infused oil is herb steeped in a carrier. Yields are one production run.
+    const internal = pickInternalParents(stock);
+    const dried = herbs.filter((row) => String(row.sku).startsWith('10'));
+    const herbFor = (row, k) => dried[(k * 7) % dried.length] || herbs[0];
+    const internalTrees = [];
+    const tree = (parent, prepType, components, extra) => {
+        internalTrees.push({
+            id: `bom-${trees.length + internalTrees.length + 1}`,
+            parentSku: parent.sku,
+            name: parent.name,
+            cn: parent.cn || null,
+            prepType,
+            components,
+            alcoholPct: null,
+            oilPct: null,
+            ratio: null,
+            notes: null,
+            version: 1,
+            updated: at(spread(`bom:${parent.sku}:upd`, 10, 200), 10, 30),
+            updatedBy: pickFrom(`bom:${parent.sku}:by`, BOM_EDITORS),
+            ...extra,
+        });
+    };
+
+    internal.tinctures.forEach((parent, k) => {
+        const herb = herbFor(parent, k);
+
+        tree(
+            parent,
+            'tincture',
+            [
+                { sku: herb.sku, qty: 200, uom: 'g', issue: 'backflush' },
+                ...(alcohol
+                    ? [
+                          {
+                              sku: alcohol.sku,
+                              qty: 700,
+                              uom: 'ml',
+                              issue: 'backflush',
+                          },
+                      ]
+                    : []),
+                ...(glycerin
+                    ? [
+                          {
+                              sku: glycerin.sku,
+                              qty: 100,
+                              uom: 'ml',
+                              issue: 'backflush',
+                          },
+                      ]
+                    : []),
+            ],
+            {
+                alcoholPct: 40,
+                ratio: '1:5',
+                yield: { qty: 1000, uom: 'ml' },
+                expectedWastePct: 5,
+                notes: L(
+                    'להשרות 14 יום, לסנן פעמיים',
+                    'Macerate 14 days, filter twice',
+                ),
+            },
+        );
+    });
+
+    if (internal.powder) {
+        tree(
+            internal.powder,
+            'powder',
+            [
+                {
+                    sku: herbFor(internal.powder, 1).sku,
+                    qty: 1100,
+                    uom: 'g',
+                    issue: 'backflush',
+                },
+            ],
+            { yield: { qty: 1000, uom: 'g' }, expectedWastePct: 12 },
+        );
+    }
+
+    if (internal.oil && carrier) {
+        tree(
+            internal.oil,
+            'infused_oil',
+            [
+                {
+                    sku: herbFor(internal.oil, 3).sku,
+                    qty: 150,
+                    uom: 'g',
+                    issue: 'backflush',
+                },
+                { sku: carrier.sku, qty: 900, uom: 'ml', issue: 'backflush' },
+            ],
+            {
+                oilPct: 100,
+                yield: { qty: 1000, uom: 'ml' },
+                expectedWastePct: 8,
+            },
+        );
+    }
+
+    return [...trees, ...internalTrees];
 }
 
 // ------------------------------------------------------------ attachments

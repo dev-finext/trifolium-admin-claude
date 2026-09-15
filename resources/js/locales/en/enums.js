@@ -309,6 +309,7 @@ export default {
         ingredient_delete: 'Ingredient deleted',
         item_create: 'Item created',
         item_update: 'Item card updated',
+        item_delete: 'Item deleted',
         prep_type_create: 'Preparation type created',
         bom_create: 'Bill of materials created',
         bom_update: 'Bill of materials updated',

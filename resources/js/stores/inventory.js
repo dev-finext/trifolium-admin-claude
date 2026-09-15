@@ -300,11 +300,17 @@ export const useInventoryStore = defineStore('inventory', () => {
         () => dataset.data.inventorySettings?.pickMode || BATCH_PICK.mode,
     );
 
-    /** Batches of one item that may still be drawn from, in pick order. */
-    const openBatchesOf = (sku) =>
+    /**
+     * Batches of one item that may still be drawn from, in pick order. Waste
+     * batches stay out unless the caller's preparation type accepts waste.
+     */
+    const openBatchesOf = (sku, { allowWaste = false } = {}) =>
         batchesOf(sku)
             .filter(
-                (batch) => batch.remaining > 0 && batch.state !== 'rejected',
+                (batch) =>
+                    batch.remaining > 0 &&
+                    batch.state !== 'rejected' &&
+                    (allowWaste || !batch.waste),
             )
             .sort((a, b) =>
                 pickMode.value === 'fifo'
@@ -315,6 +321,33 @@ export const useInventoryStore = defineStore('inventory', () => {
             );
 
     const useOfBatch = (id) => batchUse.value.filter((row) => row.batch === id);
+
+    /** Open waste batches of one item, nearest expiry first. */
+    const wasteBatchesOf = (sku) =>
+        batchesOf(sku)
+            .filter((batch) => batch.waste && batch.remaining > 0)
+            .sort((a, b) => a.daysToExp - b.daysToExp);
+
+    /** How much of an item's stock is waste — "of which waste: N". */
+    const wasteOf = (sku) =>
+        wasteBatchesOf(sku).reduce((sum, batch) => sum + batch.remaining, 0);
+
+    /**
+     * When time-consumed stock runs out at the current pace, as an ISO date —
+     * or null when the item is not consumed by the calendar.
+     */
+    const runOutOn = (sku, consumption) => {
+        const row = itemBySku(sku);
+
+        if (!row || !consumption?.qty || !consumption?.periodDays) {
+            return null;
+        }
+
+        const perDay = consumption.qty / consumption.periodDays;
+        const days = Math.floor(Math.max(0, row.onHand) / perDay);
+
+        return isoDaysAgo(-days);
+    };
 
     /** How many batches of an item still hold quantity. */
     const liveBatchCount = (sku) =>
@@ -644,6 +677,156 @@ export const useInventoryStore = defineStore('inventory', () => {
      * @returns {Promise<{before: number, after: number, diff: number,
      *                    moved: Array<{id: string, delta: number}>}>}
      */
+    /**
+     * Fold every open waste batch of an item into one new W- batch, so the
+     * pile of small ones a year of grinding leaves behind reads as one line.
+     * The merged batch keeps the earliest expiry and remembers its parts.
+     */
+    async function mergeWaste(sku) {
+        const parts = wasteBatchesOf(sku);
+
+        if (parts.length < 2) {
+            return null;
+        }
+
+        const row = itemBySku(sku);
+        const series =
+            dataset.data.inventorySettings?.batchSeries?.waste || 'W-';
+        const id = nextSerial(
+            batches.value
+                .map((batch) => batch.id)
+                .filter((batchId) => String(batchId).startsWith(series)),
+            series,
+        );
+        const qty = parts.reduce((sum, batch) => sum + batch.remaining, 0);
+        const earliest = parts.reduce((best, batch) =>
+            batch.daysToExp < best.daysToExp ? batch : best,
+        );
+        const when = moment();
+        const by = dataset.me?.name || null;
+
+        parts.forEach((batch) => {
+            writeMovement({
+                id: `mv-merge-${batch.id}`,
+                kind: 'waste_merge',
+                sku,
+                name: batch.name,
+                unit: batch.unit,
+                wh: batch.wh,
+                qty: -batch.remaining,
+                batch: batch.id,
+                ref: id,
+                when,
+                by,
+            });
+            batch.remaining = 0;
+            syncBatch(batch);
+        });
+
+        const merged = {
+            id,
+            sku,
+            name: row ? row.name : earliest.name,
+            unit: earliest.unit,
+            wh: earliest.wh,
+            source: 'waste',
+            receipt: null,
+            production: null,
+            supplier: null,
+            supplierBatch: null,
+            received: when,
+            qty,
+            remaining: qty,
+            expiry: earliest.expiry,
+            daysToExp: earliest.daysToExp,
+            state: 'active',
+            waste: true,
+            unitCost: null,
+            components: parts.map((batch) => ({
+                sku,
+                batch: batch.id,
+                qty: batch.qty,
+            })),
+            by,
+        };
+
+        syncBatch(merged);
+        bag('batches').unshift(merged);
+        writeMovement({
+            id: `mv-merge-in-${id}`,
+            kind: 'waste_merge',
+            sku,
+            name: merged.name,
+            unit: merged.unit,
+            wh: merged.wh,
+            qty,
+            batch: id,
+            ref: null,
+            when,
+            by,
+        });
+        writeLog({
+            act: 'stock_adjust',
+            entType: 'batch',
+            ent: id,
+            from: parts.map((batch) => batch.id).join(', '),
+            to: String(qty),
+        });
+        await persist(`inventory/waste/${sku}/merge`, {
+            batches: parts.map((batch) => batch.id),
+        });
+
+        return merged;
+    }
+
+    /**
+     * A physical count of time-consumed stock: the figure on the shelf becomes
+     * the figure in the system, the gap is one `count` movement, and the
+     * consumption clock restarts from today.
+     */
+    async function recordCount(sku, countedQty, note = '') {
+        const row = itemBySku(sku);
+
+        if (!row) {
+            throw new Error(`Cannot count ${sku}`);
+        }
+
+        const counted = Math.max(0, Number(countedQty) || 0);
+        const delta = counted - row.onHand;
+        const when = moment();
+
+        row.onHand = counted;
+        syncRow(row);
+
+        if (delta !== 0) {
+            writeMovement({
+                id: `mv-count-${sku}-${when.iso}`,
+                kind: 'count',
+                sku,
+                name: row.name,
+                unit: row.unit,
+                wh: row.wh,
+                qty: delta,
+                batch: null,
+                ref: null,
+                when,
+                by: dataset.me?.name || null,
+            });
+        }
+
+        writeLog({
+            act: 'stock_adjust',
+            entType: 'catalog_item',
+            ent: sku,
+            from: String(row.onHand - delta),
+            to: String(counted),
+            note: note || null,
+        });
+        await persist(`inventory/count/${sku}`, { counted, note });
+
+        return { counted, delta, countedOn: when.iso };
+    }
+
     async function adjustStock(form) {
         const item = itemBySku(form.sku);
         const rule = ADJUST_REASON[form.reason];
@@ -934,6 +1117,11 @@ export const useInventoryStore = defineStore('inventory', () => {
         receiptById,
         batchesOf,
         openBatchesOf,
+        wasteBatchesOf,
+        wasteOf,
+        runOutOn,
+        mergeWaste,
+        recordCount,
         useOfBatch,
         liveBatchCount,
         fifoPlan,

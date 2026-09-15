@@ -313,6 +313,7 @@ export default {
         ingredient_delete: 'מחיקת רכיב פורמולה',
         item_create: 'הקמת פריט',
         item_update: 'עדכון כרטיס פריט',
+        item_delete: 'מחיקת פריט',
         prep_type_create: 'הקמת סוג הכנה',
         bom_create: 'הקמת עץ מוצר',
         bom_update: 'עדכון עץ מוצר',

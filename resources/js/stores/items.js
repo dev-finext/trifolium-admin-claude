@@ -75,7 +75,20 @@ const FILLED = {
     salePrice: (item) =>
         item.price?.sale !== null && item.price?.sale !== undefined,
     supplier: (item) => Boolean(item.suppliers?.preferred),
+    // An internal component is made from a recipe; the join hands the count in.
+    bom: (item) => (item.bomCount || 0) > 0,
 };
+
+/** A number typed into a form, or null when the field was left empty. */
+function numberOrNull(value) {
+    if (value === '' || value === null || value === undefined) {
+        return null;
+    }
+
+    const parsed = Number(value);
+
+    return Number.isNaN(parsed) ? null : parsed;
+}
 
 /**
  * Where one item's stock stands, as one value the filter can group by.
@@ -321,8 +334,14 @@ export const useItemsStore = defineStore('items', () => {
                 min: stock ? stock.min : product ? product.minStock : null,
                 preferred: supplierByCode(item.suppliers?.preferred),
                 last: supplierByCode(item.suppliers?.last),
-                missing: missingOf(item),
-                waivedMissing: waivedOf(item),
+                missing: missingOf({
+                    ...item,
+                    bomCount: bomsOfParent(item.sku).length,
+                }),
+                waivedMissing: waivedOf({
+                    ...item,
+                    bomCount: bomsOfParent(item.sku).length,
+                }),
                 bomCount: bomsOfParent(item.sku).length,
                 usedInCount: bomsUsing(item.sku).length,
                 fileCount: attachmentsOf('item', item.sku).length,
@@ -457,14 +476,29 @@ export const useItemsStore = defineStore('items', () => {
     async function saveItem(form, existingSku = null) {
         const rows = bag('items');
         const isNew = !existingSku;
+        const flags = { ...form.flags };
+
+        // What the pharmacy makes itself is always batch-managed: the run that
+        // makes it opens the batch.
+        if (flags.internal) {
+            flags.batch = true;
+        }
+
         const record = {
             sku: existingSku || form.sku,
-            code: form.code,
+            code: form.code || existingSku || form.sku,
             family: form.family,
             names: { ...form.names },
-            uom: { ...form.uom },
-            flags: { ...form.flags },
-            price: { ...form.price },
+            uom: {
+                ...form.uom,
+                factor: numberOrNull(form.uom?.factor) ?? 1,
+            },
+            flags,
+            price: {
+                ...form.price,
+                sale: numberOrNull(form.price?.sale),
+                lastPurchase: numberOrNull(form.price?.lastPurchase),
+            },
             suppliers: { ...form.suppliers },
             prepTypes: [...(form.prepTypes || [])],
             safety: { ...form.safety },
@@ -473,9 +507,35 @@ export const useItemsStore = defineStore('items', () => {
                 ...form.site,
                 categories: [...(form.site?.categories || [])],
             },
-            location: form.location ? { ...form.location } : null,
+            location: form.location?.cabinet
+                ? {
+                      cabinet: numberOrNull(form.location.cabinet),
+                      shelf: numberOrNull(form.location.shelf),
+                  }
+                : null,
             waived: [...(form.waived || [])],
+            // Which ladder prices it: null inherits by code prefix, 'none' is
+            // a fixed price, an id names a group.
+            priceGroup: form.priceGroup || null,
+            // Supplies consumed by the calendar rather than by orders — only
+            // for stock nobody counts per order, never for a batch item.
+            consumption:
+                flags.inventory && !flags.batch && form.consumption?.mode
+                    ? {
+                          mode: 'time',
+                          qty: numberOrNull(form.consumption.qty) ?? 0,
+                          periodDays:
+                              numberOrNull(form.consumption.periodDays) ?? 7,
+                          countedOn:
+                              form.consumption.countedOn || isoDaysAgo(0),
+                          countedQty:
+                              numberOrNull(form.consumption.countedQty) ?? 0,
+                      }
+                    : null,
+            expiryMonths: numberOrNull(form.expiryMonths),
         };
+        // The stock row's own fields, when the form carries them.
+        const stockForm = form.stock || null;
 
         if (isNew) {
             const item = {
@@ -488,38 +548,41 @@ export const useItemsStore = defineStore('items', () => {
 
             if (item.flags.inventory && !inventory.itemBySku(item.sku)) {
                 const stockRows = bag('stock');
+                const min = numberOrNull(stockForm?.min) ?? 0;
                 const stockRow = {
                     sku: item.sku,
-                    priceSku: null,
                     herbId: item.family === 'herb' ? `ing-${item.sku}` : null,
                     kind:
-                        item.family === 'herb'
+                        stockForm?.kind ||
+                        (item.family === 'herb'
                             ? 'raw'
                             : item.family === 'packaging'
                               ? 'pack'
                               : item.family === 'consumable'
                                 ? 'base'
-                                : 'shelf',
+                                : 'shelf'),
                     name: {
                         he: item.names.he,
                         en: item.names.en || item.names.he,
                     },
                     lat: item.names.lat || null,
                     cn: item.names.cn || null,
-                    system: 'west',
+                    system: stockForm?.system || 'west',
                     wh:
-                        item.family === 'herb' || item.family === 'consumable'
+                        stockForm?.wh ||
+                        (item.family === 'herb' || item.family === 'consumable'
                             ? 'raw'
-                            : 'shelf',
+                            : 'shelf'),
                     unit: item.uom.sales,
                     size: null,
                     sizeUnit: null,
                     price: item.price.sale,
+                    // Quantity only ever arrives through a goods receipt.
                     onHand: 0,
                     alloc: 0,
-                    min: 0,
+                    min,
                     avail: 0,
-                    low: false,
+                    low: min > 0,
                     created: item.created,
                 };
 
@@ -556,6 +619,16 @@ export const useItemsStore = defineStore('items', () => {
             };
             stockRow.lat = item.names.lat || null;
             stockRow.cn = item.names.cn || null;
+            stockRow.unit = item.uom.sales;
+            stockRow.price = item.price.sale;
+
+            if (stockForm) {
+                stockRow.kind = stockForm.kind || stockRow.kind;
+                stockRow.system = stockForm.system || stockRow.system;
+                stockRow.wh = stockForm.wh || stockRow.wh;
+                stockRow.min = numberOrNull(stockForm.min) ?? stockRow.min;
+                stockRow.low = stockRow.avail < stockRow.min;
+            }
         }
 
         writeLog({
@@ -570,6 +643,65 @@ export const useItemsStore = defineStore('items', () => {
         return { created: false, item };
     }
 
+    /**
+     * Why an item cannot be deleted, or null when it can: stock on hand, live
+     * batches, recipes that use it or are it, open purchase-order lines.
+     */
+    function itemBlock(sku) {
+        const stockRow = inventory.itemBySku(sku);
+        const stockBlock = stockRow
+            ? inventory.ingredientBlock(stockRow)
+            : null;
+        const inBoms = bomsUsing(sku).length + bomsOfParent(sku).length;
+        const onOrder = onOrderOf(sku).length;
+
+        if (!stockBlock && !inBoms && !onOrder) {
+            return null;
+        }
+
+        return {
+            onHand: stockBlock?.onHand || 0,
+            batches: stockBlock?.batches || 0,
+            formulas: stockBlock?.formulas || 0,
+            boms: inBoms,
+            onOrder,
+        };
+    }
+
+    /**
+     * Delete an item and its stock row together. Refused while anything still
+     * depends on it — the caller shows `itemBlock()` and never gets here.
+     */
+    async function removeItem(sku, reason = '') {
+        if (itemBlock(sku)) {
+            throw new Error(`Item ${sku} is still in use`);
+        }
+
+        const rows = bag('items');
+        const index = rows.findIndex((row) => row.sku === sku);
+
+        if (index < 0) {
+            return false;
+        }
+
+        const [item] = rows.splice(index, 1);
+
+        if (inventory.itemBySku(sku)) {
+            await inventory.removeIngredient(sku, reason);
+        }
+
+        writeLog({
+            act: 'item_delete',
+            entType: 'catalog_item',
+            ent: sku,
+            from: item.names.he,
+            to: reason,
+        });
+        await persist(`items/${sku}`, { reason }, 'DELETE');
+
+        return true;
+    }
+
     /** Create or update a preparation type — its text, unit, shelf life, contents, recipe. */
     async function savePrepType(form, existingId = null) {
         const rows = bag('prepTypes');
@@ -577,6 +709,7 @@ export const useItemsStore = defineStore('items', () => {
             name: { ...form.name },
             unit: form.unit,
             expiryMonths: Number(form.expiryMonths) || 0,
+            acceptsWaste: Boolean(form.acceptsWaste),
             labelText: form.labelText?.he ? { ...form.labelText } : null,
             contains: [...(form.contains || [])],
             recipe: (form.recipe || []).map((step) => ({
@@ -807,6 +940,8 @@ export const useItemsStore = defineStore('items', () => {
         onOrderOf,
 
         saveItem,
+        itemBlock,
+        removeItem,
         savePrepType,
         saveBom,
         removeBom,

@@ -34,6 +34,7 @@ export const LOG_ACTION_IDS = [
     'ingredient_delete',
     'item_create',
     'item_update',
+    'item_delete',
     'prep_type_create',
     'bom_create',
     'bom_update',
