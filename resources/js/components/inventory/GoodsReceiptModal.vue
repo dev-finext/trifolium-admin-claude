@@ -1,10 +1,10 @@
 <script setup>
 // Goods receipt — the only door stock comes in through.
 //
-// One row per batch: an item, a quantity, a batch number, the supplier's own
-// batch code and an expiry date. Each row opens a separate batch and enters stock
-// the moment the receipt is saved, which is why the row is dense rather than a
-// wizard — a delivery of eight herbs is eight rows on one screen.
+// One block per batch: an item, a quantity, a batch number, the supplier's own
+// batch code and an expiry date. Each block opens a separate batch and enters
+// stock the moment the receipt is saved, which is why the block is dense rather
+// than a wizard — a delivery of eight herbs is eight blocks on one screen.
 //
 // Second-version additions, each marked: the supplier is picked from the supplier
 // list (free text stays for a one-off), a line may top up an existing batch
@@ -29,8 +29,8 @@ import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 import { usePurchasingStore } from '@/stores/purchasing';
 
-/** Wide enough for every column of a receipt line without inner scrolling. */
-const WIDTH = 1520;
+/** Six fields to a row — a receipt line's ten sit on two rows. */
+const WIDTH = 1180;
 
 /** The supplier select's value for "not on the list — type it". */
 const OTHER = '__other';
@@ -191,6 +191,13 @@ function purchaseUnit(line) {
     return uom ? t(`items.uom.${uom}`) : '';
 }
 
+/** `₪/kg` — or the currency alone until an item is picked. */
+function priceHint(line) {
+    const unit = purchaseUnit(line);
+
+    return unit ? `${currencyOf(line)}/${unit}` : currencyOf(line);
+}
+
 function addLine() {
     lines.value.push(emptyLine(lines.value.length));
 }
@@ -253,7 +260,7 @@ async function save() {
         class="a-modal-card--fit"
         @close="emit('close')"
     >
-        <div class="a-rf-head">
+        <div class="head">
             <div>
                 <label class="a-lbl" :for="`${uid}-supsel`">
                     {{ t('inventory.receipt.supplier') }}
@@ -314,159 +321,206 @@ async function save() {
         </div>
 
         <div
-            class="a-rf-grid"
-            role="table"
+            class="a-lines"
+            role="list"
             :aria-label="t('inventory.receipt.rows')"
         >
-            <div class="a-rf-r a-rf-r--h rf" role="row">
-                <span role="columnheader">{{
-                    t('inventory.receipt.col.item')
-                }}</span>
-                <span role="columnheader">{{
-                    t('inventory.receipt.col.qty')
-                }}</span>
-                <span role="columnheader">
-                    {{ t('inventory.receipt.col.existing') }}
-                    <V2Badge id="receiving" size="sm" />
-                </span>
-                <span role="columnheader">{{
-                    t('inventory.receipt.col.batch')
-                }}</span>
-                <span role="columnheader">{{
-                    t('inventory.receipt.col.supplierBatch')
-                }}</span>
-                <span role="columnheader">{{
-                    t('inventory.receipt.col.expiry')
-                }}</span>
-                <span role="columnheader">{{
-                    t('inventory.receipt.col.wh')
-                }}</span>
-                <span role="columnheader">
-                    {{ t('inventory.receipt.col.price') }}
-                    <V2Badge id="receiving" size="sm" />
-                </span>
-                <span role="columnheader">
-                    {{ t('inventory.receipt.col.labels') }}
-                    <V2Badge id="receiving" size="sm" />
-                </span>
-                <span role="columnheader">{{
-                    t('inventory.receipt.col.after')
-                }}</span>
-                <span role="columnheader" />
-            </div>
-
             <div
                 v-for="(line, i) in lines"
                 :key="i"
-                class="a-rf-r rf"
+                class="a-line-block"
                 :class="{ 'is-ok': lineOk(line) }"
-                role="row"
+                role="listitem"
             >
-                <ItemPicker
-                    :input-id="`${uid}-i${i}`"
-                    :model-value="line.sku"
-                    :items="inventory.stock"
-                    @update:model-value="onItem(line, $event)"
-                />
-                <AInput
-                    :model-value="line.qty"
-                    inputmode="numeric"
-                    :aria-label="t('inventory.receipt.aria.qty', { n: i + 1 })"
-                    :placeholder="unitHint(line)"
-                    @update:model-value="onQty(line, $event)"
-                />
-                <ASelect
-                    :model-value="line.existingBatch"
-                    :options="existingOptions(line)"
-                    :aria-label="
-                        t('inventory.receipt.aria.existing', { n: i + 1 })
-                    "
-                    @update:model-value="onExisting(line, $event)"
-                />
-                <AInput
-                    v-model="line.batch"
-                    ltr
-                    :disabled="Boolean(line.existingBatch)"
-                    :aria-label="
-                        t('inventory.receipt.aria.batch', { n: i + 1 })
-                    "
-                />
-                <AInput
-                    v-model="line.supplierBatch"
-                    ltr
-                    :aria-label="
-                        t('inventory.receipt.aria.supplierBatch', { n: i + 1 })
-                    "
-                    :placeholder="t('inventory.receipt.supplierBatchPh')"
-                />
-                <div>
-                    <AInput
-                        v-model="line.expiry"
-                        type="date"
-                        :disabled="Boolean(line.existingBatch)"
+                <div class="a-line-head">
+                    <span class="a-line-no">
+                        {{ t('labels.lineNo', { n: i + 1 }) }}
+                    </span>
+                    <AButton
+                        sm
+                        icon="trash"
+                        class="a-push"
                         :aria-label="
-                            t('inventory.receipt.aria.expiry', { n: i + 1 })
+                            t('inventory.receipt.aria.remove', { n: i + 1 })
                         "
+                        :disabled="lines.length === 1"
+                        @click="removeLine(i)"
                     />
-                    <div
-                        v-if="line.expiryMonths && !line.existingBatch"
-                        class="a-hint tiny"
-                    >
-                        {{
-                            t('inventory.receipt.expiryAuto', {
-                                n: line.expiryMonths,
-                            })
-                        }}
+                </div>
+
+                <div class="a-line-body">
+                    <div class="a-line-wide">
+                        <label class="a-lbl" :for="`${uid}-i${i}`">
+                            {{ t('inventory.receipt.col.item') }}
+                            <span class="a-req">{{
+                                t('labels.required')
+                            }}</span>
+                        </label>
+                        <ItemPicker
+                            :input-id="`${uid}-i${i}`"
+                            :model-value="line.sku"
+                            :items="inventory.stock"
+                            @update:model-value="onItem(line, $event)"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-q${i}`">
+                            {{ t('inventory.receipt.col.qty') }}
+                            <span class="a-req">{{
+                                t('labels.required')
+                            }}</span>
+                        </label>
+                        <AInput
+                            :id="`${uid}-q${i}`"
+                            :model-value="line.qty"
+                            inputmode="numeric"
+                            :aria-label="
+                                t('inventory.receipt.aria.qty', { n: i + 1 })
+                            "
+                            :placeholder="unitHint(line)"
+                            @update:model-value="onQty(line, $event)"
+                        />
+                        <div v-if="after(line)" class="a-hint">
+                            {{ t('inventory.receipt.col.after') }} ·
+                            <span class="num">{{ after(line) }}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-e${i}`">
+                            {{ t('inventory.receipt.col.existing') }}
+                            <V2Badge id="receiving" size="sm" />
+                        </label>
+                        <ASelect
+                            :id="`${uid}-e${i}`"
+                            :model-value="line.existingBatch"
+                            :options="existingOptions(line)"
+                            :aria-label="
+                                t('inventory.receipt.aria.existing', {
+                                    n: i + 1,
+                                })
+                            "
+                            @update:model-value="onExisting(line, $event)"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-b${i}`">
+                            {{ t('inventory.receipt.col.batch') }}
+                            <span v-if="!line.existingBatch" class="a-req">
+                                {{ t('labels.required') }}
+                            </span>
+                        </label>
+                        <AInput
+                            :id="`${uid}-b${i}`"
+                            v-model="line.batch"
+                            ltr
+                            :disabled="Boolean(line.existingBatch)"
+                            :aria-label="
+                                t('inventory.receipt.aria.batch', { n: i + 1 })
+                            "
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-sb${i}`">
+                            {{ t('inventory.receipt.col.supplierBatch') }}
+                        </label>
+                        <AInput
+                            :id="`${uid}-sb${i}`"
+                            v-model="line.supplierBatch"
+                            ltr
+                            :aria-label="
+                                t('inventory.receipt.aria.supplierBatch', {
+                                    n: i + 1,
+                                })
+                            "
+                            :placeholder="
+                                t('inventory.receipt.supplierBatchPh')
+                            "
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-x${i}`">
+                            {{ t('inventory.receipt.col.expiry') }}
+                            <span class="a-req">{{
+                                t('labels.required')
+                            }}</span>
+                        </label>
+                        <AInput
+                            :id="`${uid}-x${i}`"
+                            v-model="line.expiry"
+                            type="date"
+                            :disabled="Boolean(line.existingBatch)"
+                            :aria-label="
+                                t('inventory.receipt.aria.expiry', { n: i + 1 })
+                            "
+                        />
+                        <div
+                            v-if="line.expiryMonths && !line.existingBatch"
+                            class="a-hint"
+                        >
+                            {{
+                                t('inventory.receipt.expiryAuto', {
+                                    n: line.expiryMonths,
+                                })
+                            }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-w${i}`">
+                            {{ t('inventory.receipt.col.wh') }}
+                        </label>
+                        <select
+                            :id="`${uid}-w${i}`"
+                            v-model="line.wh"
+                            class="a-select"
+                            :aria-label="
+                                t('inventory.receipt.aria.wh', { n: i + 1 })
+                            "
+                        >
+                            <option
+                                v-for="warehouse in warehouses"
+                                :key="warehouse.id"
+                                :value="warehouse.id"
+                            >
+                                {{ warehouse.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-p${i}`">
+                            {{ t('inventory.receipt.col.price') }}
+                            <V2Badge id="receiving" size="sm" />
+                        </label>
+                        <AInput
+                            :id="`${uid}-p${i}`"
+                            v-model="line.price"
+                            type="number"
+                            ltr
+                            :aria-label="
+                                t('inventory.receipt.aria.price', { n: i + 1 })
+                            "
+                        />
+                        <div class="a-hint">{{ priceHint(line) }}</div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-l${i}`">
+                            {{ t('inventory.receipt.col.labels') }}
+                            <V2Badge id="receiving" size="sm" />
+                        </label>
+                        <AInput
+                            :id="`${uid}-l${i}`"
+                            v-model="line.labels"
+                            type="number"
+                            ltr
+                            :aria-label="
+                                t('inventory.receipt.aria.labels', { n: i + 1 })
+                            "
+                        />
                     </div>
                 </div>
-                <select
-                    v-model="line.wh"
-                    class="a-select"
-                    :aria-label="t('inventory.receipt.aria.wh', { n: i + 1 })"
-                >
-                    <option
-                        v-for="warehouse in warehouses"
-                        :key="warehouse.id"
-                        :value="warehouse.id"
-                    >
-                        {{ warehouse.label }}
-                    </option>
-                </select>
-                <div class="price">
-                    <AInput
-                        v-model="line.price"
-                        type="number"
-                        ltr
-                        :aria-label="
-                            t('inventory.receipt.aria.price', { n: i + 1 })
-                        "
-                    />
-                    <span class="t-sub nowrap"
-                        >{{ currencyOf(line) }}/{{ purchaseUnit(line) }}</span
-                    >
-                </div>
-                <AInput
-                    v-model="line.labels"
-                    type="number"
-                    ltr
-                    :aria-label="
-                        t('inventory.receipt.aria.labels', { n: i + 1 })
-                    "
-                />
-                <span class="a-rf-after num">{{ after(line) || '—' }}</span>
-                <AButton
-                    sm
-                    icon="trash"
-                    :aria-label="
-                        t('inventory.receipt.aria.remove', { n: i + 1 })
-                    "
-                    :disabled="lines.length === 1"
-                    @click="removeLine(i)"
-                />
             </div>
         </div>
 
-        <div class="a-rf-foot">
+        <div class="foot">
             <AButton sm icon="plus" @click="addLine">
                 {{ t('inventory.receipt.addLine') }}
             </AButton>
@@ -492,29 +546,25 @@ async function save() {
 </template>
 
 <style scoped>
-/* Eleven columns since the second version — the shared rule is authored for eight. */
-.a-rf-r.rf {
-    grid-template-columns:
-        minmax(200px, 1.5fr) 80px 140px 100px 110px 150px 90px 130px 70px 100px
-        40px;
+.head {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px 14px;
+    margin-bottom: 16px;
 }
 
 .other {
     margin-top: 6px;
 }
 
-.price {
+.foot {
     display: flex;
     align-items: center;
-    gap: 6px;
-}
-
-.nowrap {
-    white-space: nowrap;
-}
-
-.tiny {
-    margin-top: 2px;
-    font-size: 11.5px;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--a-ink-4);
+    line-height: 1.5;
 }
 </style>

@@ -19,6 +19,7 @@ import ASelect from '@/components/ui/ASelect.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import DateRangeBar from '@/components/ui/DateRangeBar.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
@@ -441,13 +442,7 @@ function exportCsv() {
             </template>
 
             <template #cell-order="{ row }">
-                <RouterLink
-                    v-if="row.order"
-                    class="a-linkbtn num"
-                    :to="{ name: 'order', params: { id: row.order } }"
-                    @click.stop
-                    >{{ row.order }}</RouterLink
-                >
+                <OrderLink v-if="row.order" :id="row.order" />
                 <span v-else class="t-sub">—</span>
             </template>
 

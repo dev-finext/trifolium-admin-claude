@@ -14,6 +14,7 @@ import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import AModal from '@/components/ui/AModal.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { MESSAGE_STATES } from '@/config';
 import { useMessagingStore } from '@/stores/messaging';
@@ -60,7 +61,6 @@ const rows = computed(() => {
         [t('messaging.detail.channel'), t(`channel.${message.ch}`)],
         [t('messaging.detail.template'), templateName.value],
         [t('messaging.detail.category'), t(`templateCategory.${message.cat}`)],
-        message.order && [t('messaging.detail.order'), message.order],
         [
             t('messaging.detail.source'),
             message.manual
@@ -100,7 +100,12 @@ const timeline = computed(() => {
         @close="emit('close')"
     >
         <template v-if="message">
-            <AKeyValue :rows="rows" />
+            <AKeyValue :rows="rows">
+                <template v-if="message.order">
+                    <dt>{{ t('messaging.detail.order') }}</dt>
+                    <dd><OrderLink :id="message.order" /></dd>
+                </template>
+            </AKeyValue>
 
             <div class="m-block">
                 <div class="a-sect-t">{{ t('messaging.detail.state') }}</div>

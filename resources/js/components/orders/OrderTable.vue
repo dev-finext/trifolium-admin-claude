@@ -6,6 +6,7 @@
 // "which orders are furthest behind" is the question an agent is actually asking.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 
 import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
@@ -15,6 +16,7 @@ import AIcon from '@/components/ui/AIcon.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ExceptionChip from '@/components/ui/ExceptionChip.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
 import PaymentChip from '@/components/ui/PaymentChip.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
@@ -46,6 +48,7 @@ const emit = defineEmits([
 
 const { t } = useI18n();
 const { loc } = useLocalized();
+const route = useRoute();
 
 const cols = computed(() => [
     { k: 'sel', label: t('orders.col.select'), w: '46px' },
@@ -172,7 +175,7 @@ function itemSummary(order) {
 
         <template #cell-id="{ row }">
             <div class="t-strong a-orderid">
-                <ANum>{{ row.id }}</ANum>
+                <OrderLink :id="row.id" :query="route.query" />
             </div>
             <div v-if="row.urgent" class="a-chipwrap a-orderflags">
                 <AChip tone="red" size="sm" :dot="false">

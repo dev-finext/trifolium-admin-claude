@@ -766,14 +766,38 @@ const UPLOADERS = [
 ];
 
 /**
+ * The sample documents under public/demo/files, relative to the deploy base —
+ * the store prefixes BASE_URL when it resolves a record's url. One stands in
+ * for every file of its kind: a certificate of analysis, an instruction sheet,
+ * a supplier's receipt, a photo. Word and Excel have no sample: those records
+ * carry no url and the viewer says so.
+ */
+const SAMPLE = {
+    coa: 'demo/files/coa-sample.pdf',
+    instructions: 'demo/files/instruction-sheet.pdf',
+    receipt: 'demo/files/supplier-receipt.pdf',
+    photo: 'demo/files/photo-sample.svg',
+};
+
+/**
  * Files on record. In the fixture a file is its metadata — name, type, size, who
- * and when; storage belongs to the API. Spread over the entity types the spec
- * asks for so every "files" panel has something to show.
+ * and when — plus the sample document that opens for it; storage belongs to the
+ * API. Spread over the entity types the spec asks for so every "files" panel has
+ * something to show.
  */
 export function buildAttachments(stock, batches) {
     const herbs = stock.filter((row) => row.kind === 'raw');
     const rows = [];
-    const add = (entity, ref, name, type, sizeKb, daysAgo, note = null) => {
+    const add = (
+        entity,
+        ref,
+        name,
+        type,
+        sizeKb,
+        daysAgo,
+        url = null,
+        note = null,
+    ) => {
         rows.push({
             id: `att-${rows.length + 1}`,
             entity,
@@ -788,6 +812,7 @@ export function buildAttachments(stock, batches) {
                 spread(`att:${rows.length}:mm`, 0, 59),
             ),
             note,
+            url,
         });
     };
 
@@ -799,13 +824,30 @@ export function buildAttachments(stock, batches) {
             'pdf',
             412,
             64,
+            SAMPLE.instructions,
             L('גרסת המעבדה, מאי 2026', 'Lab version, May 2026'),
         );
-        add('item', herbs[0].sku, 'monograph-EMA-2019.pdf', 'pdf', 1840, 210);
+        add(
+            'item',
+            herbs[0].sku,
+            'monograph-EMA-2019.pdf',
+            'pdf',
+            1840,
+            210,
+            SAMPLE.instructions,
+        );
     }
 
     if (herbs[2]) {
-        add('item', herbs[2].sku, 'COA-2026-04.pdf', 'pdf', 268, 31);
+        add(
+            'item',
+            herbs[2].sku,
+            'COA-2026-04.pdf',
+            'pdf',
+            268,
+            31,
+            SAMPLE.coa,
+        );
     }
 
     if (batches[0]) {
@@ -816,6 +858,16 @@ export function buildAttachments(stock, batches) {
             'pdf',
             296,
             batches[0].received.daysAgo,
+            SAMPLE.coa,
+        );
+        add(
+            'batch',
+            batches[0].id,
+            'תמונת אריזה בקבלה.svg',
+            'svg',
+            64,
+            batches[0].received.daysAgo,
+            SAMPLE.photo,
         );
     }
 
@@ -827,12 +879,37 @@ export function buildAttachments(stock, batches) {
             'pdf',
             301,
             batches[4].received.daysAgo,
+            SAMPLE.coa,
         );
     }
 
-    add('supplier', 'S-104', 'הסכם סודיות — עלה ירוק.pdf', 'pdf', 188, 380);
-    add('supplier', 'S-104', 'חוזה מסגרת 2026.pdf', 'pdf', 742, 92);
-    add('supplier', 'S-131', 'רישיון אלכוהול רפואי 2026.pdf', 'pdf', 156, 120);
+    add(
+        'supplier',
+        'S-104',
+        'הסכם סודיות — עלה ירוק.pdf',
+        'pdf',
+        188,
+        380,
+        SAMPLE.receipt,
+    );
+    add(
+        'supplier',
+        'S-104',
+        'חוזה מסגרת 2026.pdf',
+        'pdf',
+        742,
+        92,
+        SAMPLE.receipt,
+    );
+    add(
+        'supplier',
+        'S-131',
+        'רישיון אלכוהול רפואי 2026.pdf',
+        'pdf',
+        156,
+        120,
+        SAMPLE.receipt,
+    );
     add('supplier', 'S-118', 'מחירון ספק 2026.xlsx', 'xlsx', 88, 45);
 
     return rows;

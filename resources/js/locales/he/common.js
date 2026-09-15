@@ -39,6 +39,7 @@ export default {
         restore: 'שחזור',
         retry: 'נסה שוב',
         clear: 'ניקוי',
+        openOrder: 'פתיחת ההזמנה',
     },
 
     labels: {
@@ -66,6 +67,7 @@ export default {
         yes: 'כן',
         no: 'לא',
         required: 'חובה',
+        lineNo: 'שורה {n}',
         optional: 'רשות',
         inDevelopment: 'בפיתוח',
     },

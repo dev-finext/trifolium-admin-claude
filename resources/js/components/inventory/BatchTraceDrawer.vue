@@ -16,6 +16,7 @@ import AEmpty from '@/components/ui/AEmpty.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import ANum from '@/components/ui/ANum.vue';
 import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { BATCH_STATES } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -226,15 +227,7 @@ const cols = computed(() => [
                         </template>
 
                         <template #cell-order="{ row }">
-                            <RouterLink
-                                class="a-linkbtn"
-                                :to="{
-                                    name: 'order',
-                                    params: { id: row.order },
-                                }"
-                            >
-                                <ANum>{{ row.order }}</ANum>
-                            </RouterLink>
+                            <OrderLink :id="row.order" />
                         </template>
                         <template #cell-item="{ row }">
                             <div class="t-strong">{{ loc(row.itemName) }}</div>

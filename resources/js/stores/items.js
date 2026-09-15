@@ -51,6 +51,13 @@ function nextSerial(ids, series) {
     return `${series}${highest + 1}`;
 }
 
+/**
+ * Bytes of files picked this session, by attachment id. Object URLs are not
+ * state — they are never persisted, never reactive, and are revoked when the
+ * record is removed. A record's own `url` is a sample under public/ instead.
+ */
+const sessionUrls = new Map();
+
 /** Is a mandatory field filled on an item? One rule per field id. */
 const FILLED = {
     lat: (item) => Boolean(item.names?.lat),
@@ -218,6 +225,26 @@ export const useItemsStore = defineStore('items', () => {
         attachments.value.filter(
             (file) => file.entity === entity && file.ref === ref,
         );
+
+    /**
+     * Where a file's bytes are: an object URL for a file picked this session,
+     * else the record's sample path under the deploy base — the demo is served
+     * from a sub-path on GitHub Pages, so `demo/files/x.pdf` alone is not enough.
+     * Empty when the demo has nothing behind the record.
+     */
+    const attachmentUrl = (file) => {
+        if (sessionUrls.has(file.id)) {
+            return sessionUrls.get(file.id);
+        }
+
+        if (!file.url) {
+            return '';
+        }
+
+        const base = import.meta.env.BASE_URL || '/';
+
+        return `${base}${base.endsWith('/') ? '' : '/'}${file.url}`;
+    };
 
     /** The mandatory fields of a family. */
     const mandatoryOf = (family) => ITEM_MANDATORY[family] || [];
@@ -684,15 +711,15 @@ export const useItemsStore = defineStore('items', () => {
     }
 
     /**
-     * Attach a file's record to an entity. Against the fixture the file itself
-     * goes nowhere — name, type, size, who and when are what is kept.
+     * Attach a file to an entity. The record keeps name, type, size, who and
+     * when; the bytes stay in the browser as an object URL for this session —
+     * against the fixture there is no storage to send them to.
      */
     async function addAttachment({
         entity,
         ref,
-        name,
+        file: picked,
         type,
-        sizeKb,
         note = null,
     }) {
         const rows = bag('attachments');
@@ -703,14 +730,16 @@ export const useItemsStore = defineStore('items', () => {
             ),
             entity,
             ref,
-            name,
+            name: picked.name,
             type,
-            sizeKb,
+            sizeKb: Math.max(1, Math.round(picked.size / 1024)),
             by: dataset.me?.name || null,
             when: moment(),
             note,
+            url: null,
         };
 
+        sessionUrls.set(file.id, URL.createObjectURL(picked));
         rows.unshift(file);
         writeLog({
             act: 'attachment_add',
@@ -732,6 +761,11 @@ export const useItemsStore = defineStore('items', () => {
         }
 
         const [file] = rows.splice(index, 1);
+
+        if (sessionUrls.has(id)) {
+            URL.revokeObjectURL(sessionUrls.get(id));
+            sessionUrls.delete(id);
+        }
 
         writeLog({
             act: 'attachment_remove',
@@ -762,6 +796,7 @@ export const useItemsStore = defineStore('items', () => {
         bomsOfParent,
         bomsUsing,
         attachmentsOf,
+        attachmentUrl,
         mandatoryOf,
         missingOf,
         waivedOf,

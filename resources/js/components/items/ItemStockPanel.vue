@@ -12,6 +12,7 @@ import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import ANum from '@/components/ui/ANum.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { fmtISO } from '@/lib/dates';
 import { num } from '@/lib/money';
@@ -28,9 +29,14 @@ const { loc } = useLocalized();
 const store = useItemsStore();
 const inventory = useInventoryStore();
 
-/** Which of the three lists is expanded. */
 const uomLabel = (id) => (id ? t(`items.uom.${id}`) : t('items.card.notSet'));
 
+/** The sales unit every quantity tile counts in — empty until the item has one. */
+const salesUom = computed(() =>
+    props.row?.uom?.sales ? t(`items.uom.${props.row.uom.sales}`) : '',
+);
+
+/** Which of the three lists is expanded. */
 const stockPanel = ref('committed');
 
 const committed = computed(() =>
@@ -71,15 +77,18 @@ const batchCols = computed(() => [
 </script>
 
 <template>
-    <ACard :title="t('items.card.stock')" icon="grid" class="span2">
+    <ACard :title="t('items.card.stock')" icon="grid">
         <template v-if="row.tracked">
             <div class="stock-tiles">
                 <div class="tile">
                     <div class="tile-l">
                         {{ t('items.card.onHand') }}
                     </div>
-                    <div class="tile-v num">
-                        {{ num(row.onHand) }}
+                    <div class="tile-v">
+                        <ANum>{{ num(row.onHand) }}</ANum>
+                        <span v-if="salesUom" class="tile-u">{{
+                            salesUom
+                        }}</span>
                     </div>
                 </div>
                 <button
@@ -91,8 +100,11 @@ const batchCols = computed(() => [
                     <div class="tile-l">
                         {{ t('items.card.committed') }}
                     </div>
-                    <div class="tile-v num">
-                        {{ num(row.alloc) }}
+                    <div class="tile-v">
+                        <ANum>{{ num(row.alloc) }}</ANum>
+                        <span v-if="salesUom" class="tile-u">{{
+                            salesUom
+                        }}</span>
                     </div>
                     <div class="tile-s">
                         {{
@@ -111,8 +123,11 @@ const batchCols = computed(() => [
                     <div class="tile-l">
                         {{ t('items.card.onOrder') }}
                     </div>
-                    <div class="tile-v num">
-                        {{ num(onOrderQty) }}
+                    <div class="tile-v">
+                        <ANum>{{ num(onOrderQty) }}</ANum>
+                        <span v-if="salesUom" class="tile-u">{{
+                            salesUom
+                        }}</span>
                     </div>
                     <div class="tile-s">
                         {{
@@ -126,8 +141,11 @@ const batchCols = computed(() => [
                     <div class="tile-l">
                         {{ t('items.card.avail') }}
                     </div>
-                    <div class="tile-v num" :class="{ 'is-low': row.low }">
-                        {{ num(row.avail) }}
+                    <div class="tile-v" :class="{ 'is-low': row.low }">
+                        <ANum>{{ num(row.avail) }}</ANum>
+                        <span v-if="salesUom" class="tile-u">{{
+                            salesUom
+                        }}</span>
                     </div>
                     <div class="tile-s">
                         {{
@@ -146,11 +164,15 @@ const batchCols = computed(() => [
                     <div class="tile-l">
                         {{ t('items.card.batches') }}
                     </div>
-                    <div class="tile-v num">
-                        {{ batches.length }}
+                    <div class="tile-v">
+                        <ANum>{{ batches.length }}</ANum>
                     </div>
                     <div class="tile-s">
-                        {{ uomLabel(row.uom?.sales) }}
+                        {{
+                            t('items.card.drill', {
+                                n: batches.length,
+                            })
+                        }}
                     </div>
                 </button>
             </div>
@@ -168,15 +190,7 @@ const batchCols = computed(() => [
                     </p>
                 </template>
                 <template #cell-order="{ row: line }">
-                    <RouterLink
-                        class="a-linkbtn"
-                        :to="{
-                            name: 'order',
-                            params: { id: line.order },
-                        }"
-                    >
-                        <ANum>{{ line.order }}</ANum>
-                    </RouterLink>
+                    <OrderLink :id="line.order" />
                 </template>
                 <template #cell-item="{ row: line }">
                     <div>{{ loc(line.itemName) }}</div>
@@ -245,6 +259,7 @@ const batchCols = computed(() => [
                         v-if="batch.state !== 'active'"
                         size="sm"
                         tone="amber"
+                        class="batch-state"
                     >
                         {{ t(`batchState.${batch.state}`) }}
                     </AChip>
@@ -254,3 +269,82 @@ const batchCols = computed(() => [
         <p v-else class="t-sub">{{ t('items.card.notTracked') }}</p>
     </ACard>
 </template>
+
+<style scoped>
+.stock-tiles {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+/* Three of the five tiles are buttons; the reset makes them read as tiles. */
+.tile {
+    padding: 10px 12px;
+    border: 1px solid var(--a-line);
+    border-radius: 8px;
+    background: var(--a-surface);
+    text-align: start;
+    font: inherit;
+    color: inherit;
+}
+
+.tile.is-btn {
+    cursor: pointer;
+}
+
+.tile.is-btn:hover {
+    border-color: var(--a-ink-4);
+}
+
+.tile.is-on {
+    border-color: var(--a-accent);
+    background: var(--a-tint);
+}
+
+.tile-l {
+    font-size: 12px;
+    color: var(--a-ink-3);
+}
+
+/* The number and its unit share one line — "120 גרם", not "120" over "גרם". */
+.tile-v {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.tile-v.is-low {
+    color: var(--a-red);
+}
+
+.tile-u {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--a-ink-3);
+}
+
+.tile-s {
+    font-size: 12px;
+    color: var(--a-ink-4);
+}
+
+/* `.t-sub` is only styled globally inside a table; the card's own sub-lines
+   carry the same copy the other panels do. */
+.t-sub {
+    font-size: 13px;
+    color: var(--a-ink-4);
+}
+
+.inset {
+    padding: 12px 14px;
+    margin: 0;
+}
+
+.batch-state {
+    margin-inline-start: 6px;
+}
+</style>

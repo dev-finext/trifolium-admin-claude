@@ -12,6 +12,7 @@ import AEmpty from '@/components/ui/AEmpty.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ASelect from '@/components/ui/ASelect.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -140,9 +141,9 @@ function print() {
                         :title="t('deliveries.pickupList.empty')"
                     />
                 </template>
-                <template #cell-id="{ row }"
-                    ><span class="t-strong num">{{ row.id }}</span></template
-                >
+                <template #cell-id="{ row }">
+                    <span class="t-strong"><OrderLink :id="row.id" /></span>
+                </template>
                 <template #cell-recipient="{ row }">{{
                     loc(row.patient.name)
                 }}</template>

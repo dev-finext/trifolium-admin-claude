@@ -15,6 +15,7 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AIcon from '@/components/ui/AIcon.vue';
 import ANum from '@/components/ui/ANum.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { MESSAGE_STATES } from '@/config';
@@ -82,7 +83,8 @@ const sourceTone = (id) => SOURCE_TONES[id] || 'gray';
 
         <template #cell-entity="{ row }">
             <div>
-                <ANum>{{ row.ent }}</ANum>
+                <OrderLink v-if="row.entType === 'order'" :id="row.ent" />
+                <ANum v-else>{{ row.ent }}</ANum>
             </div>
             <div class="t-sub">{{ t(`log.entity.${row.entType}`) }}</div>
         </template>

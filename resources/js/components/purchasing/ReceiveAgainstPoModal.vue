@@ -5,7 +5,7 @@
 // shelf life), the price that becomes the item's last purchase price, and how
 // many item labels to print. Partial receipts are normal — the order closes when
 // its last line is in.
-import { computed, reactive } from 'vue';
+import { computed, reactive, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
@@ -31,6 +31,7 @@ const { loc } = useLocalized();
 const inventory = useInventoryStore();
 const items = useItemsStore();
 const store = usePurchasingStore();
+const uid = useId();
 
 /** The batch number `offset` places after the next free one in the series. */
 function batchNoAt(offset) {
@@ -145,7 +146,7 @@ async function save() {
     <AModal
         open
         :title="t('purchasing.receive.title', { id: po.id })"
-        :width="1320"
+        :width="1180"
         class="a-modal-card--fit"
         @close="emit('close')"
     >
@@ -153,98 +154,173 @@ async function save() {
 
         <div class="a-3col">
             <div>
-                <label class="a-lbl"
+                <label class="a-lbl" :for="`${uid}-doc`"
                     >{{ t('purchasing.receive.docNum') }}
                     <span class="req">*</span></label
                 >
-                <AInput v-model="form.docNum" ltr class="a-w100" />
+                <AInput
+                    :id="`${uid}-doc`"
+                    v-model="form.docNum"
+                    ltr
+                    class="a-w100"
+                />
             </div>
             <div>
-                <label class="a-lbl">{{ t('purchasing.receive.date') }}</label>
-                <AInput v-model="form.date" type="date" class="a-w100" />
+                <label class="a-lbl" :for="`${uid}-date`">{{
+                    t('purchasing.receive.date')
+                }}</label>
+                <AInput
+                    :id="`${uid}-date`"
+                    v-model="form.date"
+                    type="date"
+                    class="a-w100"
+                />
             </div>
             <div>
-                <label class="a-lbl">{{ t('purchasing.receive.note') }}</label>
-                <AInput v-model="form.note" class="a-w100" />
+                <label class="a-lbl" :for="`${uid}-note`">{{
+                    t('purchasing.receive.note')
+                }}</label>
+                <AInput
+                    :id="`${uid}-note`"
+                    v-model="form.note"
+                    class="a-w100"
+                />
             </div>
         </div>
 
-        <div class="grid" role="table">
-            <div class="row row--h" role="row">
-                <span>{{ t('purchasing.receive.col.item') }}</span>
-                <span>{{ t('purchasing.receive.col.open') }}</span>
-                <span>{{ t('purchasing.receive.col.qty') }}</span>
-                <span>{{ t('purchasing.receive.col.existing') }}</span>
-                <span>{{ t('purchasing.receive.col.batch') }}</span>
-                <span>{{ t('purchasing.receive.col.supplierBatch') }}</span>
-                <span>{{ t('purchasing.receive.col.expiry') }}</span>
-                <span>{{ t('purchasing.receive.col.price') }}</span>
-                <span>{{ t('purchasing.receive.col.labels') }}</span>
-                <span></span>
-            </div>
+        <div class="a-lines lines">
             <div
                 v-for="(line, i) in form.lines"
                 :key="line.sku"
-                class="row"
+                class="a-line-block"
                 :class="{ 'is-ok': lineOk(line) }"
-                role="row"
             >
-                <div>
-                    <div class="t-strong">{{ loc(line.name) }}</div>
-                    <div class="t-sub ltr">{{ line.sku }}</div>
-                </div>
-                <span class="num"
-                    >{{ num(line.openPurchase, 1) }}
-                    {{ t(`items.uom.${line.uom}`) }}</span
-                >
-                <AInput
-                    v-model="line.qty"
-                    type="number"
-                    ltr
-                    :placeholder="t(`inventory.unit.${line.stockUnit}`)"
-                />
-                <ASelect
-                    :model-value="line.existingBatch"
-                    :options="existingOptions(line)"
-                    @update:model-value="onExisting(line, $event)"
-                />
-                <AInput
-                    v-model="line.batch"
-                    ltr
-                    :disabled="Boolean(line.existingBatch)"
-                />
-                <AInput v-model="line.supplierBatch" ltr />
-                <div>
-                    <AInput
-                        v-model="line.expiry"
-                        type="date"
-                        :disabled="Boolean(line.existingBatch)"
+                <div class="a-line-head">
+                    <span class="a-line-no">
+                        {{ t('labels.lineNo', { n: i + 1 }) }}
+                    </span>
+                    <span class="a-sr">{{
+                        t('purchasing.receive.col.item')
+                    }}</span>
+                    <span class="t-strong">{{ loc(line.name) }}</span>
+                    <span class="t-sub ltr">{{ line.sku }}</span>
+                    <AButton
+                        sm
+                        kind="ghost"
+                        icon="trash"
+                        class="a-push"
+                        :aria-label="
+                            t('inventory.receipt.aria.remove', { n: i + 1 })
+                        "
+                        :disabled="form.lines.length === 1"
+                        @click="removeLine(i)"
                     />
-                    <div
-                        v-if="line.expiryMonths && !line.existingBatch"
-                        class="a-hint tiny"
-                    >
-                        {{
-                            t('inventory.receipt.expiryAuto', {
-                                n: line.expiryMonths,
-                            })
-                        }}
+                </div>
+
+                <div class="a-line-body">
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-q${i}`"
+                            >{{ t('purchasing.receive.col.qty') }}
+                            <span class="req">*</span></label
+                        >
+                        <AInput
+                            :id="`${uid}-q${i}`"
+                            v-model="line.qty"
+                            type="number"
+                            ltr
+                            :placeholder="t(`inventory.unit.${line.stockUnit}`)"
+                        />
+                        <div class="a-hint">
+                            {{ t('purchasing.receive.col.open') }} ·
+                            <span class="num"
+                                >{{ num(line.openPurchase, 1) }}
+                                {{ t(`items.uom.${line.uom}`) }}</span
+                            >
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-e${i}`">{{
+                            t('purchasing.receive.col.existing')
+                        }}</label>
+                        <ASelect
+                            :id="`${uid}-e${i}`"
+                            :model-value="line.existingBatch"
+                            :options="existingOptions(line)"
+                            @update:model-value="onExisting(line, $event)"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-b${i}`"
+                            >{{ t('purchasing.receive.col.batch') }}
+                            <span v-if="!line.existingBatch" class="req"
+                                >*</span
+                            ></label
+                        >
+                        <AInput
+                            :id="`${uid}-b${i}`"
+                            v-model="line.batch"
+                            ltr
+                            :disabled="Boolean(line.existingBatch)"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-sb${i}`">{{
+                            t('purchasing.receive.col.supplierBatch')
+                        }}</label>
+                        <AInput
+                            :id="`${uid}-sb${i}`"
+                            v-model="line.supplierBatch"
+                            ltr
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-x${i}`"
+                            >{{ t('purchasing.receive.col.expiry') }}
+                            <span class="req">*</span></label
+                        >
+                        <AInput
+                            :id="`${uid}-x${i}`"
+                            v-model="line.expiry"
+                            type="date"
+                            :disabled="Boolean(line.existingBatch)"
+                        />
+                        <div
+                            v-if="line.expiryMonths && !line.existingBatch"
+                            class="a-hint"
+                        >
+                            {{
+                                t('inventory.receipt.expiryAuto', {
+                                    n: line.expiryMonths,
+                                })
+                            }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-p${i}`">{{
+                            t('purchasing.receive.col.price')
+                        }}</label>
+                        <AInput
+                            :id="`${uid}-p${i}`"
+                            v-model="line.price"
+                            type="number"
+                            ltr
+                        />
+                        <div class="a-hint">
+                            {{ symbol }}/{{ t(`items.uom.${line.uom}`) }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-l${i}`">{{
+                            t('purchasing.receive.col.labels')
+                        }}</label>
+                        <AInput
+                            :id="`${uid}-l${i}`"
+                            v-model="line.labels"
+                            type="number"
+                            ltr
+                        />
                     </div>
                 </div>
-                <div class="pair">
-                    <AInput v-model="line.price" type="number" ltr />
-                    <span class="t-sub"
-                        >{{ symbol }}/{{ t(`items.uom.${line.uom}`) }}</span
-                    >
-                </div>
-                <AInput v-model="line.labels" type="number" ltr />
-                <AButton
-                    sm
-                    kind="ghost"
-                    icon="trash"
-                    :disabled="form.lines.length === 1"
-                    @click="removeLine(i)"
-                />
             </div>
         </div>
 
@@ -269,39 +345,7 @@ async function save() {
     color: var(--a-red);
 }
 
-.grid {
+.lines {
     margin-top: 16px;
-}
-
-.row {
-    display: grid;
-    grid-template-columns:
-        minmax(180px, 1.3fr)
-        110px 100px 150px 100px 110px 150px 130px 70px 40px;
-    gap: 8px;
-    align-items: center;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--a-line-3);
-}
-
-.row--h {
-    font-size: 12px;
-    color: var(--a-ink-3);
-    border-bottom: 1px solid var(--a-line);
-}
-
-.row.is-ok {
-    background: var(--a-tint);
-}
-
-.pair {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.tiny {
-    margin-top: 2px;
-    font-size: 11.5px;
 }
 </style>

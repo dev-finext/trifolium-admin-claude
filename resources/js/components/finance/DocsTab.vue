@@ -7,7 +7,6 @@
 // it is never retried behind the reader's back.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
 
 import DocReissuePanel from '@/components/finance/DocReissuePanel.vue';
 import SearchField from '@/components/finance/SearchField.vue';
@@ -22,6 +21,7 @@ import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import SavedViews from '@/components/ui/SavedViews.vue';
 import {
     filterDefaults,
@@ -49,7 +49,6 @@ const { t } = useI18n();
 const { loc, searchHaystack } = useLocalized();
 const { push } = useToast();
 const money = useMoneyStore();
-const router = useRouter();
 
 const SPEC = { fields: DOC_FILTER_FIELDS };
 
@@ -169,10 +168,6 @@ const cols = computed(() => [
     { k: 'status', label: t('finance.docs.state'), nowrap: true },
     { k: 'act', label: '', nowrap: true },
 ]);
-
-function openOrder(id) {
-    router.push({ name: 'order', params: { id } });
-}
 
 /** Hand the accountant the rows that are on screen, exactly as filtered. */
 function exportRows() {
@@ -352,14 +347,7 @@ function exportRows() {
             </template>
 
             <template #cell-order="{ row }">
-                <button
-                    v-if="row.order"
-                    type="button"
-                    class="a-linkbtn"
-                    @click.stop="openOrder(row.order)"
-                >
-                    <ANum>{{ row.order }}</ANum>
-                </button>
+                <OrderLink v-if="row.order" :id="row.order" />
                 <span v-else class="f-dash">—</span>
             </template>
 

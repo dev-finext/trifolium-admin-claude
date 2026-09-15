@@ -8,13 +8,13 @@
 // field is selected instead and the reader is told to copy it themselves.
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
 
 import AButton from '@/components/ui/AButton.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AKpi from '@/components/ui/AKpi.vue';
 import AModal from '@/components/ui/AModal.vue';
 import AMoney from '@/components/ui/AMoney.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -36,7 +36,6 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
 const money = useMoneyStore();
-const router = useRouter();
 
 const copied = ref(false);
 const field = ref(null);
@@ -82,11 +81,6 @@ function contentOf(order) {
     }
 
     return order.formula ? loc(order.formula.name) : t('finance.link.formula');
-}
-
-function openOrder(id) {
-    emit('close');
-    router.push({ name: 'order', params: { id } });
 }
 
 /** The link exists whichever way it reached the clipboard — record it once. */
@@ -222,13 +216,7 @@ async function copy() {
                 row-key="id"
             >
                 <template #cell-id="{ row }">
-                    <button
-                        type="button"
-                        class="a-linkbtn"
-                        @click="openOrder(row.id)"
-                    >
-                        <span class="num t-strong">{{ row.id }}</span>
-                    </button>
+                    <span class="t-strong"><OrderLink :id="row.id" /></span>
                 </template>
 
                 <template #cell-patient="{ row }">

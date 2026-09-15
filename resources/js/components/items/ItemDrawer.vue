@@ -478,72 +478,10 @@ const fieldLabel = (id) => t(`items.mandatory.${id}`);
     font-size: 14px;
 }
 
-.stock-tiles {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 8px;
-    margin-bottom: 12px;
-}
-
-.tile {
-    padding: 10px 12px;
-    border: 1px solid var(--a-line);
-    border-radius: 8px;
-    background: var(--a-surface);
-    text-align: start;
-    font: inherit;
-    color: inherit;
-}
-
-.tile.is-btn {
-    cursor: pointer;
-}
-
-.tile.is-btn:hover {
-    border-color: var(--a-ink-4);
-}
-
-.tile.is-on {
-    border-color: var(--a-accent);
-    background: var(--a-tint);
-}
-
-.tile-l {
-    font-size: 12px;
-    color: var(--a-ink-3);
-}
-
-.tile-v {
-    font-size: 22px;
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.tile-v.is-low {
-    color: var(--a-red);
-}
-
-.tile-s {
-    font-size: 12px;
+/* `.t-sub` is only styled globally inside a table; the cards' own sub-lines
+   match the stock and BOM panels sitting in the same grid. */
+.t-sub {
+    font-size: 13px;
     color: var(--a-ink-4);
-}
-
-.inset {
-    padding: 12px 14px;
-    margin: 0;
-}
-
-.bom-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 4px;
-}
-
-.bom-list li {
-    display: flex;
-    gap: 8px;
-    align-items: baseline;
 }
 </style>

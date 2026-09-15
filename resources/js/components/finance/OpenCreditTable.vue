@@ -17,6 +17,7 @@ import AMoney from '@/components/ui/AMoney.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import ExceptionChip from '@/components/ui/ExceptionChip.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
@@ -143,7 +144,7 @@ function openOrder(id) {
             </template>
 
             <template #cell-id="{ row }">
-                <span class="t-strong num">{{ row.id }}</span>
+                <span class="t-strong"><OrderLink :id="row.id" /></span>
             </template>
 
             <template #cell-practitioner="{ row }">

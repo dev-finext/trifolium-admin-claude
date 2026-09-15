@@ -13,6 +13,7 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AIcon from '@/components/ui/AIcon.vue';
 import ANum from '@/components/ui/ANum.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
@@ -143,7 +144,7 @@ function addressDetail(order) {
         </template>
 
         <template #cell-id="{ row }">
-            <div class="t-strong num id">{{ row.id }}</div>
+            <div class="t-strong id"><OrderLink :id="row.id" /></div>
             <div v-if="row.urgent" class="mark">
                 <AChip tone="red" size="sm" :dot="false">
                     {{ t('deliveries.row.urgent') }}

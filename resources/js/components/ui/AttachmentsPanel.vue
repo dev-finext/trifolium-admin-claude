@@ -3,9 +3,10 @@
 // specifications is served by: an item's instruction sheet, a batch's analysis,
 // a supplier's contract, a purchase order's quote, a practitioner's certificate.
 //
-// The panel owns listing, adding and removing. Against the fixture a file is its
-// metadata — name, type, size, who and when — and the panel says so; storage is
-// the API's job, not the console's.
+// The panel owns listing, opening, downloading, adding and removing. A file's
+// name opens it in FileViewerModal; against the fixture that is a sample
+// document of the same kind, and a file picked here lives in the browser for
+// the session — storage is the API's job, not the console's.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -13,8 +14,10 @@ import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
+import AIcon from '@/components/ui/AIcon.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import FileViewerModal from '@/components/ui/FileViewerModal.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -39,6 +42,7 @@ const store = useItemsStore();
 
 const input = ref(null);
 const removing = ref(null);
+const viewing = ref(null);
 
 const files = computed(() => store.attachmentsOf(props.entity, props.refId));
 
@@ -108,9 +112,8 @@ async function onPicked(event) {
     const record = await store.addAttachment({
         entity: props.entity,
         ref: props.refId,
-        name: file.name,
+        file,
         type: ext,
-        sizeKb: Math.max(1, Math.round(file.size / 1024)),
     });
 
     push({
@@ -189,7 +192,14 @@ async function confirmRemove(reason) {
             <template #cell-name="{ row }">
                 <div class="att-name">
                     <span class="att-ext">{{ row.type }}</span>
-                    <span class="t-strong">{{ row.name }}</span>
+                    <button
+                        type="button"
+                        class="att-open t-strong"
+                        :aria-label="t('attachments.open', { name: row.name })"
+                        @click.stop="viewing = row"
+                    >
+                        {{ row.name }}
+                    </button>
                 </div>
                 <div v-if="row.note" class="t-sub">{{ loc(row.note) }}</div>
             </template>
@@ -202,6 +212,16 @@ async function confirmRemove(reason) {
             </template>
             <template #cell-act="{ row }">
                 <div class="a-rowbtns">
+                    <a
+                        v-if="store.attachmentUrl(row)"
+                        class="a-btn a-btn--ghost a-btn--sm"
+                        :href="store.attachmentUrl(row)"
+                        :download="row.name"
+                        @click.stop
+                    >
+                        <AIcon name="download" :size="15" />
+                        {{ t('attachments.download') }}
+                    </a>
                     <AButton
                         sm
                         kind="ghost"
@@ -215,6 +235,13 @@ async function confirmRemove(reason) {
         </ADataTable>
 
         <p class="a-hint att-note">{{ t('attachments.demoNote') }}</p>
+
+        <FileViewerModal
+            :open="Boolean(viewing)"
+            :file="viewing"
+            :url="viewing ? store.attachmentUrl(viewing) : ''"
+            @close="viewing = null"
+        />
 
         <ConfirmDialog
             v-if="removing"
@@ -253,6 +280,22 @@ async function confirmRemove(reason) {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+/* The name is the way in: a button that reads like the text it replaces. */
+.att-open {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+.att-open:hover {
+    color: var(--a-accent);
+    text-decoration: underline;
 }
 
 .att-ext {

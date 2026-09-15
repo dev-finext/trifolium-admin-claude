@@ -2,7 +2,7 @@
 // Create or edit a bill of materials on the SAP model: one parent, its
 // components with a quantity per unit of parent and how each leaves stock, plus
 // alcohol %, oil % and the extraction ratio a tincture is described by.
-import { computed, reactive } from 'vue';
+import { computed, reactive, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
@@ -28,6 +28,7 @@ const emit = defineEmits(['close', 'saved']);
 const { t } = useI18n();
 const { loc } = useLocalized();
 const store = useItemsStore();
+const uid = useId();
 
 const isNew = computed(() => !props.bom.id);
 
@@ -113,6 +114,9 @@ function onComponentItem(component, sku) {
     }
 }
 
+/** What `errors.components` asks of one component — an item and a positive quantity. */
+const componentOk = (c) => Boolean(c.sku) && Number(c.qty) > 0;
+
 const errors = computed(() => {
     const pct = (value) =>
         value !== '' && !(Number(value) >= 0 && Number(value) <= 100);
@@ -123,7 +127,7 @@ const errors = computed(() => {
             form.name.he.trim().length < 2 ? t('items.bom.validate.name') : '',
         components: !form.components.length
             ? t('items.bom.validate.noComponents')
-            : form.components.some((c) => !c.sku || !(Number(c.qty) > 0))
+            : !form.components.every(componentOk)
               ? t('items.bom.validate.component')
               : form.components.some((c) => c.sku === form.parentSku)
                 ? t('items.bom.validate.self')
@@ -272,36 +276,77 @@ const title = computed(() =>
                 <div class="a-sect-t">
                     {{ t('items.bom.drawer.components') }}
                 </div>
-                <div class="comp-head">
-                    <span>{{ t('items.bom.drawer.colItem') }}</span>
-                    <span>{{ t('items.bom.drawer.colQty') }}</span>
-                    <span>{{ t('items.bom.col.uomShort') }}</span>
-                    <span>{{ t('items.bom.drawer.colIssue') }}</span>
-                    <span></span>
-                </div>
-                <div
-                    v-for="(component, i) in form.components"
-                    :key="i"
-                    class="comp"
-                >
-                    <ASelect
-                        :model-value="component.sku"
-                        :options="itemOptions"
-                        class="a-w100"
-                        @update:model-value="onComponentItem(component, $event)"
-                    />
-                    <AInput v-model="component.qty" type="number" ltr />
-                    <ASelect v-model="component.uom" :options="uomOptions" />
-                    <ASelect
-                        v-model="component.issue"
-                        :options="issueOptions"
-                    />
-                    <AButton
-                        sm
-                        kind="ghost"
-                        icon="trash"
-                        @click="removeComponent(i)"
-                    />
+                <div class="a-lines">
+                    <div
+                        v-for="(component, i) in form.components"
+                        :key="i"
+                        class="a-line-block"
+                        :class="{ 'is-ok': componentOk(component) }"
+                    >
+                        <div class="a-line-head">
+                            <span class="a-line-no">
+                                {{ t('labels.lineNo', { n: i + 1 }) }}
+                            </span>
+                            <AButton
+                                sm
+                                kind="ghost"
+                                icon="trash"
+                                class="a-push"
+                                :aria-label="t('actions.delete')"
+                                @click="removeComponent(i)"
+                            />
+                        </div>
+
+                        <div class="a-line-body">
+                            <div class="a-line-wide">
+                                <label class="a-lbl" :for="`${uid}-i${i}`"
+                                    >{{ t('items.bom.drawer.colItem') }}
+                                    <span class="req">*</span></label
+                                >
+                                <ASelect
+                                    :id="`${uid}-i${i}`"
+                                    :model-value="component.sku"
+                                    :options="itemOptions"
+                                    class="a-w100"
+                                    @update:model-value="
+                                        onComponentItem(component, $event)
+                                    "
+                                />
+                            </div>
+                            <div>
+                                <label class="a-lbl" :for="`${uid}-q${i}`"
+                                    >{{ t('items.bom.drawer.colQty') }}
+                                    <span class="req">*</span></label
+                                >
+                                <AInput
+                                    :id="`${uid}-q${i}`"
+                                    v-model="component.qty"
+                                    type="number"
+                                    ltr
+                                />
+                            </div>
+                            <div>
+                                <label class="a-lbl" :for="`${uid}-u${i}`">{{
+                                    t('items.bom.col.uomShort')
+                                }}</label>
+                                <ASelect
+                                    :id="`${uid}-u${i}`"
+                                    v-model="component.uom"
+                                    :options="uomOptions"
+                                />
+                            </div>
+                            <div>
+                                <label class="a-lbl" :for="`${uid}-s${i}`">{{
+                                    t('items.bom.drawer.colIssue')
+                                }}</label>
+                                <ASelect
+                                    :id="`${uid}-s${i}`"
+                                    v-model="component.issue"
+                                    :options="issueOptions"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div v-if="errors.components" class="a-inv">
                     {{ errors.components }}
@@ -309,6 +354,7 @@ const title = computed(() =>
                 <AButton
                     sm
                     icon="plus"
+                    class="add"
                     :disabled="
                         form.components.length >= BOM_RULES.maxComponents
                     "
@@ -348,21 +394,7 @@ const title = computed(() =>
     gap: 8px;
 }
 
-.comp-head,
-.comp {
-    display: grid;
-    grid-template-columns: 1fr 110px 120px 170px 40px;
-    gap: 8px;
-    align-items: center;
-}
-
-.comp-head {
-    font-size: 12px;
-    color: var(--a-ink-3);
-    margin-bottom: 4px;
-}
-
-.comp {
-    margin-bottom: 8px;
+.add {
+    margin-top: 10px;
 }
 </style>

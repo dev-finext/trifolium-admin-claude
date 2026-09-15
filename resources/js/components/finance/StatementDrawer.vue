@@ -7,7 +7,6 @@
 // same whole-balance link the list offers, not a per-order one.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
 
 import CreditTermsPanel from '@/components/finance/CreditTermsPanel.vue';
 import AButton from '@/components/ui/AButton.vue';
@@ -17,6 +16,7 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { CREDIT } from '@/config';
@@ -35,7 +35,6 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
 const money = useMoneyStore();
-const router = useRouter();
 
 const rows = computed(() => money.statementOf(props.practitioner.code));
 
@@ -65,11 +64,6 @@ const cols = computed(() => [
     { k: 'amt', label: t('labels.amount'), nowrap: true },
     { k: 'bal', label: t('finance.txn.runningBalance'), nowrap: true },
 ]);
-
-function openOrder(id) {
-    emit('close');
-    router.push({ name: 'order', params: { id } });
-}
 
 /** The statement, as the practitioner's accountant would want it. */
 function exportStatement() {
@@ -226,14 +220,7 @@ function exportStatement() {
                 </template>
 
                 <template #cell-order="{ row }">
-                    <button
-                        v-if="row.order"
-                        type="button"
-                        class="a-linkbtn"
-                        @click="openOrder(row.order)"
-                    >
-                        <ANum>{{ row.order }}</ANum>
-                    </button>
+                    <OrderLink v-if="row.order" :id="row.order" />
                     <span v-else class="f-dash">—</span>
                 </template>
 

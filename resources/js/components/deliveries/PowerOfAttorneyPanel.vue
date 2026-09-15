@@ -18,6 +18,7 @@ import AEmpty from '@/components/ui/AEmpty.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -167,7 +168,7 @@ async function requestEveryone() {
                 </template>
 
                 <template #cell-id="{ row }">
-                    <span class="t-strong num">{{ row.id }}</span>
+                    <span class="t-strong"><OrderLink :id="row.id" /></span>
                 </template>
 
                 <template #cell-to="{ row }">

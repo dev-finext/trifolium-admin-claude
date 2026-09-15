@@ -13,6 +13,7 @@ import AIcon from '@/components/ui/AIcon.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -180,13 +181,7 @@ async function save() {
                     >
                         {{ t(`crm.subject.${row.subject}`) }}
                     </AChip>
-                    <RouterLink
-                        v-if="row.order"
-                        class="a-linkbtn"
-                        :to="{ name: 'order', params: { id: row.order } }"
-                    >
-                        <ANum>{{ row.order }}</ANum>
-                    </RouterLink>
+                    <OrderLink v-if="row.order" :id="row.order" />
                     <AChip v-if="row.auto" tone="gray" size="sm" :dot="false">{{
                         t('crm.auto')
                     }}</AChip>

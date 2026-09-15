@@ -20,6 +20,7 @@ import ASelect from '@/components/ui/ASelect.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import SearchField from '@/components/users/SearchField.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -231,7 +232,7 @@ function apply() {
                 </template>
 
                 <template #cell-order="{ row }">
-                    <ANum v-if="row.order">{{ row.order }}</ANum>
+                    <OrderLink v-if="row.order" :id="row.order" />
                     <span v-else class="u-dash">—</span>
                 </template>
 

@@ -205,6 +205,7 @@ export const ATTACHMENT_RULES = {
         'jpeg',
         'png',
         'webp',
+        'svg',
         'doc',
         'docx',
         'xls',

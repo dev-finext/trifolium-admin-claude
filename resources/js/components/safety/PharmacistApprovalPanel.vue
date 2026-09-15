@@ -24,6 +24,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
 import InteractionCard from '@/components/ui/InteractionCard.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
@@ -207,7 +208,7 @@ async function approve(why) {
             </template>
 
             <template #cell-id="{ row }">
-                <div class="t-strong num">{{ row.id }}</div>
+                <div class="t-strong"><OrderLink :id="row.id" /></div>
                 <div class="t-sub num">{{ row.stamp }}</div>
             </template>
 
@@ -259,7 +260,7 @@ async function approve(why) {
                     scope="global"
                 >
                     <template #order>
-                        <ANum>{{ selected?.id }}</ANum>
+                        <OrderLink v-if="selected" :id="selected.id" />
                     </template>
                 </I18nT>
                 <StatusChip v-if="selected" :status="statusOf(selected)" />

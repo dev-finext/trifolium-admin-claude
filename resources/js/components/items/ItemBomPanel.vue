@@ -59,7 +59,7 @@ function parentName(bom) {
         </ul>
         <div v-else class="t-sub">{{ t('items.card.noBoms') }}</div>
 
-        <div class="a-lbl safety-l">
+        <div class="a-lbl bom-l">
             {{ t('items.card.usedIn') }}
         </div>
         <ul v-if="usedIn.length" class="bom-list">
@@ -90,3 +90,30 @@ function parentName(bom) {
         <div v-else class="t-sub">{{ t('items.card.noBoms') }}</div>
     </ACard>
 </template>
+
+<style scoped>
+.bom-l {
+    margin-top: 14px;
+}
+
+.bom-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 4px;
+}
+
+.bom-list li {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+}
+
+/* `.t-sub` is only styled globally inside a table; the card's own sub-lines
+   carry the same copy the other panels do. */
+.t-sub {
+    font-size: 13px;
+    color: var(--a-ink-4);
+}
+</style>

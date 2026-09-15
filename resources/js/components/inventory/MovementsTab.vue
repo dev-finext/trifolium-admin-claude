@@ -17,6 +17,7 @@ import DateRangeBar from '@/components/ui/DateRangeBar.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import SavedViews from '@/components/ui/SavedViews.vue';
 import {
     filterDefaults,
@@ -255,13 +256,7 @@ const isOrderRef = (move) => ORDER_REF_KINDS.includes(move.kind);
                 {{ t(`inventory.unit.${row.unit}`) }}
             </template>
             <template #cell-ref="{ row }">
-                <RouterLink
-                    v-if="isOrderRef(row)"
-                    class="a-linkbtn"
-                    :to="{ name: 'order', params: { id: row.ref } }"
-                >
-                    <ANum>{{ row.ref }}</ANum>
-                </RouterLink>
+                <OrderLink v-if="isOrderRef(row)" :id="row.ref" />
                 <button
                     v-else-if="row.kind === 'goods_in'"
                     type="button"

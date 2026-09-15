@@ -23,6 +23,7 @@ import ASelect from '@/components/ui/ASelect.vue';
 import ATabs from '@/components/ui/ATabs.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
@@ -520,9 +521,7 @@ function applyTransfer() {
             row-key="id"
         >
             <template #cell-id="{ row }">
-                <span class="t-strong"
-                    ><ANum>{{ row.id }}</ANum></span
-                >
+                <span class="t-strong"><OrderLink :id="row.id" /></span>
             </template>
             <template #cell-pract="{ row }">
                 {{ loc(row.practitioner.name) }}
@@ -623,7 +622,7 @@ function applyTransfer() {
                     }}
                 </template>
                 <template #cell-order="{ row }">
-                    <ANum>{{ row.id }}</ANum>
+                    <OrderLink :id="row.id" />
                 </template>
                 <template #cell-date="{ row }">
                     <ANum>{{ fmtISO(row.iso) }}</ANum>

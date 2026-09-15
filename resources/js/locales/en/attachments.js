@@ -6,7 +6,9 @@ export default {
     empty: 'No files attached',
     emptyHint: 'PDF, images, Word and Excel · up to {mb} MB',
     demoNote:
-        'The demo keeps the file’s details only — name, type, size, who and when. Storage itself is the API’s job.',
+        'In the demo every file opens as a sample document of its kind; a file added here stays in the browser until a reload. Storage itself is the API’s job.',
+    open: 'Open {name}',
+    download: 'Download',
     remove: 'Remove',
     removeTitle: 'Remove file',
     removeBody: '{name} will be removed from {entity}. The log entry is kept.',
@@ -32,6 +34,17 @@ export default {
     size: {
         kb: '{n} KB',
         mb: '{n} MB',
+    },
+
+    viewer: {
+        download: 'Download file',
+        close: 'Close',
+        noPreview: 'No preview for a {type} file',
+        noPreviewBody:
+            'The browser does not display Word and Excel files. Download the file and open it in the matching application.',
+        noFile: 'No file behind this record in the demo',
+        noFileBody:
+            'The record shows the file’s details only — in the live system the file itself comes from the API.',
     },
 
     toast: {

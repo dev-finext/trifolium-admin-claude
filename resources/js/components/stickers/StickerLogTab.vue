@@ -11,6 +11,7 @@ import ANum from '@/components/ui/ANum.vue';
 import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { PAGE_DEFAULTS, usePaged } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
@@ -114,13 +115,7 @@ const cols = computed(() => [
                     t(`stickers.template.${row.template}`)
                 }}</template>
                 <template #cell-ref="{ row }">
-                    <RouterLink
-                        v-if="row.template !== 'item'"
-                        class="a-linkbtn"
-                        :to="{ name: 'order', params: { id: row.ref } }"
-                    >
-                        <ANum>{{ row.ref }}</ANum>
-                    </RouterLink>
+                    <OrderLink v-if="row.template !== 'item'" :id="row.ref" />
                     <RouterLink
                         v-else
                         class="a-linkbtn"

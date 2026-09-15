@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#eef3f0"/>
+  <rect x="24" y="24" width="752" height="552" rx="18" fill="none" stroke="#2b6b54" stroke-width="3" stroke-dasharray="12 10"/>
+  <g fill="none" stroke="#2b6b54" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" transform="translate(400 250)">
+    <path d="M0 40 C-60 40 -90 -10 -90 -60 C-40 -60 10 -30 0 40 Z"/>
+    <path d="M0 40 C60 40 90 -10 90 -60 C40 -60 -10 -30 0 40 Z"/>
+    <path d="M0 40 C-10 -20 30 -80 0 -110 C-30 -80 10 -20 0 40 Z"/>
+    <path d="M0 40 L0 110"/>
+  </g>
+  <text x="400" y="420" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#1f2a26" direction="rtl">תמונה לדוגמה — דמו טריפוליום</text>
+  <text x="400" y="460" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#5b6a63">Sample image · Trifolium admin console demo</text>
+  <text x="400" y="530" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#8a958f">800 × 600 · placeholder standing in for a photo attached to a record</text>
+</svg>

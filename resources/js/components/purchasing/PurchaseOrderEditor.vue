@@ -2,7 +2,7 @@
 // Create or edit a purchase order: one supplier, lines in the supplier's units,
 // a price per unit and an expected date. The item list defaults to the items
 // that name this supplier as preferred — the buyer can widen it.
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
@@ -28,6 +28,7 @@ const { loc } = useLocalized();
 const dataset = useDatasetStore();
 const items = useItemsStore();
 const store = usePurchasingStore();
+const uid = useId();
 
 const isNew = computed(() => !props.po.id);
 const allItems = ref(false);
@@ -114,13 +115,15 @@ function onItem(line, sku) {
     }
 }
 
+/** What `errors.lines` asks of a single line — an item and a positive quantity. */
+const lineOk = (line) => Boolean(line.sku) && Number(line.qty) > 0;
+
 const errors = computed(() => ({
     supplier: !form.supplierCode
         ? t('purchasing.editor.validate.supplier')
         : '',
     lines:
-        !form.lines.length ||
-        form.lines.some((line) => !line.sku || !(Number(line.qty) > 0))
+        !form.lines.length || !form.lines.every(lineOk)
             ? t('purchasing.editor.validate.lines')
             : new Set(form.lines.map((line) => line.sku)).size !==
                 form.lines.length
@@ -161,11 +164,12 @@ const title = computed(() =>
         <div class="pe">
             <div class="a-3col">
                 <div>
-                    <label class="a-lbl"
+                    <label class="a-lbl" :for="`${uid}-sup`"
                         >{{ t('purchasing.editor.supplier') }}
                         <span class="req">*</span></label
                     >
                     <ASelect
+                        :id="`${uid}-sup`"
                         v-model="form.supplierCode"
                         :options="supplierOptions"
                         class="a-w100"
@@ -175,16 +179,22 @@ const title = computed(() =>
                     </div>
                 </div>
                 <div>
-                    <label class="a-lbl">{{
+                    <label class="a-lbl" :for="`${uid}-eta`">{{
                         t('purchasing.editor.eta')
                     }}</label>
-                    <AInput v-model="form.eta" type="date" class="a-w100" />
+                    <AInput
+                        :id="`${uid}-eta`"
+                        v-model="form.eta"
+                        type="date"
+                        class="a-w100"
+                    />
                 </div>
                 <div>
-                    <label class="a-lbl">{{
+                    <label class="a-lbl" :for="`${uid}-cur`">{{
                         t('purchasing.editor.currency')
                     }}</label>
                     <ASelect
+                        :id="`${uid}-cur`"
                         v-model="form.currency"
                         :options="currencyOptions"
                         class="a-w100"
@@ -192,8 +202,14 @@ const title = computed(() =>
                 </div>
             </div>
             <div>
-                <label class="a-lbl">{{ t('purchasing.editor.notes') }}</label>
-                <AInput v-model="form.notes" class="a-w100" />
+                <label class="a-lbl" :for="`${uid}-notes`">{{
+                    t('purchasing.editor.notes')
+                }}</label>
+                <AInput
+                    :id="`${uid}-notes`"
+                    v-model="form.notes"
+                    class="a-w100"
+                />
             </div>
 
             <div>
@@ -210,35 +226,83 @@ const title = computed(() =>
                         {{ t('purchasing.editor.allItems') }}
                     </label>
                 </div>
-                <div class="row row--h">
-                    <span>{{ t('purchasing.editor.col.item') }}</span>
-                    <span>{{ t('purchasing.editor.col.qty') }}</span>
-                    <span>{{ t('purchasing.editor.col.uom') }}</span>
-                    <span>{{ t('purchasing.editor.col.price') }}</span>
-                    <span></span>
-                </div>
-                <div v-for="(line, i) in form.lines" :key="i" class="row">
-                    <ASelect
-                        :model-value="line.sku"
-                        :options="itemOptions"
-                        class="a-w100"
-                        @update:model-value="onItem(line, $event)"
-                    />
-                    <AInput v-model="line.qty" type="number" ltr />
-                    <ASelect v-model="line.uom" :options="uomOptions" />
-                    <AInput v-model="line.price" type="number" ltr />
-                    <AButton
-                        sm
-                        kind="ghost"
-                        icon="trash"
-                        :disabled="line.received > 0"
-                        @click="removeLine(i)"
-                    />
+                <div class="a-lines">
+                    <div
+                        v-for="(line, i) in form.lines"
+                        :key="i"
+                        class="a-line-block"
+                        :class="{ 'is-ok': lineOk(line) }"
+                    >
+                        <div class="a-line-head">
+                            <span class="a-line-no">
+                                {{ t('labels.lineNo', { n: i + 1 }) }}
+                            </span>
+                            <AButton
+                                sm
+                                kind="ghost"
+                                icon="trash"
+                                class="a-push"
+                                :aria-label="t('actions.delete')"
+                                :disabled="line.received > 0"
+                                @click="removeLine(i)"
+                            />
+                        </div>
+
+                        <div class="a-line-body">
+                            <div class="a-line-wide">
+                                <label class="a-lbl" :for="`${uid}-i${i}`"
+                                    >{{ t('purchasing.editor.col.item') }}
+                                    <span class="req">*</span></label
+                                >
+                                <ASelect
+                                    :id="`${uid}-i${i}`"
+                                    :model-value="line.sku"
+                                    :options="itemOptions"
+                                    class="a-w100"
+                                    @update:model-value="onItem(line, $event)"
+                                />
+                            </div>
+                            <div>
+                                <label class="a-lbl" :for="`${uid}-q${i}`"
+                                    >{{ t('purchasing.editor.col.qty') }}
+                                    <span class="req">*</span></label
+                                >
+                                <AInput
+                                    :id="`${uid}-q${i}`"
+                                    v-model="line.qty"
+                                    type="number"
+                                    ltr
+                                />
+                            </div>
+                            <div>
+                                <label class="a-lbl" :for="`${uid}-u${i}`">{{
+                                    t('purchasing.editor.col.uom')
+                                }}</label>
+                                <ASelect
+                                    :id="`${uid}-u${i}`"
+                                    v-model="line.uom"
+                                    :options="uomOptions"
+                                />
+                            </div>
+                            <div>
+                                <label class="a-lbl" :for="`${uid}-p${i}`">{{
+                                    t('purchasing.editor.col.price')
+                                }}</label>
+                                <AInput
+                                    :id="`${uid}-p${i}`"
+                                    v-model="line.price"
+                                    type="number"
+                                    ltr
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div v-if="errors.lines" class="a-inv">{{ errors.lines }}</div>
                 <AButton
                     sm
                     icon="plus"
+                    class="add"
                     :disabled="form.lines.length >= PO_RULES.maxLines"
                     @click="addLine"
                 >
@@ -270,11 +334,17 @@ const title = computed(() =>
     color: var(--a-red);
 }
 
+/* the section heading — its title and the "all items" toggle on one row */
 .lines-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
+    margin-bottom: 12px;
+}
+
+.lines-head .a-sect-t {
+    margin: 0;
 }
 
 .check {
@@ -285,17 +355,7 @@ const title = computed(() =>
     cursor: pointer;
 }
 
-.row {
-    display: grid;
-    grid-template-columns: 1fr 110px 130px 130px 40px;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.row--h {
-    font-size: 12px;
-    color: var(--a-ink-3);
-    margin-bottom: 4px;
+.add {
+    margin-top: 10px;
 }
 </style>

@@ -34,6 +34,7 @@ export default {
         restore: 'Restore',
         retry: 'Try again',
         clear: 'Clear',
+        openOrder: 'Open the order',
     },
 
     labels: {
@@ -61,6 +62,7 @@ export default {
         yes: 'Yes',
         no: 'No',
         required: 'Required',
+        lineNo: 'Line {n}',
         optional: 'Optional',
         inDevelopment: 'In development',
     },

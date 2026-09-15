@@ -25,6 +25,7 @@ import ATextarea from '@/components/ui/ATextarea.vue';
 import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
+import OrderLink from '@/components/ui/OrderLink.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { formatAddress } from '@/components/users/address';
@@ -732,7 +733,7 @@ function onReset() {
                     }}
                 </template>
                 <template #cell-order="{ row }">
-                    <ANum>{{ row.id }}</ANum>
+                    <OrderLink :id="row.id" />
                 </template>
                 <template #cell-date="{ row }">
                     <ANum>{{ fmtISO(row.iso) }}</ANum>
@@ -840,9 +841,7 @@ function onReset() {
                 />
             </template>
             <template #cell-id="{ row }">
-                <span class="t-strong"
-                    ><ANum>{{ row.id }}</ANum></span
-                >
+                <span class="t-strong"><OrderLink :id="row.id" /></span>
             </template>
             <template #cell-patient="{ row }">
                 {{ loc(row.patient.name) }}
