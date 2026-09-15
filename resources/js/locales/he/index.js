@@ -18,7 +18,6 @@ import ingredients from '@/locales/he/ingredients';
 import integrations from '@/locales/he/integrations';
 import inventory from '@/locales/he/inventory';
 import items from '@/locales/he/items';
-import lab from '@/locales/he/lab';
 import libraries from '@/locales/he/libraries';
 import log from '@/locales/he/log';
 import messaging from '@/locales/he/messaging';
@@ -28,7 +27,6 @@ import pricing from '@/locales/he/pricing';
 import production from '@/locales/he/production';
 import products from '@/locales/he/products';
 import purchasing from '@/locales/he/purchasing';
-import reports from '@/locales/he/reports';
 import safety from '@/locales/he/safety';
 import shell from '@/locales/he/shell';
 import stickers from '@/locales/he/stickers';
@@ -55,7 +53,6 @@ export default {
     integrations,
     inventory,
     items,
-    lab,
     libraries,
     log,
     messaging,
@@ -65,7 +62,6 @@ export default {
     production,
     products,
     purchasing,
-    reports,
     safety,
     shell,
     stickers,

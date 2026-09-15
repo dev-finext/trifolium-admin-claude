@@ -8,6 +8,28 @@ import { at, pickFrom, spread } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
 import { L } from '@/lib/localized';
 
+/**
+ * The two texts every preparation carries — the patient's default instructions
+ * and the regulatory warning. In SAP both are injected into every order by a
+ * formatted search; here they are data, edited on the labels screen. The
+ * regulatory wording is a sample: the pharmacy's own approved text replaces it
+ * at migration.
+ */
+export const PRINT_TEXTS = {
+    /** Printed as the patient's instructions when the formula carries none. */
+    instructionsDefault: L(
+        'על פי הנחיות המטפל',
+        'As directed by the practitioner',
+    ),
+    /** Printed on every preparation label. */
+    regulatoryText: L(
+        'תכשיר צמחי בהכנה אישית על פי הנחיית מטפל. אינו תרופה ואינו מיועד לאבחן, לרפא או למנוע מחלה. יש לשמור מהישג ידם של ילדים. בהיריון, בהנקה או בנטילת תרופות — יש להתייעץ עם המטפל.',
+        'A herbal preparation compounded to a practitioner’s instruction. Not a medicine and not intended to diagnose, treat or prevent disease. Keep out of reach of children. In pregnancy, while breastfeeding or when taking medication, consult the practitioner.',
+    ),
+    updated: at(120, 10, 0),
+    updatedBy: DEMO_ACTORS.orit,
+};
+
 /** One element on a label. Positions and widths in mm, font in points. */
 function el(id, kind, props) {
     return {

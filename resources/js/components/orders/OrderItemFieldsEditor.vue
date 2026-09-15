@@ -37,7 +37,7 @@ const options = computed(() => [
 ]);
 
 const defaultText = computed(() =>
-    orders.labSettings ? loc(orders.labSettings.instructionsDefault) : '',
+    orders.printTexts ? loc(orders.printTexts.instructionsDefault) : '',
 );
 
 async function save() {

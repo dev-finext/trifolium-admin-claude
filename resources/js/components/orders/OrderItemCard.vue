@@ -50,8 +50,8 @@ const instructionsText = computed(() =>
     props.item.patientInstructions
         ? loc(props.item.patientInstructions)
         : t('orders.value.instructionsDefault', {
-              text: orders.labSettings
-                  ? loc(orders.labSettings.instructionsDefault)
+              text: orders.printTexts
+                  ? loc(orders.printTexts.instructionsDefault)
                   : '',
           }),
 );

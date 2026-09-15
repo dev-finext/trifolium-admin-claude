@@ -51,7 +51,7 @@ export function usePrepSheet() {
 
                 if (on && level && level !== SAFETY_LEVEL_IDS[0]) {
                     flags.push(
-                        t('lab.sheet.safetyFlag', {
+                        t('orders.sheet.safetyFlag', {
                             ctx: t(`items.safetyContext.${ctx}`),
                             level: t(`items.safetyLevel.${level}`),
                         }),
@@ -68,9 +68,11 @@ export function usePrepSheet() {
             name: loc(herb.name),
             lat: herb.lat || '',
             qty: `${herb.qty} ${t(`orders.unit.${herb.unit || unit}`)}`,
-            batches: batches || t('lab.sheet.noBatch'),
+            batches: batches || t('orders.sheet.noBatch'),
             short:
-                plan.short > 0 ? t('lab.sheet.short', { n: plan.short }) : '',
+                plan.short > 0
+                    ? t('orders.sheet.short', { n: plan.short })
+                    : '',
             note: card?.notes?.production ? loc(card.notes.production) : '',
             flags,
         };
@@ -79,11 +81,11 @@ export function usePrepSheet() {
     /** When the order was paid or cleared for credit, off its own audit trail. */
     function paymentLine(order) {
         if (order.credit && !order.creditPaid) {
-            return t('lab.sheet.credit');
+            return t('orders.sheet.credit');
         }
 
         if (!isSettled(order)) {
-            return t('lab.sheet.unpaid');
+            return t('orders.sheet.unpaid');
         }
 
         const paid = (order.audit || []).find(
@@ -91,7 +93,7 @@ export function usePrepSheet() {
         );
 
         return paid?.when?.stamp
-            ? t('lab.sheet.paidOn', { stamp: paid.when.stamp })
+            ? t('orders.sheet.paidOn', { stamp: paid.when.stamp })
             : t('payment.paid');
     }
 
@@ -102,12 +104,12 @@ export function usePrepSheet() {
                 : null;
 
             return point
-                ? t('lab.sheet.pickupAt', { name: loc(point.name) })
-                : t('lab.sheet.pharmacy');
+                ? t('orders.sheet.pickupAt', { name: loc(point.name) })
+                : t('orders.sheet.pharmacy');
         }
 
         return order.courier
-            ? t('lab.sheet.courier', { name: courierName(order.courier) })
+            ? t('orders.sheet.courier', { name: courierName(order.courier) })
             : t('fulfilment.courier');
     }
 
@@ -138,15 +140,15 @@ export function usePrepSheet() {
                 }),
             );
         const meta = [
-            `${esc(t('lab.sheet.type'))}: ${esc(typeName)}`,
-            `${esc(t('lab.sheet.content'))}: ${esc(contentLine(item))}`,
+            `${esc(t('orders.sheet.type'))}: ${esc(typeName)}`,
+            `${esc(t('orders.sheet.content'))}: ${esc(contentLine(item))}`,
             item.concentration
-                ? `${esc(t('lab.sheet.concentration'))}: <span class="num">${esc(item.concentration)}</span>`
+                ? `${esc(t('orders.sheet.concentration'))}: <span class="num">${esc(item.concentration)}</span>`
                 : '',
             item.evap
-                ? `${esc(t('lab.sheet.evap'))}: ${esc(t(`orders.evaporation.${item.evap}`))}`
+                ? `${esc(t('orders.sheet.evap'))}: ${esc(t(`orders.evaporation.${item.evap}`))}`
                 : '',
-            `${esc(t('lab.sheet.dose'))}: ${esc(
+            `${esc(t('orders.sheet.dose'))}: ${esc(
                 t('orders.value.dose', {
                     qty: item.dose.qty,
                     unit: t(`orders.unit.${item.dose.unit}`),
@@ -157,9 +159,9 @@ export function usePrepSheet() {
             .filter(Boolean)
             .join(' · ');
         const table = `<table><thead><tr>
-            <th>${esc(t('lab.sheet.col.code'))}</th><th>${esc(t('lab.sheet.col.herb'))}</th>
-            <th>${esc(t('lab.sheet.col.qty'))}</th><th>${esc(t('lab.sheet.col.batch'))}</th>
-            <th>${esc(t('lab.sheet.col.note'))}</th></tr></thead><tbody>${rows
+            <th>${esc(t('orders.sheet.col.code'))}</th><th>${esc(t('orders.sheet.col.herb'))}</th>
+            <th>${esc(t('orders.sheet.col.qty'))}</th><th>${esc(t('orders.sheet.col.batch'))}</th>
+            <th>${esc(t('orders.sheet.col.note'))}</th></tr></thead><tbody>${rows
                 .map(
                     (row) => `<tr>
                 <td class="code">${esc(row.code)}</td>
@@ -177,25 +179,25 @@ export function usePrepSheet() {
             ? `<ol>${type.recipe
                   .map(
                       (step) =>
-                          `<li>${text(step.text)}${step.minutes ? ` <span class="small">${esc(t('lab.sheet.minutes', { n: step.minutes }))}</span>` : ''}</li>`,
+                          `<li>${text(step.text)}${step.minutes ? ` <span class="small">${esc(t('orders.sheet.minutes', { n: step.minutes }))}</span>` : ''}</li>`,
                   )
                   .join('')}</ol>`
-            : `<div class="small">${esc(t('lab.sheet.recipeMissing'))}</div>`;
+            : `<div class="small">${esc(t('orders.sheet.recipeMissing'))}</div>`;
         const instructions = item.patientInstructions
             ? loc(item.patientInstructions)
-            : orders.labSettings
-              ? loc(orders.labSettings.instructionsDefault)
+            : orders.printTexts
+              ? loc(orders.printTexts.instructionsDefault)
               : '';
 
         return `
-            <h2>${esc(t('lab.sheet.formula', { n: index + 1, total }))} · ${text(item.name)} <span class="barcode">${esc(item.id)}</span></h2>
+            <h2>${esc(t('orders.sheet.formula', { n: index + 1, total }))} · ${text(item.name)} <span class="barcode">${esc(item.id)}</span></h2>
             <div class="meta">${meta}</div>
             ${table}
             <div class="grid" style="grid-template-columns: 1fr 1fr">
-                <div class="box"><strong>${esc(t('lab.sheet.labelText'))}</strong><div>${type?.labelText ? text(type.labelText) : '—'}</div>
-                    <strong>${esc(t('lab.sheet.recipe'))}</strong>${recipe}</div>
-                <div class="box"><strong>${esc(t('lab.sheet.internalNotes'))}</strong><div>${text(item.internalNotes)}</div>
-                    <strong>${esc(t('lab.sheet.instructions'))}</strong><div>${esc(instructions)}</div></div>
+                <div class="box"><strong>${esc(t('orders.sheet.labelText'))}</strong><div>${type?.labelText ? text(type.labelText) : '—'}</div>
+                    <strong>${esc(t('orders.sheet.recipe'))}</strong>${recipe}</div>
+                <div class="box"><strong>${esc(t('orders.sheet.internalNotes'))}</strong><div>${text(item.internalNotes)}</div>
+                    <strong>${esc(t('orders.sheet.instructions'))}</strong><div>${esc(instructions)}</div></div>
             </div>`;
     }
 
@@ -206,17 +208,17 @@ export function usePrepSheet() {
         const patient = order.patient;
         const practitioner = order.practitioner;
         const safety = [
-            patient.preg && t('lab.sheet.pregnant'),
-            patient.bf && t('lab.sheet.breastfeeding'),
+            patient.preg && t('orders.sheet.pregnant'),
+            patient.bf && t('orders.sheet.breastfeeding'),
             patient.meds?.length &&
-                t('lab.sheet.meds', { list: patient.meds.join(', ') }),
+                t('orders.sheet.meds', { list: patient.meds.join(', ') }),
         ].filter(Boolean);
         const roles = LAB_ROLE_IDS.map((role) => {
             const value = order.lab?.[role];
 
             return `<div><div class="sig"></div><div class="small">${esc(t(`orders.labRole.${role}`))}${
                 value
-                    ? ` — ${esc(t('lab.sheet.signed', { name: loc(value.by), when: value.when.stamp }))}`
+                    ? ` — ${esc(t('orders.sheet.signed', { name: loc(value.by), when: value.when.stamp }))}`
                     : ''
             }</div></div>`;
         }).join('');
@@ -224,43 +226,43 @@ export function usePrepSheet() {
             ...formulas.map((item) => text(item.name)),
             ...shelf.map(
                 (line) =>
-                    `${text(line.name)} · ${esc(t('lab.sheet.shelfLine', { qty: line.qty }))}`,
+                    `${text(line.name)} · ${esc(t('orders.sheet.shelfLine', { qty: line.qty }))}`,
             ),
         ];
 
         return `
-            ${order.urgent ? `<div class="warn"><strong>${esc(t('lab.sheet.urgent'))}</strong></div>` : ''}
-            <h1>${esc(t('lab.sheet.title'))} · <span class="barcode">${esc(order.id)}</span></h1>
-            <div class="meta">${text(ORG.name)} · ${esc(t('lab.sheet.printedOn', { date: fmtISO(isoDaysAgo(0)) }))} · ${esc(
-                t('lab.sheet.total', {
+            ${order.urgent ? `<div class="warn"><strong>${esc(t('orders.sheet.urgent'))}</strong></div>` : ''}
+            <h1>${esc(t('orders.sheet.title'))} · <span class="barcode">${esc(order.id)}</span></h1>
+            <div class="meta">${text(ORG.name)} · ${esc(t('orders.sheet.printedOn', { date: fmtISO(isoDaysAgo(0)) }))} · ${esc(
+                t('orders.sheet.total', {
                     n: formulas.length,
                     shelf: shelf.length,
                 }),
             )}</div>
             <div class="grid">
-                <div class="box"><strong>${esc(t('lab.sheet.practitioner'))}</strong><div>${text(practitioner.name)}</div>
+                <div class="box"><strong>${esc(t('orders.sheet.practitioner'))}</strong><div>${text(practitioner.name)}</div>
                     <div class="small num">${esc(practitioner.code)} · ${esc(practitioner.phone)}</div>
-                    ${practitioner.specialTerms ? `<div class="warn small">${esc(t('lab.sheet.specialTerms', { text: loc(practitioner.specialTerms) }))}</div>` : ''}</div>
-                <div class="box"><strong>${esc(t('lab.sheet.patient'))}</strong><div>${text(patient.name)}</div>
+                    ${practitioner.specialTerms ? `<div class="warn small">${esc(t('orders.sheet.specialTerms', { text: loc(practitioner.specialTerms) }))}</div>` : ''}</div>
+                <div class="box"><strong>${esc(t('orders.sheet.patient'))}</strong><div>${text(patient.name)}</div>
                     <div class="small num">${esc(patient.phone)}</div>
                     <div class="small">${esc(t('orders.value.ageSex', { age: patient.age, sex: t(`orders.sex.${patient.sex}`) }))}</div></div>
-                <div class="box"><strong>${esc(t('lab.sheet.payment'))}</strong><div>${esc(paymentLine(order))}</div>
+                <div class="box"><strong>${esc(t('orders.sheet.payment'))}</strong><div>${esc(paymentLine(order))}</div>
                     <div class="small">${esc(t(`payer.${order.payer}`))}</div></div>
-                <div class="box"><strong>${esc(t('lab.sheet.delivery'))}</strong><div>${esc(deliveryLine(order))}</div>
+                <div class="box"><strong>${esc(t('orders.sheet.delivery'))}</strong><div>${esc(deliveryLine(order))}</div>
                     <div class="small">${esc(t(`fulfilment.${order.deliveryType}`))}</div></div>
             </div>
-            <div class="box${safety.length ? ' warn' : ''}"><strong>${esc(t('lab.sheet.safety'))}</strong> ${
+            <div class="box${safety.length ? ' warn' : ''}"><strong>${esc(t('orders.sheet.safety'))}</strong> ${
                 safety.length
                     ? safety.map(esc).join(' · ')
-                    : esc(t('lab.sheet.noSafety'))
+                    : esc(t('orders.sheet.noSafety'))
             }</div>
             ${formulas.map((item, i) => formulaSection(order, item, i, formulas.length)).join('')}
-            <h2>${esc(t('lab.sheet.basket'))}</h2>
-            <div>${basket.length ? basket.join(' · ') : esc(t('lab.sheet.noBasket'))}</div>
-            ${orders.labSettings ? `<h2>${esc(t('lab.sheet.regulatory'))}</h2><div class="small">${text(orders.labSettings.regulatoryText)}</div>` : ''}
-            <h2>${esc(t('lab.sheet.roles'))}</h2>
+            <h2>${esc(t('orders.sheet.basket'))}</h2>
+            <div>${basket.length ? basket.join(' · ') : esc(t('orders.sheet.noBasket'))}</div>
+            ${orders.printTexts ? `<h2>${esc(t('orders.sheet.regulatory'))}</h2><div class="small">${text(orders.printTexts.regulatoryText)}</div>` : ''}
+            <h2>${esc(t('orders.sheet.roles'))}</h2>
             <div class="grid">${roles}</div>
-            <h2>${esc(t('lab.sheet.barcodes'))}</h2>
+            <h2>${esc(t('orders.sheet.barcodes'))}</h2>
             <div class="code">${[order.id, ...formulas.map((item) => item.id)].map(esc).join(' · ')}</div>`;
     }
 
@@ -271,7 +273,7 @@ export function usePrepSheet() {
      */
     async function printPrepSheet(order) {
         const ok = printHtml(
-            `${t('lab.sheet.title')} ${order.id}`,
+            `${t('orders.sheet.title')} ${order.id}`,
             build(order),
             locale.value === 'he' ? 'rtl' : 'ltr',
         );

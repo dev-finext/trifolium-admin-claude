@@ -49,7 +49,6 @@ import {
     PREP_TYPES,
     SITE_CATEGORIES,
 } from '@/demo/items';
-import { LAB_SETTINGS } from '@/demo/lab';
 import {
     buildSystemLog,
     DEMO_LOG_AGENTS,
@@ -109,6 +108,7 @@ import {
 import { buildServices, SERVICE_STATES } from '@/demo/services';
 import {
     buildStickerPrints,
+    PRINT_TEXTS,
     STICKER_NOTES,
     STICKER_TEMPLATES,
 } from '@/demo/stickers';
@@ -238,7 +238,7 @@ export function buildDataset() {
 
         // deliveries & lab (V2)
         pickupPoints: buildPickupPoints(practitioners),
-        labSettings: LAB_SETTINGS,
+        printTexts: PRINT_TEXTS,
         // crm (V2)
         activities: buildActivities(practitioners, customers, orders),
         // stickers (V2)

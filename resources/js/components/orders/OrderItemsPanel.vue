@@ -93,8 +93,8 @@ async function print() {
 
     toast.push(
         ok
-            ? { title: t('lab.sheet.printed'), body: props.order.id }
-            : { title: t('lab.sheet.blocked'), bad: true },
+            ? { title: t('orders.sheet.printed'), body: props.order.id }
+            : { title: t('orders.sheet.blocked'), bad: true },
     );
 }
 
@@ -185,12 +185,12 @@ async function confirmCancel(reason) {
 
         <!-- V2: the regulatory text every label carries, managed on the lab screen -->
         <div
-            v-if="formulas.length && orders.labSettings"
+            v-if="formulas.length && orders.printTexts"
             class="a-note a-note--info"
         >
             <V2Badge id="order-fields" size="sm" />
             <strong>{{ t('orders.itemsTab.regulatoryTitle') }}</strong>
-            {{ loc(orders.labSettings.regulatoryText) }}
+            {{ loc(orders.printTexts.regulatoryText) }}
             <span class="t-sub">
                 · {{ t('orders.itemsTab.regulatoryFrom') }}</span
             >

@@ -85,12 +85,6 @@ const routes = [
         component: () => import('@/views/ItemsView.vue'),
     },
     {
-        path: '/lab',
-        name: 'lab',
-        meta: { titleKey: 'nav.item.lab' },
-        component: () => import('@/views/LabView.vue'),
-    },
-    {
         path: '/stickers',
         name: 'stickers',
         meta: { titleKey: 'nav.item.stickers' },
@@ -107,12 +101,6 @@ const routes = [
         name: 'purchasing',
         meta: { titleKey: 'nav.item.purchasing' },
         component: () => import('@/views/PurchasingView.vue'),
-    },
-    {
-        path: '/reports',
-        name: 'reports',
-        meta: { titleKey: 'nav.item.reports' },
-        component: () => import('@/views/ReportsView.vue'),
     },
     {
         path: '/safety',

@@ -59,7 +59,7 @@ export function useStickerData() {
     /** Field values for label `index` of `total` on one preparation line. */
     function prepData(order, item, index = 1, total = 1) {
         const type = items.prepTypeById(item.typeId);
-        const settings = orders.labSettings || {};
+        const settings = orders.printTexts || {};
         const made = isoDaysAgo(0);
         const months = type?.expiryMonths || STICKER_RULES.fallbackExpiryMonths;
 

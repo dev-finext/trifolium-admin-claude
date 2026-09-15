@@ -144,6 +144,21 @@ export default {
         empty: 'The pool is empty',
     },
 
+    texts: {
+        title: 'Managed texts',
+        note: 'Both texts print on every preparation — on the label and on the prep sheet. In SAP they are injected by a formatted search into every order; here they are edited in one place and apply to the orders that follow.',
+        instructions: 'Default patient instructions',
+        instructionsHint:
+            'Printed when a formula carries no instructions of its own',
+        regulatory: 'Regulatory warning',
+        regulatoryHint: 'Printed on every label and on the prep sheet',
+        he: 'Hebrew',
+        en: 'English',
+        save: 'Save texts',
+        saved: 'Texts saved',
+        updated: 'Updated {when} · {by}',
+    },
+
     log: {
         title: 'Print log',
         note: 'Every run is logged: what was printed, for what, how many, who and when.',

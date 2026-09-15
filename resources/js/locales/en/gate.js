@@ -23,7 +23,7 @@ export default {
             title: 'Item prices',
             why: 'A change to the sale or purchase price reaches every order that follows',
         },
-        lab_texts: {
+        label_texts: {
             title: 'Regulatory texts',
             why: 'The regulatory warning prints on every label — changing it needs re-confirmation',
         },

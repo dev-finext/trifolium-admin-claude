@@ -5,6 +5,7 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import StickerTextsCard from '@/components/stickers/StickerTextsCard.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
@@ -117,161 +118,172 @@ const typeCount = (draft) =>
 </script>
 
 <template>
-    <ACard :title="t('stickers.notes.title')" icon="edit" :pad="false">
-        <template #right>
-            <V2Badge id="labels" size="sm" />
-            <AButton sm kind="p" icon="plus" @click="adding = !adding">
-                {{ t('stickers.notes.add') }}
-            </AButton>
-        </template>
+    <div class="a-grid nt-grid">
+        <StickerTextsCard />
 
-        <p class="a-hint nt-intro">{{ t('stickers.notes.note') }}</p>
-
-        <div v-if="adding" class="nt-row is-new">
-            <label class="a-lbl" for="stk-new-note">{{
-                t('stickers.notes.text')
-            }}</label>
-            <AInput
-                id="stk-new-note"
-                v-model="fresh.text"
-                class="a-w100"
-                :placeholder="t('stickers.notes.textPh')"
-            />
-            <div class="nt-types">
-                <div class="nt-sw">
-                    <ASwitch
-                        v-model="fresh.all"
-                        :label="t('stickers.notes.all')"
-                    />
-                    <span>{{ t('stickers.notes.all') }}</span>
-                </div>
-                <div v-if="!fresh.all" class="nt-chips">
-                    <button
-                        v-for="type in prepTypes"
-                        :key="type.id"
-                        type="button"
-                        class="nt-chip"
-                        :class="{ 'is-on': fresh.prepTypes.includes(type.id) }"
-                        @click="toggleType(fresh, type.id)"
-                    >
-                        {{ loc(type.name) }}
-                    </button>
-                </div>
-            </div>
-            <div class="nt-a">
-                <AButton
-                    kind="p"
-                    icon="save"
-                    :disabled="!fresh.text.trim()"
-                    @click="create"
-                >
-                    {{ t('stickers.notes.save') }}
+        <ACard :title="t('stickers.notes.title')" icon="edit" :pad="false">
+            <template #right>
+                <V2Badge id="labels" size="sm" />
+                <AButton sm kind="p" icon="plus" @click="adding = !adding">
+                    {{ t('stickers.notes.add') }}
                 </AButton>
-                <AButton @click="adding = false">{{
-                    t('actions.cancel')
-                }}</AButton>
-            </div>
-        </div>
+            </template>
 
-        <div v-if="stickers.notes.length" class="nt-list">
-            <div
-                v-for="note in stickers.notes"
-                :key="note.id"
-                class="nt-row"
-                :class="{ 'is-off': !draftOf(note).active }"
-            >
-                <div class="nt-h">
-                    <AInput
-                        v-model="draftOf(note).text"
-                        class="nt-text"
-                        :aria-label="t('stickers.notes.text')"
-                    />
-                    <AChip
-                        :tone="draftOf(note).active ? 'green' : 'gray'"
-                        size="sm"
-                        :dot="false"
-                    >
-                        {{
-                            draftOf(note).active
-                                ? t('stickers.notes.active')
-                                : t('stickers.notes.inactive')
-                        }}
-                    </AChip>
-                    <span class="t-sub">{{
-                        t('stickers.notes.count', {
-                            n: typeCount(draftOf(note)),
-                        })
-                    }}</span>
-                    <div class="a-push nt-a">
-                        <AButton
-                            sm
-                            kind="p"
-                            icon="save"
-                            :disabled="
-                                !isDirty(note) || !draftOf(note).text.trim()
-                            "
-                            @click="save(note)"
-                        >
-                            {{ t('stickers.notes.save') }}
-                        </AButton>
-                        <AButton sm icon="trash" @click="removing = note">
-                            {{ t('stickers.notes.remove') }}
-                        </AButton>
-                    </div>
-                </div>
+            <p class="a-hint nt-intro">{{ t('stickers.notes.note') }}</p>
+
+            <div v-if="adding" class="nt-row is-new">
+                <label class="a-lbl" for="stk-new-note">{{
+                    t('stickers.notes.text')
+                }}</label>
+                <AInput
+                    id="stk-new-note"
+                    v-model="fresh.text"
+                    class="a-w100"
+                    :placeholder="t('stickers.notes.textPh')"
+                />
                 <div class="nt-types">
                     <div class="nt-sw">
                         <ASwitch
-                            v-model="draftOf(note).active"
-                            :label="t('stickers.notes.active')"
-                        />
-                        <span>{{ t('stickers.notes.active') }}</span>
-                    </div>
-                    <div class="nt-sw">
-                        <ASwitch
-                            v-model="draftOf(note).all"
+                            v-model="fresh.all"
                             :label="t('stickers.notes.all')"
                         />
                         <span>{{ t('stickers.notes.all') }}</span>
                     </div>
-                    <div v-if="!draftOf(note).all" class="nt-chips">
+                    <div v-if="!fresh.all" class="nt-chips">
                         <button
                             v-for="type in prepTypes"
                             :key="type.id"
                             type="button"
                             class="nt-chip"
                             :class="{
-                                'is-on': draftOf(note).prepTypes.includes(
-                                    type.id,
-                                ),
+                                'is-on': fresh.prepTypes.includes(type.id),
                             }"
-                            @click="toggleType(draftOf(note), type.id)"
+                            @click="toggleType(fresh, type.id)"
                         >
                             {{ loc(type.name) }}
                         </button>
                     </div>
                 </div>
+                <div class="nt-a">
+                    <AButton
+                        kind="p"
+                        icon="save"
+                        :disabled="!fresh.text.trim()"
+                        @click="create"
+                    >
+                        {{ t('stickers.notes.save') }}
+                    </AButton>
+                    <AButton @click="adding = false">{{
+                        t('actions.cancel')
+                    }}</AButton>
+                </div>
             </div>
-        </div>
-        <AEmpty v-else icon="edit" :title="t('stickers.notes.empty')" />
 
-        <ConfirmDialog
-            :open="Boolean(removing)"
-            danger
-            :title="t('stickers.notes.removeTitle')"
-            :body="
-                t('stickers.notes.removeBody', {
-                    text: removing ? loc(removing.text) : '',
-                })
-            "
-            :confirm-label="t('stickers.notes.remove')"
-            @close="removing = null"
-            @confirm="confirmRemove"
-        />
-    </ACard>
+            <div v-if="stickers.notes.length" class="nt-list">
+                <div
+                    v-for="note in stickers.notes"
+                    :key="note.id"
+                    class="nt-row"
+                    :class="{ 'is-off': !draftOf(note).active }"
+                >
+                    <div class="nt-h">
+                        <AInput
+                            v-model="draftOf(note).text"
+                            class="nt-text"
+                            :aria-label="t('stickers.notes.text')"
+                        />
+                        <AChip
+                            :tone="draftOf(note).active ? 'green' : 'gray'"
+                            size="sm"
+                            :dot="false"
+                        >
+                            {{
+                                draftOf(note).active
+                                    ? t('stickers.notes.active')
+                                    : t('stickers.notes.inactive')
+                            }}
+                        </AChip>
+                        <span class="t-sub">{{
+                            t('stickers.notes.count', {
+                                n: typeCount(draftOf(note)),
+                            })
+                        }}</span>
+                        <div class="a-push nt-a">
+                            <AButton
+                                sm
+                                kind="p"
+                                icon="save"
+                                :disabled="
+                                    !isDirty(note) || !draftOf(note).text.trim()
+                                "
+                                @click="save(note)"
+                            >
+                                {{ t('stickers.notes.save') }}
+                            </AButton>
+                            <AButton sm icon="trash" @click="removing = note">
+                                {{ t('stickers.notes.remove') }}
+                            </AButton>
+                        </div>
+                    </div>
+                    <div class="nt-types">
+                        <div class="nt-sw">
+                            <ASwitch
+                                v-model="draftOf(note).active"
+                                :label="t('stickers.notes.active')"
+                            />
+                            <span>{{ t('stickers.notes.active') }}</span>
+                        </div>
+                        <div class="nt-sw">
+                            <ASwitch
+                                v-model="draftOf(note).all"
+                                :label="t('stickers.notes.all')"
+                            />
+                            <span>{{ t('stickers.notes.all') }}</span>
+                        </div>
+                        <div v-if="!draftOf(note).all" class="nt-chips">
+                            <button
+                                v-for="type in prepTypes"
+                                :key="type.id"
+                                type="button"
+                                class="nt-chip"
+                                :class="{
+                                    'is-on': draftOf(note).prepTypes.includes(
+                                        type.id,
+                                    ),
+                                }"
+                                @click="toggleType(draftOf(note), type.id)"
+                            >
+                                {{ loc(type.name) }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <AEmpty v-else icon="edit" :title="t('stickers.notes.empty')" />
+
+            <ConfirmDialog
+                :open="Boolean(removing)"
+                danger
+                :title="t('stickers.notes.removeTitle')"
+                :body="
+                    t('stickers.notes.removeBody', {
+                        text: removing ? loc(removing.text) : '',
+                    })
+                "
+                :confirm-label="t('stickers.notes.remove')"
+                @close="removing = null"
+                @confirm="confirmRemove"
+            />
+        </ACard>
+    </div>
 </template>
 
 <style scoped>
+.nt-grid {
+    display: grid;
+    gap: 14px;
+}
+
 .nt-intro {
     margin: 0;
     padding: 12px 18px 0;

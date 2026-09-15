@@ -264,69 +264,6 @@ export const ORDER_FILTER_FIELDS = [
     { key: 'days', group: 'time', kind: 'num', value: (o) => o.daysAgo },
 ];
 
-/**
- * What the lab may narrow its queue by. The one field that matters most is
- * `todo`: which of the four roles has *not* been marked yet — that is the
- * question the bench asks all day, and it cannot be asked of the order list.
- */
-export const LAB_FILTER_FIELDS = [
-    {
-        key: 'stage',
-        group: 'state',
-        kind: 'set',
-        prefix: 'status',
-        values: (o) => [statusOf(o)],
-    },
-    {
-        key: 'urgent',
-        group: 'state',
-        kind: 'set',
-        prefix: 'lab.filter.urgentState',
-        values: (o) => [o.urgent ? 'yes' : 'no'],
-    },
-    {
-        key: 'todo',
-        group: 'work',
-        kind: 'set',
-        prefix: 'orders.labRole',
-        values: (o) => LAB_ROLE_IDS.filter((role) => !o.lab?.[role]),
-    },
-    {
-        key: 'prep',
-        group: 'work',
-        kind: 'set',
-        values: (o) => [
-            ...new Set(
-                trackedItems(o)
-                    .filter((item) => !item.cancelled)
-                    .map((item) => item.typeId),
-            ),
-        ],
-    },
-    {
-        key: 'fulfilment',
-        group: 'delivery',
-        kind: 'set',
-        prefix: 'fulfilment',
-        values: (o) => [o.deliveryType],
-    },
-    {
-        key: 'practitioner',
-        group: 'people',
-        kind: 'set',
-        values: (o) => [o.practitioner.code],
-    },
-    { key: 'waiting', group: 'time', kind: 'num', value: (o) => o.daysAgo },
-];
-
-export const LAB_FILTER_GROUPS = [
-    'state',
-    'work',
-    'delivery',
-    'people',
-    'time',
-];
-
 /** The order the drawer lays the field groups out in. */
 export const ORDER_FILTER_GROUPS = [
     'state',
@@ -383,7 +320,7 @@ export const useOrdersStore = defineStore('orders', () => {
     const pinnedNote = computed(() => dataset.data.orderNote || null);
 
     /** V2: the managed texts every preparation carries — instructions default, regulatory text. */
-    const labSettings = computed(() => dataset.data.labSettings || null);
+    const printTexts = computed(() => dataset.data.printTexts || null);
 
     /** The agent every action in this session is attributed to. */
     const actor = computed(
@@ -841,13 +778,13 @@ export const useOrdersStore = defineStore('orders', () => {
         return item;
     }
 
-    /** V2: change the lab's managed texts — the instructions default and the regulatory warning. */
-    async function updateLabSettings(patch) {
-        if (!dataset.data.labSettings) {
-            dataset.data.labSettings = {};
+    /** V2: change the managed texts — the instructions default and the regulatory warning. */
+    async function updatePrintTexts(patch) {
+        if (!dataset.data.printTexts) {
+            dataset.data.printTexts = {};
         }
 
-        Object.assign(dataset.data.labSettings, patch, {
+        Object.assign(dataset.data.printTexts, patch, {
             updated: moment(),
             updatedBy: actor.value,
         });
@@ -1146,8 +1083,8 @@ export const useOrdersStore = defineStore('orders', () => {
         setUrgent,
         setLabRole,
         setItemFields,
-        labSettings,
-        updateLabSettings,
+        printTexts,
+        updatePrintTexts,
         logPrepSheet,
         recordPayment,
         moveToCredit,

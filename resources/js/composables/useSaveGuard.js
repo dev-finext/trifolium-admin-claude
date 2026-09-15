@@ -9,7 +9,7 @@
 // A guarded action reads:
 //
 //     await guard({
-//         label: t('lab.queue.roleMarked', { role }),
+//         label: t('orders.lab.roleMarked', { role }),
 //         run: () => orders.setLabRole(id, role, true),
 //         revert: () => orders.setLabRole(id, role, false, { quiet: true }),
 //     });

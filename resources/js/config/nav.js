@@ -30,8 +30,6 @@ export const NAV_GROUPS = [
             { id: 'items', icon: 'tag' },
             { id: 'pricing', icon: 'layers' },
             { id: 'suppliers', icon: 'truck' },
-            // Still being built: shown, greyed, and not a link.
-            { id: 'lab', icon: 'zoom', v2: 'prep-sheet', inDevelopment: true },
             // V2 — the stickers module: template editor, print run, notes pool, log
             { id: 'stickers', icon: 'printer', v2: 'labels' },
             { id: 'inventory', icon: 'grid' },
@@ -39,8 +37,6 @@ export const NAV_GROUPS = [
             { id: 'purchasing', icon: 'inbox', v2: 'purchase-orders' },
             // V2 — production orders: a recipe run that opens a batch
             { id: 'production', icon: 'beaker' },
-            // V2 — the reports whose data is already in the console
-            { id: 'reports', icon: 'chart', v2: 'reports' },
         ],
     },
     {
