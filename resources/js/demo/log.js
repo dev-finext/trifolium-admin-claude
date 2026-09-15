@@ -31,6 +31,12 @@ export const LOG_ENTITY_TYPE_IDS = [
     'batch',
     'admin_user',
     'system',
+    'catalog_item',
+    'purchase_order',
+    'price_group',
+    'supplier_invoice',
+    'supplier_payment',
+    'production_order',
 ];
 
 /** Agents who sign in, and the address they sign in from. */

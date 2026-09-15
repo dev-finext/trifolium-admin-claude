@@ -7,6 +7,12 @@
 //
 // VENDOR CONTACTS are the named humans behind the third-party systems the
 // platform depends on: who to call when an invoice will not issue.
+//
+// `spend12` and `open` on a supplier card are NOT authored here: they are
+// derived from the supplier invoices and payments by applySupplierBalances()
+// in demo/purchasing.js, the same way a practitioner's debt is derived from
+// the orders. The zeros below are placeholders the build overwrites.
+import { DOC_PROVIDER } from '@/config';
 import { SUPPLIER_KIND_IDS } from '@/config/suppliers';
 import { L } from '@/lib/localized';
 
@@ -53,8 +59,8 @@ export const DEMO_SUPPLIERS = [
         tax: { rate: 0, valid: '2026-12-31', ok: true },
         skus: 21,
         lastReceipt: '2026-07-24',
-        spend12: 184300,
-        open: 12480,
+        spend12: 0,
+        open: 0,
         since: '2019-04-02',
         suspendedWhy: null,
         suspendedWhen: null,
@@ -94,7 +100,7 @@ export const DEMO_SUPPLIERS = [
         tax: { rate: 5, valid: '2026-03-31', ok: false },
         skus: 14,
         lastReceipt: '2026-07-18',
-        spend12: 96700,
+        spend12: 0,
         open: 0,
         since: '2021-01-19',
         suspendedWhy: null,
@@ -135,8 +141,8 @@ export const DEMO_SUPPLIERS = [
         tax: { rate: 0, valid: '2026-12-31', ok: true },
         skus: 9,
         lastReceipt: '2026-07-11',
-        spend12: 71200,
-        open: 4390,
+        spend12: 0,
+        open: 0,
         since: '2020-08-11',
         suspendedWhy: null,
         suspendedWhen: null,
@@ -176,7 +182,7 @@ export const DEMO_SUPPLIERS = [
         tax: { rate: 30, valid: null, ok: false },
         skus: 11,
         lastReceipt: '2026-07-21',
-        spend12: 38400,
+        spend12: 0,
         open: 0,
         since: '2022-05-30',
         suspendedWhy: null,
@@ -217,8 +223,8 @@ export const DEMO_SUPPLIERS = [
         tax: { rate: 0, valid: '2027-03-31', ok: true },
         skus: 18,
         lastReceipt: '2026-07-27',
-        spend12: 142900,
-        open: 21600,
+        spend12: 0,
+        open: 0,
         since: '2018-11-04',
         suspendedWhy: null,
         suspendedWhen: null,
@@ -258,8 +264,8 @@ export const DEMO_SUPPLIERS = [
         tax: { rate: 0, valid: '2026-12-31', ok: true },
         skus: 0,
         lastReceipt: null,
-        spend12: 64800,
-        open: 3120,
+        spend12: 0,
+        open: 0,
         since: '2021-06-15',
         suspendedWhy: null,
         suspendedWhen: null,
@@ -299,7 +305,7 @@ export const DEMO_SUPPLIERS = [
         tax: { rate: 30, valid: null, ok: false },
         skus: 4,
         lastReceipt: '2026-02-02',
-        spend12: 8900,
+        spend12: 0,
         open: 0,
         since: '2023-09-21',
         suspendedWhy: L(
@@ -321,14 +327,17 @@ export const DEMO_SUPPLIERS = [
 export const DEMO_VENDOR_CONTACTS = [
     {
         id: 'v1',
-        system: L('Green Invoice — מסמכי מס', 'Green Invoice — tax documents'),
+        system: L(
+            `${DOC_PROVIDER.name} — מסמכי מס`,
+            `${DOC_PROVIDER.name} — tax documents`,
+        ),
         icon: 'file_text',
         contact: L('עומר צדוק', 'Omer Tzadok'),
         role: L('מנהל לקוחות עסקיים', 'Business account manager'),
         phone: '03-000-2081',
         notes: L(
-            'הפקת חשבוניות מס קבלה ומספרי הקצאה. בכשל הפקה — פנייה עם מספר הבקשה מלוג המסמכים. SLA-4H.',
-            'Issues tax invoices/receipts and allocation numbers. On a failure, call with the request id from the document log. 4-hour SLA.',
+            'הפקת חשבוניות, קבלות ומספרי הקצאה. בכשל הפקה — פנייה עם מספר הבקשה מלוג המסמכים. ייצוא לרו״ח: קובץ פריוריטי (movein.dat). SLA-4H.',
+            'Issues invoices, receipts and allocation numbers. On a failure, call with the request id from the document log. Accountant export: Priority file (movein.dat). 4-hour SLA.',
         ),
     },
     {

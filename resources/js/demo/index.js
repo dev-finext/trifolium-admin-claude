@@ -89,12 +89,9 @@ import {
 import {
     buildPriceGroups,
     buildPriceImport,
-    DEMO_INGREDIENT_SKUS,
     DEMO_PRICE_BREAKS,
-    PRICE_UOM_IDS,
 } from '@/demo/pricing';
 import {
-    buildProductLabels,
     buildProducts,
     DEFAULT_MIN_STOCK,
     PRODUCT_STATUS_IDS,
@@ -102,7 +99,10 @@ import {
 } from '@/demo/products';
 import {
     buildPurchaseOrders,
+    buildSupplierFiles,
+    buildSupplierInvoices,
     buildSupplierNotes,
+    buildSupplierPayments,
     INVENTORY_SETTINGS,
 } from '@/demo/purchasing';
 import { buildServices, SERVICE_STATES } from '@/demo/services';
@@ -150,12 +150,21 @@ export function buildDataset() {
 
     const stock = buildStock();
     const receipts = buildReceipts(stock);
-    const batches = buildBatches(receipts);
-    const batchUse = buildBatchUse(orders, batches);
+    const batches = buildBatches(receipts, stock);
+    const batchUse = buildBatchUse(orders, batches, stock);
     const priceGroups = buildPriceGroups();
     const products = buildProducts();
     const items = buildItems(stock, products, DEMO_SUPPLIERS);
     const purchaseOrders = buildPurchaseOrders(items, DEMO_SUPPLIERS);
+    const supplierNotes = buildSupplierNotes(purchaseOrders, receipts);
+    // The supplier's side of the money: what was billed for the deliveries,
+    // and what was paid against those bills.
+    const supplierInvoices = buildSupplierInvoices(
+        supplierNotes,
+        purchaseOrders,
+        DEMO_SUPPLIERS,
+    );
+    const supplierPayments = buildSupplierPayments(supplierInvoices);
 
     return {
         // people
@@ -186,7 +195,6 @@ export function buildDataset() {
 
         // products
         products,
-        productLabels: buildProductLabels(),
         shelfItems: SHELF_ITEMS,
         productStatuses: PRODUCT_STATUS_IDS,
         defaultMinStock: DEFAULT_MIN_STOCK,
@@ -194,8 +202,6 @@ export function buildDataset() {
         // pricing
         priceGroups,
         priceBreaks: DEMO_PRICE_BREAKS,
-        priceUoms: PRICE_UOM_IDS,
-        ingredientSkus: DEMO_INGREDIENT_SKUS,
         priceImport: buildPriceImport(priceGroups),
 
         // items (V2): the unified card over stock rows and products, the
@@ -203,12 +209,17 @@ export function buildDataset() {
         items,
         prepTypes: PREP_TYPES,
         boms: buildBoms(stock, products),
-        attachments: buildAttachments(stock, batches),
+        attachments: [
+            ...buildAttachments(stock, batches),
+            ...buildSupplierFiles(supplierInvoices, supplierPayments),
+        ],
         siteCategories: SITE_CATEGORIES,
 
         // purchasing (V2)
         purchaseOrders,
-        supplierNotes: buildSupplierNotes(purchaseOrders, receipts),
+        supplierNotes,
+        supplierInvoices,
+        supplierPayments,
         inventorySettings: INVENTORY_SETTINGS,
 
         // deliveries & lab (V2)
@@ -226,7 +237,7 @@ export function buildDataset() {
         receipts,
         batches,
         batchUse,
-        movements: buildMovements(receipts, batchUse),
+        movements: buildMovements(receipts, batchUse, stock),
         stockKinds: STOCK_KINDS,
         ingredientPricePrefix: INGREDIENT_PRICE_PREFIX,
 

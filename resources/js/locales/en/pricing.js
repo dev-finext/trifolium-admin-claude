@@ -25,6 +25,57 @@ export default {
         capsule: 'per capsule',
     },
 
+    // config/catalog.js PRICE_LADDER_MODE_IDS — how a group states its ladder.
+    mode: {
+        percent: 'Percent off per band',
+        formula: 'Formula',
+    },
+
+    // config/catalog.js LADDER_FORMULA_KIND_IDS
+    formulaKind: {
+        step: 'Steps',
+        curve: 'Curve',
+    },
+
+    // config/catalog.js LADDER_ERROR_IDS — why the store refuses to save a group.
+    ladderError: {
+        prefix_conflict: 'A prefix overlaps another pricing group',
+        mode: 'Choose how the ladder is stated — a percent table or a formula',
+        base_qty: 'The base quantity must be greater than zero',
+        breaks_empty: 'The ladder needs at least one quantity band',
+        breaks_ascending: 'Quantity bands must rise from smallest to largest',
+        percents_length: 'Every quantity band needs a discount percentage',
+        percent_range: 'A discount must be between 0 and 100 %',
+        percent_decreasing: 'The discount cannot shrink as the quantity grows',
+        percent_below_base:
+            'A band starting at or below the base quantity must carry no discount',
+        formula_kind: 'Choose a formula kind — steps or curve',
+        formula_params: 'Formula parameters must be positive numbers',
+        floor_range: 'The discount ceiling must be between 0 and 100 %',
+    },
+
+    // config/catalog.js PRICE_IMPORT_ERROR_IDS — why an imported row failed.
+    importError: {
+        group_not_found: 'Pricing group not found',
+        range_not_in_group: 'The quantity band does not exist in the group',
+        invalid_value: 'Invalid value — a discount percentage is required',
+    },
+
+    // The band table the editor, the item calculator and the drawer share.
+    ladder: {
+        range: 'Quantity band',
+        pct: 'Discount',
+        unit: 'Unit price',
+        unitInclVat: 'Incl. VAT',
+        example: 'Example total',
+        base: 'Base',
+        off: '−{pct}',
+        floor: 'Ceiling',
+        vatNote: 'Prices are shown before and including VAT ({rate})',
+        andUp: '{from}+',
+        upTo: '{from}–{to}',
+    },
+
     filters: {
         option: '{label} ({n})',
         searchPlaceholder: 'Group name · prefix · SKU (e.g. 200455)',
@@ -39,7 +90,8 @@ export default {
         fillAll: 'Assignment and prices — all',
         fillNone: 'No SKUs assigned',
         fillHas: 'With SKUs assigned',
-        fillNoPrice: 'No price in the first band',
+        modeAria: 'Ladder mode',
+        modeAll: 'Ladder mode — all',
     },
 
     lookup: {
@@ -60,6 +112,15 @@ export default {
         custom: 'Custom · {n} bands',
         default: 'System default · {n} bands',
         from: 'from {price} {per}',
+        mode: 'Ladder',
+        baseQty: 'Base quantity',
+        baseQtyValue: 'up to {qty} {uom} — no discount',
+        bands: '{n} bands · up to {pct}',
+        formulaStep: 'every {step} {uom} above base −{pct} · ceiling {floor}',
+        formulaCurve: 'curve k={k} · ceiling {floor}',
+        items: 'Items priced',
+        itemsNone: 'No item is priced by this group',
+        itemsAria: 'Items priced by {name}',
         by: 'by {name}',
         edit: 'Edit',
         exportAria: 'Export the group {name}',
@@ -121,6 +182,67 @@ export default {
         uomField: {
             label: 'Unit of measure',
             choose: '— choose —',
+        },
+
+        baseQty: {
+            label: 'Base quantity',
+            hint: "Up to this quantity (inclusive) the full unit price applies — the discount starts above it. Quantities are in the item's sales unit.",
+            required: 'Enter a base quantity greater than zero',
+        },
+
+        modePick: {
+            aria: 'How the discount is computed',
+            percentTitle: 'Percent table',
+            percentSub: 'A fixed discount for every quantity band — row by row',
+            formulaTitle: 'Formula',
+            formulaSub:
+                'A few parameters set the discount at every quantity — the table is derived from them',
+            confirmTitle: 'Switch the ladder mode',
+            confirmToFormula:
+                'The percent table is cleared and the group moves to a formula. The change only takes effect once saved.',
+            confirmToPercent:
+                'The formula parameters are cleared and the group moves to a percent table. The change only takes effect once saved.',
+            confirm: 'Switch mode',
+        },
+
+        formula: {
+            title: 'Formula parameters',
+            sub: 'The discount is computed from the quantity above the base quantity',
+            kind: 'Formula kind',
+            stepQty: 'Step size',
+            stepQtyHint:
+                'Every this many {uom} above base adds one discount step',
+            stepPct: 'Discount per step',
+            stepPctHint: 'The percentage each step adds',
+            k: 'Curve steepness (k)',
+            kHint: 'Higher — the discount grows faster. Formula: 1 − (base ÷ qty)^k',
+            floorPct: 'Discount ceiling',
+            floorPctHint:
+                'The discount never exceeds this percentage, at any quantity',
+            floorAt: 'The ceiling is reached from {qty} {uom}',
+            floorNever:
+                'With the current parameters the ceiling is never reached',
+            preview: 'Preview',
+            previewSub:
+                'Table and chart are computed for an example unit price',
+            chartAria: 'Unit price by quantity',
+            chartX: 'Quantity ({uom})',
+            chartY: 'Unit price (₪)',
+        },
+
+        previewPrice: {
+            label: 'Example unit price',
+            hint: 'For the preview only — the real price is each item’s own',
+        },
+
+        pctTable: {
+            pct: 'Discount %',
+            pctAria: 'Discount in band {n}',
+            pctRequired: 'Enter a discount percentage',
+            pctRange: 'Between 0 and 100',
+            pctDecreasing: 'Lower than the previous band',
+            pctBase: 'Up to the base quantity — no discount',
+            unitAt: 'Unit price at {price}',
         },
 
         preview: {
@@ -233,6 +355,83 @@ export default {
         effect2: 'The price table is deleted and cannot be restored',
         effect3:
             'A SKU without a pricing group gets no automatic price in a formula',
+        effectItems:
+            '{n} items assigned to the group by hand return to the prefix default',
+    },
+
+    // The price calculator on the item card — stores/catalog.js ladderFor().
+    calculator: {
+        more: 'and {n} more bands',
+        title: 'Price by quantity',
+        sub: 'The item’s unit price after the “{group}” ladder',
+        fixed: 'Fixed price — no tiered price list applies',
+        fixedSub: 'The item sells at its unit price at any quantity',
+        noPrice:
+            'No unit price entered — the calculator appears once there is one',
+        uomMismatch: 'The price list’s unit differs from the item’s sales unit',
+        uomMismatchSub:
+            'The ladder was written per {groupUom}, the item sells per {itemUom} — quantities are computed in the item’s unit, without conversion',
+        groupDefault: 'Default by prefix: {name}',
+        groupExplicit: 'Assigned by hand: {name}',
+        groupNone: 'Fixed — no price list',
+        groupInherit: 'Default by prefix',
+        groupInheritNone: 'Default by prefix — no group matches',
+        groupMissing: 'The group this item was assigned to no longer exists',
+        qtyLabel: 'Quantity',
+        qtyAria: 'Quantity to price',
+        result: '{qty} {uom} → {unit} each · {total} total',
+        resultInclVat: 'Incl. VAT: {unit} each · {total} total',
+        atBase: 'Base price',
+        atTop: 'Price in the top band ({from}+)',
+    },
+
+    // The drawer behind the "items priced" count — stores/catalog.js itemsOfGroup().
+    itemsDrawer: {
+        title: 'Items priced by “{name}”',
+        sub: '{n} items · assigned by hand or by SKU prefix',
+        close: 'Close',
+        open: 'Open the item card',
+        col: {
+            code: 'SKU',
+            name: 'Item',
+            uom: 'Sales unit',
+            unitPrice: 'Unit price',
+            atBase: 'At base ({qty}+)',
+            atTop: 'Top band ({qty}+)',
+            assignment: 'Assignment',
+        },
+        assignment: {
+            default: 'By prefix {prefix}',
+            explicit: 'By hand',
+        },
+        noPrice: 'No price',
+        uomMismatch: 'Sales unit differs from the ladder’s unit',
+        empty: 'No item is priced by this group',
+        emptySub:
+            'Add a SKU prefix that matches items, or assign items to the group from the item card',
+        export: 'Export the list',
+    },
+
+    // The spreadsheet import review — stores/catalog.js applyPriceImport().
+    import: {
+        title: 'Import a price list from a file',
+        file: 'File: {name}',
+        sub: '{n} rows · {ok} valid · {bad} failing',
+        col: {
+            group: 'Pricing group',
+            range: 'Quantity band',
+            old: 'Current discount',
+            next: 'New discount',
+            state: 'State',
+        },
+        ok: 'Valid',
+        raw: 'Value in file: “{raw}”',
+        apply: 'Apply {n} valid rows',
+        applied: 'Price list updated',
+        appliedBody: '{applied} rows applied · {skipped} rejected',
+        rejected:
+            'The group “{group}” was not updated — the resulting ladder is not valid',
+        formulaGroup: 'Formula group — file rows do not apply to it',
     },
 
     toast: {
@@ -248,7 +447,7 @@ export default {
         colPrefixes: 'SKU prefixes',
         colUom: 'Unit of measure',
         colRange: 'Quantity band',
-        colPrice: 'Unit price',
+        colPct: 'Discount',
         rows: '{n} rows',
     },
 };

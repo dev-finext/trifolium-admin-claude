@@ -1,23 +1,31 @@
 <script setup>
 // One tiered pricing group, edited in three numbered steps: what the group is
-// (name, prefixes, unit), which quantity scale it uses, and the price table.
+// (name, prefixes, unit, base quantity), how it states its ladder (a percent
+// per band, or a formula), and the ladder itself.
+//
+// A group never holds a price. Every item priced by it has its own unit price;
+// the group only says how much comes off as the quantity grows. The example
+// price the agent types here is for reading the table as money — it is not
+// saved.
 //
 // The rules this drawer exists to enforce:
 // - Prefix overlap between groups is refused as it is typed, because the
 //   longest-matching-prefix resolution cannot tolerate two claims on one SKU.
-// - The table must be complete before the group can be saved — a band without
-//   a price would silently fail to price an order.
-// - Changing the unit keeps the prices but changes what they mean; switching
-//   scale mode clears the table. Both are therefore confirmed.
+// - The ladder must be sound before the group can be saved — a missing band,
+//   a percent outside 0–100 or one that shrinks would silently misprice an
+//   order. The store re-checks the same rules (lib/ladder).
+// - Switching mode throws the other mode's work away, so it is confirmed.
 import { computed, ref, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import FormulaFields from '@/components/pricing/FormulaFields.vue';
+import LadderPreview from '@/components/pricing/LadderPreview.vue';
 import PrefixChipInput from '@/components/pricing/PrefixChipInput.vue';
 import PricePreview from '@/components/pricing/PricePreview.vue';
 import ScaleModePicker from '@/components/pricing/ScaleModePicker.vue';
 import TierStep from '@/components/pricing/TierStep.vue';
 import TierTable from '@/components/pricing/TierTable.vue';
-import { fixed2, useTierRows } from '@/components/pricing/useTierRows';
+import { fixed1, useTierRows } from '@/components/pricing/useTierRows';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
@@ -26,6 +34,7 @@ import AIcon from '@/components/ui/AIcon.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { PRICE_LADDER_MODE_IDS, SETTINGS } from '@/config';
 import { isLocalized, L } from '@/lib/localized';
 import { bandText, useCatalogStore } from '@/stores/catalog';
 import { useDatasetStore } from '@/stores/dataset';
@@ -46,33 +55,77 @@ const uid = useId();
 const isNew = computed(() => !props.group);
 const selfId = props.group?.id || null;
 
+/** What a brand-new formula starts from: gentle steps, a common floor. */
+const BLANK_FORMULA = {
+    kind: 'step',
+    stepQty: '',
+    stepPct: '',
+    k: '',
+    floorPct: '30',
+};
+
 // ---- the form -------------------------------------------------------------
 
 const name = ref(props.group ? loc(props.group.name) : '');
 const prefixes = ref(props.group ? [...props.group.prefixes] : []);
 const uom = ref(props.group?.uom || '');
-const custom = ref(props.group ? catalog.isCustomScale(props.group) : false);
+const baseQty = ref(
+    props.group?.baseQty != null ? String(props.group.baseQty) : '1',
+);
+const mode = ref(props.group?.mode || 'percent');
+const custom = ref(
+    props.group && props.group.mode === 'percent'
+        ? catalog.isCustomScale(props.group)
+        : false,
+);
 const rows = ref(initialRows());
+const formula = ref(initialFormula());
+
+/** For reading the table as money — never saved. */
+const previewPrice = ref('1.00');
 
 function initialRows() {
-    if (props.group) {
+    if (props.group && props.group.mode === 'percent') {
         const bands = props.group.breaks.length
             ? props.group.breaks
             : catalog.defaultBreaks;
 
         return bands.map((lo, i) => ({
             lo: String(lo),
-            price:
-                props.group.prices[i] == null
+            pct:
+                props.group.percents[i] == null
                     ? ''
-                    : fixed2(props.group.prices[i]),
+                    : fixed1(props.group.percents[i]),
         }));
     }
 
-    return catalog.defaultBreaks.map((lo) => ({ lo: String(lo), price: '' }));
+    return catalog.defaultBreaks.map((lo) => ({ lo: String(lo), pct: '' }));
 }
 
-const { los, prices, filled, rangesOk, complete } = useTierRows(rows, custom);
+function initialFormula() {
+    const source = props.group?.formula;
+
+    if (!source) {
+        return { ...BLANK_FORMULA };
+    }
+
+    return {
+        kind: source.kind || 'step',
+        stepQty: source.stepQty == null ? '' : String(source.stepQty),
+        stepPct: source.stepPct == null ? '' : String(source.stepPct),
+        k: source.k == null ? '' : String(source.k),
+        floorPct: source.floorPct == null ? '' : String(source.floorPct),
+    };
+}
+
+const baseQtyNumber = computed(() => parseFloat(baseQty.value) || 0);
+const previewNumber = computed(() => parseFloat(previewPrice.value) || 0);
+
+const { los, pcts, filled, rangesOk, complete } = useTierRows(
+    rows,
+    custom,
+    baseQtyNumber,
+);
 
 const matched = computed(() => catalog.skusForPrefixes(prefixes.value, selfId));
 
@@ -93,6 +146,44 @@ const sample = computed(() => {
     return `${head} … ${breaks[breaks.length - 1]}+`;
 });
 
+/** The record the store would receive — also what the preview is drawn from. */
+const draft = computed(() => ({
+    ...(props.group || {}),
+    id: selfId,
+    prefixes: [...prefixes.value],
+    uom: uom.value,
+    baseQty: baseQtyNumber.value,
+    mode: mode.value,
+    breaks:
+        mode.value === 'percent'
+            ? custom.value
+                ? [...los.value]
+                : [...catalog.defaultBreaks]
+            : [],
+    percents: mode.value === 'percent' ? [...pcts.value] : [],
+    formula:
+        mode.value === 'formula'
+            ? {
+                  kind: formula.value.kind,
+                  stepQty: parseFloat(formula.value.stepQty),
+                  stepPct: parseFloat(formula.value.stepPct),
+                  k: parseFloat(formula.value.k),
+                  floorPct: parseFloat(formula.value.floorPct),
+              }
+            : null,
+}));
+
+const ladderErrors = computed(() => catalog.groupErrors(draft.value));
+
+/** The preview only makes sense once the ladder is sound. */
+const previewable = computed(
+    () =>
+        Boolean(uom.value) &&
+        previewNumber.value > 0 &&
+        ladderErrors.value.filter((id) => id !== 'prefix_conflict').length ===
+            0,
+);
+
 // ---- dirtiness and saveability ---------------------------------------------
 
 function snapshot() {
@@ -100,8 +191,11 @@ function snapshot() {
         name: name.value,
         prefixes: prefixes.value,
         uom: uom.value,
+        baseQty: baseQty.value,
+        mode: mode.value,
         custom: custom.value,
         rows: rows.value,
+        formula: formula.value,
     });
 }
 
@@ -113,8 +207,7 @@ const ok = computed(() =>
         name.value.trim() &&
         prefixes.value.length &&
         uom.value &&
-        rangesOk.value &&
-        complete.value,
+        !ladderErrors.value.length,
     ),
 );
 
@@ -128,17 +221,17 @@ const okMsg = computed(() => {
         return t('pricing.editor.save.blockedUom');
     }
 
-    if (!rangesOk.value) {
-        return t('pricing.editor.save.blockedRanges');
+    if (ladderErrors.value.length) {
+        return t(`pricing.ladderError.${ladderErrors.value[0]}`);
     }
 
-    return t('pricing.editor.save.blockedTable');
+    return '';
 });
 
 // ---- confirmations ---------------------------------------------------------
 
 const askSave = ref(false);
-const askUom = ref(null);
+const askScale = ref(null);
 const askMode = ref(null);
 const askLeave = ref(false);
 
@@ -158,57 +251,76 @@ function validatePrefix(prefix) {
     });
 }
 
-/** Changing the unit under filled prices changes their meaning — confirm it. */
-function uomPick(next) {
-    if (!next) {
-        if (!filled.value) {
-            uom.value = '';
-        }
+/** Whether the mode not currently shown still holds work worth confirming. */
+function otherModeHasWork(next) {
+    if (next === 'formula') {
+        return filled.value > 0 || (custom.value && rows.value.length > 1);
+    }
+
+    return Boolean(
+        formula.value.stepQty || formula.value.stepPct || formula.value.k,
+    );
+}
+
+function pickMode(next) {
+    if (next === mode.value) {
+        return;
+    }
+
+    if (otherModeHasWork(next)) {
+        askMode.value = next;
 
         return;
     }
 
-    if (uom.value && next !== uom.value && filled.value > 0) {
-        askUom.value = next;
+    mode.value = next;
+}
 
-        return;
+function confirmMode() {
+    const next = askMode.value;
+
+    askMode.value = null;
+
+    if (next === 'formula') {
+        rows.value = catalog.defaultBreaks.map((lo) => ({
+            lo: String(lo),
+            pct: '',
+        }));
+        custom.value = false;
+    } else {
+        formula.value = { ...BLANK_FORMULA };
     }
 
-    uom.value = next;
+    mode.value = next;
 }
 
-function applyUom() {
-    uom.value = askUom.value;
-    askUom.value = null;
-}
-
-/** Switching scale mode clears the table — confirm unless nothing is lost. */
-function switchMode(toCustom) {
+/** Switching scale clears the percent table — confirm unless nothing is lost. */
+function switchScale(toCustom) {
     if (toCustom === custom.value) {
         return;
     }
 
     if (filled.value > 0 || (custom.value && rows.value.length > 1)) {
-        askMode.value = toCustom;
+        askScale.value = toCustom;
 
         return;
     }
 
-    applyMode(toCustom);
+    applyScale(toCustom);
 }
 
-function applyMode(toCustom) {
+function applyScale(toCustom) {
     custom.value = toCustom;
     rows.value = toCustom
-        ? [{ lo: '1', price: '' }]
-        : catalog.defaultBreaks.map((lo) => ({ lo: String(lo), price: '' }));
+        ? [{ lo: '1', pct: '' }]
+        : catalog.defaultBreaks.map((lo) => ({ lo: String(lo), pct: '' }));
 }
 
-function confirmMode() {
-    const toCustom = askMode.value;
+function confirmScale() {
+    const toCustom = askScale.value;
 
-    askMode.value = null;
-    applyMode(toCustom);
+    askScale.value = null;
+    applyScale(toCustom);
 }
 
 function requestClose() {
@@ -230,12 +342,15 @@ function setRow(index, patch) {
 }
 
 function addRow() {
-    rows.value = [...rows.value, { lo: '', price: '' }];
+    rows.value = [...rows.value, { lo: '', pct: '' }];
 }
 
 function removeRow(index) {
     rows.value = rows.value.filter((_, i) => i !== index);
 }
+
+/** Digits and a decimal point — what a quantity or a price is made of. */
+const cleanNumber = (event) => event.target.value.replace(/[^\d.]/g, '');
 
 /** Keep the other language's name when only one side is being edited. */
 function localized(existing, text) {
@@ -247,12 +362,8 @@ function localized(existing, text) {
 function doSave() {
     askSave.value = false;
     emit('save', {
-        ...(props.group || {}),
+        ...draft.value,
         name: localized(props.group?.name, name.value.trim()),
-        prefixes: [...prefixes.value],
-        uom: uom.value,
-        prices: [...prices.value],
-        breaks: custom.value ? [...los.value] : [...catalog.defaultBreaks],
     });
 }
 </script>
@@ -290,14 +401,6 @@ function doSave() {
                                 })
                             }}
                         </span>
-                        <span v-if="uom">
-                            {{
-                                t('pricing.editor.meta.filled', {
-                                    filled,
-                                    total: rows.length,
-                                })
-                            }}
-                        </span>
                         <span v-if="!isNew && group.updatedBy">
                             {{
                                 t('pricing.editor.meta.lastUpdate', {
@@ -331,8 +434,8 @@ function doSave() {
             />
             <ACard>
                 <div class="tp-defcols">
-                    <div class="a-grid tp-gap">
-                        <div>
+                    <div class="tp-fields">
+                        <div class="tp-wide">
                             <label class="a-lbl" :for="`${uid}-name`">
                                 {{ t('pricing.editor.name.label') }}
                             </label>
@@ -345,7 +448,7 @@ function doSave() {
                                 "
                             />
                         </div>
-                        <div>
+                        <div class="tp-wide">
                             <label class="a-lbl">
                                 {{ t('pricing.editor.prefixes.label') }}
                             </label>
@@ -357,15 +460,14 @@ function doSave() {
                                 {{ t('pricing.editor.prefixes.hint') }}
                             </div>
                         </div>
-                        <div class="tp-uomcol">
+                        <div>
                             <label class="a-lbl" :for="`${uid}-uom`">
                                 {{ t('pricing.editor.uomField.label') }}
                             </label>
                             <ASelect
                                 :id="`${uid}-uom`"
-                                :model-value="uom"
+                                v-model="uom"
                                 class="a-w100"
-                                @update:model-value="uomPick"
                             >
                                 <option value="">
                                     {{ t('pricing.editor.uomField.choose') }}
@@ -378,6 +480,43 @@ function doSave() {
                                     {{ t(`pricing.uom.${id}`) }}
                                 </option>
                             </ASelect>
+                        </div>
+                        <div>
+                            <label class="a-lbl" :for="`${uid}-base`">
+                                {{ t('pricing.editor.baseQty.label') }}
+                            </label>
+                            <input
+                                :id="`${uid}-base`"
+                                class="a-input a-w100"
+                                inputmode="decimal"
+                                :value="baseQty"
+                                @input="baseQty = cleanNumber($event)"
+                            />
+                            <div
+                                class="a-hint"
+                                :class="{ 'a-inv': baseQtyNumber <= 0 }"
+                            >
+                                {{
+                                    baseQtyNumber > 0
+                                        ? t('pricing.editor.baseQty.hint')
+                                        : t('pricing.editor.baseQty.required')
+                                }}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="a-lbl" :for="`${uid}-preview`">
+                                {{ t('pricing.editor.previewPrice.label') }}
+                            </label>
+                            <input
+                                :id="`${uid}-preview`"
+                                class="a-input a-w100"
+                                inputmode="decimal"
+                                :value="previewPrice"
+                                @input="previewPrice = cleanNumber($event)"
+                            />
+                            <div class="a-hint">
+                                {{ t('pricing.editor.previewPrice.hint') }}
+                            </div>
                         </div>
                     </div>
                     <PricePreview
@@ -394,24 +533,50 @@ function doSave() {
                 :sub="t('pricing.editor.step2.sub')"
             />
             <ACard>
-                <ScaleModePicker
-                    :custom="custom"
-                    :band-count="catalog.defaultBreaks.length"
-                    :sample="sample"
-                    @select="switchMode"
-                />
+                <div
+                    class="tp-mode"
+                    role="radiogroup"
+                    :aria-label="t('pricing.editor.modePick.aria')"
+                >
+                    <button
+                        v-for="id in PRICE_LADDER_MODE_IDS"
+                        :key="id"
+                        type="button"
+                        class="tp-modecard"
+                        :class="{ 'is-on': mode === id }"
+                        role="radio"
+                        :aria-checked="mode === id"
+                        @click="pickMode(id)"
+                    >
+                        <span v-if="mode === id" class="tp-mode-check">
+                            <AIcon name="check" :size="19" />
+                        </span>
+                        <div class="tp-mode-t">
+                            {{ t(`pricing.editor.modePick.${id}Title`) }}
+                        </div>
+                        <div class="tp-mode-s">
+                            {{ t(`pricing.editor.modePick.${id}Sub`) }}
+                        </div>
+                    </button>
+                </div>
             </ACard>
 
             <TierStep
                 n="3"
-                :title="t('pricing.editor.step3.title')"
+                :title="
+                    mode === 'formula'
+                        ? t('pricing.editor.formula.title')
+                        : t('pricing.editor.step3.title')
+                "
                 :sub="
-                    uom
-                        ? t('pricing.editor.step3.sub', { uom: uomName })
-                        : t('pricing.editor.step3.subLocked')
+                    !uom
+                        ? t('pricing.editor.step3.subLocked')
+                        : mode === 'formula'
+                          ? t('pricing.editor.formula.sub')
+                          : t('pricing.editor.step3.sub', { uom: uomName })
                 "
             >
-                <template v-if="uom" #right>
+                <template v-if="uom && mode === 'percent'" #right>
                     <AChip :tone="complete ? 'green' : 'amber'" size="sm">
                         {{
                             t('pricing.editor.table.filled', {
@@ -429,15 +594,66 @@ function doSave() {
                         <div>{{ t('pricing.editor.table.locked') }}</div>
                     </div>
                 </div>
-                <TierTable
-                    v-else
-                    :rows="rows"
-                    :custom="custom"
-                    :uom="uom"
-                    @set-row="setRow"
-                    @add-row="addRow"
-                    @remove-row="removeRow"
-                />
+                <template v-else-if="mode === 'percent'">
+                    <div class="tp-scalepad">
+                        <ScaleModePicker
+                            :custom="custom"
+                            :band-count="catalog.defaultBreaks.length"
+                            :sample="sample"
+                            @select="switchScale"
+                        />
+                    </div>
+                    <TierTable
+                        :rows="rows"
+                        :custom="custom"
+                        :uom="uom"
+                        :base-qty="baseQtyNumber"
+                        :preview-price="previewNumber"
+                        :vat-rate="SETTINGS.vatRate"
+                        @set-row="setRow"
+                        @add-row="addRow"
+                        @remove-row="removeRow"
+                    />
+                    <LadderPreview
+                        v-if="previewable && rangesOk"
+                        :group="draft"
+                        :unit-price="previewNumber"
+                        :vat-rate="SETTINGS.vatRate"
+                        :scale="catalog.defaultBreaks"
+                        class="tp-chartonly"
+                    />
+                </template>
+                <template v-else>
+                    <div class="tp-formulapad">
+                        <FormulaFields
+                            :formula="formula"
+                            :uom-name="uomName"
+                            @update="formula = $event"
+                        />
+                    </div>
+                    <div class="tp-previewhead">
+                        <div class="tp-step-t">
+                            {{ t('pricing.editor.formula.preview') }}
+                        </div>
+                        <div class="tp-step-s">
+                            {{ t('pricing.editor.formula.previewSub') }}
+                        </div>
+                    </div>
+                    <LadderPreview
+                        v-if="previewable"
+                        :group="draft"
+                        :unit-price="previewNumber"
+                        :vat-rate="SETTINGS.vatRate"
+                        :scale="catalog.defaultBreaks"
+                    />
+                    <div v-else class="tp-lockpad tp-dim">
+                        {{
+                            ladderErrors.length
+                                ? t(`pricing.ladderError.${ladderErrors[0]}`)
+                                : t('pricing.editor.previewPrice.hint')
+                        }}
+                    </div>
+                </template>
             </ACard>
         </div>
 
@@ -457,14 +673,6 @@ function doSave() {
             <span class="a-push tp-side">
                 <span v-if="dirty" class="tp-dirty">
                     {{ t('pricing.editor.save.unsaved') }}
-                </span>
-                <span v-if="uom" class="a-count-txt">
-                    {{
-                        t('pricing.editor.table.filled', {
-                            filled,
-                            total: rows.length,
-                        })
-                    }}
                 </span>
             </span>
         </div>
@@ -488,7 +696,7 @@ function doSave() {
             :effects="[
                 t('pricing.editor.confirmSave.effect1', {
                     matched: matched.length,
-                    ranges: rows.length,
+                    ranges: mode === 'percent' ? rows.length : 0,
                 }),
                 t('pricing.editor.confirmSave.effect2', { name: meName }),
             ]"
@@ -502,34 +710,27 @@ function doSave() {
             @confirm="doSave"
         />
         <ConfirmDialog
-            :open="askUom !== null"
-            :title="t('pricing.editor.confirmUom.title')"
+            :open="askMode !== null"
+            :title="t('pricing.editor.modePick.confirmTitle')"
             :body="
-                t('pricing.editor.confirmUom.body', {
-                    next: askUom ? t(`pricing.uom.${askUom}`) : '',
-                    current: uomName,
-                })
+                askMode === 'formula'
+                    ? t('pricing.editor.modePick.confirmToFormula')
+                    : t('pricing.editor.modePick.confirmToPercent')
             "
-            :effects="[
-                t('pricing.editor.confirmUom.effect1', { n: filled }),
-                t('pricing.editor.confirmUom.effect2', {
-                    next: askUom ? t(`pricing.uom.${askUom}`) : '',
-                }),
-            ]"
-            :confirm-label="t('pricing.editor.confirmUom.confirm')"
+            :confirm-label="t('pricing.editor.modePick.confirm')"
             danger
-            @close="askUom = null"
-            @confirm="applyUom"
+            @close="askMode = null"
+            @confirm="confirmMode"
         />
         <ConfirmDialog
-            :open="askMode !== null"
+            :open="askScale !== null"
             :title="
-                askMode
+                askScale
                     ? t('pricing.editor.confirmMode.titleCustom')
                     : t('pricing.editor.confirmMode.titleDefault')
             "
             :body="
-                askMode
+                askScale
                     ? t('pricing.editor.confirmMode.bodyCustom')
                     : t('pricing.editor.confirmMode.bodyDefault', {
                           n: catalog.defaultBreaks.length,
@@ -540,13 +741,13 @@ function doSave() {
                 t('pricing.editor.confirmMode.effect2'),
             ]"
             :confirm-label="
-                askMode
+                askScale
                     ? t('pricing.editor.confirmMode.confirmCustom')
                     : t('pricing.editor.confirmMode.confirmDefault')
             "
             danger
-            @close="askMode = null"
-            @confirm="confirmMode"
+            @close="askScale = null"
+            @confirm="confirmScale"
         />
         <ConfirmDialog
             :open="askLeave"
@@ -576,21 +777,44 @@ function doSave() {
     padding-bottom: 84px;
 }
 
-.tp-gap {
-    gap: 18px;
+.tp-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 14px 18px;
 }
 
-.tp-uomcol {
-    max-width: 340px;
+.tp-wide {
+    grid-column: 1 / -1;
 }
 
-.tp-lockpad {
+.tp-lockpad,
+.tp-scalepad,
+.tp-formulapad {
     padding: 22px;
+}
+
+.tp-scalepad {
+    border-bottom: 1px solid var(--a-line);
+}
+
+.tp-previewhead {
+    padding: 14px 22px 6px;
+    border-top: 1px solid var(--a-line);
+}
+
+.tp-chartonly :deep(table),
+.tp-chartonly :deep(.lp-foot) {
+    display: none;
 }
 
 .tp-lock-ic {
     color: var(--a-line-2);
     margin-bottom: 4px;
+}
+
+.tp-dim {
+    color: var(--a-ink-4);
+    font-size: 13.5px;
 }
 
 .tp-blocked {

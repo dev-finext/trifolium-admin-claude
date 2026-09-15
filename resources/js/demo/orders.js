@@ -7,9 +7,9 @@
 // pharmacy actually weighed. The sample covers all eight states.
 //
 // Four things on an order are the console's own, because SAP does not hold
-// them, and each says so where it is built: the tax document (Green Invoice,
-// a separate system), the lab's four hands, the urgency mark, and the street
-// address behind the real city.
+// them, and each says so where it is built: the tax document (the invoice
+// provider in config/finance.js, a separate system), the lab's four hands, the
+// urgency mark, and the street address behind the real city.
 //
 // Two rules from the business drive most of what looks arbitrary here:
 //
@@ -22,6 +22,7 @@ import {
     COURIER,
     COURIER_BY_CODE,
     CREDIT,
+    DOC_PROVIDER,
     EXCEPTION_THRESHOLDS,
     ORDER_FLOW,
     ORDER_STATUS_BY_CODE,
@@ -29,6 +30,7 @@ import {
     PREPARATION_FORM,
     SETTINGS,
 } from '@/config';
+import { PAY_PROVIDER } from '@/config/integrations';
 import { DOSE_TIMING_IDS, EVAPORATION_IDS } from '@/demo/catalog';
 import { PICKUP_POINT_IDS } from '@/demo/deliveries';
 import { at, chance, pickFrom, rareChance, spread } from '@/demo/fixture';
@@ -73,6 +75,23 @@ const lineUnit = (line) => LINE_UNIT[line.unit] || 'unit';
 
 /** VAT, as SAP's own `DocTotal`/`VatSum` pair implies it. */
 const VAT_RATE = SETTINGS.vatRate;
+
+/** The storefront the payer orders on. */
+const siteTerminal = (payer) =>
+    payer === 'patient' ? 'consumer_site' : 'practitioner_site';
+
+/** Which payment terminal an order was paid on — see PAY_TERMINALS. */
+function paymentTerminal(source, payer, payMethod, slot) {
+    if (source.paidOnline === 'Y') {
+        return siteTerminal(payer);
+    }
+
+    if (payMethod === 'cash' || chance(`${slot}:terminal`, 0.12)) {
+        return 'physical';
+    }
+
+    return siteTerminal(payer);
+}
 
 /** Formulas the demo orders are compounded from. */
 export const FORMULA_TEMPLATES = [
@@ -286,6 +305,10 @@ function realFormula(source, herbLines, materialLines, slot) {
         typeId: form,
         unit: PREPARATION_FORM[form].unit,
         vol: num(source.contentSizeEach) ?? num(source.contentTotal) ?? 0,
+        // `price` and `lineTotal` are SAP's own figures for the line, kept so
+        // the tax document can list every component at the price it was
+        // actually charged — the document is built from these, never priced
+        // again.
         herbs: herbLines.map((line) => ({
             id: line.code,
             name: L(line.name),
@@ -293,6 +316,8 @@ function realFormula(source, herbLines, materialLines, slot) {
             cn: line.foreignName || null,
             qty: line.quantity,
             unit: lineUnit(line),
+            price: line.price ?? null,
+            lineTotal: line.lineTotal ?? null,
             pct: weighed
                 ? Math.round((line.quantity / weighed) * 1000) / 10
                 : 0,
@@ -305,6 +330,8 @@ function realFormula(source, herbLines, materialLines, slot) {
             name: L(line.name),
             qty: line.quantity,
             unit: lineUnit(line),
+            price: line.price ?? null,
+            lineTotal: line.lineTotal ?? null,
         })),
         dose: {
             qty: source.dosageQuantity || 1,
@@ -388,6 +415,7 @@ function buildItems(order) {
             unit: line.unit,
             qty: line.qty,
             price: line.price,
+            lineTotal: line.lineTotal,
         });
     });
 
@@ -454,7 +482,7 @@ function buildAudit(order) {
             actorKind: k === 0 ? 'provider' : 'agent',
             actor:
                 k === 0
-                    ? 'GoCredit'
+                    ? PAY_PROVIDER.name
                     : pickFrom(`${order.id}:audit:${k}`, SUPPORT_ACTORS),
             act: L('שינוי סטטוס להזמנה', 'Order status changed'),
             det: L(
@@ -474,8 +502,8 @@ function buildAudit(order) {
             actor: DEMO_ACTORS.system,
             act: L('הופקה חשבונית מס קבלה', 'Tax invoice/receipt issued'),
             det: L(
-                `חשבונית מס קבלה ${order.docNum} · מספר הקצאה ${order.docAlloc} · Green Invoice`,
-                `Tax invoice/receipt ${order.docNum} · allocation number ${order.docAlloc} · Green Invoice`,
+                `חשבונית מס קבלה ${order.docNum} · מספר הקצאה ${order.docAlloc} · ${DOC_PROVIDER.name}`,
+                `Tax invoice/receipt ${order.docNum} · allocation number ${order.docAlloc} · ${DOC_PROVIDER.name}`,
             ),
         });
     }
@@ -487,8 +515,8 @@ function buildAudit(order) {
             actor: DEMO_ACTORS.system,
             act: L('הפקת מסמך נכשלה', 'Document issue failed'),
             det: L(
-                'Green Invoice 422 — נדרשת הפקה חוזרת ממסך כספים',
-                'Green Invoice 422 — needs to be reissued from the Finance screen',
+                `${DOC_PROVIDER.name} 422 — נדרשת הפקה חוזרת ממסך כספים`,
+                `${DOC_PROVIDER.name} 422 — needs to be reissued from the Finance screen`,
             ),
             bad: true,
         });
@@ -669,7 +697,22 @@ function realOrder(source, practitioners, patients) {
         unit: line.unit === 'gr' ? 'g' : line.unit || 'unit',
         qty: line.quantity,
         price: line.price,
+        lineTotal: line.lineTotal ?? null,
     }));
+
+    // The charges beneath the content, with their own code and name — SAP
+    // bills delivery per band (`999019 'משלוח אל המטפל מעל 200 שח'`) and the
+    // tax document lists that line as it was charged. Empty when the charge IS
+    // the content (charge-only documents list it in `shelfLines`).
+    const orderFeeLines = chargeOnly
+        ? []
+        : feeLines.map((line) => ({
+              code: line.code,
+              name: L(line.name),
+              qty: line.quantity,
+              price: line.price,
+              lineTotal: line.lineTotal ?? null,
+          }));
 
     const base = sumOf(
         chargeOnly
@@ -697,6 +740,10 @@ function realOrder(source, practitioners, patients) {
         payer === 'practitioner' &&
         practitioner.credit &&
         !['new', 'cancelled'].includes(status);
+    const payMethod =
+        source.paidOnline === 'Y'
+            ? 'card'
+            : pickFrom(`${slot}:pay`, PAY_METHODS);
 
     const order = {
         id,
@@ -714,6 +761,7 @@ function realOrder(source, practitioners, patients) {
         // console's screens read it, not because a document ever fills it.
         formula2: null,
         shelfLines,
+        feeLines: orderFeeLines,
         discPct: base > 0 ? Math.round((baseDisc / base) * 100) : 0,
         pricing: {
             base,
@@ -758,11 +806,12 @@ function realOrder(source, practitioners, patients) {
             floor: String(spread(`${slot}:floor`, 0, 8)),
             entry: pickFrom(`${slot}:entry`, ENTRY_LETTERS),
         },
-        payMethod:
-            source.paidOnline === 'Y'
-                ? 'card'
-                : pickFrom(`${slot}:pay`, PAY_METHODS),
-        // The tax document lives in Green Invoice, not in SAP.
+        payMethod,
+        // Where the payment was taken. A web payment is on the storefront of
+        // whoever ordered; cash is the counter; the rest is the fixture's, with
+        // a handful at the counter so the third terminal is on screen.
+        terminal: paymentTerminal(source, payer, payMethod, slot),
+        // The tax document lives with the invoice provider, not in SAP.
         docNum: String(spread(`${slot}:doc`, 20250, 20999)),
         docType: 'invrec',
         docAlloc: String(spread(`${slot}:alloc`, 10000000, 99999999)),

@@ -1,10 +1,11 @@
 <script setup>
 // The overview grid of pricing groups.
 //
-// The "SKUs assigned" figure is live resolution, not a stored count: every SKU
-// in the ingredient catalogue is resolved against all groups, so a prefix edit
-// in one group moves the number shown on another. Zero is highlighted — a group
-// that prices nothing is usually a typo in its prefixes.
+// The "items priced" figure is live resolution, not a stored count: every item
+// in the catalogue is resolved against all groups (an explicit assignment on
+// the item first, then the longest matching prefix), so a prefix edit in one
+// group moves the number shown on another. Zero is highlighted — a group that
+// prices nothing is usually a typo in its prefixes.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -14,7 +15,7 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { ils } from '@/lib/money';
+import { num, pct } from '@/lib/money';
 import { useCatalogStore } from '@/stores/catalog';
 
 defineProps({
@@ -24,23 +25,53 @@ defineProps({
     selected: { type: String, default: null },
 });
 
-const emit = defineEmits(['row', 'edit', 'export', 'remove']);
+const emit = defineEmits(['row', 'edit', 'items', 'export', 'remove']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
 const catalog = useCatalogStore();
 
 const cols = computed(() => [
-    { k: 'name', label: t('pricing.table.group'), w: '250px' },
+    { k: 'name', label: t('pricing.table.group'), w: '230px' },
     { k: 'uom', label: t('pricing.table.uom'), nowrap: true },
-    { k: 'scale', label: t('pricing.table.scale'), nowrap: true },
-    { k: 'base', label: t('pricing.table.base'), nowrap: true },
-    { k: 'fill', label: t('pricing.table.matched'), nowrap: true },
+    { k: 'mode', label: t('pricing.table.mode'), nowrap: true },
+    { k: 'base', label: t('pricing.table.baseQty'), nowrap: true },
+    { k: 'ladder', label: t('pricing.table.scale') },
+    { k: 'items', label: t('pricing.table.items'), nowrap: true },
     { k: 'upd', label: t('pricing.table.updated'), nowrap: true },
     { k: 'act', label: '', nowrap: true },
 ]);
 
-const matchedCount = (group) => catalog.skusOfGroup(group.id).length;
+const itemCount = (group) => catalog.itemsOfGroup(group.id).length;
+
+/** One line that says what the ladder does, in the mode's own terms. */
+function ladderText(group) {
+    const uom = group.uom ? t(`pricing.uom.${group.uom}`) : '';
+    const floor = pct(group.formula?.floorPct || 0);
+
+    if (group.mode === 'formula' && group.formula?.kind === 'step') {
+        return t('pricing.table.formulaStep', {
+            step: num(group.formula.stepQty),
+            uom,
+            pct: pct(group.formula.stepPct, 1),
+            floor,
+        });
+    }
+
+    if (group.mode === 'formula') {
+        return t('pricing.table.formulaCurve', {
+            k: group.formula?.k,
+            floor,
+        });
+    }
+
+    const top = catalog.topOfGroup(group);
+
+    return t('pricing.table.bands', {
+        n: group.breaks.length,
+        pct: pct(top?.pct || 0, 1),
+    });
+}
 </script>
 
 <template>
@@ -71,43 +102,43 @@ const matchedCount = (group) => catalog.skusOfGroup(group.id).length;
             <span v-else class="tp-dim">—</span>
         </template>
 
-        <template #cell-scale="{ row }">
+        <template #cell-mode="{ row }">
             <AChip
-                v-if="catalog.isCustomScale(row)"
-                tone="teal"
+                :tone="row.mode === 'formula' ? 'teal' : 'gray'"
                 size="sm"
                 :dot="false"
             >
-                {{ t('pricing.table.custom', { n: row.breaks.length }) }}
+                {{ t(`pricing.mode.${row.mode}`) }}
             </AChip>
-            <span v-else class="tp-soft">
-                {{
-                    t('pricing.table.default', {
-                        n: catalog.defaultBreaks.length,
-                    })
-                }}
-            </span>
         </template>
 
         <template #cell-base="{ row }">
-            <span v-if="row.uom && row.prices[0] != null">
+            <span class="tp-soft">
                 {{
-                    t('pricing.table.from', {
-                        price: ils(row.prices[0], 2),
-                        per: t(`pricing.per.${row.uom}`),
+                    t('pricing.table.baseQtyValue', {
+                        qty: num(row.baseQty),
+                        uom: row.uom ? t(`pricing.uom.${row.uom}`) : '',
                     })
                 }}
             </span>
-            <span v-else class="tp-dim">—</span>
         </template>
 
-        <template #cell-fill="{ row }">
-            <span
-                class="num tp-count"
-                :class="{ 'is-none': matchedCount(row) === 0 }"
+        <template #cell-ladder="{ row }">
+            <span class="tp-soft">{{ ladderText(row) }}</span>
+        </template>
+
+        <template #cell-items="{ row }">
+            <button
+                type="button"
+                class="a-linkbtn num tp-count"
+                :class="{ 'is-none': itemCount(row) === 0 }"
+                :aria-label="
+                    t('pricing.table.itemsAria', { name: loc(row.name) })
+                "
+                @click.stop="emit('items', row)"
             >
-                {{ matchedCount(row) }}
-            </span>
+                {{ itemCount(row) }}
+            </button>
         </template>
 
         <template #cell-upd="{ row }">
@@ -174,10 +205,12 @@ const matchedCount = (group) => catalog.skusOfGroup(group.id).length;
 
 .tp-soft {
     color: var(--a-ink-3);
+    font-size: 13.5px;
 }
 
 .tp-count {
     font-weight: 600;
+    font-size: 15px;
 }
 
 .tp-count.is-none {

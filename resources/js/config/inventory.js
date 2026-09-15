@@ -20,13 +20,64 @@ export const BATCH_STATE_IDS = Object.keys(BATCH_STATES);
 /** A batch is flagged `expiring` inside this many days of its expiry date. */
 export const BATCH_EXPIRY_WARN_DAYS = 90;
 
-/** Kinds of stock movement written to the ledger. */
-export const STOCK_MOVE_IDS = [
-    'goods_in',
-    'allocated_to_compounding',
-    'released_on_cancel',
-    'adjustment',
+/**
+ * Kinds of stock movement written to the ledger, and the chip tone each is shown
+ * in. The first four are the receipt-and-compounding cycle; production adds a
+ * consumption and an output pair, waste its own entry and the monthly merge, and
+ * the two counting kinds close the loop for items nobody weighs per order.
+ */
+export const STOCK_MOVES = [
+    { id: 'goods_in', tone: 'green' },
+    { id: 'allocated_to_compounding', tone: 'blue' },
+    { id: 'released_on_cancel', tone: 'gray' },
+    { id: 'adjustment', tone: 'amber' },
+    { id: 'production_out', tone: 'purple' },
+    { id: 'production_in', tone: 'teal' },
+    { id: 'waste_in', tone: 'red' },
+    { id: 'waste_merge', tone: 'gray' },
+    { id: 'time_consumption', tone: 'blue' },
+    { id: 'count', tone: 'amber' },
 ];
+
+export const STOCK_MOVE = Object.fromEntries(
+    STOCK_MOVES.map((move) => [move.id, move]),
+);
+
+export const STOCK_MOVE_IDS = STOCK_MOVES.map((move) => move.id);
+
+/**
+ * How many of the base unit (a gram, a millilitre, one piece) one stock unit
+ * holds. A bill of materials is written in millilitres while SAP keeps the same
+ * tincture in litres, so every quantity that crosses from a recipe to a stock
+ * row goes through `convertQty`. Mass and volume are treated as 1:1 — the
+ * tinctures and oils compounded here are close enough to water for a stock
+ * figure, and the alternative is a density per item nobody maintains.
+ */
+export const UNIT_SCALE = {
+    g: 1,
+    kg: 1000,
+    ml: 1,
+    l: 1000,
+    unit: 1,
+    pack: 1,
+    capsule: 1,
+};
+
+/** `qty` expressed in unit `to`, or unchanged when either unit is unknown. */
+export function convertQty(qty, from, to) {
+    if (!from || !to || from === to) {
+        return qty;
+    }
+
+    const scaleFrom = UNIT_SCALE[from];
+    const scaleTo = UNIT_SCALE[to];
+
+    if (!scaleFrom || !scaleTo) {
+        return qty;
+    }
+
+    return (qty * scaleFrom) / scaleTo;
+}
 
 /**
  * One adjustment action, three reasons. A count adjustment *sets* the quantity to

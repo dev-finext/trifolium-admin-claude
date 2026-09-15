@@ -52,7 +52,7 @@ export const BACKUP_POLICY = {
  * either of them holding a second copy of the list.
  */
 export const CONNECTIONS = [
-    { id: 'doc', icon: 'file_text', provider: DOC_PROVIDER, services: ['gi'] },
+    { id: 'doc', icon: 'file_text', provider: DOC_PROVIDER, services: ['ic'] },
     { id: 'pay', icon: 'card', provider: PAY_PROVIDER, services: ['gc'] },
     {
         id: 'msg',

@@ -8,19 +8,34 @@
 // together — they are all the same derivation.
 //
 // Mutations change the loaded records in place and call persist(), a no-op
-// against the fixture. Two business rules are enforced here rather than in a
-// screen, because both are easy to break from the UI:
+// against the fixture. Three business rules are enforced here rather than in a
+// screen, because all are easy to break from the UI:
 //
 //   1. Collection is all or nothing — CREDIT.allowPartial is false. A payment is
 //      recorded for the whole open balance or not at all.
 //   2. The pharmacy issues no document itself. A re-issue asks the provider
 //      again and leaves the document without a number until it answers: the
 //      console never invents a document number or an allocation number.
+//   3. A document's body is the order's real lines (demo/money.js
+//      documentLines) — a consolidated document lists every order it covers,
+//      and a credit note reverses the document it was issued against.
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
-import { AGING_BUCKETS, agingBucket, CREDIT, PAYMENT_METHODS } from '@/config';
+import {
+    AGING_BUCKETS,
+    agingBucket,
+    ALLOCATION_DOC_TYPE_IDS,
+    CREDIT,
+    isSettled,
+    PAYMENT_METHODS,
+} from '@/config';
 import { persist } from '@/data/source';
+import {
+    allocationOf,
+    documentLines,
+    documentSendable,
+} from '@/demo/money';
 import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { L } from '@/lib/localized';
 import { num, priceParts } from '@/lib/money';
@@ -46,6 +61,8 @@ export const MANUAL_PAYMENT_METHODS = PAYMENT_METHODS.filter(
 
 /** Ids for records this session created, unique within the session. */
 let sequence = 0;
+
+const round2 = (value) => Math.round(value * 100) / 100;
 
 /**
  * The moment a mutation happened, in the three forms the records carry. Reads
@@ -81,10 +98,10 @@ export function vatParts(gross) {
  * What the three finance lists can be filtered by, declared once beside the
  * store that holds them.
  *
- * A balance is a person and their debt, a document is a thing Green Invoice
- * either issued or failed to issue, and a transaction is a movement of money —
- * so the three share nothing but the practitioner they hang off, and each gets
- * the fields its own list is actually read by.
+ * A balance is a person and their debt, a document is a thing the invoice
+ * provider either issued or failed to issue, and a transaction is a movement of
+ * money — so the three share nothing but the practitioner they hang off, and
+ * each gets the fields its own list is actually read by.
  *
  * There is no display text here: `group` and every value are ids, and the
  * drawer resolves them through the locale catalogs.
@@ -135,6 +152,20 @@ export const DOC_FILTER_FIELDS = [
         values: (doc) => [doc.type],
     },
     {
+        key: 'dalloc',
+        group: 'state',
+        kind: 'set',
+        prefix: 'finance.allocState',
+        values: (doc) => [doc.allocation?.state || 'not_required'],
+    },
+    {
+        key: 'dacct',
+        group: 'state',
+        kind: 'set',
+        prefix: 'finance.accountingState',
+        values: (doc) => [doc.accounting?.sent ? 'sent' : 'pending'],
+    },
+    {
         key: 'dto',
         group: 'who',
         kind: 'set',
@@ -145,7 +176,14 @@ export const DOC_FILTER_FIELDS = [
         key: 'dpr',
         group: 'who',
         kind: 'set',
-        values: (doc) => [doc.code],
+        values: (doc) => (doc.code ? [doc.code] : []),
+    },
+    {
+        key: 'dterm',
+        group: 'who',
+        kind: 'set',
+        prefix: 'finance.terminal',
+        values: (doc) => (doc.terminal ? [doc.terminal] : []),
     },
     {
         key: 'damt',
@@ -177,6 +215,13 @@ export const TXN_FILTER_FIELDS = [
         kind: 'set',
         prefix: 'paymentMethod',
         values: (row) => (row.method ? [row.method] : []),
+    },
+    {
+        key: 'tterm',
+        group: 'what',
+        kind: 'set',
+        prefix: 'finance.terminal',
+        values: (row) => (row.terminal ? [row.terminal] : []),
     },
     {
         key: 'tcode',
@@ -254,6 +299,9 @@ export const WALLET_FILTER_FIELDS = [
 
 export const WALLET_FILTER_GROUPS = ['points', 'debt', 'activity'];
 
+/** The document types the reconciliation compares against an order's total. */
+const INVOICE_TYPE_IDS = ALLOCATION_DOC_TYPE_IDS;
+
 export const useMoneyStore = defineStore('money', () => {
     const dataset = useDatasetStore();
 
@@ -278,6 +326,24 @@ export const useMoneyStore = defineStore('money', () => {
     const byCode = (code) =>
         practitioners.value.find(
             (practitioner) => practitioner.code === String(code),
+        ) || null;
+
+    const orderById = (id) =>
+        orders.value.find((order) => order.id === id) || null;
+
+    const documentById = (id) =>
+        documents.value.find((document) => document.id === id) || null;
+
+    /** Every document that covers an order — invoice, receipt, credit note. */
+    const documentsOf = (orderId) =>
+        documents.value.filter((document) =>
+            (document.orders || [document.order]).includes(orderId),
+        );
+
+    /** The invoice-type document an order was billed on, if any. */
+    const documentOf = (orderId) =>
+        documentsOf(orderId).find((document) =>
+            INVOICE_TYPE_IDS.includes(document.type),
         ) || null;
 
     /** Everyone who owes something, largest balance first. */
@@ -317,9 +383,38 @@ export const useMoneyStore = defineStore('money', () => {
         documents.value.filter((document) => document.status === 'failed'),
     );
 
+    /** Issued, but the tax authority refused the allocation — not sendable. */
+    const allocRefusedDocuments = computed(() =>
+        documents.value.filter(
+            (document) => document.allocation?.state === 'refused',
+        ),
+    );
+
+    /** Issued documents the monthly export has not carried yet. */
+    const accountingPending = computed(() =>
+        documents.value.filter(
+            (document) =>
+                document.status === 'issued' && !document.accounting?.sent,
+        ),
+    );
+
     /** The document states the loaded set actually contains, for the filter. */
     const documentStates = computed(() => [
         ...new Set(documents.value.map((document) => document.status)),
+    ]);
+
+    /** The document types the loaded set actually contains, for the filter. */
+    const documentTypes = computed(() => [
+        ...new Set(documents.value.map((document) => document.type)),
+    ]);
+
+    /** The terminals the loaded documents were paid on, for the filter. */
+    const terminals = computed(() => [
+        ...new Set(
+            documents.value
+                .map((document) => document.terminal)
+                .filter(Boolean),
+        ),
     ]);
 
     /** The movement kinds the ledger actually contains, for the filter. */
@@ -398,6 +493,68 @@ export const useMoneyStore = defineStore('money', () => {
         collectionLinks.value.find((link) => link.code === String(code)) ||
         null;
 
+    // ---- reconciliation -----------------------------------------------------
+
+    /**
+     * Settled orders with no invoice-type document behind them. A queued one is
+     * listed too — the provider has not answered — with its state on the row,
+     * so the agent sees what is waiting and what was never asked for. Orders
+     * still on open credit are not settled and do not belong here.
+     */
+    const paidWithoutDocument = computed(() =>
+        orders.value.filter(
+            (order) =>
+                isSettled(order) &&
+                order.status !== 'cancelled' &&
+                order.docStatus !== 'awaiting_credit' &&
+                !documentOf(order.id),
+        ),
+    );
+
+    /** Documents no loaded order stands behind — counter sales, workshops. */
+    const documentsWithoutOrder = computed(() =>
+        documents.value.filter((document) => {
+            const ids = document.orders || (document.order ? [document.order] : []);
+
+            return !ids.some((id) => orderById(id));
+        }),
+    );
+
+    /**
+     * Invoice-type documents whose total is not the total of the orders they
+     * cover. A consolidated document adds the legacy balance it collected, so
+     * the comparison allows for it.
+     *
+     * @returns {Array<{ document: object, orders: object[], expected: number,
+     *                   diff: number }>}
+     */
+    const amountMismatches = computed(() =>
+        documents.value
+            .filter((document) => INVOICE_TYPE_IDS.includes(document.type))
+            .map((document) => {
+                const covered = (document.orders || [document.order])
+                    .map(orderById)
+                    .filter(Boolean);
+
+                if (!covered.length) {
+                    return null;
+                }
+
+                const expected = round2(
+                    covered.reduce(
+                        (sum, order) => sum + order.pricing.total,
+                        0,
+                    ) + (document.legacy || 0),
+                );
+                const diff = round2((document.total ?? document.amt) - expected);
+
+                return diff === 0
+                    ? null
+                    : { document, orders: covered, expected, diff };
+            })
+            .filter(Boolean),
+    );
+
     /** A practitioner's points movements, newest first. */
     const pointsLedgerOf = (code) => {
         const ledger = pointsLedgers.value.find(
@@ -473,6 +630,52 @@ export const useMoneyStore = defineStore('money', () => {
         });
     }
 
+    /**
+     * A document row the console is asking the provider for. No number, no
+     * allocation and no PDF until the provider answers — `queued` — and a body
+     * built from the order's real lines, the same way the fixture builds one.
+     */
+    function queuedDocument({
+        id,
+        type,
+        code,
+        to,
+        toType,
+        orderIds,
+        body,
+        terminal,
+        parent = null,
+        note = null,
+        legacy = 0,
+    }) {
+        const allocation = allocationOf(type, body.total, null);
+
+        return {
+            id,
+            num: null,
+            alloc: null,
+            type,
+            amt: body.total,
+            when: moment(),
+            order: orderIds[0] ?? null,
+            orders: orderIds,
+            code,
+            to,
+            toType,
+            status: 'queued',
+            err: null,
+            ...body,
+            legacy,
+            allocation,
+            sendable: false,
+            pdf: null,
+            terminal,
+            accounting: { sent: false, when: null },
+            parent,
+            note,
+        };
+    }
+
     /** Recompute every balance from the orders, after money moved. */
     function recomputeBalances() {
         practitioners.value.forEach((practitioner) => {
@@ -538,7 +741,8 @@ export const useMoneyStore = defineStore('money', () => {
     /**
      * Record money that arrived outside the payment link — a transfer, cash at
      * the counter. All or nothing: the amount is the whole open balance, so no
-     * caller can post a part of it.
+     * caller can post a part of it. One consolidated document covers every
+     * order in the payment and the legacy balance, if any, as its own line.
      *
      * @returns {{ amount: number, orders: string[] } | null}
      */
@@ -554,6 +758,7 @@ export const useMoneyStore = defineStore('money', () => {
         const covered = open.map((order) => order.id);
         const when = moment();
         const id = ++sequence;
+        const terminal = 'physical';
 
         open.forEach((order) => {
             order.creditPaid = true;
@@ -565,6 +770,7 @@ export const useMoneyStore = defineStore('money', () => {
         });
 
         const legacy = legacyDebt.value[code];
+        const legacyAmount = legacy ? legacy.amt : 0;
 
         if (legacy) {
             legacy.amt = 0;
@@ -577,30 +783,69 @@ export const useMoneyStore = defineStore('money', () => {
             when,
             amt: -amount,
             order: covered[0] ?? null,
+            orders: covered,
             doc: null,
             method,
+            terminal,
             note: L(
                 'רישום תשלום ידני על כל היתרה הפתוחה',
                 'Manual payment recorded against the whole open balance',
             ),
         });
 
-        // One payment, one consolidated document — and no number until the
-        // provider answers with one.
-        dataset.data.documents?.unshift({
-            id: `doc-manual-${code}-${id}`,
-            num: null,
-            alloc: null,
-            type: 'invrec_multi',
-            amt: amount,
-            when,
-            order: covered[0] ?? null,
-            code: String(code),
-            to: practitioner.name,
-            toType: 'practitioner',
-            status: 'queued',
-            err: null,
-        });
+        // One payment, one consolidated document — every order's lines under
+        // it, the legacy balance as one line, and no number until the provider
+        // answers with one.
+        const bodies = open.map(documentLines);
+        const lines = bodies.flatMap((body) => body.lines);
+        const legacyParts = vatParts(legacyAmount);
+
+        if (legacyAmount > 0) {
+            lines.push({
+                kind: 'fee',
+                code: null,
+                label: L(
+                    'יתרת חוב מהזמנות קודמות',
+                    'Balance carried over from earlier orders',
+                ),
+                qty: 1,
+                uom: 'unit',
+                unitPrice: legacyParts.net,
+                total: legacyParts.net,
+            });
+        }
+
+        const body = {
+            lines,
+            subtotal: round2(
+                bodies.reduce((sum, part) => sum + part.subtotal, 0) +
+                    legacyParts.net,
+            ),
+            discount: round2(
+                bodies.reduce((sum, part) => sum + part.discount, 0),
+            ),
+            points: round2(bodies.reduce((sum, part) => sum + part.points, 0)),
+            vat: round2(
+                bodies.reduce((sum, part) => sum + part.vat, 0) +
+                    legacyParts.vat,
+            ),
+            total: amount,
+            reconciled: bodies.every((part) => part.reconciled),
+        };
+
+        dataset.data.documents?.unshift(
+            queuedDocument({
+                id: `doc-manual-${code}-${id}`,
+                type: 'invrec_multi',
+                code: String(code),
+                to: practitioner.name,
+                toType: 'practitioner',
+                orderIds: covered,
+                body,
+                terminal,
+                legacy: legacyAmount,
+            }),
+        );
 
         recomputeBalances();
         writeLog({
@@ -626,12 +871,55 @@ export const useMoneyStore = defineStore('money', () => {
     }
 
     /**
+     * Ask the provider for a document on a settled order that has none — the
+     * reconciliation tab's "issue document". The row is queued: the console
+     * does not invent the number the provider will answer with.
+     */
+    function requestDocument(orderId) {
+        const order = orderById(orderId);
+
+        if (!order || documentOf(orderId)) {
+            return null;
+        }
+
+        const document = queuedDocument({
+            id: `doc-req-${orderId}-${++sequence}`,
+            type: order.credit ? 'invrec_multi' : 'invrec',
+            code: order.practitioner.code,
+            to:
+                order.payer === 'patient'
+                    ? order.patient.name
+                    : order.practitioner.name,
+            toType: order.payer === 'patient' ? 'patient' : 'practitioner',
+            orderIds: [orderId],
+            body: documentLines(order),
+            terminal: order.terminal || null,
+        });
+
+        dataset.data.documents?.unshift(document);
+        order.docStatus = 'queued';
+        order.docType = document.type;
+
+        writeLog({
+            act: 'doc_issue',
+            entType: 'document',
+            ent: orderId,
+            valueType: 'text',
+            from: L('ללא מסמך', 'No document'),
+            to: L('נשלחה בקשת הפקה', 'Issue requested'),
+        });
+        persist(`finance/documents/request`, { order: orderId });
+
+        return document;
+    }
+
+    /**
      * Ask the provider for a document again. The failed attempt left no number
      * and no allocation number, and this does not invent them: the document
      * waits in `queued` until the provider answers.
      */
     function reissueDocument(id, reason) {
-        const document = documents.value.find((row) => row.id === id);
+        const document = documentById(id);
 
         if (!document) {
             return null;
@@ -639,8 +927,14 @@ export const useMoneyStore = defineStore('money', () => {
 
         document.status = 'queued';
         document.err = null;
+        document.sendable = false;
+        document.allocation = allocationOf(
+            document.type,
+            document.total ?? document.amt,
+            null,
+        );
 
-        const order = orders.value.find((row) => row.id === document.order);
+        const order = orderById(document.order);
 
         if (order) {
             order.docStatus = 'queued';
@@ -660,6 +954,196 @@ export const useMoneyStore = defineStore('money', () => {
         persist(`finance/documents/${document.id}/reissue`, { reason });
 
         return document;
+    }
+
+    /**
+     * Retry a refused allocation. The document stays issued — it has its
+     * number — but is not sendable until the tax authority answers; the retry
+     * moves it to `pending` and clears the exception off the order.
+     */
+    function retryAllocation(id) {
+        const document = documentById(id);
+
+        if (!document || document.allocation?.state !== 'refused') {
+            return null;
+        }
+
+        document.allocation = { ...document.allocation, state: 'pending' };
+        document.err = null;
+
+        const order = orderById(document.order);
+
+        if (order) {
+            order.flags = (order.flags || []).filter(
+                (flag) => flag !== 'alloc_refused',
+            );
+        }
+
+        writeLog({
+            act: 'doc_alloc_retry',
+            entType: 'document',
+            ent: document.order || document.id,
+            valueType: 'text',
+            from: L('הקצאה נדחתה', 'Allocation refused'),
+            to: L('נשלחה בקשת הקצאה חדשה', 'New allocation request sent'),
+        });
+        persist(`finance/documents/${document.id}/allocation`, {});
+
+        return document;
+    }
+
+    /**
+     * Reverse a paid order's document, in whole or in part. Called by the
+     * order store when a paid order or a paid item is cancelled: the credit
+     * note is queued at the provider, the original document reads `credited`
+     * when the whole amount comes back, and the practitioner's statement gets
+     * a `credit` movement. Nothing is credited on an order nobody paid.
+     *
+     * @returns {object | null} the credit-note row
+     */
+    function issueCreditNote(orderId, amount, reason = '') {
+        const order = orderById(orderId);
+        const original = order ? documentOf(orderId) : null;
+        const value = round2(Number(amount) || 0);
+
+        if (!order || !original || value <= 0 || !isSettled(order)) {
+            return null;
+        }
+
+        const full = value + 0.005 >= (original.total ?? original.amt);
+        const body = full
+            ? {
+                  lines: original.lines || [],
+                  subtotal: original.subtotal ?? original.amt,
+                  discount: original.discount ?? 0,
+                  points: original.points ?? 0,
+                  vat: original.vat ?? vatParts(value).vat,
+                  total: value,
+                  reconciled: original.reconciled ?? true,
+              }
+            : {
+                  lines: [
+                      {
+                          kind: order.type === 'formula' ? 'component' : 'shelf',
+                          code: null,
+                          label: L('זיכוי חלקי', 'Partial credit'),
+                          qty: 1,
+                          uom: 'unit',
+                          unitPrice: vatParts(value).net,
+                          total: vatParts(value).net,
+                      },
+                  ],
+                  subtotal: vatParts(value).net,
+                  discount: 0,
+                  points: 0,
+                  vat: vatParts(value).vat,
+                  total: value,
+                  reconciled: true,
+              };
+
+        const credit = queuedDocument({
+            id: `${original.id}-C${++sequence}`,
+            type: 'credit',
+            code: original.code,
+            to: original.to,
+            toType: original.toType,
+            orderIds: [orderId],
+            body,
+            terminal: original.terminal || null,
+            parent: original.id,
+            note: reason ? L(reason) : null,
+        });
+
+        dataset.data.documents?.unshift(credit);
+
+        if (full) {
+            original.status = 'credited';
+            order.docStatus = 'credited';
+        }
+
+        if (order.payer === 'practitioner') {
+            dataset.data.transactions?.unshift({
+                id: `tx-cr-${orderId}-${sequence}`,
+                code: order.practitioner.code,
+                kind: 'credit',
+                when: moment(),
+                amt: -value,
+                order: orderId,
+                doc: original.num,
+                method: null,
+                terminal: null,
+                note: full
+                    ? L(
+                          'חשבונית זיכוי — ביטול לאחר תשלום',
+                          'Credit note — cancelled after payment',
+                      )
+                    : L(
+                          'חשבונית זיכוי — פריט בוטל לאחר תשלום',
+                          'Credit note — item cancelled after payment',
+                      ),
+            });
+        }
+
+        writeLog({
+            act: 'credit_note_issue',
+            entType: 'document',
+            ent: orderId,
+            valueType: 'text',
+            from: L(
+                `${original.num ? `מסמך ${original.num}` : 'מסמך'} · ₪${num(original.amt)}`,
+                `${original.num ? `Document ${original.num}` : 'Document'} · ₪${num(original.amt)}`,
+            ),
+            to: L(
+                `חשבונית זיכוי על ₪${num(value)}${full ? '' : ' (חלקי)'}`,
+                `Credit note for ₪${num(value)}${full ? '' : ' (partial)'}`,
+            ),
+        });
+        persist(`finance/documents/${original.id}/credit`, {
+            amount: value,
+            reason,
+        });
+
+        return credit;
+    }
+
+    /**
+     * Mark documents as handed to the accountant. Recording only: the export
+     * itself is the CSV the screen downloads, or the provider's own file.
+     *
+     * @returns {number} how many were marked
+     */
+    function markSentToAccounting(ids) {
+        const when = moment();
+        const marked = (ids || [])
+            .map(documentById)
+            .filter(
+                (document) =>
+                    document &&
+                    document.status === 'issued' &&
+                    !document.accounting?.sent,
+            );
+
+        marked.forEach((document) => {
+            document.accounting = { sent: true, when };
+        });
+
+        if (marked.length) {
+            writeLog({
+                act: 'accounting_mark_sent',
+                entType: 'document',
+                ent: marked.map((document) => document.id).join(', '),
+                valueType: 'text',
+                to: L(
+                    `${marked.length} מסמכים סומנו כנשלחו להנהלת חשבונות`,
+                    `${marked.length} documents marked as sent to accounting`,
+                ),
+            });
+            persist('finance/documents/accounting', {
+                ids: marked.map((document) => document.id),
+            });
+        }
+
+        return marked.length;
     }
 
     /**
@@ -785,6 +1269,10 @@ export const useMoneyStore = defineStore('money', () => {
         legacyDebt,
 
         byCode,
+        orderById,
+        documentById,
+        documentsOf,
+        documentOf,
         debtors,
         creditPractitioners,
         totalDebt,
@@ -792,7 +1280,11 @@ export const useMoneyStore = defineStore('money', () => {
         openCreditAll,
         openCreditStatuses,
         failedDocuments,
+        allocRefusedDocuments,
+        accountingPending,
         documentStates,
+        documentTypes,
+        terminals,
         transactionKinds,
         collectedWithin,
         chargeTotal,
@@ -800,6 +1292,11 @@ export const useMoneyStore = defineStore('money', () => {
         agingRows,
         statementOf,
         collectionLinkOf,
+        documentSendable,
+
+        paidWithoutDocument,
+        documentsWithoutOrder,
+        amountMismatches,
 
         pointsLedgerOf,
         totalPoints,
@@ -810,7 +1307,11 @@ export const useMoneyStore = defineStore('money', () => {
 
         issueCollectionLink,
         recordManualPayment,
+        requestDocument,
         reissueDocument,
+        retryAllocation,
+        issueCreditNote,
+        markSentToAccounting,
         setCreditTerms,
         adjustPoints,
         checkLedgerIntegrity,

@@ -20,6 +20,22 @@ export const PAYMENT_TERMS = [
 
 export const PAYMENT_TERM_IDS = PAYMENT_TERMS.map((term) => term.id);
 
+export const PAYMENT_TERM = Object.fromEntries(
+    PAYMENT_TERMS.map((term) => [term.id, term]),
+);
+
+/**
+ * How a payment to a supplier actually went out. Distinct from the card's
+ * preferred method (`supplier.pay`): that is the agreement, this is the fact.
+ * Labels under `purchasing.payMethod.<id>`.
+ */
+export const SUPPLIER_PAYMENT_METHOD_IDS = [
+    'transfer',
+    'check',
+    'card',
+    'cash',
+];
+
 /**
  * A supplier card carries bank details, trade terms and purchase prices — data
  * outside the daily work of the support team — so opening one is gated behind a

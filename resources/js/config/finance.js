@@ -1,29 +1,40 @@
 // Money-side configuration: tax documents, credit terms, aging, payment links,
-// customer numbering. Display text lives in the locale catalogs.
+// customer numbering, payment terminals and expense categories. Display text
+// lives in the locale catalogs.
 
 /**
  * Tax documents. The pharmacy issues nothing itself: a cloud invoice provider
- * issues a חשבונית מס קבלה the moment money arrives and returns the document
+ * issues the document the moment money arrives and returns the document
  * number together with the tax-authority allocation number.
  *
  * `apiKey` is a masked display value only. A real deployment reads the key from
  * the server environment; it is never shipped to the browser.
  */
 export const DOC_PROVIDER = {
-    name: 'Green Invoice',
-    baseUrl: 'https://api.greeninvoice.co.il/api/v1',
+    name: 'iCount',
+    baseUrl: 'https://api.icount.co.il/api/v3.php',
     env: 'production',
-    apiKeyMask: 'gi_live_••••4c19',
+    apiKeyMask: 'ic_live_••••7a2e',
     retries: 3,
     retryGapMinutes: 5,
 };
 
-/** Document kinds. `when` text is in the catalog under `doc.type.<id>.when`. */
+/**
+ * Document kinds. `inv` is a tax invoice on its own (goods delivered, money to
+ * follow), `receipt` acknowledges money against an invoice already issued,
+ * `invrec` is the two in one the moment a card payment clears, `invrec_multi`
+ * is the consolidated version a collection link produces, and `credit` reverses
+ * a document after payment. Labels and when-text live under `docType.<id>.*`.
+ */
 export const DOC_TYPES = [
+    { id: 'inv' },
+    { id: 'receipt' },
     { id: 'invrec' },
     { id: 'invrec_multi' },
     { id: 'credit' },
 ];
+
+export const DOC_TYPE_IDS = DOC_TYPES.map((type) => type.id);
 
 /** Document lifecycle states and their chip tone. */
 export const DOC_STATES = {
@@ -36,6 +47,66 @@ export const DOC_STATES = {
 };
 
 export const DOC_STATE_IDS = Object.keys(DOC_STATES);
+
+/**
+ * What a document line can be. A compounded formula lists one line per
+ * component at its own price, then the shelf products, then the charges;
+ * discount and points are lines too, so the body of the document adds up on
+ * its own. Labels under `finance.docLine.<id>`.
+ */
+export const DOC_LINE_KIND_IDS = [
+    'component',
+    'shelf',
+    'shipping',
+    'fee',
+    'discount',
+    'points',
+];
+
+/**
+ * Allocation numbers (מספרי הקצאה) — חשבוניות ישראל. The Israel Tax Authority
+ * requires an allocation number on every tax invoice whose total (incl. VAT)
+ * reaches the threshold, and the threshold steps DOWN every year:
+ *
+ *   2024  ₪25,000
+ *   2025  ₪20,000
+ *   2026  ₪10,000   ← the step in force for this fixture (owner-confirmed)
+ *   2027   ₪5,000
+ *
+ * The provider asks for an allocation on every document it issues for us; only
+ * the ones at or above the threshold are *required* to carry one. Below it a
+ * refusal is still an exception — the pharmacy sends nothing without its
+ * number — but the document itself is valid.
+ */
+export const ALLOCATION = { thresholdIls: 10000 };
+
+/** Document types an allocation number applies to at all. */
+export const ALLOCATION_DOC_TYPE_IDS = ['inv', 'invrec', 'invrec_multi'];
+
+/** Where the allocation request stands, and its chip tone. */
+export const ALLOCATION_STATES = {
+    granted: { tone: 'green' },
+    not_required: { tone: 'gray' },
+    refused: { tone: 'red' },
+    pending: { tone: 'amber' },
+};
+
+export const ALLOCATION_STATE_IDS = Object.keys(ALLOCATION_STATES);
+
+/** Whether the tax authority requires an allocation number on this document. */
+export function documentNeedsAllocation(doc) {
+    return (
+        ALLOCATION_DOC_TYPE_IDS.includes(doc?.type) &&
+        Number(doc?.total ?? doc?.amt ?? 0) >= ALLOCATION.thresholdIls
+    );
+}
+
+/**
+ * Where a payment was taken. The consumer site and the practitioner site are
+ * two storefronts on the same clearing account; `physical` is the terminal at
+ * the counter. A field only — nothing else reads it yet.
+ */
+export const PAY_TERMINALS = ['consumer_site', 'practitioner_site', 'physical'];
 
 /**
  * Credit terms (הקפה). Approved per practitioner, on that practitioner's card
@@ -112,3 +183,21 @@ export const TXN_KIND_TONES = {
 
 /** Chip tone per points movement, on the same reading. */
 export const POINT_KIND_TONES = { earn: 'green', spend: 'purple' };
+
+/**
+ * What a supplier invoice is for. Invented for the demo — the accountant's own
+ * chart of accounts replaces it on a real deployment. Labels under
+ * `purchasing.expenseCategory.<id>`.
+ */
+export const EXPENSE_CATEGORY_IDS = [
+    'raw_materials',
+    'packaging',
+    'lab_supplies',
+    'shipping',
+    'equipment',
+    'rent',
+    'utilities',
+    'professional_services',
+    'marketing',
+    'other',
+];

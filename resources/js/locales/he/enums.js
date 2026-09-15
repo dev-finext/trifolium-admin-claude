@@ -54,6 +54,11 @@ export default {
             short: 'מסמך נכשל',
             fix: 'הפקה חוזרת מול ספק החשבוניות',
         },
+        alloc_refused: {
+            label: 'מספר ההקצאה נדחה',
+            short: 'הקצאה נדחתה',
+            fix: 'בקשת הקצאה חוזרת מרשות המסים דרך ספק המסמכים',
+        },
         link_expiring: {
             label: 'קישור תשלום פג בתוך 24 שעות',
             short: 'קישור פג בקרוב',
@@ -100,6 +105,14 @@ export default {
         invrec_multi: {
             name: 'חשבונית מס קבלה מרוכזת',
             when: 'תשלום לינק גבייה — מסמך אחד לכל ההזמנות שבלינק',
+        },
+        inv: {
+            name: 'חשבונית מס',
+            when: 'מטפל בהקפה — החיוב החודשי, לפני שהתשלום מגיע',
+        },
+        receipt: {
+            name: 'קבלה',
+            when: 'תשלום שהגיע כנגד חשבונית מס שכבר הופקה',
         },
         credit: {
             name: 'חשבונית זיכוי',
@@ -198,6 +211,12 @@ export default {
         allocated_to_compounding: 'שיוך לרקיחה',
         released_on_cancel: 'ביטול הזמנה — שחרור מלאי',
         adjustment: 'התאמת מלאי',
+        production_out: 'צריכה בייצור',
+        production_in: 'תפוקת ייצור',
+        waste_in: 'פחת מייצור',
+        waste_merge: 'איחוד פחת',
+        time_consumption: 'צריכה לפי זמן',
+        count: 'ספירת מלאי',
     },
     // `hint` explains what the reason does to the quantity — a count *sets* it,
     // the other two *deduct* from a named batch.
@@ -286,6 +305,9 @@ export default {
         tag_create: 'יצירת תווית',
         tag_rename: 'שינוי שם תווית',
         tag_delete: 'מחיקת תווית',
+        price_group_create: 'יצירת קבוצת תמחור',
+        price_group_update: 'עדכון קבוצת תמחור',
+        price_group_delete: 'מחיקת קבוצת תמחור',
         ingredient_create: 'הקמת רכיב פורמולה',
         ingredient_update: 'עדכון רכיב פורמולה',
         ingredient_delete: 'מחיקת רכיב פורמולה',

@@ -1,11 +1,11 @@
 // Shelf goods: the small line the pharmacy sells finished, and the larger
-// consumer catalogue behind the Products screen with its label taxonomy.
+// consumer catalogue behind the Products screen.
 //
 // Two lists, deliberately: SHELF_ITEMS are the SKUs an order can carry as a
-// plain line (they also hold stock in the shelf warehouse), while DEMO_PRODUCTS
-// are the published product pages with weights, labels and an archive state.
-import { spread } from '@/demo/fixture';
-import REAL_CATEGORIES from '@/demo/real/categories.json';
+// plain line (they also hold stock in the shelf warehouse), while the products
+// are the published product pages with an archive state. A product's site
+// categories are the one taxonomy the console has — SITE_CATEGORIES in
+// demo/items.js, SAP's `@CATEGORIES` tree — read off the item record.
 import REAL_PRODUCTS from '@/demo/real/products.json';
 import { isoDaysAgo } from '@/lib/dates';
 import { L } from '@/lib/localized';
@@ -51,23 +51,6 @@ export const SHELF_ITEMS = REAL_PRODUCTS.filter(
 }));
 
 /**
- * Labels products are filed under on the consumer site — SAP's
- * `@CATEGORIES` tree, which is exactly where a product card's category
- * codes point.
- *
- * The tree carries no creation date, so the one on the row is the fixture's.
- */
-export function buildProductLabels() {
-    return REAL_CATEGORIES.filter((category) =>
-        category.code.includes('.'),
-    ).map((category) => ({
-        id: category.code,
-        name: L(category.name),
-        created: isoDaysAgo(spread(`label:${category.code}`, 90, 900)),
-    }));
-}
-
-/**
  * The shelf catalogue as SAP holds it — 100 items of families 50/55/16, drawn
  * in proportion to the real catalogue.
  *
@@ -90,6 +73,9 @@ function realProduct(item) {
         net: item.lastPurchasePrice ?? 0,
         stock: Math.max(0, Math.round(item.onHand || 0)),
         minStock: item.minLevel ?? DEFAULT_MIN_STOCK,
+        // SAP's four category slots — ids from SITE_CATEGORIES. The item
+        // record's `site.categories` is the same list; the product keeps a
+        // copy because the shelf screen filters on it.
         labels: [
             item.category1,
             item.category2,

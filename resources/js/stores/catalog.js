@@ -1,5 +1,6 @@
 // The catalog domain: shelf products, their label taxonomy, and the tiered
-// price lists that price formula ingredients by quantity.
+// price lists — discount ladders that price formula ingredients by quantity off
+// each item's own unit price (the arithmetic is lib/ladder.js).
 //
 // Rows arrive from the dataset store (never from @/demo) and are copied into
 // this store, which is what the screens mutate. Every mutation is optimistic and
@@ -13,12 +14,19 @@
 import { defineStore } from 'pinia';
 import { computed, ref, watch } from 'vue';
 
-import { DEFAULT_MIN_STOCK, PRODUCT_STATUS } from '@/config';
+import {
+    DEFAULT_MIN_STOCK,
+    PRICE_UOM_IDS,
+    PRODUCT_STATUS,
+    SETTINGS,
+} from '@/config';
 import { persist } from '@/data/source';
 import i18n from '@/i18n';
 import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
+import { ladderTable, ladderTop, priceAt, validateLadder } from '@/lib/ladder';
 import { L, loc } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
+import { useItemsStore } from '@/stores/items';
 
 /**
  * Field limits the product form enforces. These are product configuration and
@@ -242,16 +250,40 @@ export const useCatalogStore = defineStore('catalog', () => {
 
     const products = ref([]);
     const labels = ref([]);
-    const priceGroups = ref([]);
+    const itemsStore = useItemsStore();
 
-    /** The ingredient SKU catalogue the price lists resolve against. */
-    const ingredientSkus = computed(() => dataset.data.ingredientSkus || []);
+    /**
+     * The price groups, read from and written to the dataset in place — the
+     * item card and the Pricing screen must see the same ladder.
+     */
+    const priceGroups = computed(() => dataset.priceGroups);
 
-    /** The quantity scale a group inherits when it defines none of its own. */
+    /** The live price-group collection, created on first write. */
+    function groupBag() {
+        if (!Array.isArray(dataset.data.priceGroups)) {
+            dataset.data.priceGroups = [];
+        }
+
+        return dataset.data.priceGroups;
+    }
+
+    /** The quantity scale a percent-mode group inherits when it defines none of its own. */
     const defaultBreaks = computed(() => dataset.data.priceBreaks || []);
 
-    /** Units a price list can be quoted per. */
-    const priceUoms = computed(() => dataset.data.priceUoms || []);
+    /** Units a ladder can be written for. */
+    const priceUoms = PRICE_UOM_IDS;
+
+    /** The spreadsheet parse the import review screen shows, when one is pending. */
+    const priceImport = computed(() => dataset.data.priceImport || null);
+
+    /**
+     * Every item as `{ sku, name }` — the catalogue the SKU lookup and the
+     * editor's preview total read. The items collection is the one source;
+     * there is no separate SKU list for pricing.
+     */
+    const ingredientSkus = computed(() =>
+        itemsStore.items.map((item) => ({ sku: item.sku, name: item.names })),
+    );
 
     /**
      * The approval code the irreversible actions in this area sit behind. The
@@ -277,19 +309,6 @@ export const useCatalogStore = defineStore('catalog', () => {
         () => dataset.data.productLabels,
         (rows) => {
             labels.value = (rows || []).map((row) => ({ ...row }));
-        },
-        { immediate: true },
-    );
-
-    watch(
-        () => dataset.priceGroups,
-        (rows) => {
-            priceGroups.value = rows.map((row) => ({
-                ...row,
-                prefixes: [...(row.prefixes || [])],
-                prices: [...(row.prices || [])],
-                breaks: [...(row.breaks || [])],
-            }));
         },
         { immediate: true },
     );
@@ -321,18 +340,41 @@ export const useCatalogStore = defineStore('catalog', () => {
     const labelById = (labelId) =>
         labels.value.find((label) => label.id === labelId) || null;
 
-    /** The SKUs a group prices, after every other group's claim is honoured. */
-    const skusOfGroup = (groupId) =>
-        ingredientSkus.value.filter((item) => {
-            const hit = resolveGroup(item.sku, priceGroups.value);
+    const resolveSku = (sku) => resolveGroup(sku, priceGroups.value);
 
-            return hit && hit.group.id === groupId;
-        });
+    const groupById = (groupId) =>
+        priceGroups.value.find((group) => group.id === groupId) || null;
 
     /**
-     * What a set of prefixes would price, as the editor is typed into: a SKU
-     * counts only where the typed prefix is at least as long as any other
-     * group's claim on it.
+     * The group that prices an item: `'none'` is a fixed price, an id is an
+     * explicit assignment, `null` inherits the longest-prefix rule on the SKU.
+     */
+    const groupForItem = (item) =>
+        item?.priceGroup === 'none'
+            ? null
+            : item?.priceGroup
+              ? groupById(item.priceGroup)
+              : (resolveSku(item?.sku)?.group ?? null);
+
+    /** The item's own unit price, before VAT, per its sales unit. */
+    const unitPriceOf = (item) => item?.price?.sale ?? null;
+
+    /** The items a group prices — explicitly assigned or inherited by prefix. */
+    const itemsOfGroup = (groupId) =>
+        itemsStore.items.filter((item) => groupForItem(item)?.id === groupId);
+
+    /** `itemsOfGroup` in the `{ sku, name }` shape the preview list and the lookup read. */
+    const skusOfGroup = (groupId) =>
+        itemsOfGroup(groupId).map((item) => ({
+            sku: item.sku,
+            name: item.names,
+        }));
+
+    /**
+     * What a set of prefixes would price, as the editor is typed into: an item
+     * counts where the typed prefix is at least as long as any other group's
+     * claim on its SKU, unless the item names its group itself — an explicit
+     * assignment follows its group, `'none'` follows nobody.
      */
     const skusForPrefixes = (prefixes, selfId) => {
         if (!prefixes.length) {
@@ -341,34 +383,76 @@ export const useCatalogStore = defineStore('catalog', () => {
 
         const others = priceGroups.value.filter((group) => group.id !== selfId);
 
-        return ingredientSkus.value.filter((item) => {
-            let mine = 0;
-
-            prefixes.forEach((prefix) => {
-                if (item.sku.startsWith(prefix)) {
-                    mine = Math.max(mine, prefix.length);
+        return itemsStore.items
+            .filter((item) => {
+                if (item.priceGroup) {
+                    return item.priceGroup === selfId;
                 }
-            });
 
-            if (!mine) {
-                return false;
-            }
+                let mine = 0;
 
-            let theirs = 0;
-
-            others.forEach((group) =>
-                group.prefixes.forEach((prefix) => {
+                prefixes.forEach((prefix) => {
                     if (item.sku.startsWith(prefix)) {
-                        theirs = Math.max(theirs, prefix.length);
+                        mine = Math.max(mine, prefix.length);
                     }
-                }),
-            );
+                });
 
-            return mine >= theirs;
-        });
+                if (!mine) {
+                    return false;
+                }
+
+                let theirs = 0;
+
+                others.forEach((group) =>
+                    group.prefixes.forEach((prefix) => {
+                        if (item.sku.startsWith(prefix)) {
+                            theirs = Math.max(theirs, prefix.length);
+                        }
+                    }),
+                );
+
+                return mine >= theirs;
+            })
+            .map((item) => ({ sku: item.sku, name: item.names }));
     };
 
-    const resolveSku = (sku) => resolveGroup(sku, priceGroups.value);
+    /**
+     * The calculator rows for an item — its own unit price run through its
+     * group's ladder, before and including VAT. Empty for a fixed price or
+     * while the item has no unit price yet.
+     */
+    const ladderFor = (item) => {
+        const group = groupForItem(item);
+        const unitPrice = unitPriceOf(item);
+
+        return group && unitPrice !== null
+            ? ladderTable(
+                  group,
+                  unitPrice,
+                  SETTINGS.vatRate,
+                  defaultBreaks.value,
+              )
+            : [];
+    };
+
+    /** The item's unit price at one quantity, after its ladder. */
+    const priceForItem = (item, qty) =>
+        priceAt(unitPriceOf(item), groupForItem(item), qty);
+
+    /**
+     * Ladder quantities are in the item's sales unit, whatever the group was
+     * written for; the calculator warns when the two differ.
+     */
+    const uomMismatch = (item) => {
+        const group = groupForItem(item);
+
+        return Boolean(
+            group && item?.uom?.sales && group.uom !== item.uom.sales,
+        );
+    };
+
+    /** The deepest band of a group — `{ from, pct }` — for the overview and the items drawer. */
+    const topOfGroup = (group) => ladderTop(group);
 
     /**
      * True when a group carries its own quantity scale rather than the shared
@@ -566,38 +650,207 @@ export const useCatalogStore = defineStore('catalog', () => {
 
     // ---- price groups -------------------------------------------------------
 
+    /** `null` for an empty form field, else the number it holds. */
+    const numberOrNull = (value) =>
+        value === '' || value === null || value === undefined
+            ? null
+            : Number(value);
+
     /**
-     * Save a pricing group. `updated` / `updatedBy` are stamped here so the
-     * overview always shows who last touched a price table.
+     * A group as the form typed it, in the shape the ladder arithmetic reads:
+     * numbers coerced, the mode's other half emptied, and every percent-mode
+     * band that starts at or below the base quantity forced to 0.
+     */
+    function normalizeGroup(draft) {
+        const mode = draft.mode || 'percent';
+        const baseQty = numberOrNull(draft.baseQty);
+        const breaks =
+            mode === 'percent' ? (draft.breaks || []).map(numberOrNull) : [];
+        const percents =
+            mode === 'percent'
+                ? breaks.map((qty, i) =>
+                      baseQty !== null && qty !== null && qty <= baseQty
+                          ? 0
+                          : numberOrNull((draft.percents || [])[i]),
+                  )
+                : [];
+        const source = draft.formula || {};
+        const formula =
+            mode === 'formula'
+                ? source.kind === 'curve'
+                    ? {
+                          kind: 'curve',
+                          k: numberOrNull(source.k),
+                          floorPct: numberOrNull(source.floorPct),
+                      }
+                    : {
+                          kind: source.kind || 'step',
+                          stepQty: numberOrNull(source.stepQty),
+                          stepPct: numberOrNull(source.stepPct),
+                          floorPct: numberOrNull(source.floorPct),
+                      }
+                : null;
+
+        return {
+            ...draft,
+            prefixes: (draft.prefixes || []).map((prefix) =>
+                String(prefix).trim(),
+            ),
+            mode,
+            baseQty,
+            breaks,
+            percents,
+            formula,
+        };
+    }
+
+    /** Why a draft cannot be saved: LADDER_ERROR_IDS, plus `prefix_conflict` when a prefix overlaps another group's. */
+    function groupErrors(draft) {
+        const group = normalizeGroup(draft);
+        const errors = validateLadder(group);
+
+        if (conflictsFor(group.prefixes, group.id || null).length) {
+            errors.push('prefix_conflict');
+        }
+
+        return errors;
+    }
+
+    /**
+     * Save a pricing group. The ladder is validated first — a shrinking ladder
+     * or an overlapping prefix is refused, never saved with a warning — and
+     * `updated` / `updatedBy` are stamped here so the overview always shows who
+     * last touched it.
      */
     function savePriceGroup(draft) {
+        const errors = groupErrors(draft);
+
+        if (errors.length) {
+            throw new Error(
+                `Price group cannot be saved: ${errors.join(', ')}`,
+            );
+        }
+
+        const rows = groupBag();
         const isNew = !draft.id;
         const group = {
-            ...draft,
-            id: draft.id || nextId('g', priceGroups.value),
+            ...normalizeGroup(draft),
+            id: draft.id || nextId('g', rows),
             updated: moment(),
             updatedBy: dataset.me?.name || dataset.session?.actor || null,
         };
+        const index = rows.findIndex((row) => row.id === group.id);
 
-        if (isNew) {
-            priceGroups.value = [...priceGroups.value, group];
+        if (index < 0) {
+            rows.push(group);
         } else {
-            priceGroups.value = priceGroups.value.map((row) =>
-                row.id === group.id ? group : row,
-            );
+            rows.splice(index, 1, group);
         }
+
+        logAction({
+            act: isNew ? 'price_group_create' : 'price_group_update',
+            entType: 'price_group',
+            ent: group.id,
+            to: group.name,
+        });
 
         persist(`price-groups/${group.id}`, group, isNew ? 'POST' : 'PUT');
 
         return group;
     }
 
+    /**
+     * Delete a group. Items that named it explicitly fall back to the prefix
+     * rule (`priceGroup: null`) so no card points at a ladder that is gone; the
+     * server cascades the same way.
+     *
+     * @returns {number} how many items were priced by the group
+     */
     function deletePriceGroup(group) {
-        priceGroups.value = priceGroups.value.filter(
-            (row) => row.id !== group.id,
-        );
+        const affected = itemsOfGroup(group.id).length;
+        const rows = groupBag();
+        const index = rows.findIndex((row) => row.id === group.id);
+
+        if (index >= 0) {
+            rows.splice(index, 1);
+        }
+
+        itemsStore.items
+            .filter((item) => item.priceGroup === group.id)
+            .forEach((item) => {
+                item.priceGroup = null;
+            });
+
+        logAction({
+            act: 'price_group_delete',
+            entType: 'price_group',
+            ent: group.id,
+            from: group.name,
+        });
 
         persist(`price-groups/${group.id}`, {}, 'DELETE');
+
+        return affected;
+    }
+
+    /**
+     * Apply the reviewed rows of a spreadsheet import: each valid row sets one
+     * band's percentage on a percent-mode group, and every touched group is
+     * saved through the normal path. A group whose imported ladder would not
+     * validate is left untouched and reported.
+     *
+     * @returns {{ applied: number, skipped: number, rejected: [{ group: string, errors: string[] }] }}
+     */
+    function applyPriceImport(rows) {
+        const drafts = new Map();
+        let skipped = 0;
+
+        rows.forEach((row) => {
+            const group = row.err ? null : groupById(row.group);
+
+            if (
+                !group ||
+                group.mode !== 'percent' ||
+                row.index === null ||
+                row.index >= group.breaks.length
+            ) {
+                skipped += 1;
+
+                return;
+            }
+
+            if (!drafts.has(group.id)) {
+                drafts.set(group.id, {
+                    ...group,
+                    percents: [...group.percents],
+                    rows: 0,
+                });
+            }
+
+            const draft = drafts.get(group.id);
+
+            draft.percents[row.index] = Number(row.next);
+            draft.rows += 1;
+        });
+
+        const rejected = [];
+        let applied = 0;
+
+        drafts.forEach(({ rows: count, ...draft }) => {
+            const errors = groupErrors(draft);
+
+            if (errors.length) {
+                rejected.push({ group: draft.id, errors });
+                skipped += count;
+
+                return;
+            }
+
+            savePriceGroup(draft);
+            applied += count;
+        });
+
+        return { applied, skipped, rejected };
     }
 
     /**
@@ -620,6 +873,7 @@ export const useCatalogStore = defineStore('catalog', () => {
         ingredientSkus,
         defaultBreaks,
         priceUoms,
+        priceImport,
         approvalPin,
 
         publishedProducts,
@@ -628,11 +882,20 @@ export const useCatalogStore = defineStore('catalog', () => {
         weightUnitsInUse,
         labelUsage,
         labelById,
+        groupById,
+        groupForItem,
+        unitPriceOf,
+        itemsOfGroup,
         skusOfGroup,
         skusForPrefixes,
+        ladderFor,
+        priceForItem,
+        uomMismatch,
+        topOfGroup,
         resolveSku,
         conflictsFor,
         isCustomScale,
+        groupErrors,
         statusTone,
 
         saveProduct,
@@ -643,6 +906,7 @@ export const useCatalogStore = defineStore('catalog', () => {
         deleteLabel,
         savePriceGroup,
         deletePriceGroup,
+        applyPriceImport,
         logExport,
     };
 });

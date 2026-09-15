@@ -84,8 +84,24 @@ export const ITEM_FAMILY_IDS = ITEM_FAMILIES.map((family) => family.id);
 /** Digits after the family prefix: `10` + `0012` → `100012`, as in SAP. */
 export const ITEM_CODE_DIGITS = 4;
 
-/** What an item takes part in. An item may carry any combination. */
-export const ITEM_FLAG_IDS = ['purchase', 'sales', 'inventory', 'batch'];
+/**
+ * What an item takes part in. An item may carry any combination, with two
+ * implications the store enforces on save: `internal` — produced in-house from a
+ * bill of materials — forces `batch`, and `batch` forces `inventory`.
+ */
+export const ITEM_FLAG_IDS = ['purchase', 'sales', 'inventory', 'batch', 'internal'];
+
+/**
+ * How a stock-tracked item that nobody counts per order is consumed. `time`
+ * posts one movement per period elapsed (a nightly job; the fixture pre-posts
+ * them); an item with no consumption record is consumed by actual usage.
+ */
+export const CONSUMPTION_MODE_IDS = ['time'];
+
+/** Consumption may only be declared on a stock-tracked item that has no batches. */
+export function consumptionAllowed(flags) {
+    return Boolean(flags?.inventory) && !flags?.batch;
+}
 
 /** Units an item is bought, sold or held in. */
 export const ITEM_UOM_IDS = ['g', 'kg', 'ml', 'l', 'unit', 'pack', 'capsule'];
@@ -126,7 +142,17 @@ export const ITEM_MANDATORY_FIELD_IDS = [
     'categories',
     'salePrice',
     'supplier',
+    'bom',
 ];
+
+/**
+ * Mandatory fields a flag adds on top of the family's: anything sold needs its
+ * unit price, anything produced in-house needs at least one bill of materials.
+ */
+export const ITEM_MANDATORY_BY_FLAG = {
+    sales: ['salePrice'],
+    internal: ['bom'],
+};
 
 /** Mandatory fields per family. A family missing here requires nothing. */
 export const ITEM_MANDATORY = {

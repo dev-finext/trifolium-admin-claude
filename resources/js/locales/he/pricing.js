@@ -25,6 +25,57 @@ export default {
         capsule: 'לקפסולה',
     },
 
+    // config/catalog.js PRICE_LADDER_MODE_IDS — how a group states its ladder.
+    mode: {
+        percent: 'אחוז הנחה לפי טווח',
+        formula: 'נוסחה',
+    },
+
+    // config/catalog.js LADDER_FORMULA_KIND_IDS
+    formulaKind: {
+        step: 'מדרגות',
+        curve: 'עקומה',
+    },
+
+    // config/catalog.js LADDER_ERROR_IDS — why the store refuses to save a group.
+    ladderError: {
+        prefix_conflict: 'תחילית חופפת לקבוצת תמחור אחרת',
+        mode: 'יש לבחור אופן חישוב — טבלת אחוזים או נוסחה',
+        base_qty: 'כמות הבסיס חייבת להיות גדולה מאפס',
+        breaks_empty: 'המחירון חייב לכלול לפחות טווח כמות אחד',
+        breaks_ascending: 'טווחי הכמות חייבים לעלות מקטן לגדול',
+        percents_length: 'לכל טווח כמות חייב להיות אחוז הנחה',
+        percent_range: 'אחוז ההנחה חייב להיות בין 0 ל־100',
+        percent_decreasing: 'ההנחה אינה יכולה לקטון ככל שהכמות עולה',
+        percent_below_base:
+            'טווח שמתחיל בכמות הבסיס או מתחתיה חייב להיות ללא הנחה',
+        formula_kind: 'יש לבחור סוג נוסחה — מדרגות או עקומה',
+        formula_params: 'פרמטרי הנוסחה חייבים להיות מספרים חיוביים',
+        floor_range: 'תקרת ההנחה חייבת להיות בין 0 ל־100',
+    },
+
+    // config/catalog.js PRICE_IMPORT_ERROR_IDS — why an imported row failed.
+    importError: {
+        group_not_found: 'קבוצת התמחור לא נמצאה',
+        range_not_in_group: 'טווח הכמות אינו קיים בקבוצה',
+        invalid_value: 'ערך לא תקין — נדרש אחוז הנחה',
+    },
+
+    // The band table the editor, the item calculator and the drawer share.
+    ladder: {
+        range: 'טווח כמות',
+        pct: 'הנחה',
+        unit: 'מחיר ליחידה',
+        unitInclVat: 'כולל מע״מ',
+        example: 'סה״כ לדוגמה',
+        base: 'בסיס',
+        off: '−{pct}',
+        floor: 'תקרה',
+        vatNote: 'המחירים מוצגים לפני מע״מ וכולל מע״מ ({rate})',
+        andUp: '{from}+',
+        upTo: '{from}–{to}',
+    },
+
     filters: {
         option: '{label} ({n})',
         searchPlaceholder: 'שם קבוצה · תחילית · מק״ט (למשל 200455)',
@@ -39,7 +90,8 @@ export default {
         fillAll: 'שיוך ומחירים — הכל',
         fillNone: 'ללא מק״טים משויכים',
         fillHas: 'עם מק״טים משויכים',
-        fillNoPrice: 'ללא מחיר בשורה הראשונה',
+        modeAria: 'אופן חישוב',
+        modeAll: 'אופן חישוב — הכל',
     },
 
     lookup: {
@@ -60,6 +112,15 @@ export default {
         custom: 'מותאם אישית · {n} טווחים',
         default: 'ברירת מחדל · {n} טווחים',
         from: 'החל מ־{price} {per}',
+        mode: 'אופן חישוב',
+        baseQty: 'כמות בסיס',
+        baseQtyValue: 'עד {qty} {uom} — ללא הנחה',
+        bands: '{n} טווחים · עד {pct}',
+        formulaStep: 'כל {step} {uom} מעל הבסיס −{pct} · תקרה {floor}',
+        formulaCurve: 'עקומה k={k} · תקרה {floor}',
+        items: 'פריטים מתומחרים',
+        itemsNone: 'אף פריט אינו מתומחר ע״י קבוצה זו',
+        itemsAria: 'הפריטים המתומחרים ע״י {name}',
         by: 'ע״י {name}',
         edit: 'עריכה',
         exportAria: 'ייצוא הקבוצה {name}',
@@ -122,6 +183,63 @@ export default {
         uomField: {
             label: 'יחידת מידה',
             choose: '— בחירה —',
+        },
+
+        baseQty: {
+            label: 'כמות בסיס',
+            hint: 'עד כמות זו (כולל) המחיר ליחידה מלא — ההנחה מתחילה מעליה. הכמות נמדדת ביחידת המכירה של הפריט.',
+            required: 'יש להזין כמות בסיס גדולה מאפס',
+        },
+
+        modePick: {
+            aria: 'אופן חישוב ההנחה',
+            percentTitle: 'טבלת אחוזים',
+            percentSub: 'אחוז הנחה קבוע לכל טווח כמות — שורה אחר שורה',
+            formulaTitle: 'נוסחה',
+            formulaSub:
+                'כמה פרמטרים קובעים את ההנחה בכל כמות — הטבלה נגזרת מהם',
+            confirmTitle: 'החלפת אופן החישוב',
+            confirmToFormula:
+                'טבלת האחוזים תימחק והקבוצה תעבור לנוסחה. השינוי ייכנס לתוקף רק לאחר שמירה.',
+            confirmToPercent:
+                'פרמטרי הנוסחה יימחקו והקבוצה תעבור לטבלת אחוזים. השינוי ייכנס לתוקף רק לאחר שמירה.',
+            confirm: 'החלפת אופן החישוב',
+        },
+
+        formula: {
+            title: 'פרמטרי הנוסחה',
+            sub: 'ההנחה מחושבת מהכמות שמעל כמות הבסיס',
+            kind: 'סוג נוסחה',
+            stepQty: 'גודל מדרגה',
+            stepQtyHint: 'כל כמה {uom} מעל הבסיס נוספת מדרגת הנחה',
+            stepPct: 'הנחה למדרגה',
+            stepPctHint: 'אחוז ההנחה שנוסף בכל מדרגה',
+            k: 'תלילות העקומה (k)',
+            kHint: 'ערך גבוה יותר — ההנחה גדלה מהר יותר. הנוסחה: 1 − (בסיס ÷ כמות)^k',
+            floorPct: 'תקרת הנחה',
+            floorPctHint: 'ההנחה לא תעלה על אחוז זה, בשום כמות',
+            floorAt: 'התקרה מושגת מ־{qty} {uom}',
+            floorNever: 'עם הפרמטרים הנוכחיים התקרה אינה מושגת',
+            preview: 'תצוגה מקדימה',
+            previewSub: 'הטבלה והגרף מחושבים לפי מחיר ליחידה לדוגמה',
+            chartAria: 'גרף מחיר ליחידה לפי כמות',
+            chartX: 'כמות ({uom})',
+            chartY: 'מחיר ליחידה (₪)',
+        },
+
+        previewPrice: {
+            label: 'מחיר ליחידה לדוגמה',
+            hint: 'משמש לתצוגה בלבד — המחיר האמיתי הוא של כל פריט בנפרד',
+        },
+
+        pctTable: {
+            pct: 'אחוז הנחה',
+            pctAria: 'אחוז הנחה בטווח {n}',
+            pctRequired: 'יש להזין אחוז הנחה',
+            pctRange: 'בין 0 ל־100',
+            pctDecreasing: 'ההנחה קטנה מהטווח הקודם',
+            pctBase: 'עד כמות הבסיס — ללא הנחה',
+            unitAt: 'מחיר ליחידה לפי {price}',
         },
 
         preview: {
@@ -229,6 +347,81 @@ export default {
         effect1: '{n} מק״טים משויכים יישארו ללא קבוצת תמחור',
         effect2: 'טבלת המחירים תימחק ולא ניתן לשחזר אותה',
         effect3: 'מק״ט ללא קבוצת תמחור לא יקבל מחיר אוטומטי בפורמולה',
+        effectItems:
+            '{n} פריטים ששויכו לקבוצה ידנית יחזרו לברירת המחדל לפי קידומת',
+    },
+
+    // The price calculator on the item card — stores/catalog.js ladderFor().
+    calculator: {
+        more: 'ועוד {n} טווחים',
+        title: 'מחשבון מחיר לפי כמות',
+        sub: 'מחיר היחידה של הפריט לאחר מחירון ״{group}״',
+        fixed: 'המחיר קבוע — לא נקבע לו מחירון מדורג',
+        fixedSub: 'הפריט נמכר במחיר היחידה שלו בכל כמות',
+        noPrice: 'לא הוזן מחיר ליחידה — המחשבון יופיע לאחר שיוזן',
+        uomMismatch: 'יחידת המחירון שונה מיחידת המכירה של הפריט',
+        uomMismatchSub:
+            'המחירון נכתב ל{groupUom}, הפריט נמכר ב{itemUom} — הכמויות מחושבות ביחידת הפריט, ללא המרה',
+        groupDefault: 'ברירת מחדל לפי קידומת: {name}',
+        groupExplicit: 'שיוך ידני: {name}',
+        groupNone: 'קבוע — ללא מחירון',
+        groupInherit: 'ברירת מחדל לפי קידומת',
+        groupInheritNone: 'ברירת מחדל לפי קידומת — אף קבוצה אינה תואמת',
+        groupMissing: 'הקבוצה שהפריט שויך אליה אינה קיימת עוד',
+        qtyLabel: 'כמות',
+        qtyAria: 'כמות לחישוב',
+        result: '{qty} {uom} ← {unit} ליחידה · {total} סה״כ',
+        resultInclVat: 'כולל מע״מ: {unit} ליחידה · {total} סה״כ',
+        atBase: 'מחיר בסיס',
+        atTop: 'מחיר בטווח הגבוה ביותר ({from}+)',
+    },
+
+    // The drawer behind the "items priced" count — stores/catalog.js itemsOfGroup().
+    itemsDrawer: {
+        title: 'פריטים המתומחרים ע״י ״{name}״',
+        sub: '{n} פריטים · לפי שיוך ידני או לפי קידומת מק״ט',
+        close: 'סגירה',
+        open: 'פתיחת כרטיס הפריט',
+        col: {
+            code: 'מק״ט',
+            name: 'שם הפריט',
+            uom: 'יח׳ מכירה',
+            unitPrice: 'מחיר ליחידה',
+            atBase: 'בבסיס ({qty}+)',
+            atTop: 'בטווח הגבוה ({qty}+)',
+            assignment: 'אופן השיוך',
+        },
+        assignment: {
+            default: 'לפי קידומת {prefix}',
+            explicit: 'שיוך ידני',
+        },
+        noPrice: 'ללא מחיר',
+        uomMismatch: 'יחידת המכירה שונה מיחידת המחירון',
+        empty: 'אף פריט אינו מתומחר ע״י קבוצה זו',
+        emptySub:
+            'הוסיפו תחילית מק״ט שתואמת פריטים, או שייכו פריטים לקבוצה מכרטיס הפריט',
+        export: 'ייצוא הרשימה',
+    },
+
+    // The spreadsheet import review — stores/catalog.js applyPriceImport().
+    import: {
+        title: 'ייבוא מחירון מקובץ',
+        file: 'קובץ: {name}',
+        sub: '{n} שורות · {ok} תקינות · {bad} שגויות',
+        col: {
+            group: 'קבוצת תמחור',
+            range: 'טווח כמות',
+            old: 'הנחה נוכחית',
+            next: 'הנחה חדשה',
+            state: 'מצב',
+        },
+        ok: 'תקין',
+        raw: 'ערך בקובץ: ״{raw}״',
+        apply: 'החלת {n} שורות תקינות',
+        applied: 'המחירון עודכן',
+        appliedBody: '{applied} שורות הוחלו · {skipped} נדחו',
+        rejected: 'הקבוצה ״{group}״ לא עודכנה — המחירון המתקבל אינו תקין',
+        formulaGroup: 'קבוצה בנוסחה — שורות מקובץ אינן חלות עליה',
     },
 
     toast: {
@@ -244,7 +437,7 @@ export default {
         colPrefixes: 'תחיליות מק״ט',
         colUom: 'יחידת מידה',
         colRange: 'טווח כמות',
-        colPrice: 'מחיר ליחידה',
+        colPct: 'אחוז הנחה',
         rows: '{n} שורות',
     },
 };

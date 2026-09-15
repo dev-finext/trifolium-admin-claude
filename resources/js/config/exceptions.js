@@ -9,6 +9,7 @@
 export const EXCEPTION_TYPES = [
     { id: 'credit_debt', tone: 'red' },
     { id: 'doc_failed', tone: 'red' },
+    { id: 'alloc_refused', tone: 'red' },
     { id: 'link_expiring', tone: 'amber' },
     { id: 'address', tone: 'red' },
     { id: 'msg', tone: 'red' },
@@ -28,6 +29,7 @@ export const EXCEPTION_IDS = EXCEPTION_TYPES.map((type) => type.id);
 export const FINANCE_EXCEPTION_IDS = [
     'credit_debt',
     'doc_failed',
+    'alloc_refused',
     'link_expiring',
 ];
 

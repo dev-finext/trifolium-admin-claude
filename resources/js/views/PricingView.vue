@@ -1,17 +1,22 @@
 <script setup>
-// ניהול שוטף › מחירונים מדורגים — formula ingredients priced by quantity.
+// כרטיס פריט › מחירונים מדורגים — the discount ladders items are priced by.
 //
-// A pricing group owns SKU prefixes, a unit of measure and one price per
-// quantity band; a SKU is priced by the group holding the longest matching
-// prefix. Typing a full SKU into the search answers "who prices this?" on the
-// spot.
+// A pricing group owns SKU prefixes, a unit and a ladder: how much comes off
+// an item's own unit price as the quantity grows, either as a percent per
+// band or as a formula. The price itself lives on each item; an item is
+// priced by the group it names, or else by the group holding the longest
+// matching prefix. Typing a full SKU into the search answers "who prices
+// this?" on the spot.
 //
-// Filters and the open editor live in the query string, so a filtered view or
-// an open group can be pasted to a colleague and opens identically.
+// Filters, the open editor and the open items list live in the query string,
+// so a filtered view or an open group can be pasted to a colleague and opens
+// identically.
 import { computed, ref } from 'vue';
 import { I18nT, useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
 import PageHead from '@/components/layout/PageHead.vue';
+import ItemsOfGroupDrawer from '@/components/pricing/ItemsOfGroupDrawer.vue';
 import PriceGroupEditor from '@/components/pricing/PriceGroupEditor.vue';
 import PriceGroupList from '@/components/pricing/PriceGroupList.vue';
 import AButton from '@/components/ui/AButton.vue';
@@ -26,13 +31,12 @@ import FilterBar from '@/components/ui/FilterBar.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
+import { PRICE_LADDER_MODE_IDS } from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
-import {
-    bandText,
-    PRICE_SKU_QUERY_MIN_DIGITS,
-    useCatalogStore,
-} from '@/stores/catalog';
+import { ladderTable } from '@/lib/ladder';
+import { num, pct } from '@/lib/money';
+import { PRICE_SKU_QUERY_MIN_DIGITS, useCatalogStore } from '@/stores/catalog';
 import { useDatasetStore } from '@/stores/dataset';
 
 /** How many skeleton rows stand in for the grid while the dataset loads. */
@@ -47,15 +51,17 @@ const SKU_QUERY_RE = new RegExp(`^\\d{${PRICE_SKU_QUERY_MIN_DIGITS},}$`);
 const { t } = useI18n();
 const { loc, searchHaystack } = useLocalized();
 const { push } = useToast();
+const router = useRouter();
 const dataset = useDatasetStore();
 const catalog = useCatalogStore();
 
 const view = useUrlState({
     q: '',
     uom: '',
-    scale: '',
+    mode: '',
     fill: '',
     edit: '',
+    items: '',
 });
 
 /** The pending delete confirmation. Not a view state, so not in the URL. */
@@ -78,25 +84,17 @@ const shown = computed(() =>
             return false;
         }
 
-        if (view.scale === 'custom' && !catalog.isCustomScale(group)) {
+        if (view.mode && group.mode !== view.mode) {
             return false;
         }
 
-        if (view.scale === 'default' && catalog.isCustomScale(group)) {
-            return false;
-        }
-
-        const matched = catalog.skusOfGroup(group.id).length;
+        const matched = catalog.itemsOfGroup(group.id).length;
 
         if (view.fill === 'none' && matched) {
             return false;
         }
 
         if (view.fill === 'has' && !matched) {
-            return false;
-        }
-
-        if (view.fill === 'noprice' && group.uom && group.prices[0] != null) {
             return false;
         }
 
@@ -116,13 +114,13 @@ const shown = computed(() =>
 );
 
 const dirty = computed(() =>
-    Boolean(term.value || view.uom || view.scale || view.fill),
+    Boolean(term.value || view.uom || view.mode || view.fill),
 );
 
 function clearFilters() {
     view.q = '';
     view.uom = '';
-    view.scale = '';
+    view.mode = '';
     view.fill = '';
 }
 
@@ -147,24 +145,15 @@ const uomOptions = computed(() => {
     ];
 });
 
-const scaleOptions = computed(() => [
-    { value: '', label: t('pricing.filters.scaleAll') },
-    {
-        value: 'custom',
+const modeOptions = computed(() => [
+    { value: '', label: t('pricing.filters.modeAll') },
+    ...PRICE_LADDER_MODE_IDS.map((id) => ({
+        value: id,
         label: option(
-            t('pricing.filters.scaleCustom'),
-            catalog.priceGroups.filter((group) => catalog.isCustomScale(group))
-                .length,
+            t(`pricing.mode.${id}`),
+            catalog.priceGroups.filter((group) => group.mode === id).length,
         ),
-    },
-    {
-        value: 'default',
-        label: option(
-            t('pricing.filters.scaleDefault'),
-            catalog.priceGroups.filter((group) => !catalog.isCustomScale(group))
-                .length,
-        ),
-    },
+    })),
 ]);
 
 const fillOptions = computed(() => [
@@ -174,12 +163,11 @@ const fillOptions = computed(() => [
         label: option(
             t('pricing.filters.fillNone'),
             catalog.priceGroups.filter(
-                (group) => !catalog.skusOfGroup(group.id).length,
+                (group) => !catalog.itemsOfGroup(group.id).length,
             ).length,
         ),
     },
     { value: 'has', label: t('pricing.filters.fillHas') },
-    { value: 'noprice', label: t('pricing.filters.fillNoPrice') },
 ]);
 
 // ---- the editor drawer --------------------------------------------------------
@@ -198,8 +186,22 @@ const editing = computed(() => {
     return group ? { group } : null;
 });
 
+/** The group whose items list is open. */
+const listing = computed(
+    () => catalog.priceGroups.find((row) => row.id === view.items) || null,
+);
+
 function openEdit(group) {
     view.edit = group.id;
+}
+
+function openItems(group) {
+    view.items = group.id;
+}
+
+function openItem(sku) {
+    view.items = '';
+    router.push({ name: 'ingredients', query: { item: sku } });
 }
 
 function onSave(draft) {
@@ -215,7 +217,12 @@ function onSave(draft) {
 // ---- delete -------------------------------------------------------------------
 
 function askRemove(group) {
-    const matched = catalog.skusOfGroup(group.id).length;
+    const matched = catalog.itemsOfGroup(group.id).length;
+    const explicit = matched
+        ? catalog
+              .itemsOfGroup(group.id)
+              .filter((item) => item.priceGroup === group.id).length
+        : 0;
 
     ask.value = {
         title: t('pricing.confirmDelete.title'),
@@ -223,7 +230,7 @@ function askRemove(group) {
         confirmLabel: t('pricing.confirmDelete.confirm'),
         effects: [
             t('pricing.confirmDelete.effect1', { n: matched }),
-            t('pricing.confirmDelete.effect2'),
+            t('pricing.confirmDelete.effectItems', { n: explicit }),
             t('pricing.confirmDelete.effect3'),
         ],
         done: () => {
@@ -246,14 +253,21 @@ function confirmAsk() {
 
 // ---- export ---------------------------------------------------------------------
 
-/** One CSV row per quantity band of one group. */
+/** One CSV row per band of one group, the ladder sampled at a unit price of 1. */
 function groupRows(group) {
-    return group.breaks.map((lo, index) => [
+    const uom = group.uom ? t(`pricing.uom.${group.uom}`) : '';
+
+    return ladderTable(group, 1, 0, catalog.defaultBreaks).map((row) => [
         loc(group.name),
         group.prefixes.join(' '),
-        group.uom ? t(`pricing.uom.${group.uom}`) : '',
-        bandText(group.breaks, index),
-        group.prices[index] == null ? '' : group.prices[index],
+        uom,
+        row.to == null
+            ? t('pricing.ladder.andUp', { from: num(row.from) })
+            : t('pricing.ladder.upTo', {
+                  from: num(row.from),
+                  to: num(row.to),
+              }),
+        pct(row.pct, 1),
     ]);
 }
 
@@ -263,7 +277,7 @@ function header() {
         t('pricing.export.colPrefixes'),
         t('pricing.export.colUom'),
         t('pricing.export.colRange'),
-        t('pricing.export.colPrice'),
+        t('pricing.export.colPct'),
     ];
 }
 
@@ -351,9 +365,9 @@ function exportGroup(group) {
                     :aria-label="t('pricing.filters.uomAria')"
                 />
                 <ASelect
-                    v-model="view.scale"
-                    :options="scaleOptions"
-                    :aria-label="t('pricing.filters.scaleAria')"
+                    v-model="view.mode"
+                    :options="modeOptions"
+                    :aria-label="t('pricing.filters.modeAria')"
                 />
                 <ASelect
                     v-model="view.fill"
@@ -410,6 +424,7 @@ function exportGroup(group) {
                 :selected="editing?.group?.id || null"
                 @row="openEdit"
                 @edit="openEdit"
+                @items="openItems"
                 @export="exportGroup"
                 @remove="askRemove"
             />
@@ -422,6 +437,12 @@ function exportGroup(group) {
             @close="view.edit = ''"
             @save="onSave"
             @export="editing.group && exportGroup(editing.group)"
+        />
+
+        <ItemsOfGroupDrawer
+            :group="listing"
+            @close="view.items = ''"
+            @open-item="openItem"
         />
 
         <ConfirmDialog

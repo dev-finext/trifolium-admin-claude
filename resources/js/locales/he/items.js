@@ -50,6 +50,7 @@ export default {
         sales: 'מכירה',
         inventory: 'מלאי',
         batch: 'אצוות',
+        internal: 'רכיב פנימי',
     },
 
     safetyContext: {
@@ -91,6 +92,7 @@ export default {
         categories: 'קטגוריות אתר',
         salePrice: 'מחיר מכירה',
         supplier: 'ספק קבוע',
+        bom: 'עץ מוצר',
     },
 
     siteGroup: {

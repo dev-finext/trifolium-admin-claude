@@ -4,6 +4,8 @@
 //
 // `state` is what the last probe returned — it is a stored reading, not a live
 // one. Nothing on this board re-checks itself on a timer.
+import { DOC_PROVIDER } from '@/config';
+import { MSG_PROVIDER, PAY_PROVIDER } from '@/config/integrations';
 import { now } from '@/lib/dates';
 import { L } from '@/lib/localized';
 
@@ -27,7 +29,7 @@ export function buildServices() {
     return [
         {
             id: 'gc',
-            sys: L('GoCredit'),
+            sys: L(PAY_PROVIDER.name),
             sysIcon: 'card',
             label: L('סליקה', 'Card processing'),
             ep: '/v2/payments',
@@ -40,7 +42,7 @@ export function buildServices() {
         },
         {
             id: 'gc_link',
-            sys: L('GoCredit'),
+            sys: L(PAY_PROVIDER.name),
             sysIcon: 'card',
             label: L('קישורי תשלום', 'Payment links'),
             ep: '/v2/payment-links',
@@ -52,11 +54,11 @@ export function buildServices() {
             err: null,
         },
         {
-            id: 'gi_doc',
-            sys: L('Green Invoice'),
+            id: 'ic_doc',
+            sys: L(DOC_PROVIDER.name),
             sysIcon: 'file_text',
             label: L('הפקת מסמכים', 'Document issue'),
-            ep: '/api/v1/documents',
+            ep: '/api/v3.php/doc/create',
             state: 'slow',
             ms: 5240,
             last: '14:00',
@@ -65,11 +67,11 @@ export function buildServices() {
             err: null,
         },
         {
-            id: 'gi_alloc',
-            sys: L('Green Invoice'),
+            id: 'ic_alloc',
+            sys: L(DOC_PROVIDER.name),
             sysIcon: 'file_text',
             label: L('מספרי הקצאה', 'Allocation numbers'),
-            ep: '/documents/allocation',
+            ep: '/api/v3.php/doc/allocation',
             state: 'down',
             ms: null,
             last: '13:38',
@@ -82,7 +84,7 @@ export function buildServices() {
         },
         {
             id: 'inforu_wa',
-            sys: L('InForU'),
+            sys: L(MSG_PROVIDER.name),
             sysIcon: 'whatsapp',
             label: L('ווטסאפ', 'WhatsApp'),
             ep: '/api/v2/whatsapp',
@@ -95,7 +97,7 @@ export function buildServices() {
         },
         {
             id: 'inforu_sms',
-            sys: L('InForU'),
+            sys: L(MSG_PROVIDER.name),
             sysIcon: 'mail',
             label: L('SMS'),
             ep: '/api/v2/sms',
@@ -108,7 +110,7 @@ export function buildServices() {
         },
         {
             id: 'inforu_mail',
-            sys: L('InForU'),
+            sys: L(MSG_PROVIDER.name),
             sysIcon: 'mail',
             label: L('אימייל', 'Email'),
             ep: '/api/v2/email',

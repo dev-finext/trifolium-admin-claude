@@ -49,6 +49,7 @@ export default {
         sales: 'Sales',
         inventory: 'Inventory',
         batch: 'Batches',
+        internal: 'Internal component',
     },
 
     safetyContext: {
@@ -89,6 +90,7 @@ export default {
         categories: 'Site categories',
         salePrice: 'Sale price',
         supplier: 'Preferred supplier',
+        bom: 'Bill of materials',
     },
 
     siteGroup: {

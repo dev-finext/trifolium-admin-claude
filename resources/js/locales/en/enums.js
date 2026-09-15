@@ -50,6 +50,11 @@ export default {
             short: 'Document failed',
             fix: 'Re-issue through the invoice provider',
         },
+        alloc_refused: {
+            label: 'Allocation number refused',
+            short: 'Allocation refused',
+            fix: 'Request the allocation again from the tax authority through the document provider',
+        },
         link_expiring: {
             label: 'Payment link expires within 24 hours',
             short: 'Link expiring',
@@ -96,6 +101,14 @@ export default {
         invrec_multi: {
             name: 'Consolidated tax invoice/receipt',
             when: 'A collection-link payment — one document for every order in the link',
+        },
+        inv: {
+            name: 'Tax invoice',
+            when: 'A practitioner on credit terms — the monthly charge, before payment arrives',
+        },
+        receipt: {
+            name: 'Receipt',
+            when: 'A payment that arrived against a tax invoice already issued',
         },
         credit: {
             name: 'Credit note',
@@ -194,6 +207,12 @@ export default {
         allocated_to_compounding: 'Allocated to compounding',
         released_on_cancel: 'Order cancelled — stock released',
         adjustment: 'Stock adjustment',
+        production_out: 'Consumed in production',
+        production_in: 'Production output',
+        waste_in: 'Production waste',
+        waste_merge: 'Waste merged',
+        time_consumption: 'Consumption over time',
+        count: 'Stock count',
     },
     // `hint` explains what the reason does to the quantity — a count *sets* it,
     // the other two *deduct* from a named batch.
@@ -282,6 +301,9 @@ export default {
         tag_create: 'Tag created',
         tag_rename: 'Tag renamed',
         tag_delete: 'Tag deleted',
+        price_group_create: 'Pricing group created',
+        price_group_update: 'Pricing group updated',
+        price_group_delete: 'Pricing group deleted',
         ingredient_create: 'Ingredient created',
         ingredient_update: 'Ingredient updated',
         ingredient_delete: 'Ingredient deleted',
