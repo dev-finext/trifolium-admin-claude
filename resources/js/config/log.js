@@ -47,6 +47,10 @@ export const LOG_ACTION_IDS = [
     'po_update',
     'po_cancel',
     'po_receive',
+    'production_create',
+    'production_issue',
+    'production_complete',
+    'production_cancel',
     'supplier_note_close',
     'inventory_settings_update',
     // orders & deliveries (V2)

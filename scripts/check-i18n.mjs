@@ -96,7 +96,11 @@ const ENUM_NAMESPACES = [
     ['@/config/finance', 'DOC_TYPES', 'docType', 'name'],
     ['@/config/finance', 'LINK_STATE_IDS', 'finance.linkState'],
     ['@/config/finance', 'PAYMENT_METHODS', 'paymentMethod'],
-    ['@/config/integrations', 'CONNECTION_IDS', 'integrations.connections.what'],
+    [
+        '@/config/integrations',
+        'CONNECTION_IDS',
+        'integrations.connections.what',
+    ],
     ['@/config/integrations', 'CONNECTION_IDS', 'integrations.impact'],
     ['@/config/inventory', 'ADJUST_REASONS', 'adjustReason', 'name'],
     ['@/config/inventory', 'BATCH_STATE_IDS', 'batchState'],
@@ -120,6 +124,7 @@ const ENUM_NAMESPACES = [
     ['@/config/items', 'SAFETY_CONTEXT_IDS', 'items.safetyContext'],
     ['@/config/items', 'SAFETY_LEVEL_IDS', 'items.safetyLevel'],
     ['@/config/items', 'SITE_CATEGORY_GROUP_IDS', 'items.siteGroup'],
+    ['@/config/production', 'PRODUCTION_STATE_IDS', 'production.state'],
     ['@/config/purchasing', 'BATCH_SOURCE_IDS', 'inventory.batchSource'],
     ['@/config/purchasing', 'PICK_MODE_IDS', 'inventory.pickMode'],
     ['@/config/purchasing', 'PO_STATE_IDS', 'purchasing.state'],
@@ -208,9 +213,7 @@ for (const [module, name, prefix, suffix] of ENUM_NAMESPACES) {
     }
 
     for (const id of idsOf(list, `${module} ${name}`)) {
-        const key = suffix
-            ? `${prefix}.${id}.${suffix}`
-            : `${prefix}.${id}`;
+        const key = suffix ? `${prefix}.${id}.${suffix}` : `${prefix}.${id}`;
 
         if (!he.has(key)) {
             unlabelledIds.push(`${key}  (${name})`);

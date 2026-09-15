@@ -360,6 +360,23 @@ export const useInventoryStore = defineStore('inventory', () => {
             BATCH_SERIES,
     );
 
+    /**
+     * The next number in one batch series — `supplier`, `production` or
+     * `waste` — read off the batches that already carry its prefix.
+     */
+    const nextBatchIn = (source) => {
+        const series =
+            dataset.data.inventorySettings?.batchSeries?.[source] ||
+            BATCH_SERIES;
+
+        return nextSerial(
+            batches.value
+                .map((batch) => batch.id)
+                .filter((batchId) => String(batchId).startsWith(series)),
+            series,
+        );
+    };
+
     /** The batch number the next receipt line would open. */
     const nextBatchNo = computed(() =>
         nextSerial(
@@ -677,6 +694,32 @@ export const useInventoryStore = defineStore('inventory', () => {
      * @returns {Promise<{before: number, after: number, diff: number,
      *                    moved: Array<{id: string, delta: number}>}>}
      */
+    /**
+     * Open a batch that did not come through a goods receipt — a production
+     * run's output or its waste. The record is completed with the fields every
+     * batch carries, aged against its expiry, and put first in the list.
+     */
+    function openBatch(record) {
+        const batch = {
+            receipt: null,
+            production: null,
+            supplier: null,
+            supplierBatch: null,
+            remaining: record.qty,
+            daysToExp: -daysSince(record.expiry),
+            state: 'active',
+            waste: false,
+            unitCost: null,
+            components: null,
+            ...record,
+        };
+
+        syncBatch(batch);
+        bag('batches').unshift(batch);
+
+        return batch;
+    }
+
     /**
      * Fold every open waste batch of an item into one new W- batch, so the
      * pile of small ones a year of grinding leaves behind reads as one line.
@@ -1117,6 +1160,11 @@ export const useInventoryStore = defineStore('inventory', () => {
         receiptById,
         batchesOf,
         openBatchesOf,
+        nextBatchIn,
+        openBatch,
+        syncRow,
+        syncBatch,
+        writeMovement,
         wasteBatchesOf,
         wasteOf,
         runOutOn,

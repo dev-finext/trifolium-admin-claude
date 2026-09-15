@@ -12,6 +12,7 @@ export * from '@/config/finance';
 export * from '@/config/gates';
 export * from '@/config/inventory';
 export * from '@/config/items';
+export * from '@/config/production';
 export * from '@/config/purchasing';
 export * from '@/config/reports';
 export * from '@/config/log';

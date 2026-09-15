@@ -21,6 +21,7 @@ import messaging from '@/locales/en/messaging';
 import nav from '@/locales/en/nav';
 import orders from '@/locales/en/orders';
 import pricing from '@/locales/en/pricing';
+import production from '@/locales/en/production';
 import products from '@/locales/en/products';
 import purchasing from '@/locales/en/purchasing';
 import reports from '@/locales/en/reports';
@@ -56,6 +57,7 @@ export default {
     nav,
     orders,
     pricing,
+    production,
     products,
     purchasing,
     reports,

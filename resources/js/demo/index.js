@@ -91,6 +91,7 @@ import {
     buildPriceImport,
     DEMO_PRICE_BREAKS,
 } from '@/demo/pricing';
+import { buildProductionOrders } from '@/demo/production';
 import {
     buildProducts,
     DEFAULT_MIN_STOCK,
@@ -157,6 +158,18 @@ export function buildDataset() {
     const items = buildItems(stock, products, DEMO_SUPPLIERS);
     const purchaseOrders = buildPurchaseOrders(items, DEMO_SUPPLIERS);
     const supplierNotes = buildSupplierNotes(purchaseOrders, receipts);
+    const boms = buildBoms(stock, products);
+    // The runs that made the in-house items: they consume component batches,
+    // open the parents' batches and leave movements behind, so they come after
+    // everything they touch and before the ledger is assembled.
+    const production = buildProductionOrders({
+        boms,
+        items,
+        stock,
+        batches,
+        prepTypes: PREP_TYPES,
+        settings: INVENTORY_SETTINGS,
+    });
     // The supplier's side of the money: what was billed for the deliveries,
     // and what was paid against those bills.
     const supplierInvoices = buildSupplierInvoices(
@@ -208,7 +221,8 @@ export function buildDataset() {
         // managed preparation types, the bills of materials, the files
         items,
         prepTypes: PREP_TYPES,
-        boms: buildBoms(stock, products),
+        boms,
+        productionOrders: production.orders,
         attachments: [
             ...buildAttachments(stock, batches),
             ...buildSupplierFiles(supplierInvoices, supplierPayments),
@@ -237,7 +251,12 @@ export function buildDataset() {
         receipts,
         batches,
         batchUse,
-        movements: buildMovements(receipts, batchUse, stock),
+        movements: [
+            ...buildMovements(receipts, batchUse, stock),
+            ...production.movements,
+        ].sort((a, b) =>
+            `${b.when.iso}${b.id}`.localeCompare(`${a.when.iso}${a.id}`),
+        ),
         stockKinds: STOCK_KINDS,
         ingredientPricePrefix: INGREDIENT_PRICE_PREFIX,
 
