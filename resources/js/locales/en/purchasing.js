@@ -6,7 +6,162 @@ export default {
     tab: {
         pos: 'Purchase orders',
         notes: 'Supplier delivery notes',
+        invoices: 'Supplier invoices',
+        payments: 'Supplier payments',
         consumption: 'Consumption report',
+    },
+
+    // config/purchasing.js SUPPLIER_INVOICE_STATE_IDS
+    invoiceState: {
+        open: 'Open',
+        partial: 'Partly paid',
+        paid: 'Paid',
+        disputed: 'Disputed',
+    },
+
+    // config/purchasing.js INVOICE_DUE_STATE_IDS
+    invoiceDue: {
+        overdue: 'Overdue',
+        week: 'Due this week',
+        later: 'On time',
+        settled: 'Settled',
+    },
+
+    // config/finance.js EXPENSE_CATEGORY_IDS — the demo's list; the accountant's is
+    // the one that counts.
+    expenseCategory: {
+        raw_materials: 'Raw materials',
+        packaging: 'Packaging',
+        lab_supplies: 'Lab supplies',
+        shipping: 'Shipping',
+        equipment: 'Equipment',
+        rent: 'Rent',
+        utilities: 'Utilities',
+        professional_services: 'Professional services',
+        marketing: 'Marketing',
+        other: 'Other',
+    },
+
+    // config/suppliers.js SUPPLIER_PAYMENT_METHOD_IDS
+    payMethod: {
+        transfer: 'Bank transfer',
+        check: 'Cheque',
+        card: 'Credit card',
+        cash: 'Cash',
+    },
+
+    invoices: {
+        count: 'invoices · of {total}',
+        search: 'Number · supplier · delivery note',
+        stateAll: 'State — all',
+        capture: 'Capture invoice',
+        noNotes: 'No delivery note',
+        openOf: '{open} still owed',
+        sent: 'Sent to accounting',
+        markSent: 'Mark sent to accounting',
+        file: 'Show the scanned invoice',
+        dispute: 'Dispute',
+        undispute: 'End the dispute',
+        disputeTitle: 'Disputed invoice',
+        disputeBody:
+            'Invoice {num} from {supplier}. No payment is recorded against it while disputed.',
+        empty: 'No supplier invoices match',
+        emptySub: 'Clear the filters or capture a new invoice',
+        kpi: {
+            open: 'Open payables',
+            openSub: '{n} invoices',
+            overdue: 'Overdue',
+            overdueSub: '{n} invoices',
+            week: 'Due this week',
+            weekSub: 'By the supplier’s payment terms',
+            paidMonth: 'Paid this month',
+            paidMonthSub: 'All supplier payments',
+        },
+        col: {
+            id: 'Invoice',
+            supplier: 'Supplier',
+            date: 'Date',
+            due: 'Due',
+            notes: 'Delivery notes',
+            category: 'Category',
+            total: 'Total incl. VAT',
+            state: 'State',
+            accounting: 'Accounting',
+        },
+        toast: {
+            captured: 'Invoice captured',
+            capturedBody: 'Invoice {num} · {total}',
+            sent: 'Marked as sent to accounting',
+            disputed: 'Dispute state updated',
+        },
+    },
+
+    capture: {
+        title: 'Capture a supplier invoice',
+        supplier: 'Supplier',
+        supplierChoose: 'Choose a supplier…',
+        num: 'The supplier’s invoice number',
+        date: 'Invoice date',
+        notes: 'Delivery notes the invoice covers',
+        notesPick: 'Choose a supplier to see its open delivery notes',
+        notesNone:
+            'This supplier has no open delivery notes — the invoice is captured without a delivery',
+        category: 'Expense category',
+        net: 'Amount before VAT',
+        netHint: 'Empty — from the chosen delivery notes’ lines ({notes})',
+        total: 'Total payable',
+        vat: 'VAT {vat}',
+        file: 'The scanned invoice',
+        fileHint:
+            'PDF or image · kept on the invoice and passed to the accountant',
+        note: 'Note',
+        save: 'Capture the invoice',
+    },
+
+    payments: {
+        count: 'payments · of {total}',
+        search: 'Reference · supplier · invoice',
+        record: 'Record payment',
+        receipt: 'Receipt',
+        empty: 'No supplier payments',
+        emptySub: 'Record a payment to close open invoices',
+        col: {
+            id: 'Payment',
+            supplier: 'Supplier',
+            date: 'Date',
+            amount: 'Amount',
+            method: 'Method',
+            reference: 'Reference',
+            invoices: 'Invoices closed',
+            receipt: 'Receipt',
+        },
+        toast: {
+            recorded: 'Payment recorded',
+            recordedBody: '{amount} · {n} invoices',
+        },
+    },
+
+    pay: {
+        title: 'Record a supplier payment',
+        supplier: 'Supplier',
+        date: 'Payment date',
+        method: 'Payment method',
+        reference: 'Reference number',
+        referenceHint: 'The bank transfer reference or the cheque number',
+        invoices: 'Invoices this payment closes',
+        invoicesPick: 'Choose a supplier to see its open invoices',
+        invoicesNone: 'This supplier has no open invoices',
+        open: 'Still owed',
+        amount: 'Paying now',
+        total: 'Payment total',
+        receipt: 'Receipt file',
+        receiptHint:
+            'The receipt the supplier issued for the payment · PDF or image',
+        note: 'Note',
+        save: 'Record the payment',
+        blockedCompliance:
+            'Payment cannot be recorded: the supplier’s bookkeeping certificate is missing or expired. Purchasing is not blocked — payment is.',
+        blockedAllocation: 'An amount exceeds what the invoice still owes',
     },
 
     action: {

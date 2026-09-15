@@ -126,6 +126,18 @@ const ENUM_NAMESPACES = [
     ['@/config/items', 'SITE_CATEGORY_GROUP_IDS', 'items.siteGroup'],
     ['@/config/production', 'PRODUCTION_STATE_IDS', 'production.state'],
     ['@/config/purchasing', 'BATCH_SOURCE_IDS', 'inventory.batchSource'],
+    [
+        '@/config/purchasing',
+        'SUPPLIER_INVOICE_STATE_IDS',
+        'purchasing.invoiceState',
+    ],
+    ['@/config/purchasing', 'INVOICE_DUE_STATE_IDS', 'purchasing.invoiceDue'],
+    ['@/config/finance', 'EXPENSE_CATEGORY_IDS', 'purchasing.expenseCategory'],
+    [
+        '@/config/suppliers',
+        'SUPPLIER_PAYMENT_METHOD_IDS',
+        'purchasing.payMethod',
+    ],
     ['@/config/purchasing', 'PICK_MODE_IDS', 'inventory.pickMode'],
     ['@/config/purchasing', 'PO_STATE_IDS', 'purchasing.state'],
     ['@/config/purchasing', 'SUPPLIER_NOTE_STATE_IDS', 'purchasing.noteState'],

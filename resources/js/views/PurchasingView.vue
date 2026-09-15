@@ -11,7 +11,9 @@ import PurchaseOrderDrawer from '@/components/purchasing/PurchaseOrderDrawer.vue
 import PurchaseOrderEditor from '@/components/purchasing/PurchaseOrderEditor.vue';
 import PurchaseOrdersTab from '@/components/purchasing/PurchaseOrdersTab.vue';
 import ReceiveAgainstPoModal from '@/components/purchasing/ReceiveAgainstPoModal.vue';
+import SupplierInvoicesTab from '@/components/purchasing/SupplierInvoicesTab.vue';
 import SupplierNotesTab from '@/components/purchasing/SupplierNotesTab.vue';
+import SupplierPaymentsTab from '@/components/purchasing/SupplierPaymentsTab.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AErrorState from '@/components/ui/AErrorState.vue';
 import ASkeleton from '@/components/ui/ASkeleton.vue';
@@ -50,6 +52,17 @@ const tabs = computed(() => [
         label: t('purchasing.tab.notes'),
         icon: 'file_text',
         n: counts.value.notes || undefined,
+    },
+    {
+        id: 'invoices',
+        label: t('purchasing.tab.invoices'),
+        icon: 'file_text',
+        n: store.payableKpis.overdueCount || undefined,
+    },
+    {
+        id: 'payments',
+        label: t('purchasing.tab.payments'),
+        icon: 'coin',
     },
     {
         id: 'consumption',
@@ -122,6 +135,11 @@ function onCancelled(po) {
             v-else-if="view.tab === 'notes'"
             @open-po="view.po = $event"
         />
+        <SupplierInvoicesTab
+            v-else-if="view.tab === 'invoices'"
+            @open-po="view.po = $event"
+        />
+        <SupplierPaymentsTab v-else-if="view.tab === 'payments'" />
         <ConsumptionTab v-else-if="view.tab === 'consumption'" />
     </template>
 

@@ -6,7 +6,160 @@ export default {
     tab: {
         pos: 'הזמנות רכש',
         notes: 'תעודות משלוח ספק',
+        invoices: 'חשבוניות ספק',
+        payments: 'תשלומים לספקים',
         consumption: 'דוח צריכה',
+    },
+
+    // config/purchasing.js SUPPLIER_INVOICE_STATE_IDS
+    invoiceState: {
+        open: 'פתוחה',
+        partial: 'שולמה חלקית',
+        paid: 'שולמה',
+        disputed: 'במחלוקת',
+    },
+
+    // config/purchasing.js INVOICE_DUE_STATE_IDS
+    invoiceDue: {
+        overdue: 'עבר מועד התשלום',
+        week: 'לתשלום השבוע',
+        later: 'במועד',
+        settled: 'סולקה',
+    },
+
+    // config/finance.js EXPENSE_CATEGORY_IDS — the demo's list; the accountant's is
+    // the one that counts.
+    expenseCategory: {
+        raw_materials: 'חומרי גלם',
+        packaging: 'אריזות',
+        lab_supplies: 'ציוד מעבדה',
+        shipping: 'משלוחים',
+        equipment: 'ציוד',
+        rent: 'שכירות',
+        utilities: 'חשמל, מים ותקשורת',
+        professional_services: 'שירותים מקצועיים',
+        marketing: 'שיווק',
+        other: 'אחר',
+    },
+
+    // config/suppliers.js SUPPLIER_PAYMENT_METHOD_IDS
+    payMethod: {
+        transfer: 'העברה בנקאית',
+        check: 'צ׳ק',
+        card: 'כרטיס אשראי',
+        cash: 'מזומן',
+    },
+
+    invoices: {
+        count: 'חשבוניות · מתוך {total}',
+        search: 'מספר · ספק · תעודת משלוח',
+        stateAll: 'מצב — הכל',
+        capture: 'קליטת חשבונית',
+        noNotes: 'ללא תעודת משלוח',
+        openOf: 'נותר לתשלום {open}',
+        sent: 'נשלחה להנה״ח',
+        markSent: 'סימון נשלחה להנה״ח',
+        file: 'הצגת החשבונית הסרוקה',
+        dispute: 'מחלוקת',
+        undispute: 'סיום המחלוקת',
+        disputeTitle: 'חשבונית במחלוקת',
+        disputeBody:
+            'חשבונית {num} של {supplier}. בזמן המחלוקת לא נרשם עליה תשלום.',
+        empty: 'אין חשבוניות ספק שמתאימות',
+        emptySub: 'נקו את הסינון או קלטו חשבונית חדשה',
+        kpi: {
+            open: 'פתוח לתשלום',
+            openSub: '{n} חשבוניות',
+            overdue: 'עבר מועד',
+            overdueSub: '{n} חשבוניות',
+            week: 'לתשלום השבוע',
+            weekSub: 'לפי תנאי התשלום של הספק',
+            paidMonth: 'שולם החודש',
+            paidMonthSub: 'סך התשלומים לספקים',
+        },
+        col: {
+            id: 'חשבונית',
+            supplier: 'ספק',
+            date: 'תאריך',
+            due: 'מועד תשלום',
+            notes: 'תעודות משלוח',
+            category: 'סיווג',
+            total: 'סה״כ כולל מע״מ',
+            state: 'מצב',
+            accounting: 'הנהלת חשבונות',
+        },
+        toast: {
+            captured: 'החשבונית נקלטה',
+            capturedBody: 'חשבונית {num} · {total}',
+            sent: 'סומנה כנשלחה להנהלת חשבונות',
+            disputed: 'מצב המחלוקת עודכן',
+        },
+    },
+
+    capture: {
+        title: 'קליטת חשבונית ספק',
+        supplier: 'ספק',
+        supplierChoose: 'בחירת ספק…',
+        num: 'מספר החשבונית של הספק',
+        date: 'תאריך החשבונית',
+        notes: 'תעודות משלוח שהחשבונית מכסה',
+        notesPick: 'בחרו ספק כדי לראות את תעודות המשלוח הפתוחות שלו',
+        notesNone:
+            'לספק זה אין תעודות משלוח פתוחות — החשבונית תיקלט בלי קישור לאספקה',
+        category: 'סיווג הוצאה',
+        net: 'סכום לפני מע״מ',
+        netHint: 'ריק — לפי שורות תעודות המשלוח שנבחרו ({notes})',
+        total: 'סה״כ לתשלום',
+        vat: 'מע״מ {vat}',
+        file: 'החשבונית הסרוקה',
+        fileHint: 'PDF או תמונה · נשמר על החשבונית ונשלח לרו״ח',
+        note: 'הערה',
+        save: 'קליטת החשבונית',
+    },
+
+    payments: {
+        count: 'תשלומים · מתוך {total}',
+        search: 'אסמכתא · ספק · חשבונית',
+        record: 'רישום תשלום',
+        receipt: 'קבלה',
+        empty: 'אין תשלומים לספקים',
+        emptySub: 'רשמו תשלום כדי לסגור חשבוניות פתוחות',
+        col: {
+            id: 'תשלום',
+            supplier: 'ספק',
+            date: 'תאריך',
+            amount: 'סכום',
+            method: 'אמצעי',
+            reference: 'אסמכתא',
+            invoices: 'חשבוניות שנסגרו',
+            receipt: 'קבלה',
+        },
+        toast: {
+            recorded: 'התשלום נרשם',
+            recordedBody: '{amount} · {n} חשבוניות',
+        },
+    },
+
+    pay: {
+        title: 'רישום תשלום לספק',
+        supplier: 'ספק',
+        date: 'תאריך התשלום',
+        method: 'אמצעי תשלום',
+        reference: 'מספר אסמכתא',
+        referenceHint: 'מספר ההעברה בבנק או מספר הצ׳ק',
+        invoices: 'חשבוניות שהתשלום סוגר',
+        invoicesPick: 'בחרו ספק כדי לראות את החשבוניות הפתוחות שלו',
+        invoicesNone: 'לספק זה אין חשבוניות פתוחות',
+        open: 'נותר לתשלום',
+        amount: 'משולם עכשיו',
+        total: 'סך התשלום',
+        receipt: 'קובץ הקבלה',
+        receiptHint: 'הקבלה שהספק הוציא על התשלום · PDF או תמונה',
+        note: 'הערה',
+        save: 'רישום התשלום',
+        blockedCompliance:
+            'לא ניתן לרשום תשלום: אישור ניהול ספרים של הספק חסר או שפג תוקפו. הרכש אינו חסום — התשלום כן.',
+        blockedAllocation: 'סכום לחשבונית גדול מהנותר לתשלום עליה',
     },
 
     action: {
