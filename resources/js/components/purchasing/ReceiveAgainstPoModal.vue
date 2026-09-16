@@ -13,7 +13,7 @@ import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { CURRENCY_SYMBOL } from '@/config';
+import { CURRENCY_SYMBOL, DEFAULT_WAREHOUSE } from '@/config';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
 import { num } from '@/lib/money';
 import { useInventoryStore } from '@/stores/inventory';
@@ -86,7 +86,7 @@ const form = reactive({
             price: line.price != null ? String(line.price) : '',
             currency: props.po.currency,
             labels: '1',
-            wh: stock?.wh || 'raw',
+            wh: stock?.wh || DEFAULT_WAREHOUSE,
             stockUnit: stock?.unit || item?.uom?.stock || 'unit',
         };
     }),

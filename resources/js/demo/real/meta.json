@@ -13,15 +13,15 @@
   "pickupPoints": 10,
   "contentSizes": 16,
   "valueLists": 1,
-  "ingredients": 320,
-  "products": 180,
-  "boms": 50,
-  "priceTiers": 400,
-  "batches": 120,
   "practitioners": 30,
   "patients": 60,
   "suppliers": 40,
-  "orders": 50
+  "orders": 50,
+  "ingredients": 418,
+  "products": 186,
+  "boms": 50,
+  "priceTiers": 400,
+  "batches": 120
  },
  "pseudonymised": [
   "practitioners",

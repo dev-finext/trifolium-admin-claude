@@ -11,6 +11,7 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
 import {
+    DEFAULT_WAREHOUSE,
     ITEM_CODE_DIGITS,
     ITEM_UOMS,
     ITEM_FAMILY,
@@ -640,7 +641,7 @@ export const useItemsStore = defineStore('items', () => {
                     lat: null,
                     cn: null,
                     system: 'west',
-                    wh: kind === 'shelf' ? 'shelf' : 'raw',
+                    wh: DEFAULT_WAREHOUSE,
                     unit: item.uom.stock,
                     size: null,
                     sizeUnit: null,

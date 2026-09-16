@@ -1,15 +1,5 @@
-// Every id-keyed label set in the console.
-//
-// resources/js/config/ owns the ids, the tones and the business rules; this file
-// owns the words. A screen renders an enum by looking up its id here, never by
-// carrying the text itself — that is what makes one taxonomy render in two
-// languages.
-//
-// Spread at the top level by locales/he/index.js, so keys read `status.paid`,
-// `exception.lab.fix`, `logAction.doc_issue`.
+// ערכי אנומרציה — כל רשימה מוגדרת ב-config/ ומתויגת כאן.
 export default {
-    // ── orders ── config/statuses.js ORDER_STATUSES
-    // config/statuses.js — the eight values ORDR.U_OrderState holds
     status: {
         new: 'הזמנה חדשה',
         in_process: 'בטיפול',
@@ -20,15 +10,11 @@ export default {
         on_hold: 'מושהה',
         cancelled: 'מבוטל',
     },
-
-    // config/statuses.js PAYMENT_STATE_IDS — שדה נפרד, לא שלב במחזור החיים
     payment: {
         unpaid: 'לא שולם',
         paid: 'שולם',
         credit: 'בהקפה',
     },
-
-    // Short captions on the progress rail — ORDER_FLOW, not the status chips.
     flowLabel: {
         pending: 'התקבלה',
         confirmed: 'אושרה',
@@ -37,12 +23,6 @@ export default {
         shipped: 'נשלחה',
         delivered: 'נמסרה',
     },
-
-    // Reasons an order sits on hold before it enters the lab.
-    // ── exceptions ── config/exceptions.js EXCEPTION_TYPES.
-    // `label` is the full sentence, `short` the chip, `fix` the next action an
-    // agent should take. Every exception has all three: there is no generic
-    // "needs attention" state anywhere in this console.
     exception: {
         credit_debt: {
             label: '🚩 חוב בהקפה מעל 30 יום',
@@ -95,8 +75,6 @@ export default {
             fix: 'הקצאת שליח',
         },
     },
-
-    // ── money ── config/finance.js
     docType: {
         invrec: {
             name: 'חשבונית מס קבלה',
@@ -119,22 +97,17 @@ export default {
             when: 'ביטול לאחר תשלום או זיכוי פריט',
         },
     },
-    // config/finance.js PAY_TERMINALS — which of the three card terminals took
-    // the payment. A field for now; the reconciliation per terminal comes later.
     payTerminal: {
         consumer_site: 'אתר צרכני',
         practitioner_site: 'אתר מטפלים',
         physical: 'מסוף פיזי',
     },
-
-    // config/finance.js ALLOCATION_STATE_IDS — the tax authority's allocation number
     allocationState: {
         granted: 'הקצאה התקבלה',
         not_required: 'לא נדרשת הקצאה',
         refused: 'הקצאה נדחתה',
         pending: 'ממתין להקצאה',
     },
-
     docState: {
         issued: 'הופק',
         failed: 'הפקה נכשלה',
@@ -164,8 +137,6 @@ export default {
         courier: 'משלוח',
         pickup: 'איסוף עצמי',
     },
-
-    // ── messaging ── config/messaging.js
     channel: {
         whatsapp: 'WhatsApp',
         email: 'אימייל',
@@ -187,14 +158,6 @@ export default {
         address_request: 'בקשת כתובת/ייפוי כוח',
         collection: 'גבייה',
     },
-
-    // The placeholder tokens a WhatsApp/email template may contain. These are
-    // displayed and inserted verbatim, so each is wrapped in vue-i18n's literal
-    // form `{'…'}` — a bare `{{…}}` fails to compile as a nested placeholder.
-    //
-    // NOTE: locales/*/index.js spreads `enums` *before* the `messaging` area
-    // namespace, so an area catalog that also defines `messaging` replaces this
-    // subtree. Keep `var` here and out of locales/*/messaging.js.
     messaging: {
         var: {
             name: "{'{{שם}}'}",
@@ -209,11 +172,35 @@ export default {
             reason: "{'{{סיבה}}'}",
         },
     },
-
-    // ── inventory ── config/inventory.js
     warehouse: {
-        raw: { name: 'חומרי גלם', short: 'חו״ג' },
-        shelf: { name: 'מוצרי מדף', short: 'מדף' },
+        1: {
+            name: 'מעבדה',
+            short: 'מעבדה',
+        },
+        2: {
+            name: 'חומרים',
+            short: 'חומרים',
+        },
+        3: {
+            name: 'צמחים',
+            short: 'צמחים',
+        },
+        4: {
+            name: 'דלפק',
+            short: 'דלפק',
+        },
+        5: {
+            name: 'סולו חומרים טבעיים',
+            short: '05',
+        },
+        '01': {
+            name: 'מחסן כללי',
+            short: '01',
+        },
+        '02': {
+            name: 'מחסן חיצוני',
+            short: '02',
+        },
     },
     batchState: {
         active: 'פעילה',
@@ -234,8 +221,6 @@ export default {
         time_consumption: 'צריכה לפי זמן',
         count: 'ספירת מלאי',
     },
-    // `hint` explains what the reason does to the quantity — a count *sets* it,
-    // the other two *deduct* from a named batch.
     adjustReason: {
         count: {
             name: 'ספירת מלאי',
@@ -250,9 +235,6 @@ export default {
             hint: 'גריעה וסימון האצווה כנפסלה',
         },
     },
-
-    // ── catalog ── config/catalog.js PREPARATION_FORMS. The nine forms a
-    // compounded formula can be prepared in.
     preparationForm: {
         tincture: 'טינקטורה',
         capsule: 'קפסולות',
@@ -264,8 +246,6 @@ export default {
         essential_oil: 'שמן אתרי',
         infused_oil: 'שמן מושרה',
     },
-
-    // ── org ── config/org.js
     therapy: {
         naturopathy: 'נטורופתיה',
         herbalism: 'הרבולוגיה',
@@ -284,7 +264,6 @@ export default {
         deliver: 'דליבר',
         sosna: 'סוסנה (היסטורי)',
     },
-    // V2 — config/org.js WEEKDAY_IDS / PICKUP_POINT_KIND_IDS
     weekday: {
         sun: 'ראשון',
         mon: 'שני',
@@ -298,9 +277,6 @@ export default {
         shop: 'חנות שותפה',
         practitioner: 'מטפל',
     },
-
-    // ── system log ── config/log.js. The taxonomy is closed: a screen picks an
-    // id rather than writing a sentence, which is what makes the log filterable.
     logAction: {
         order_status_change: 'שינוי סטטוס הזמנה',
         order_cancel: 'ביטול הזמנה',
@@ -396,8 +372,6 @@ export default {
         practitioner: 'מטפל',
         patient: 'לקוח',
     },
-
-    // ── content ── article and lecture categories.
     articleCat: {
         preparation_methods: 'שיטות הכנה',
         health_metabolism: 'בריאות ומטבוליזם',

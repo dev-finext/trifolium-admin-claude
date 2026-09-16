@@ -5,6 +5,7 @@
 // components' batches, really opened a `P-` batch (and a `W-` waste batch)
 // on the parent, and left the movements behind; an issued run has really
 // reserved its components. What the screens add up is what happened.
+import { DEFAULT_WAREHOUSE } from '@/config/inventory';
 import { familyOfCode, ITEM_FAMILY } from '@/config/items';
 import { PRODUCTION_SERIES } from '@/config/production';
 import { at, fraction, pickFrom, spread } from '@/demo/fixture';
@@ -326,7 +327,7 @@ export function buildProductionOrders({
             sku: bom.parentSku,
             name: parent ? parent.name : bom.name,
             unit: stockUnit,
-            wh: parent?.wh || 'raw',
+            wh: parent?.wh || DEFAULT_WAREHOUSE,
             source: 'production',
             receipt: null,
             production: id,

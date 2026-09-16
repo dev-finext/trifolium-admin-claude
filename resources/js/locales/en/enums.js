@@ -1,11 +1,5 @@
-// English enum labels — mirrors he/enums.js key for key.
-//
-// A real translation of the compounding-pharmacy domain, not a transliteration:
-// בהקפה is "on credit terms", רקיחה is "compounding", אצווה is "batch",
-// חשבונית מס קבלה is a "tax invoice/receipt", מטפל is a "practitioner".
+// English mirror of he/enums.js — same keys, real translations.
 export default {
-    // ── orders ── config/statuses.js ORDER_STATUSES
-    // config/statuses.js — the eight values ORDR.U_OrderState holds
     status: {
         new: 'New order',
         in_process: 'In process',
@@ -16,15 +10,11 @@ export default {
         on_hold: 'On hold',
         cancelled: 'Cancelled',
     },
-
-    // config/statuses.js PAYMENT_STATE_IDS — a field of its own, not a step
     payment: {
         unpaid: 'Unpaid',
         paid: 'Paid',
         credit: 'On credit terms',
     },
-
-    // Short captions on the progress rail — ORDER_FLOW, not the status chips.
     flowLabel: {
         pending: 'Received',
         confirmed: 'Confirmed',
@@ -33,12 +23,6 @@ export default {
         shipped: 'Shipped',
         delivered: 'Delivered',
     },
-
-    // Reasons an order sits on hold before it enters the lab.
-    // ── exceptions ── config/exceptions.js EXCEPTION_TYPES.
-    // `label` is the full sentence, `short` the chip, `fix` the next action an
-    // agent should take. Every exception has all three: there is no generic
-    // "needs attention" state anywhere in this console.
     exception: {
         credit_debt: {
             label: '🚩 Credit-terms debt over 30 days',
@@ -91,8 +75,6 @@ export default {
             fix: 'Assign a courier',
         },
     },
-
-    // ── money ── config/finance.js
     docType: {
         invrec: {
             name: 'Tax invoice/receipt',
@@ -115,22 +97,17 @@ export default {
             when: 'Cancellation after payment, or an item refund',
         },
     },
-    // config/finance.js PAY_TERMINALS — which of the three card terminals took
-    // the payment. A field for now; the reconciliation per terminal comes later.
     payTerminal: {
         consumer_site: 'Consumer site',
         practitioner_site: 'Practitioner site',
         physical: 'Physical terminal',
     },
-
-    // config/finance.js ALLOCATION_STATE_IDS — the tax authority's allocation number
     allocationState: {
         granted: 'Allocation granted',
         not_required: 'No allocation required',
         refused: 'Allocation refused',
         pending: 'Awaiting allocation',
     },
-
     docState: {
         issued: 'Issued',
         failed: 'Issuing failed',
@@ -160,8 +137,6 @@ export default {
         courier: 'Courier delivery',
         pickup: 'Self pickup',
     },
-
-    // ── messaging ── config/messaging.js
     channel: {
         whatsapp: 'WhatsApp',
         email: 'Email',
@@ -183,14 +158,6 @@ export default {
         address_request: 'Address / power-of-attorney request',
         collection: 'Collection',
     },
-
-    // The placeholder tokens a WhatsApp/email template may contain. These are
-    // displayed and inserted verbatim, so each is wrapped in vue-i18n's literal
-    // form `{'…'}` — a bare `{{…}}` fails to compile as a nested placeholder.
-    //
-    // NOTE: locales/*/index.js spreads `enums` *before* the `messaging` area
-    // namespace, so an area catalog that also defines `messaging` replaces this
-    // subtree. Keep `var` here and out of locales/*/messaging.js.
     messaging: {
         var: {
             name: "{'{{name}}'}",
@@ -205,11 +172,35 @@ export default {
             reason: "{'{{reason}}'}",
         },
     },
-
-    // ── inventory ── config/inventory.js
     warehouse: {
-        raw: { name: 'Raw materials', short: 'Raw' },
-        shelf: { name: 'Shelf products', short: 'Shelf' },
+        1: {
+            name: 'Lab',
+            short: 'Lab',
+        },
+        2: {
+            name: 'Materials',
+            short: 'Materials',
+        },
+        3: {
+            name: 'Herbs',
+            short: 'Herbs',
+        },
+        4: {
+            name: 'Counter',
+            short: 'Counter',
+        },
+        5: {
+            name: 'Solo Natural Materials',
+            short: '05',
+        },
+        '01': {
+            name: 'General warehouse',
+            short: '01',
+        },
+        '02': {
+            name: 'External warehouse',
+            short: '02',
+        },
     },
     batchState: {
         active: 'Active',
@@ -230,8 +221,6 @@ export default {
         time_consumption: 'Consumption over time',
         count: 'Stock count',
     },
-    // `hint` explains what the reason does to the quantity — a count *sets* it,
-    // the other two *deduct* from a named batch.
     adjustReason: {
         count: {
             name: 'Stock count',
@@ -246,9 +235,6 @@ export default {
             hint: 'Deducts and marks the batch as rejected',
         },
     },
-
-    // ── catalog ── config/catalog.js PREPARATION_FORMS. The nine forms a
-    // compounded formula can be prepared in.
     preparationForm: {
         tincture: 'Tincture',
         capsule: 'Capsules',
@@ -260,8 +246,6 @@ export default {
         essential_oil: 'Essential oil',
         infused_oil: 'Infused oil',
     },
-
-    // ── org ── config/org.js
     therapy: {
         naturopathy: 'Naturopathy',
         herbalism: 'Herbalism',
@@ -280,7 +264,6 @@ export default {
         deliver: 'Deliver',
         sosna: 'Sosna (historical)',
     },
-    // V2 — config/org.js WEEKDAY_IDS / PICKUP_POINT_KIND_IDS
     weekday: {
         sun: 'Sunday',
         mon: 'Monday',
@@ -294,9 +277,6 @@ export default {
         shop: 'Partner shop',
         practitioner: 'Practitioner',
     },
-
-    // ── system log ── config/log.js. The taxonomy is closed: a screen picks an
-    // id rather than writing a sentence, which is what makes the log filterable.
     logAction: {
         order_status_change: 'Order status changed',
         order_cancel: 'Order cancelled',
@@ -392,8 +372,6 @@ export default {
         practitioner: 'Practitioner',
         patient: 'Customer',
     },
-
-    // ── content ── article and lecture categories.
     articleCat: {
         preparation_methods: 'Preparation methods',
         health_metabolism: 'Health & metabolism',

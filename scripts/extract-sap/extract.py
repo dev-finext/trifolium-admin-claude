@@ -392,14 +392,57 @@ def items(conn, prefixes, limit, order_by='OnHand DESC'):
             out.append(item)
 
     picked = out[:limit] if len(out) > limit else out
-    codes = [item['code'] for item in picked]
+    attach_prices_and_stock(conn, picked)
+
+    return picked
+
+
+def items_by_code(conn, codes):
+    """The same full card, for a named set of item numbers."""
+    wanted = [c for c in dict.fromkeys(codes) if c]
+
+    if not wanted:
+        return []
+
+    out = []
+
+    for chunk in _chunks(wanted, 200):
+        codes_sql = ','.join(f"'{c}'" for c in chunk)
+        rows = dicts(
+            conn,
+            f"""
+            SELECT {ITEM_COLUMNS}, {PROPERTY_FLAGS}
+            FROM OITM
+            WHERE ItemCode IN ({codes_sql})
+            """,
+        )
+
+        for row in rows:
+            item = clean(row)
+            item['family'] = family_of(item['code'])
+            item['properties'] = [
+                n for n in PROPERTY_RANGE if row.get(f'prop{n}') == 'Y'
+            ]
+
+            for n in PROPERTY_RANGE:
+                item.pop(f'prop{n}', None)
+
+            out.append(item)
+
+    attach_prices_and_stock(conn, out)
+
+    return out
+
+
+def attach_prices_and_stock(conn, picked):
+    """Every item's ITM1 price rows and OITW warehouse rows."""
     by_code = {item['code']: item for item in picked}
 
     for item in picked:
         item['prices'] = []
         item['warehouses'] = []
 
-    for chunk in _chunks(codes, 200):
+    for chunk in _chunks(list(by_code), 200):
         codes_sql = ','.join(f"'{c}'" for c in chunk)
 
         for row in dicts(
@@ -428,8 +471,6 @@ def items(conn, prefixes, limit, order_by='OnHand DESC'):
         ):
             stock = clean(row)
             by_code[stock.pop('code')]['warehouses'].append(stock)
-
-    return picked
 
 
 def _chunks(values, size):
@@ -844,13 +885,9 @@ def main():
     print('catalogue')
     ingredients = items(conn, INGREDIENT_PREFIXES, COUNTS['ingredients'])
     products = items(conn, PRODUCT_PREFIXES, COUNTS['products'])
-    counts['ingredients'] = write('ingredients', ingredients)
-    counts['products'] = write('products', products)
 
     catalogue_codes = [i['code'] for i in ingredients + products]
-    counts['boms'] = write('boms', boms(conn, COUNTS['boms'], catalogue_codes))
-    counts['priceTiers'] = write('priceTiers', price_tiers(conn))
-    counts['batches'] = write('batches', batches(conn, COUNTS['batches']))
+    bom_rows = boms(conn, COUNTS['boms'], catalogue_codes)
 
     print('people (pseudonymised)')
     practitioner_rows = practitioners(conn, COUNTS['practitioners'])
@@ -863,9 +900,40 @@ def main():
     counts['suppliers'] = write('suppliers', suppliers(conn, COUNTS['suppliers']))
 
     print('orders')
-    counts['orders'] = write(
-        'orders', orders(conn, COUNTS['orders'], practitioner_codes)
-    )
+    order_rows = orders(conn, COUNTS['orders'], practitioner_codes)
+    counts['orders'] = write('orders', order_rows)
+
+    # Close the sample over itself: every item an order line or a bill of
+    # materials names gets its card too, so no stock row, no recipe component
+    # and no order line points at an item the catalogue does not hold.
+    known = set(catalogue_codes)
+    referenced = [
+        line.get('code')
+        for order in order_rows
+        for line in order.get('lines') or []
+    ] + [
+        component.get('component')
+        for tree in bom_rows
+        for component in tree.get('components') or []
+    ] + [tree.get('parent') for tree in bom_rows]
+    missing = [
+        code
+        for code in dict.fromkeys(referenced)
+        if code and code not in known and str(code).isdigit()
+    ]
+    extra = items_by_code(conn, missing)
+
+    for item in extra:
+        (products if item['code'][:2] in PRODUCT_PREFIXES else ingredients).append(
+            item
+        )
+
+    print(f'  closure: {len(extra)} items pulled in by orders and trees')
+    counts['ingredients'] = write('ingredients', ingredients)
+    counts['products'] = write('products', products)
+    counts['boms'] = write('boms', bom_rows)
+    counts['priceTiers'] = write('priceTiers', price_tiers(conn))
+    counts['batches'] = write('batches', batches(conn, COUNTS['batches']))
 
     write(
         'meta',

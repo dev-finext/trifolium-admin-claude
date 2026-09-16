@@ -263,7 +263,7 @@ export function buildDataset() {
         batches,
         batchUse,
         movements: [
-            ...buildMovements(receipts, batchUse, stock),
+            ...buildMovements(receipts, batchUse),
             ...production.movements,
         ].sort((a, b) =>
             `${b.when.iso}${b.id}`.localeCompare(`${a.when.iso}${a.id}`),

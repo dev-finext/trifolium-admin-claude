@@ -8,15 +8,16 @@
 // plain data.
 import {
     BATCH_EXPIRY_WARN_DAYS,
+    DEFAULT_WAREHOUSE,
     convertQty,
     familyOfCode,
     ITEM_FAMILY,
 } from '@/config';
 import { at, fraction, pickFrom, spread } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
-import { SHELF_ITEMS } from '@/demo/products';
 import REAL_INGREDIENTS from '@/demo/real/ingredients.json';
 import REAL_ORDERS from '@/demo/real/orders.json';
+import REAL_PRODUCTS from '@/demo/real/products.json';
 import { DEMO_SUPPLIERS } from '@/demo/vendors';
 import { daysSince, isoDaysAgo } from '@/lib/dates';
 import { L } from '@/lib/localized';
@@ -28,8 +29,6 @@ const FIRST_BATCH_NUMBER = 2610;
 /** Days between one receipt and the next, newest first. */
 const RECEIPT_GAP_DAYS = 7;
 
-/** The minimum the fixture authors its own shelf rows against. */
-const SHELF_MIN = 12;
 
 /** Order statuses at which the lab has drawn the formula's herbs from stock. */
 const CONSUMING_STATUS_IDS = ['lab', 'packed', 'sent', 'closed'];
@@ -52,137 +51,6 @@ export const STOCK_KIND_IDS = Object.keys(STOCK_KINDS);
  * price lists resolve a SKU by its longest matching prefix.
  */
 export const INGREDIENT_PRICE_PREFIX = { raw: '300', base: '21', pack: null };
-
-/**
- * The bases and packaging the fixture authors itself, numbered the way SAP
- * numbers them — 30 for bases, 40 for glass — so the code-prefix rules of the
- * price lists and the item families reach them like any real row.
- */
-const BASE_AND_PACK = [
-    {
-        sku: '300901',
-        kind: 'base',
-        name: L('אלכוהול 96% מזוקק', 'Distilled alcohol 96%'),
-        lat: 'Ethanol 96%',
-        wh: 'raw',
-        unit: 'ml',
-        onHand: 41200,
-        alloc: 3800,
-        min: 12000,
-        price: 0.041,
-        createdDaysAgo: 640,
-    },
-    {
-        sku: '300902',
-        kind: 'base',
-        name: L('גליצרין צמחי', 'Vegetable glycerin'),
-        lat: 'Glycerin USP',
-        wh: 'raw',
-        unit: 'ml',
-        onHand: 8600,
-        alloc: 900,
-        min: 4000,
-        price: 0.028,
-        createdDaysAgo: 610,
-    },
-    {
-        sku: '300903',
-        kind: 'base',
-        name: L(
-            'שמן זית כתית — בסיס להשריה',
-            'Virgin olive oil — infusion base',
-        ),
-        lat: 'Olea europaea oleum',
-        wh: 'raw',
-        unit: 'ml',
-        onHand: 18400,
-        alloc: 0,
-        min: 5000,
-        price: 0.034,
-        createdDaysAgo: 420,
-    },
-    {
-        sku: '400101',
-        kind: 'pack',
-        name: L('בקבוק זכוכית כהה 100 מ״ל', 'Amber glass bottle 100 ml'),
-        lat: 'amber glass',
-        wh: 'shelf',
-        unit: 'unit',
-        onHand: 640,
-        alloc: 120,
-        min: 300,
-        price: 1.9,
-        createdDaysAgo: 520,
-    },
-    {
-        sku: '400102',
-        kind: 'pack',
-        name: L('בקבוק זכוכית כהה 50 מ״ל', 'Amber glass bottle 50 ml'),
-        lat: 'amber glass',
-        wh: 'shelf',
-        unit: 'unit',
-        onHand: 180,
-        alloc: 60,
-        min: 300,
-        price: 1.4,
-        createdDaysAgo: 500,
-    },
-];
-
-/**
- * Stock-tracked consumables nobody weighs per order — consumed by time. Each
- * carries the rate the pharmacy goes through it, the last count and what was
- * found; the builder posts the movements a nightly job would have written
- * since the count and reduces the stock accordingly. `countedQty` minus the
- * periods elapsed is what the shelf holds today; the toilet paper is meant to
- * come out under its minimum so the low-stock exception has a time-consumed
- * item in it.
- */
-export const CONSUMABLE_USAGE = [
-    {
-        sku: '300910',
-        name: L('נייר טואלט (גליל)', 'Toilet paper (roll)'),
-        min: 30,
-        qty: 8,
-        periodDays: 7,
-        countedDaysAgo: 63,
-        countedQty: 96,
-        price: 1.6,
-    },
-    {
-        sku: '300911',
-        name: L('מגבות נייר (גליל)', 'Paper towels (roll)'),
-        min: 12,
-        qty: 4,
-        periodDays: 7,
-        countedDaysAgo: 35,
-        countedQty: 60,
-        price: 4.2,
-    },
-    {
-        sku: '300912',
-        name: L('כפפות ניטריל M (קופסה)', 'Nitrile gloves M (box)'),
-        min: 6,
-        qty: 2,
-        periodDays: 7,
-        countedDaysAgo: 49,
-        countedQty: 30,
-        price: 42,
-    },
-    {
-        sku: '300913',
-        name: L(
-            'מגבוני אלכוהול לחיטוי (אריזה)',
-            'Alcohol cleaning wipes (pack)',
-        ),
-        min: 10,
-        qty: 3,
-        periodDays: 14,
-        countedDaysAgo: 28,
-        countedQty: 40,
-        price: 11.5,
-    },
-];
 
 /** Whole consumption periods elapsed since a count. */
 export function periodsSince(countedDaysAgo, periodDays) {
@@ -248,6 +116,16 @@ const KIND_BY_FAMILY = {
  * limits are SAP's own — only the warehouse id is translated, because the
  * console models two warehouses where SAP numbers seven.
  */
+/**
+ * Which warehouse a row is counted in: the one `OITW` shows the quantity in,
+ * and the general warehouse when the item has none anywhere.
+ */
+function warehouseOf(item) {
+    const holding = (item.warehouses || []).find((row) => row.onHand > 0);
+
+    return holding ? holding.warehouse : DEFAULT_WAREHOUSE;
+}
+
 function stockRowOf(item) {
     const kind = KIND_BY_FAMILY[item.family] || 'raw';
     const onHand = Math.max(0, round2(item.onHand || 0));
@@ -269,7 +147,7 @@ function stockRowOf(item) {
         lat: null,
         cn: pinyin,
         system: pinyin ? 'chinese' : 'west',
-        wh: kind === 'shelf' ? 'shelf' : 'raw',
+        wh: warehouseOf(item),
         unit: uomOf(item.stockUom),
         size: null,
         sizeUnit: null,
@@ -304,20 +182,19 @@ function guessedMin(unit) {
 }
 
 /**
- * Stock rows, straight off the catalogue SAP holds.
+ * Stock rows — one per inventory item, which is what `OITW` is.
  *
- * The 200 ingredients were drawn in proportion to the real families, so the
- * mix on screen is the pharmacy's mix. Any ingredient an order line names but
- * the sample missed is added from that line, so every formula still resolves
- * to a stock row and FEFO has something to pick from. A shelf product on an
- * order line is NOT added here — the product master authors it below, once —
- * and a delivery fee or a workshop is a line on the order, not a thing on a
- * shelf.
+ * Every figure is SAP's: the quantity on hand, what is committed, what is on
+ * order, the minimum, and the warehouse the quantity actually sits in. An item
+ * SAP does not track in inventory (labour, a service) gets no row, and any
+ * ingredient an order line names but the sample missed is added from that line
+ * so every formula still resolves and FEFO has something to pick from.
  */
 export function buildStock() {
-    const rows = REAL_INGREDIENTS.map(stockRowOf);
+    const rows = [...REAL_INGREDIENTS, ...REAL_PRODUCTS]
+        .filter((item) => item.stockTracked === 'Y')
+        .map(stockRowOf);
     const seen = new Set(rows.map((row) => row.sku));
-    const shelfSkus = new Set(SHELF_ITEMS.map((item) => item.sku));
 
     REAL_ORDERS.forEach((order) => {
         (order.lines || []).forEach((line) => {
@@ -327,7 +204,6 @@ export function buildStock() {
                 !line.code ||
                 !family ||
                 seen.has(line.code) ||
-                shelfSkus.has(line.code) ||
                 NOT_STOCKED_FAMILIES.includes(family)
             ) {
                 return;
@@ -353,78 +229,7 @@ export function buildStock() {
         });
     });
 
-    return [...rows, ...buildBasesAndShelf(seen)].map(syncStockRow);
-}
-
-/** The bases, packaging, consumables and shelf rows the fixture still authors itself. */
-function buildBasesAndShelf(seen) {
-    const bases = BASE_AND_PACK.map(({ createdDaysAgo, ...row }) => ({
-        ...row,
-        herbId: null,
-        cn: null,
-        system: 'west',
-        size: null,
-        sizeUnit: null,
-        created: isoDaysAgo(createdDaysAgo),
-    }));
-
-    // What the shelf holds today: the last count less one period's usage for
-    // every period the nightly job has run since.
-    const consumables = CONSUMABLE_USAGE.map((usage) => ({
-        sku: usage.sku,
-        herbId: null,
-        kind: 'base',
-        name: usage.name,
-        lat: null,
-        cn: null,
-        system: 'west',
-        wh: 'raw',
-        unit: 'unit',
-        size: null,
-        sizeUnit: null,
-        price: usage.price,
-        onHand: Math.max(
-            0,
-            usage.countedQty -
-                periodsSince(usage.countedDaysAgo, usage.periodDays) *
-                    usage.qty,
-        ),
-        alloc: 0,
-        min: usage.min,
-        created: isoDaysAgo(usage.countedDaysAgo + 200),
-    }));
-
-    const shelf = SHELF_ITEMS.filter((item) => !seen.has(item.sku)).map(
-        (item) => {
-            const onHand = spread(`stock:${item.sku}:onhand`, 2, 90);
-
-            return {
-                sku: item.sku,
-                herbId: null,
-                kind: 'shelf',
-                name: item.name,
-                lat: null,
-                cn: null,
-                system: 'west',
-                wh: 'shelf',
-                unit: 'unit',
-                size: item.size,
-                sizeUnit: item.unit,
-                price: item.price,
-                onHand,
-                alloc: Math.min(
-                    onHand,
-                    spread(`stock:${item.sku}:alloc`, 0, 8),
-                ),
-                min: SHELF_MIN,
-                created: isoDaysAgo(
-                    spread(`stock:${item.sku}:created`, 60, 500),
-                ),
-            };
-        },
-    );
-
-    return [...bases, ...consumables, ...shelf];
+    return rows.map(syncStockRow);
 }
 
 const RECEIPT_NOTES = [
@@ -499,8 +304,8 @@ const PRODUCTION_INPUT_SKUS = [
  * for — traceability that points at herbs nobody ordered is theatre.
  */
 function receiptLinePool(stock) {
-    const bySku = new Map(stock.map((row) => [row.sku, row]));
     const usage = new Map();
+    const bySku = new Map(stock.map((row) => [row.sku, row]));
 
     REAL_ORDERS.forEach((order) => {
         (order.lines || []).forEach((line) => {
@@ -836,9 +641,8 @@ export function buildBatchUse(orders, batches, stock = []) {
  * time-consumption rows are the ones the nightly job would have written since
  * each consumable was last counted.
  */
-export function buildMovements(receipts, batchUse, stock = []) {
+export function buildMovements(receipts, batchUse) {
     const rows = [];
-    const bySku = new Map(stock.map((row) => [row.sku, row]));
 
     receipts.forEach((receipt) => {
         receipt.lines.forEach((line) => {
@@ -865,35 +669,13 @@ export function buildMovements(receipts, batchUse, stock = []) {
             sku: use.sku,
             name: use.batchName,
             unit: use.unit,
-            wh: 'raw',
+            wh: DEFAULT_WAREHOUSE,
             qty: -use.qty,
             batch: use.batch,
             ref: use.order,
             when: use.when,
             by: null,
         });
-    });
-
-    CONSUMABLE_USAGE.forEach((usage) => {
-        const row = bySku.get(usage.sku);
-        const periods = periodsSince(usage.countedDaysAgo, usage.periodDays);
-
-        for (let k = 1; k <= periods; k += 1) {
-            rows.push({
-                id: `mv-time-${usage.sku}-${k}`,
-                kind: 'time_consumption',
-                sku: usage.sku,
-                name: row ? row.name : usage.name,
-                unit: row ? row.unit : 'unit',
-                wh: row ? row.wh : 'raw',
-                qty: -usage.qty,
-                batch: null,
-                ref: null,
-                // the nightly job runs at half past two
-                when: at(usage.countedDaysAgo - k * usage.periodDays, 2, 30),
-                by: null,
-            });
-        }
     });
 
     return sortMovements(rows);

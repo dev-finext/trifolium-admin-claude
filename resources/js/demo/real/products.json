@@ -34246,5 +34246,1158 @@
     "maxLevel": 0
    }
   ]
+ },
+ {
+  "code": "160036",
+  "nameHe": "Vitamin Q10 באישור רוקח",
+  "nameForeign": "Vitamin Q10",
+  "groupCode": 105,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "N",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ק\"ג",
+  "buyUom": "ק\"ג",
+  "numInBuy": 1,
+  "salesUom": "גרם",
+  "numInSale": 0.001,
+  "countUom": null,
+  "uomGroup": 3,
+  "priceUnit": 1,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 2.1649,
+  "committed": 0.0037,
+  "onOrder": 0,
+  "minLevel": 0.05,
+  "maxLevel": 0.1,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "B",
+  "productSource": null,
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 1453.99,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2025-11-27",
+  "lastEvalPrice": 1453.99,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "forTherapist": null,
+  "remarks": null,
+  "saleText": "chinese\rמינון מוגבל עד 5% מהמרשם בנטילת 4 קפסולות ביום",
+  "createdOn": "2023-07-05",
+  "updatedOn": "2026-03-11",
+  "family": "supplement",
+  "properties": [
+   1,
+   2,
+   4,
+   5,
+   6,
+   9
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 5900,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 448,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 4720,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 6785,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 5000,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 2.1649,
+    "committed": 0.0037,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "160043",
+  "nameHe": "Probiotics Mix",
+  "nameForeign": "Probiotics Mix",
+  "groupCode": 105,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "N",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ק\"ג",
+  "buyUom": "ק\"ג",
+  "numInBuy": 1,
+  "salesUom": "גרם",
+  "numInSale": 0.001,
+  "countUom": null,
+  "uomGroup": 3,
+  "priceUnit": 1,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 2.2854,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 0.8,
+  "maxLevel": 2,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "B",
+  "productSource": null,
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 632.8,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-01-06",
+  "lastEvalPrice": 727,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "forTherapist": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2023-08-10",
+  "updatedOn": "2025-03-18",
+  "family": "supplement",
+  "properties": [
+   4,
+   5,
+   6,
+   9
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 2242,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 448,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 1794,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 2578,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 1900,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 2.2854,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "160052",
+  "nameHe": "Zinc Picolinate-Urtica Mix באישור רוקח",
+  "nameForeign": "אבץ פיקולינט-סרפד מיקס - יש לנער לפני השימוש",
+  "groupCode": 105,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ק\"ג",
+  "buyUom": "ק\"ג",
+  "numInBuy": 1,
+  "salesUom": "גרם",
+  "numInSale": 0.001,
+  "countUom": null,
+  "uomGroup": 3,
+  "priceUnit": 1,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0.4558,
+  "committed": 0.0009,
+  "onOrder": 0,
+  "minLevel": 0,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "B",
+  "productSource": null,
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 5500,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-06-24",
+  "lastEvalPrice": 0,
+  "lastEvalOn": null,
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "forTherapist": null,
+  "remarks": null,
+  "saleText": "chinese\rמינון מומלץ 2-3%  מהמרשם למבוגר בנטילת 4 קפסולות ביום",
+  "createdOn": "2025-02-13",
+  "updatedOn": "2026-04-28",
+  "family": "supplement",
+  "properties": [
+   5,
+   6
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 6490,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 448,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 5192,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 7464,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 5500,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0.4558,
+    "committed": 0.0009,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500133",
+  "nameHe": "Ban Xia Xie Xin Tincture Tang 100ml",
+  "nameForeign": "Ban Xia Xie Xin Tincture Tang 100ml",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 5,
+  "committed": 0,
+  "onOrder": 8,
+  "minLevel": 3,
+  "maxLevel": 17,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 0,
+  "lastPurchaseCurrency": null,
+  "lastPurchaseOn": null,
+  "lastEvalPrice": 0,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "Ban Xia Xie Xin Tincture-Tang",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": "3.03",
+  "category4": "3.02",
+  "forTherapist": null,
+  "remarks": null,
+  "saleText": "רכיבים\r\r3 קופטיס | Huang lian | Coptis chinensis\r9 סקוטלריה | Huang qin | Scutellaria baicalensis\r9 פינאליה | Ban xia | Pinellia ternate\r9 ג’ינג’ר | Gan jiang | Zingiber officinalis\r9 ג’ינסינג | Ren shen | Panax ginseng\r9 ליקוריץ |  Gan cao | Glycyrrhiza glabra\r9 זיזיפוס | Da zao | Ziziphus jujuba\r\rTotal 57",
+  "createdOn": "2020-03-05",
+  "updatedOn": "2026-04-28",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 8,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 5,
+    "committed": 0,
+    "onOrder": 8,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500139",
+  "nameHe": "Gan Mao Ling Tincture Tang 100ml",
+  "nameForeign": "Gan Mao Ling Tincture Tang 100ml",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 20,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 5,
+  "maxLevel": 35,
+  "reorderQty": 0,
+  "minOrderQty": 5,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "P",
+  "lastPurchasePrice": 7.5,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2025-11-04",
+  "lastEvalPrice": 6.48,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "Gan Mao Ling גאן מאו לינג",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": "1.15",
+  "category2": null,
+  "category3": "3.02",
+  "category4": "3.03",
+  "forTherapist": null,
+  "remarks": "שימו לב - בקבוק פקק וכוסית שונו 03.03.26",
+  "saleText": "רכיבים\r30 | ללקיס | Mao dong qing | Ilex pubescens\r20 | אוודיה | Wu zhu yu | Evodia rutaecarpa\r6 | איסטיס | Ban lan gen | Isatis indigotica\r12 | חרצית | Ju hua | Chrysanthemum indicum\r12 | ויטקס | Man jing ji | Vitex trifolia\r6 | חרצית הגננים | Ye ju hua | Chrysanthemum  morifolium\r3 | מנטה | Bo he | Menthae haplocalyx\r\rTotal 89",
+  "createdOn": "2020-03-09",
+  "updatedOn": "2026-04-28",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 8,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 20,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500518",
+  "nameHe": "אבקה GN",
+  "nameForeign": null,
+  "groupCode": 143,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": "עופר נהרי",
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 11,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 40,
+  "maxLevel": 293,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 12,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-07-02",
+  "lastEvalPrice": 11.79,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "Y",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "forTherapist": "104409",
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2022-03-08",
+  "updatedOn": "2025-05-25",
+  "family": "shelf",
+  "properties": [
+   15
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 65.62,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 13,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 52,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 75,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 55.61,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 11,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
  }
 ]

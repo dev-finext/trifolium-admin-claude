@@ -1,8 +1,34 @@
 // Inventory: warehouses, batch lifecycle, stock movements, adjustments.
 // Display text lives in the locale catalogs under `inventory.*`.
 
-/** The two stock locations. Raw herbs are compounded; shelf goods are sold as-is. */
-export const WAREHOUSES = [{ id: 'raw' }, { id: 'shelf' }];
+/**
+ * The warehouses, as `OWHS` holds them. Seven are defined and three hold
+ * anything: `01` carries the pharmacy (2,428 items), `02` seven items and `05`
+ * one. The lab, the materials room, the herb room and the counter were opened
+ * and never used — they are here because SAP has them and a migration carries
+ * them, and they read as empty because they are.
+ */
+export const WAREHOUSES = [
+    { id: '01', inUse: true },
+    { id: '02', inUse: true },
+    { id: '5', inUse: true },
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+    { id: '4' },
+];
+
+/** The default a receipt, an issue or a new stock row lands in. */
+export const DEFAULT_WAREHOUSE = '01';
+
+/** The warehouses stock actually moves through — the pickers offer these. */
+export const WAREHOUSES_IN_USE = WAREHOUSES.filter(
+    (warehouse) => warehouse.inUse,
+);
+
+export const WAREHOUSE_IN_USE_IDS = WAREHOUSES_IN_USE.map(
+    (warehouse) => warehouse.id,
+);
 
 export const WAREHOUSE_IDS = WAREHOUSES.map((warehouse) => warehouse.id);
 

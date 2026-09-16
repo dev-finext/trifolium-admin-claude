@@ -16,6 +16,7 @@
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
+import { DEFAULT_WAREHOUSE } from '@/config/inventory';
 import {
     PRODUCTION_MOVE_KINDS,
     PRODUCTION_OPEN_STATE_IDS,
@@ -406,7 +407,7 @@ export const useProductionStore = defineStore('production', () => {
             sku: order.parentSku,
             name: parent ? parent.name : order.name,
             unit: stockUnit,
-            wh: parent?.wh || 'raw',
+            wh: parent?.wh || DEFAULT_WAREHOUSE,
             source: 'production',
             production: order.id,
             received: when,
