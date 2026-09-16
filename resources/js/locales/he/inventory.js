@@ -1,13 +1,7 @@
-// מלאי, קליטת סחורה ואצוות.
-//
-// המונחים המשותפים — שמות המחסנים, מצבי האצווה, סיבות ההתאמה וסוגי התנועה —
-// יושבים ב-locales/he/enums.js ונקראים משם. כאן נמצא רק מה שהמסך הזה אומר על
-// עצמו.
+// מלאי, קליטת סחורה ואצוות — מסך המלאי ומסמכיו.
 export default {
     title: 'מלאי, קליטת סחורה ואצוות',
     sub: '{items} פריטים · {batches} אצוות עם יתרה · {receipts} תעודות קליטה',
-
-    // מערכת הסינון
     filterGroup: {
         what: 'מה ואיפה',
         level: 'כמויות',
@@ -16,7 +10,6 @@ export default {
         who: 'ספק ומבצע',
         when: 'זמן',
     },
-
     filter: {
         stockNoun: 'שורות מלאי',
         batchNoun: 'אצוות',
@@ -63,22 +56,19 @@ export default {
             later: 'מעל 90 יום',
         },
     },
-
     tab: {
         stock: 'מלאי',
         receipts: 'קליטת סחורה',
         batches: 'אצוות ותוקף',
         movements: 'תנועות מלאי',
+        docs: 'מסמכי מלאי',
     },
-
     action: {
         export: 'ייצוא מלאי',
         newReceipt: 'קליטת סחורה חדשה',
         adjust: 'התאמת מלאי',
         openBatches: 'הצגת האצוות של הפריט',
     },
-
-    // יחידות המלאי — config/inventory.js STOCK_UNITS
     unit: {
         g: 'גרם',
         kg: 'ק״ג',
@@ -87,15 +77,12 @@ export default {
         unit: 'יח׳',
         capsule: 'קפסולות',
     },
-
-    // סוגי הפריטים — config/catalog.js STOCK_KINDS
     stockKind: {
         raw: 'חומר גלם',
         base: 'בסיס',
         pack: 'אריזה',
         shelf: 'מוצר מדף',
     },
-
     toast: {
         exported: {
             title: 'הקובץ ירד למחשב',
@@ -111,8 +98,6 @@ export default {
             bodyBatches: '{item} · {reason} · {diff} {unit} · {batches}',
         },
     },
-
-    // V2 — the batch-handling settings
     pickMode: {
         fefo: 'FEFO — לפי תוקף',
         fifo: 'FIFO — לפי סדר קליטה',
@@ -138,7 +123,6 @@ export default {
         seriesHint:
             'מספר האצווה נקבע אוטומטית: קידומת משפחת הפריט ומספר רץ לפי המשפחה — למשל 10-00124. אצוות פחת מסומנות ב-W.',
     },
-
     stock: {
         lowTitle: '{n} פריטים מתחת למינימום',
         lowNames: '— {names}.',
@@ -170,7 +154,6 @@ export default {
         col: {
             sku: 'מק״ט',
             name: 'פריט',
-            // בקובץ הייצוא בלבד — בטבלה השם הלטיני מוצג מתחת לשם הפריט
             lat: 'שם לטיני',
             kind: 'סוג',
             wh: 'מחסן',
@@ -180,13 +163,13 @@ export default {
             min: 'מינימום',
             unit: 'יחידה',
             batches: 'אצוות עם יתרה',
+            group: 'קבוצת פריט',
         },
         empty: {
             title: 'לא נמצאו פריטים',
             sub: 'נקה את החיפוש או הסינון',
         },
     },
-
     receipts: {
         note: 'קליטת סחורה היא הדרך היחידה שבה מלאי נכנס למערכת. כל שורה נפתחת כאצווה עם מספר אצווה ותוקף — ומשם מתחילה שרשרת המעקב עד ללקוח.',
         count: 'תעודות קליטה · מתוך {total}',
@@ -238,7 +221,6 @@ export default {
             po: 'מול הזמנת רכש {id}',
         },
     },
-
     batches: {
         warn: '{expiring} אצוות בתוקף מתקרב ו-{expired} שפג תוקפן',
         warnBody: '— אצווה שפג תוקפה נחסמת אוטומטית לשיוך לרקיחה.',
@@ -282,7 +264,6 @@ export default {
             sub: 'נקה את הסינון',
         },
         trace: {
-            // V2
             analyses: 'אנליזות ומסמכי אצווה',
             title: 'אצווה',
             supplier: 'ספק: {name}',
@@ -316,7 +297,6 @@ export default {
             },
         },
     },
-
     movements: {
         note: 'כל תנועה נרשמת מהאסמכתא שמאחוריה: תעודת קליטה, שיוך אצווה לרקיחה, או התאמת מלאי שנרשמה ביומן. אין תנועה בלי אצווה ובלי מי שביצע אותה.',
         count: 'תנועות',
@@ -344,7 +324,6 @@ export default {
             sub: 'נקה את הסינון',
         },
     },
-
     receipt: {
         batchAuto: 'מוקצה אוטומטית לפי משפחת הפריט',
         title: 'קליטת סחורה חדשה',
@@ -369,7 +348,6 @@ export default {
             labels: 'מדבקות',
         },
         supplierBatchPh: 'מספר האצווה אצל הספק',
-        // V2
         supplierPick: 'בחירת ספק מהרשימה…',
         supplierOther: 'ספק אחר — הקלדה ידנית',
         existingNew: 'אצווה חדשה',
@@ -390,8 +368,8 @@ export default {
             price: 'מחיר בשורה {n}',
             labels: 'מדבקות בשורה {n}',
         },
+        open: 'קליטת סחורה חדשה',
     },
-
     adjust: {
         title: 'התאמת מלאי · {item}',
         kv: {
@@ -424,7 +402,6 @@ export default {
         rejectNote:
             'האצווה תסומן נפסלה ותיחסם לשיוך לרקיחה, גם אם נותרה בה יתרה.',
     },
-
     pick: {
         title: 'בחירת אצוות לרקיחה',
         rule: {
@@ -445,7 +422,6 @@ export default {
         short: 'חסרות {qty} {unit} — אין די יתרה באצוות הפתוחות של הפריט.',
         noBatches: 'לפריט זה אין אצווה פתוחה עם יתרה.',
     },
-
     picker: {
         placeholder: 'חיפוש פריט — שם · מק״ט · שם לטיני',
         search: 'שם פריט · מק״ט · שם לטיני',
@@ -460,6 +436,57 @@ export default {
         aria: {
             search: 'חיפוש פריט',
             wh: 'מחסן',
+        },
+    },
+    docType: {
+        goods_receipt: 'קבלת טובין',
+        goods_issue: 'ניפוק טובין',
+        count: 'ספירת מלאי',
+        transfer: 'העברה בין מחסנים',
+    },
+    docBase: {
+        manual: 'ידני',
+        production: 'הוראת ייצור',
+        purchase_order: 'הזמנת רכש',
+    },
+    docs: {
+        noun: 'מסמכים',
+        count: 'מסמכים · מתוך {total}',
+        search: 'מספר מסמך · הוראת ייצור · ספק · פריט · הערה',
+        empty: 'אין מסמכים התואמים לסינון',
+        linesN: '{n} שורות',
+        sub: {
+            goods_receipt: 'נכנס למלאי',
+            goods_issue: 'יצא מהמלאי',
+            count: 'תיקון לפי ספירה',
+            transfer: 'בין מחסנים',
+        },
+        col: {
+            number: 'מספר',
+            type: 'סוג',
+            when: 'תאריך',
+            base: 'מקור',
+            lines: 'שורות',
+            wh: 'מחסן',
+            remarks: 'הערות',
+        },
+        line: {
+            item: 'מק״ט',
+            name: 'פריט',
+            inStock: 'במערכת',
+            counted: 'נספר',
+            qty: 'תנועה',
+            batch: 'אצווה',
+            price: 'מחיר',
+        },
+        field: {
+            type: 'סוג מסמך',
+            base: 'מקור',
+            wh: 'מחסן',
+        },
+        group: {
+            what: 'מה זה',
+            where: 'היכן',
         },
     },
 };

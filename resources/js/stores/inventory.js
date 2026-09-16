@@ -18,7 +18,9 @@ import {
     ADJUST_REASON,
     BATCH_EXPIRY_WARN_DAYS,
     BATCH_PICK,
+    DEFAULT_WAREHOUSE,
     familyOfCode,
+    INVENTORY_DOC_SERIES,
     ITEM_FAMILY,
 } from '@/config';
 import { persist } from '@/data/source';
@@ -359,6 +361,49 @@ export const useInventoryStore = defineStore('inventory', () => {
         batchesOf(sku).filter((batch) => batch.remaining > 0).length;
 
     /**
+     * The documents stock moved on. SAP posts nothing without one, so every
+     * receipt, issue, count and transfer here is a row the screen can open.
+     */
+    const inventoryDocs = computed(() => dataset.data.inventoryDocs || []);
+
+    const docById = (id) =>
+        inventoryDocs.value.find((doc) => String(doc.id) === String(id)) ||
+        null;
+
+    /** The next document number in SAP's own block. */
+    const nextDocNumber = () =>
+        String(
+            inventoryDocs.value.reduce(
+                (top, doc) => Math.max(top, Number(doc.id) || 0),
+                INVENTORY_DOC_SERIES,
+            ) + 1,
+        );
+
+    /**
+     * Post one inventory document. Everything that moves stock goes through
+     * here, so the paperwork and the ledger can never disagree.
+     */
+    function postDoc(doc) {
+        const record = {
+            base: 'manual',
+            baseRef: null,
+            supplier: null,
+            supplierCode: null,
+            receipt: null,
+            remarks: null,
+            warehouse: DEFAULT_WAREHOUSE,
+            by: dataset.me?.name || null,
+            ...doc,
+            id: nextDocNumber(),
+            when: doc.when || moment(),
+        };
+
+        bag('inventoryDocs').unshift(record);
+
+        return record;
+    }
+
+    /**
      * The batch number an item's next batch opens under: the family's code
      * prefix, a dash and a five-digit serial that runs per family —
      * `10-00124`. Nobody types it. A waste batch carries a W.
@@ -573,6 +618,30 @@ export const useInventoryStore = defineStore('inventory', () => {
             note: form.note.trim() || null,
             lines,
             batches: lines.map((line) => line.batch),
+        });
+
+        // SAP posts a goods receipt for the delivery; the console does the same
+        // so the document list and the ledger agree.
+        postDoc({
+            type: 'goods_receipt',
+            base: form.po ? 'purchase_order' : 'manual',
+            baseRef: form.po || null,
+            warehouse: lines[0]?.wh || DEFAULT_WAREHOUSE,
+            supplier,
+            supplierCode,
+            receipt: id,
+            remarks: form.note.trim() || null,
+            when,
+            by,
+            lines: lines.map((line) => ({
+                sku: line.sku,
+                name: line.name,
+                unit: line.unit,
+                qty: line.qty,
+                wh: line.wh,
+                batch: line.batch,
+                price: line.price ?? null,
+            })),
         });
 
         lines.forEach((line) => {
@@ -826,6 +895,26 @@ export const useInventoryStore = defineStore('inventory', () => {
         syncRow(row);
 
         if (delta !== 0) {
+            const doc = postDoc({
+                type: 'count',
+                warehouse: row.wh,
+                remarks: note.trim() || null,
+                when,
+                lines: [
+                    {
+                        sku,
+                        name: row.name,
+                        unit: row.unit,
+                        qty: delta,
+                        counted,
+                        inStock: counted - delta,
+                        wh: row.wh,
+                        batch: null,
+                        price: null,
+                    },
+                ],
+            });
+
             writeMovement({
                 id: `mv-count-${sku}-${when.iso}`,
                 kind: 'count',
@@ -835,7 +924,7 @@ export const useInventoryStore = defineStore('inventory', () => {
                 wh: row.wh,
                 qty: delta,
                 batch: null,
-                ref: null,
+                ref: doc.id,
                 when,
                 by: dataset.me?.name || null,
             });
@@ -908,6 +997,28 @@ export const useInventoryStore = defineStore('inventory', () => {
 
         const after = item.onHand;
 
+        // SAP has no "adjustment": stock that appears is a goods receipt and
+        // stock that disappears is a goods issue, and both are documents.
+        const adjustment = moved.length
+            ? postDoc({
+                  type:
+                      moved.reduce((sum, row) => sum + row.delta, 0) >= 0
+                          ? 'goods_receipt'
+                          : 'goods_issue',
+                  warehouse: item.wh,
+                  remarks: form.note.trim() || null,
+                  lines: moved.map(({ id, delta }) => ({
+                      sku: item.sku,
+                      name: item.name,
+                      unit: item.unit,
+                      qty: delta,
+                      wh: item.wh,
+                      batch: id,
+                      price: null,
+                  })),
+              })
+            : null;
+
         moved.forEach(({ id, delta }) =>
             writeMovement({
                 id: `mv-adj-${id}-${movements.value.length}`,
@@ -918,9 +1029,7 @@ export const useInventoryStore = defineStore('inventory', () => {
                 wh: item.wh,
                 qty: delta,
                 batch: id,
-                // An adjustment has no document of its own — the log row it
-                // wrote is the record, and the ledger points at the batch.
-                ref: null,
+                ref: adjustment ? adjustment.id : null,
                 by: dataset.me?.name || null,
             }),
         );
@@ -1124,6 +1233,9 @@ export const useInventoryStore = defineStore('inventory', () => {
         stock,
         batches,
         receipts,
+        inventoryDocs,
+        docById,
+        postDoc,
         movements,
         batchUse,
         ingredients,

@@ -32,6 +32,38 @@ export const WAREHOUSE_IN_USE_IDS = WAREHOUSES_IN_USE.map(
 
 export const WAREHOUSE_IDS = WAREHOUSES.map((warehouse) => warehouse.id);
 
+/**
+ * The documents that move stock, as SAP posts them.
+ *
+ * `sap` is SAP's own object type. Four of them do the work: a goods receipt
+ * brings stock in, a goods issue takes it out, a count corrects it and a
+ * transfer moves it between warehouses. In the nine years of the live database
+ * the receipts and issues are almost all raised by a production order — 64% of
+ * receipt lines and 87% of issue lines — with the rest entered by hand.
+ */
+export const INVENTORY_DOCS = [
+    { id: 'goods_receipt', sap: 59, tone: 'green', sign: 1 },
+    { id: 'goods_issue', sap: 60, tone: 'red', sign: -1 },
+    { id: 'count', sap: 1470000065, tone: 'amber', sign: 0 },
+    { id: 'transfer', sap: 67, tone: 'blue', sign: 0 },
+];
+
+export const INVENTORY_DOC = Object.fromEntries(
+    INVENTORY_DOCS.map((doc) => [doc.id, doc]),
+);
+
+export const INVENTORY_DOC_IDS = INVENTORY_DOCS.map((doc) => doc.id);
+
+/**
+ * What a document was raised against. SAP writes the production order's own
+ * number into the line's `BaseEntry` and marks the line `BaseType` 202; a
+ * document entered by hand carries -1, which is `manual` here.
+ */
+export const INVENTORY_DOC_BASES = ['manual', 'production', 'purchase_order'];
+
+/** The block inventory documents are numbered in — SAP's own 26xxxxx. */
+export const INVENTORY_DOC_SERIES = 2600000;
+
 /** Batch states and their chip tone. */
 export const BATCH_STATES = {
     active: { tone: 'green' },

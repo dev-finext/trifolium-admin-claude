@@ -26,9 +26,21 @@ import { L } from '@/lib/localized';
 const RECEIPT_COUNT = 16;
 const FIRST_BATCH_NUMBER = 2610;
 
+/** Inventory documents run in SAP's own 26xxxxx block. */
+const FIRST_DOC_NUMBER = 2602000;
+
+/** When the stock counts were taken, newest first. */
+const COUNT_DAYS = [12, 41, 76, 118];
+
+const COUNT_NOTES = [
+    L('ספירת רבעון', 'Quarterly count'),
+    L('ספירה חלקית — מדף עליון', 'Partial count — top shelf'),
+    L('ספירה לאחר פער במלאי', 'Count after a stock discrepancy'),
+    L('ספירת סוף שנה', 'Year-end count'),
+];
+
 /** Days between one receipt and the next, newest first. */
 const RECEIPT_GAP_DAYS = 7;
-
 
 /** Order statuses at which the lab has drawn the formula's herbs from stock. */
 const CONSUMING_STATUS_IDS = ['lab', 'packed', 'sent', 'closed'];
@@ -283,27 +295,12 @@ const RECEIPT_SUPPLIER_CODES = [
 ];
 
 /**
- * The components the in-house recipes consume (demo/items.js INTERNAL_TREES):
- * the herbs of the three tinctures, the powder's herb, the infused oil's herb,
- * the alcohol and the carrier oil. They go into the OLDEST receipts so a
- * production run dated weeks ago had a batch to draw from.
- */
-const PRODUCTION_INPUT_SKUS = [
-    '100497',
-    '100482',
-    '100060',
-    '100224',
-    '300901',
-    '300903',
-];
-
-/**
  * Which items the receipts should open batches for, oldest receipt first: the
- * production inputs, then the ingredients the real order book names, most
- * used first. A herb an order actually consumed is what a batch has to exist
+ * components the production runs will consume, then the ingredients the real
+ * order book names, most used first. A herb an order actually consumed is what a batch has to exist
  * for — traceability that points at herbs nobody ordered is theatre.
  */
-function receiptLinePool(stock) {
+function receiptLinePool(stock, inputs) {
     const usage = new Map();
     const bySku = new Map(stock.map((row) => [row.sku, row]));
 
@@ -322,11 +319,9 @@ function receiptLinePool(stock) {
     const ordered = [...usage]
         .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
         .map(([sku]) => sku)
-        .filter((sku) => !PRODUCTION_INPUT_SKUS.includes(sku));
+        .filter((sku) => !inputs.includes(sku));
 
-    return [...PRODUCTION_INPUT_SKUS, ...ordered]
-        .map((sku) => bySku.get(sku))
-        .filter(Boolean);
+    return [...inputs, ...ordered].map((sku) => bySku.get(sku)).filter(Boolean);
 }
 
 /** A delivery quantity in the row's own unit. */
@@ -347,8 +342,8 @@ function receiptQty(slot, row) {
 }
 
 /** Goods receipts — the single entry point of all stock. */
-export function buildReceipts(stock) {
-    const pool = receiptLinePool(stock);
+export function buildReceipts(stock, productionInputs = []) {
+    const pool = receiptLinePool(stock, productionInputs);
     const receipts = [];
     // Lines are dealt from the pool, and batch numbers run per item family
     // (`10-02610`), oldest receipt first — the list itself is newest first,
@@ -423,6 +418,225 @@ export function buildReceipts(stock) {
     }
 
     return receipts;
+}
+
+// --------------------------------------------------------- inventory documents
+
+/**
+ * The paperwork behind every movement, as SAP posts it.
+ *
+ * Stock does not move in SAP without a document: a goods receipt (`OIGN`)
+ * brings it in, a goods issue (`OIGE`) takes it out, a count (`OINC`) corrects
+ * it and a transfer (`OWTR`) moves it between warehouses. Almost all of the
+ * first two are raised by a production order and say so — 64% of receipt lines
+ * and 87% of issue lines in the live database carry `BaseType` 202 — and SAP
+ * writes the order's number into the remark, which is why the remarks below
+ * read the way they do.
+ *
+ * The documents are the record; the batches, the quantities and the movement
+ * ledger are what they produced, and are built before them.
+ */
+export function buildInventoryDocs({ receipts, production, stock }) {
+    const bySku = new Map(stock.map((row) => [row.sku, row]));
+    const docs = [];
+    let number = FIRST_DOC_NUMBER;
+    const next = () => {
+        number += 1;
+
+        return String(number);
+    };
+
+    // The supplier receipts, oldest first, so the numbers run with the dates.
+    [...receipts]
+        .sort((a, b) => b.when.daysAgo - a.when.daysAgo)
+        .forEach((receipt) => {
+            docs.push({
+                id: next(),
+                type: 'goods_receipt',
+                base: receipt.po ? 'purchase_order' : 'manual',
+                baseRef: receipt.po || null,
+                warehouse: receipt.lines[0]?.wh || DEFAULT_WAREHOUSE,
+                supplier: receipt.supplier,
+                supplierCode: receipt.supplierCode,
+                receipt: receipt.id,
+                remarks: receipt.note,
+                when: receipt.when,
+                by: receipt.by,
+                lines: receipt.lines.map((line) => ({
+                    sku: line.sku,
+                    name: line.name,
+                    unit: line.unit,
+                    qty: line.qty,
+                    wh: line.wh,
+                    batch: line.batch,
+                    price: line.price ?? null,
+                })),
+            });
+        });
+
+    // A production run issues its components and receives what it made. SAP
+    // posts two documents per run and links both to the order.
+    [...(production || [])]
+        .filter((order) => order.state === 'completed')
+        .sort((a, b) => b.completedOn.daysAgo - a.completedOn.daysAgo)
+        .forEach((order) => {
+            const issued = order.components.flatMap((component) =>
+                component.picks.map((pick) => {
+                    const row = bySku.get(component.sku) || null;
+
+                    return {
+                        sku: component.sku,
+                        name: component.name,
+                        unit: row?.unit || component.uom,
+                        qty: pick.qty,
+                        wh: row?.wh || DEFAULT_WAREHOUSE,
+                        batch: pick.batch,
+                        price: null,
+                    };
+                }),
+            );
+
+            if (issued.length) {
+                docs.push({
+                    id: next(),
+                    type: 'goods_issue',
+                    base: 'production',
+                    baseRef: order.id,
+                    warehouse: issued[0].wh,
+                    supplier: null,
+                    supplierCode: null,
+                    receipt: null,
+                    remarks: L(
+                        `נוצר באופן אוטומטי על-ידי הוראת ייצור ${order.id}`,
+                        `Created automatically by production order ${order.id}`,
+                    ),
+                    when: order.completedOn,
+                    by: order.by,
+                    lines: issued,
+                });
+            }
+
+            const parent = bySku.get(order.parentSku) || null;
+            const made = [
+                order.outputBatch && {
+                    sku: order.parentSku,
+                    name: parent ? parent.name : order.name,
+                    unit: parent?.unit || order.uom,
+                    qty: order.yieldQty,
+                    wh: parent?.wh || DEFAULT_WAREHOUSE,
+                    batch: order.outputBatch,
+                    price: order.cost?.perUnit ?? null,
+                },
+                order.wasteBatch && {
+                    sku: order.parentSku,
+                    name: parent ? parent.name : order.name,
+                    unit: parent?.unit || order.uom,
+                    qty: order.wasteQty,
+                    wh: parent?.wh || DEFAULT_WAREHOUSE,
+                    batch: order.wasteBatch,
+                    price: null,
+                },
+            ].filter(Boolean);
+
+            if (made.length) {
+                docs.push({
+                    id: next(),
+                    type: 'goods_receipt',
+                    base: 'production',
+                    baseRef: order.id,
+                    warehouse: made[0].wh,
+                    supplier: null,
+                    supplierCode: null,
+                    receipt: null,
+                    remarks: L(
+                        `קבלה מהייצור · הוראת ייצור ${order.id}`,
+                        `Receipt from production · order ${order.id}`,
+                    ),
+                    when: order.completedOn,
+                    by: order.by,
+                    lines: made,
+                });
+            }
+        });
+
+    // The counts the pharmacy runs on the shelf it cannot weigh per order, and
+    // the one transfer a year that moves stock to the external warehouse.
+    const countable = stock
+        .filter((row) => row.onHand > 0)
+        .sort((a, b) => String(a.sku).localeCompare(String(b.sku)));
+
+    COUNT_DAYS.forEach((daysAgo, i) => {
+        const lines = Array.from({ length: 3 }, (_, k) => {
+            const row = countable[(i * 7 + k * 31) % countable.length];
+            const counted = round2(
+                row.onHand * (1 + (fraction(`count:${i}:${k}`) - 0.5) / 12),
+            );
+
+            return {
+                sku: row.sku,
+                name: row.name,
+                unit: row.unit,
+                qty: round2(counted - row.onHand),
+                counted,
+                inStock: row.onHand,
+                wh: row.wh,
+                batch: null,
+                price: null,
+            };
+        });
+
+        docs.push({
+            id: next(),
+            type: 'count',
+            base: 'manual',
+            baseRef: null,
+            warehouse: DEFAULT_WAREHOUSE,
+            supplier: null,
+            supplierCode: null,
+            receipt: null,
+            remarks: pickFrom(`count:${i}:note`, COUNT_NOTES),
+            when: at(daysAgo, 8, 30),
+            by: pickFrom(`count:${i}:by`, RECEIVERS),
+            lines,
+        });
+    });
+
+    const moved = countable[11] || countable[0];
+
+    if (moved) {
+        docs.push({
+            id: next(),
+            type: 'transfer',
+            base: 'manual',
+            baseRef: null,
+            warehouse: DEFAULT_WAREHOUSE,
+            toWarehouse: '02',
+            supplier: null,
+            supplierCode: null,
+            receipt: null,
+            remarks: L(
+                'העברה למחסן החיצוני — חוסר מקום במדף',
+                'Moved to the external warehouse — no room on the shelf',
+            ),
+            when: at(34, 11, 15),
+            by: pickFrom('transfer:by', RECEIVERS),
+            lines: [
+                {
+                    sku: moved.sku,
+                    name: moved.name,
+                    unit: moved.unit,
+                    qty: round2(moved.onHand / 4),
+                    wh: DEFAULT_WAREHOUSE,
+                    toWh: '02',
+                    batch: null,
+                    price: null,
+                },
+            ],
+        });
+    }
+
+    // Newest first, as every list here is.
+    return docs.sort((a, b) => a.when.daysAgo - b.when.daysAgo);
 }
 
 /**

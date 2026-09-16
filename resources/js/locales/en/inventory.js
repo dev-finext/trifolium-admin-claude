@@ -1,11 +1,7 @@
-// English mirror of he/inventory.js — same keys, real translations of the
-// compounding-pharmacy domain: אצווה is a batch, רקיחה is compounding, קליטת
-// סחורה is a goods receipt, מק״ט is an item code.
+// English mirror of he/inventory.js — same keys, real translations.
 export default {
     title: 'Stock, goods receipt and batches',
     sub: '{items} items · {batches} batches with quantity left · {receipts} goods receipts',
-
-    // The filter system
     filterGroup: {
         what: 'What and where',
         level: 'Quantities',
@@ -14,7 +10,6 @@ export default {
         who: 'Supplier & receiver',
         when: 'Time',
     },
-
     filter: {
         stockNoun: 'stock rows',
         batchNoun: 'batches',
@@ -61,22 +56,19 @@ export default {
             later: 'Over 90 days',
         },
     },
-
     tab: {
         stock: 'Stock',
         receipts: 'Goods receipt',
         batches: 'Batches and expiry',
         movements: 'Stock movements',
+        docs: 'Inventory documents',
     },
-
     action: {
         export: 'Export stock',
         newReceipt: 'New goods receipt',
         adjust: 'Adjust stock',
         openBatches: "Show this item's batches",
     },
-
-    // Stock units — config/inventory.js STOCK_UNITS
     unit: {
         g: 'g',
         kg: 'kg',
@@ -85,15 +77,12 @@ export default {
         unit: 'units',
         capsule: 'capsules',
     },
-
-    // Item kinds — config/catalog.js STOCK_KINDS
     stockKind: {
         raw: 'Raw material',
         base: 'Base',
         pack: 'Packaging',
         shelf: 'Shelf product',
     },
-
     toast: {
         exported: {
             title: 'The file was downloaded',
@@ -109,8 +98,6 @@ export default {
             bodyBatches: '{item} · {reason} · {diff} {unit} · {batches}',
         },
     },
-
-    // V2 — the batch-handling settings
     pickMode: {
         fefo: 'FEFO — by expiry',
         fifo: 'FIFO — by receipt order',
@@ -136,7 +123,6 @@ export default {
         seriesHint:
             'Batch numbers are assigned automatically: the item family’s code prefix and a serial that runs per family — 10-00124, say. Waste batches carry a W.',
     },
-
     stock: {
         lowTitle: '{n} items below their minimum',
         lowNames: '— {names}.',
@@ -168,7 +154,6 @@ export default {
         col: {
             sku: 'Item code',
             name: 'Item',
-            // Export file only — the table shows the latin name under the item
             lat: 'Latin name',
             kind: 'Kind',
             wh: 'Warehouse',
@@ -178,13 +163,13 @@ export default {
             min: 'Minimum',
             unit: 'Unit',
             batches: 'Batches with quantity',
+            group: 'Item group',
         },
         empty: {
             title: 'No items found',
             sub: 'Clear the search or the filter',
         },
     },
-
     receipts: {
         note: 'A goods receipt is the only way stock enters the system. Every line opens a batch with its own batch number and expiry date — and that is where the trace to the customer begins.',
         count: 'goods receipts · out of {total}',
@@ -236,7 +221,6 @@ export default {
             po: 'Against purchase order {id}',
         },
     },
-
     batches: {
         warn: '{expiring} batches expiring soon and {expired} already expired',
         warnBody:
@@ -281,7 +265,6 @@ export default {
             sub: 'Clear the filter',
         },
         trace: {
-            // V2
             analyses: 'Batch analyses & documents',
             title: 'Batch',
             supplier: 'Supplier: {name}',
@@ -315,7 +298,6 @@ export default {
             },
         },
     },
-
     movements: {
         note: 'Every movement is written from the record behind it: a goods receipt, a batch allocated to compounding, or a stock adjustment written to the log. Nothing moves without a batch and without someone who moved it.',
         count: 'movements',
@@ -343,7 +325,6 @@ export default {
             sub: 'Clear the filter',
         },
     },
-
     receipt: {
         batchAuto: 'Assigned automatically by item family',
         title: 'New goods receipt',
@@ -368,7 +349,6 @@ export default {
             labels: 'Labels',
         },
         supplierBatchPh: "Batch number at the supplier's",
-        // V2
         supplierPick: 'Choose a supplier from the list…',
         supplierOther: 'Other supplier — type the name',
         existingNew: 'New batch',
@@ -389,8 +369,8 @@ export default {
             price: 'Price on line {n}',
             labels: 'Labels on line {n}',
         },
+        open: 'New goods receipt',
     },
-
     adjust: {
         title: 'Stock adjustment · {item}',
         kv: {
@@ -424,7 +404,6 @@ export default {
         rejectNote:
             'The batch will be marked rejected and blocked from compounding, even if quantity is left in it.',
     },
-
     pick: {
         title: 'Batch selection for compounding',
         rule: {
@@ -445,7 +424,6 @@ export default {
         short: '{qty} {unit} short — the open batches of this item do not hold enough.',
         noBatches: 'This item has no open batch with quantity left.',
     },
-
     picker: {
         placeholder: 'Search an item — name · item code · latin name',
         search: 'Item name · item code · latin name',
@@ -460,6 +438,57 @@ export default {
         aria: {
             search: 'Item search',
             wh: 'Warehouse',
+        },
+    },
+    docType: {
+        goods_receipt: 'Goods receipt',
+        goods_issue: 'Goods issue',
+        count: 'Inventory count',
+        transfer: 'Warehouse transfer',
+    },
+    docBase: {
+        manual: 'Entered by hand',
+        production: 'Production order',
+        purchase_order: 'Purchase order',
+    },
+    docs: {
+        noun: 'documents',
+        count: 'documents · of {total}',
+        search: 'Document number · production order · supplier · item · remark',
+        empty: 'No document matches the filter',
+        linesN: '{n} lines',
+        sub: {
+            goods_receipt: 'Came in',
+            goods_issue: 'Went out',
+            count: 'Corrected by a count',
+            transfer: 'Between warehouses',
+        },
+        col: {
+            number: 'Number',
+            type: 'Type',
+            when: 'Date',
+            base: 'Raised against',
+            lines: 'Lines',
+            wh: 'Warehouse',
+            remarks: 'Remarks',
+        },
+        line: {
+            item: 'Item no.',
+            name: 'Item',
+            inStock: 'In system',
+            counted: 'Counted',
+            qty: 'Movement',
+            batch: 'Batch',
+            price: 'Price',
+        },
+        field: {
+            type: 'Document type',
+            base: 'Raised against',
+            wh: 'Warehouse',
+        },
+        group: {
+            what: 'What',
+            where: 'Where',
         },
     },
 };

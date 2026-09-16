@@ -26,7 +26,7 @@ import {
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
-import { BATCH_EXPIRY_WARN_DAYS, STOCK_KIND } from '@/config';
+import { BATCH_EXPIRY_WARN_DAYS } from '@/config';
 import { searchHaystack } from '@/lib/localized';
 import { num } from '@/lib/money';
 import {
@@ -34,6 +34,7 @@ import {
     STOCK_FILTER_GROUPS,
     useInventoryStore,
 } from '@/stores/inventory';
+import { useItemsStore } from '@/stores/items';
 
 /** How many item names the low-stock banner lists before it counts the rest. */
 const LOW_PREVIEW = 4;
@@ -43,6 +44,7 @@ const emit = defineEmits(['adjust', 'open-batches', 'open-expiring']);
 const { t } = useI18n();
 const { loc } = useLocalized();
 const inventory = useInventoryStore();
+const items = useItemsStore();
 
 const SPEC = { fields: STOCK_FILTER_FIELDS };
 
@@ -54,8 +56,6 @@ const view = useUrlState({
     ...filterDefaults(SPEC),
     ...PAGE_DEFAULTS,
 });
-
-const kindTone = (id) => STOCK_KIND[id]?.tone;
 
 const term = computed(() => view.q.trim().toLowerCase());
 
@@ -133,7 +133,7 @@ const cols = computed(() => [
         sortable: true,
     },
     { k: 'name', label: t('inventory.stock.col.name'), sortable: true },
-    { k: 'kind', label: t('inventory.stock.col.kind'), nowrap: true },
+    { k: 'group', label: t('inventory.stock.col.group'), nowrap: true },
     { k: 'wh', label: t('inventory.stock.col.wh'), nowrap: true },
     {
         k: 'onHand',
@@ -286,9 +286,9 @@ const cols = computed(() => [
                 <div class="t-strong">{{ loc(row.name) }}</div>
                 <div v-if="row.lat" class="t-sub ltr">{{ row.lat }}</div>
             </template>
-            <template #cell-kind="{ row }">
-                <AChip :tone="kindTone(row.kind)" size="sm" :dot="false">
-                    {{ t(`inventory.stockKind.${row.kind}`) }}
+            <template #cell-group="{ row }">
+                <AChip size="sm" :dot="false">
+                    {{ items.rowBySku(row.sku)?.groupName || '—' }}
                 </AChip>
             </template>
             <template #cell-wh="{ row }">

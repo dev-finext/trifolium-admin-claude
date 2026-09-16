@@ -36,6 +36,7 @@ import { buildPickupPoints } from '@/demo/deliveries';
 import {
     buildBatchUse,
     buildBatches,
+    buildInventoryDocs,
     buildMovements,
     buildReceipts,
     buildStock,
@@ -154,15 +155,28 @@ export function buildDataset() {
     });
 
     const stock = buildStock();
-    const receipts = buildReceipts(stock);
+    const products = buildProducts();
+    const boms = buildBoms(stock, products);
+    // The receipts open batches for what the production runs will consume
+    // first, so a run dated weeks ago has something to draw from.
+    const receipts = buildReceipts(
+        stock,
+        [
+            ...new Set(
+                boms
+                    .filter((bom) => (bom.yield?.qty || 1) > 1)
+                    .flatMap((bom) =>
+                        bom.components.map((component) => component.sku),
+                    ),
+            ),
+        ],
+    );
     const batches = buildBatches(receipts, stock);
     const batchUse = buildBatchUse(orders, batches, stock);
     const priceGroups = buildPriceGroups();
-    const products = buildProducts();
     const items = buildItems(DEMO_SUPPLIERS);
     const purchaseOrders = buildPurchaseOrders(items, DEMO_SUPPLIERS);
     const supplierNotes = buildSupplierNotes(purchaseOrders, receipts);
-    const boms = buildBoms(stock, products);
     // The runs that made the in-house items: they consume component batches,
     // open the parents' batches and leave movements behind, so they come after
     // everything they touch and before the ledger is assembled.
@@ -182,6 +196,14 @@ export function buildDataset() {
         DEMO_SUPPLIERS,
     );
     const supplierPayments = buildSupplierPayments(supplierInvoices);
+    // The paperwork every movement above was posted with: SAP does not move
+    // stock without a document, so the documents come last and describe what
+    // the receipts and the production runs already did.
+    const inventoryDocs = buildInventoryDocs({
+        receipts,
+        production: production.orders,
+        stock,
+    });
 
     return {
         // people
@@ -260,6 +282,7 @@ export function buildDataset() {
         // inventory
         stock,
         receipts,
+        inventoryDocs,
         batches,
         batchUse,
         movements: [

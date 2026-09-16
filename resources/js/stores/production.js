@@ -26,6 +26,7 @@ import {
 import { persist } from '@/data/source';
 import { componentUnitCost, toStockUnits } from '@/demo/production';
 import { daysSince, fmtISO, hm, isoDaysAgo, now, stamp } from '@/lib/dates';
+import { L } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
@@ -335,6 +336,8 @@ export const useProductionStore = defineStore('production', () => {
         const item = items.itemBySku(order.parentSku);
         const parent = inventory.itemBySku(order.parentSku);
         const yieldQty = round2(Number(form.yieldQty) || 0);
+        // What the run took off the shelf, for the goods issue it posts.
+        const issued = [];
         const wasteQty = round2(Math.max(0, Number(form.wasteQty) || 0));
         const when = moment();
         const by = dataset.me?.name || null;
@@ -366,6 +369,16 @@ export const useProductionStore = defineStore('production', () => {
                 if (!batch) {
                     return;
                 }
+
+                issued.push({
+                    sku: component.sku,
+                    name: batch.name,
+                    unit: batch.unit,
+                    qty: pick.qty,
+                    wh: batch.wh,
+                    batch: batch.id,
+                    price: unitCost || null,
+                });
 
                 batch.remaining = Math.max(
                     0,
@@ -399,6 +412,24 @@ export const useProductionStore = defineStore('production', () => {
                 inventory.syncRow(row);
             }
         });
+
+        // SAP posts a goods issue for what the run consumed and a goods
+        // receipt for what it made, both against the order.
+        if (issued.length) {
+            inventory.postDoc({
+                type: 'goods_issue',
+                base: 'production',
+                baseRef: order.id,
+                warehouse: issued[0].wh,
+                remarks: L(
+                    `נוצר באופן אוטומטי על-ידי הוראת ייצור ${order.id}`,
+                    `Created automatically by production order ${order.id}`,
+                ),
+                when,
+                by,
+                lines: issued,
+            });
+        }
 
         const stockUnit = parent?.unit || order.uom;
         const outputQty = round2(toStockUnits(yieldQty, order.uom, stockUnit));
@@ -480,6 +511,39 @@ export const useProductionStore = defineStore('production', () => {
             );
             inventory.syncRow(parent);
         }
+
+        inventory.postDoc({
+            type: 'goods_receipt',
+            base: 'production',
+            baseRef: order.id,
+            warehouse: output.wh,
+            remarks: L(
+                `קבלה מהייצור · הוראת ייצור ${order.id}`,
+                `Receipt from production · order ${order.id}`,
+            ),
+            when,
+            by,
+            lines: [
+                {
+                    sku: order.parentSku,
+                    name: output.name,
+                    unit: stockUnit,
+                    qty: outputQty,
+                    wh: output.wh,
+                    batch: output.id,
+                    price: output.unitCost ?? null,
+                },
+                waste && {
+                    sku: order.parentSku,
+                    name: output.name,
+                    unit: stockUnit,
+                    qty: waste.qty,
+                    wh: waste.wh,
+                    batch: waste.id,
+                    price: null,
+                },
+            ].filter(Boolean),
+        });
 
         Object.assign(order, {
             state: 'completed',

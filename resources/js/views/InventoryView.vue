@@ -16,10 +16,11 @@ import { useRoute, useRouter } from 'vue-router';
 import AdjustStockModal from '@/components/inventory/AdjustStockModal.vue';
 import BatchesTab from '@/components/inventory/BatchesTab.vue';
 import BatchTraceDrawer from '@/components/inventory/BatchTraceDrawer.vue';
+import DocumentDrawer from '@/components/inventory/DocumentDrawer.vue';
+import DocumentsTab from '@/components/inventory/DocumentsTab.vue';
 import GoodsReceiptModal from '@/components/inventory/GoodsReceiptModal.vue';
 import MovementsTab from '@/components/inventory/MovementsTab.vue';
 import ReceiptDrawer from '@/components/inventory/ReceiptDrawer.vue';
-import ReceiptsTab from '@/components/inventory/ReceiptsTab.vue';
 import StockTab from '@/components/inventory/StockTab.vue';
 import PageHead from '@/components/layout/PageHead.vue';
 import AButton from '@/components/ui/AButton.vue';
@@ -43,7 +44,7 @@ const inventory = useInventoryStore();
 const route = useRoute();
 const router = useRouter();
 
-const view = useUrlState({ tab: 'stock', batch: '', receipt: '' });
+const view = useUrlState({ tab: 'stock', batch: '', receipt: '', doc: '' });
 
 /** The receipt form and the adjustment are actions, not addresses. */
 const receiving = ref(false);
@@ -57,10 +58,10 @@ const tabs = computed(() => [
         n: inventory.lowStock.length || undefined,
     },
     {
-        id: 'receipts',
-        label: t('inventory.tab.receipts'),
+        id: 'docs',
+        label: t('inventory.tab.docs'),
         icon: 'package',
-        n: inventory.receipts.length,
+        n: inventory.inventoryDocs.length,
     },
     {
         id: 'batches',
@@ -86,15 +87,27 @@ const shownReceipt = computed(() =>
     view.receipt ? inventory.receiptById(view.receipt) : null,
 );
 
-/** One drawer at a time: opening a batch closes the receipt, and back. */
+const shownDoc = computed(() =>
+    view.doc ? inventory.docById(view.doc) : null,
+);
+
+/** One drawer at a time: opening a batch closes the others, and back. */
 function openBatch(id) {
     view.receipt = '';
+    view.doc = '';
     view.batch = id;
 }
 
 function openReceipt(id) {
     view.batch = '';
+    view.doc = '';
     view.receipt = id;
+}
+
+function openDoc(id) {
+    view.batch = '';
+    view.receipt = '';
+    view.doc = id;
 }
 
 /**
@@ -243,12 +256,10 @@ function exportStock() {
             @open-batches="openItemBatches"
             @open-expiring="openExpiring"
         />
-        <ReceiptsTab
-            v-else-if="view.tab === 'receipts'"
-            :selected="view.receipt"
-            @open-receipt="openReceipt"
-            @open-batch="openBatch"
-            @new-receipt="receiving = true"
+        <DocumentsTab
+            v-else-if="view.tab === 'docs'"
+            @open="openDoc"
+            @receive="receiving = true"
         />
         <BatchesTab
             v-else-if="view.tab === 'batches'"
@@ -274,6 +285,12 @@ function exportStock() {
         @saved="onAdjusted"
     />
 
+    <DocumentDrawer
+        :doc="shownDoc"
+        @close="view.doc = ''"
+        @open-batch="openBatch"
+        @open-item="openItemBatches"
+    />
     <ReceiptDrawer
         :receipt="shownReceipt"
         @close="view.receipt = ''"
