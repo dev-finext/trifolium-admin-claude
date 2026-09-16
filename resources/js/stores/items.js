@@ -606,6 +606,7 @@ export const useItemsStore = defineStore('items', () => {
                 min: numberOrNull(row.min) ?? 0,
                 max: numberOrNull(row.max) ?? 0,
             })),
+            forTherapist: form.forTherapist || null,
             remarks: form.remarks || null,
             saleText: form.saleText || null,
             // The console's own: which quantity ladder prices it.

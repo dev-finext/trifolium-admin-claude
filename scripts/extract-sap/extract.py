@@ -319,6 +319,7 @@ ITEM_COLUMNS = """
     U_SiteQuantity AS siteQuantity, U_SiteComments AS siteComments,
     U_Category1 AS category1, U_Category2 AS category2,
     U_Category3 AS category3, U_Category4 AS category4,
+    U_ProductForClientNum AS forTherapist,
     CAST(UserText AS nvarchar(MAX)) AS remarks,
     CAST(U_Item_SaleText AS nvarchar(MAX)) AS saleText,
     CreateDate AS createdOn, UpdateDate AS updatedOn

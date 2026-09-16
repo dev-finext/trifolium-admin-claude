@@ -337,6 +337,7 @@ export default {
         therapistDiscount: 'הנחת מטפלים',
         remarks: 'הערות פריט',
         noRemarks: 'אין הערות',
+        forTherapist: 'מוצר עבור מטפל מס׳',
     },
     editor: {
         priceGroup: 'מחירון מדורג',
@@ -393,6 +394,8 @@ export default {
         remarks: 'הערות פריט',
         remarksHint: 'שדה ההערות של SAP — מודפס בדף ההכנה',
         saleTextHint: 'הטקסט השיווקי שמופיע באתר הצרכני',
+        forTherapistHint:
+            'שדה של SAP שבפועל מוזנים בו גם קודי מטפל וגם הערות חופשיות — נשמר כפי שהוא',
     },
     validate: {
         nameShort: 'נא להזין שם פריט',

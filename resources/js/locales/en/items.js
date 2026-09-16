@@ -340,6 +340,7 @@ export default {
         therapistDiscount: 'Practitioner discount',
         remarks: 'Item remarks',
         noRemarks: 'No remarks',
+        forTherapist: 'Product for therapist no.',
     },
     editor: {
         priceGroup: 'Tiered list',
@@ -401,6 +402,8 @@ export default {
         remarks: 'Item remarks',
         remarksHint: 'SAP’s remarks field — printed on the prep sheet',
         saleTextHint: 'The marketing text the consumer site shows',
+        forTherapistHint:
+            'A SAP field that in practice holds both therapist codes and free notes — carried verbatim',
     },
     validate: {
         nameShort: 'Enter an item name',

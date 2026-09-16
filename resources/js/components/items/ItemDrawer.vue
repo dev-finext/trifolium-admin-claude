@@ -663,6 +663,13 @@ const categories = computed(() =>
                 <ACard :title="t('items.card.remarks')" icon="edit">
                     <p v-if="row.remarks" class="remarks">{{ row.remarks }}</p>
                     <p v-else class="t-sub">{{ t('items.card.noRemarks') }}</p>
+
+                    <template v-if="row.forTherapist">
+                        <div class="a-lbl safety-l">
+                            {{ t('items.card.forTherapist') }}
+                        </div>
+                        <p class="remarks">{{ row.forTherapist }}</p>
+                    </template>
                 </ACard>
 
                 <!-- what the console adds: the runs that make it -->
