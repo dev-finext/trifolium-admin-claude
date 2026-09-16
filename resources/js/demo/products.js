@@ -87,7 +87,8 @@ function realProduct(item) {
         // Every item in the extract is active; what separates them is
         // whether SAP publishes them to the consumer site, which is what the
         // console's two states are really about.
-        status: item.siteSync === 'Y' ? 'published' : 'archived',
+        // Property 40 is the flag SAP publishes to the consumer site by.
+        status: (item.properties || []).includes(40) ? 'published' : 'archived',
         family: item.family,
         img: null,
         created: item.createdOn || isoDaysAgo(400),

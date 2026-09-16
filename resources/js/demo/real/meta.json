@@ -1,13 +1,15 @@
 {
  "source": "TR_backup_2026_08_05_180002_6205496.bak (SAP Business One)",
  "database": "TR",
- "extractedOn": "2026-09-09",
+ "extractedOn": "2026-09-16",
  "rows": {
   "orderStates": 8,
   "prepTypes": 17,
+  "itemProperties": 64,
   "categories": 71,
   "itemGroups": 48,
   "warehouses": 7,
+  "priceLists": 10,
   "pickupPoints": 10,
   "contentSizes": 16,
   "valueLists": 1,

@@ -12,6 +12,7 @@ import { computed } from 'vue';
 
 import {
     ITEM_CODE_DIGITS,
+    ITEM_UOMS,
     ITEM_FAMILY,
     ITEM_FLAG_IDS,
     TERMINAL_STATUS_IDS,
@@ -110,11 +111,21 @@ export function itemStockState(row) {
  */
 export const ITEM_FILTER_FIELDS = [
     {
-        key: 'fam',
+        // SAP's own item group (`OITM.ItmsGrpCod`) — the option text is the
+        // group's name, so the screen labels it.
+        key: 'grp',
         group: 'what',
         kind: 'set',
-        prefix: 'items.family',
-        values: (row) => [row.family],
+        values: (row) => (row.group === null ? [] : [String(row.group)]),
+    },
+    {
+        key: 'state',
+        group: 'what',
+        kind: 'set',
+        prefix: 'items.filter.stateState',
+        values: (row) => [
+            row.frozen ? 'frozen' : row.active ? 'active' : 'inactive',
+        ],
     },
     {
         key: 'flag',
@@ -131,11 +142,11 @@ export const ITEM_FILTER_FIELDS = [
         values: (row) => [row.flags?.batch ? 'yes' : 'no'],
     },
     {
-        key: 'internal',
+        key: 'tree',
         group: 'what',
         kind: 'set',
-        prefix: 'items.filter.internalState',
-        values: (row) => [row.flags?.internal ? 'yes' : 'no'],
+        prefix: 'items.filter.treeState',
+        values: (row) => [row.treeType === 'P' ? 'P' : 'N'],
     },
     {
         // The ladder an item is priced by: a group it names, the one its code
@@ -273,6 +284,25 @@ export const useItemsStore = defineStore('items', () => {
         return `${base}${base.endsWith('/') ? '' : '/'}${file.url}`;
     };
 
+    /** The preparation type a SAP property number names, if it names one. */
+    const prepTypeBySap = (code) =>
+        prepTypes.value.find((type) => type.sap === code)?.id || null;
+
+    /** SAP's item groups (`OITB`), and one group's name. */
+    const itemGroups = computed(() => list('itemGroups'));
+
+    const groupName = (code) =>
+        itemGroups.value.find((group) => group.code === code)?.name || null;
+
+    /** The price lists an item is priced in (`OPLN`). */
+    const priceLists = computed(() => list('priceLists'));
+
+    /** SAP's warehouses (`OWHS`). */
+    const sapWarehouses = computed(() => list('sapWarehouses'));
+
+    /** The sixty-four item properties (`OITG`); only the named ones are shown. */
+    const itemProperties = computed(() => list('itemProperties'));
+
     /** The next free code in a family — `10` + `0026`. */
     const nextCode = (family) => {
         const prefix = ITEM_FAMILY[family]?.prefix || '00';
@@ -330,7 +360,7 @@ export const useItemsStore = defineStore('items', () => {
                       : false,
                 min: stock ? stock.min : product ? product.minStock : null,
                 preferred: supplierByCode(item.suppliers?.preferred),
-                last: supplierByCode(item.suppliers?.last),
+                groupName: groupName(item.group),
                 bomCount: bomsOfParent(item.sku).length,
                 usedInCount: bomsUsing(item.sku).length,
                 fileCount: attachmentsOf('item', item.sku).length,
@@ -467,85 +497,128 @@ export const useItemsStore = defineStore('items', () => {
         const isNew = !existingSku;
         const flags = { ...form.flags };
 
-        // What the pharmacy makes itself is always batch-managed: the run that
-        // makes it opens the batch.
-        if (flags.internal) {
-            flags.batch = true;
-        }
-
-        // Batch-managed stock is stock.
+        // SAP's own rule: a batch-managed item is an inventory item.
         if (flags.batch) {
             flags.inventory = true;
         }
 
         const record = {
-            // SAP's item number is the one key: the code IS the sku.
+            // SAP's item number is the one key, and the console joins on it.
             sku: existingSku || form.code,
             code: form.code || existingSku,
-            family: form.family,
-            active: form.active ?? true,
-            itemType: form.itemType || 'I',
-            treeType: form.treeType || 'N',
             names: {
                 he: form.names?.he || '',
                 en: form.names?.en || null,
                 site: form.names?.site || null,
             },
+            group: numberOrNull(form.group),
+            family: form.family || null,
+            itemType: form.itemType || 'I',
+            treeType: form.treeType || 'N',
+            issueMethod: form.issueMethod || 'M',
+            active: form.active ?? true,
+            frozen: form.frozen ?? false,
+            frozenFrom: form.frozenFrom || null,
+            frozenTo: form.frozenTo || null,
+            activeComment: form.activeComment || null,
+            frozenComment: form.frozenComment || null,
+            flags,
+            barcode: form.barcode || null,
+            additionalId: form.additionalId || null,
+            picture: form.picture || null,
+            suppliers: {
+                preferred: form.suppliers?.preferred || null,
+                sapCode: form.suppliers?.sapCode || null,
+                catalogNum: form.suppliers?.catalogNum || null,
+            },
             uom: {
+                stock: form.uom?.stock || 'unit',
                 purchase: form.uom?.purchase || 'unit',
                 sales: form.uom?.sales || 'unit',
-                stock: form.uom?.stock || form.uom?.sales || 'unit',
+                count: form.uom?.count || form.uom?.stock || 'unit',
+                price: form.uom?.price || form.uom?.sales || 'unit',
+                // SAP stores the pricing unit as a `UomEntry`; the card edits
+                // the unit itself, so the number follows from it.
+                priceUnit:
+                    ITEM_UOMS.find(
+                        (uom) =>
+                            uom.id === (form.uom?.price || form.uom?.sales),
+                    )?.sap ?? -1,
+                numInBuy: numberOrNull(form.uom?.numInBuy) ?? 1,
+                numInSale: numberOrNull(form.uom?.numInSale) ?? 1,
                 factor: numberOrNull(form.uom?.factor) ?? 1,
+                group: numberOrNull(form.uom?.group) ?? -1,
+                packUom: form.uom?.packUom || null,
+                packQty: numberOrNull(form.uom?.packQty),
             },
-            flags,
             levels: {
                 min: numberOrNull(form.levels?.min),
                 max: numberOrNull(form.levels?.max),
+                reorder: numberOrNull(form.levels?.reorder),
+                minOrder: numberOrNull(form.levels?.minOrder),
+                leadTime: numberOrNull(form.levels?.leadTime),
             },
-            barcode: form.barcode || null,
-            catalogNum: form.catalogNum || null,
-            packageSize: form.packageSize || null,
+            planning: {
+                method: form.planning?.method || 'N',
+                procurement: form.planning?.procurement || 'B',
+                productSource: form.planning?.productSource || null,
+                componentWarehouse: form.planning?.componentWarehouse || 'B',
+            },
             price: {
-                ...form.price,
                 sale: numberOrNull(form.price?.sale),
+                saleUom: form.price?.saleUom || form.uom?.sales || 'unit',
                 lastPurchase: numberOrNull(form.price?.lastPurchase),
+                currency: form.price?.currency || 'ILS',
+                lastPurchaseOn: form.price?.lastPurchaseOn || null,
+                evalPrice: numberOrNull(form.price?.evalPrice),
+                evalOn: form.price?.evalOn || null,
+                avgPrice: numberOrNull(form.price?.avgPrice),
             },
-            suppliers: { ...form.suppliers },
-            prepTypes: [...(form.prepTypes || [])],
-            safety: { ...form.safety },
+            accounting: {
+                valuation: form.accounting?.valuation || 'C',
+                byWarehouse: form.accounting?.byWarehouse ?? false,
+                noDiscount: form.accounting?.noDiscount ?? false,
+                inCostRoll: form.accounting?.inCostRoll ?? true,
+            },
             lab: {
                 alcoholPct: numberOrNull(form.lab?.alcoholPct),
+                oilPct: numberOrNull(form.lab?.oilPct),
                 extractionRatio: form.lab?.extractionRatio || null,
+                packageSize: numberOrNull(form.lab?.packageSize),
             },
+            safety: { ...form.safety },
             site: {
                 ...form.site,
                 categories: [...(form.site?.categories || [])],
             },
-            // Which ladder prices it: null inherits by code prefix, 'none' is
-            // a fixed price, an id names a group.
+            properties: [...(form.properties || [])],
+            prepTypes: [...(form.prepTypes || [])],
+            prices: (form.prices || []).map((row) => ({
+                list: row.list,
+                price: numberOrNull(row.price),
+                currency: row.currency || 'ILS',
+            })),
+            warehouses: (form.warehouses || []).map((row) => ({
+                warehouse: row.warehouse,
+                onHand: numberOrNull(row.onHand) ?? 0,
+                committed: numberOrNull(row.committed) ?? 0,
+                onOrder: numberOrNull(row.onOrder) ?? 0,
+                min: numberOrNull(row.min) ?? 0,
+                max: numberOrNull(row.max) ?? 0,
+            })),
+            remarks: form.remarks || null,
+            saleText: form.saleText || null,
+            // The console's own: which quantity ladder prices it.
             priceGroup: form.priceGroup || null,
-            // Supplies consumed by the calendar rather than by orders — only
-            // for stock nobody counts per order, never for a batch item.
-            consumption:
-                flags.inventory && !flags.batch && form.consumption?.mode
-                    ? {
-                          mode: 'time',
-                          qty: numberOrNull(form.consumption.qty) ?? 0,
-                          periodDays:
-                              numberOrNull(form.consumption.periodDays) ?? 7,
-                          countedOn:
-                              form.consumption.countedOn || isoDaysAgo(0),
-                          countedQty:
-                              numberOrNull(form.consumption.countedQty) ?? 0,
-                      }
-                    : null,
             updated: isoDaysAgo(0),
         };
 
         if (isNew) {
             const item = {
                 ...record,
-                source: form.flags?.inventory ? 'stock' : 'item',
+                onHand: 0,
+                committed: 0,
+                onOrder: 0,
                 created: isoDaysAgo(0),
             };
 
@@ -629,23 +702,9 @@ export const useItemsStore = defineStore('items', () => {
         return { created: false, item };
     }
 
-    /**
-     * A physical count of a time-consumed item: the inventory store moves the
-     * stock, the card remembers when and what was counted so the clock restarts.
-     */
+    /** A physical count: the inventory store moves the stock to what was found. */
     async function recordCount(sku, countedQty, note = '') {
-        const result = await inventory.recordCount(sku, countedQty, note);
-        const item = itemBySku(sku);
-
-        if (item?.consumption) {
-            item.consumption = {
-                ...item.consumption,
-                countedOn: result.countedOn,
-                countedQty: result.counted,
-            };
-        }
-
-        return result;
+        return inventory.recordCount(sku, countedQty, note);
     }
 
     /**
@@ -935,6 +994,12 @@ export const useItemsStore = defineStore('items', () => {
         bomsUsing,
         attachmentsOf,
         attachmentUrl,
+        itemGroups,
+        groupName,
+        prepTypeBySap,
+        priceLists,
+        sapWarehouses,
+        itemProperties,
         nextCode,
         codeTaken,
         skuTaken,

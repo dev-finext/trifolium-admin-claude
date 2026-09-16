@@ -89,36 +89,100 @@ export const ITEM_CODE_DIGITS = 4;
  * implications the store enforces on save: `internal` — produced in-house from a
  * bill of materials — forces `batch`, and `batch` forces `inventory`.
  */
-export const ITEM_FLAG_IDS = [
-    'purchase',
-    'sales',
-    'inventory',
-    'batch',
-    'internal',
-    // SAP's item property 19 — the practitioner discount the site grants.
-    'therapistDiscount',
-];
+export const ITEM_FLAG_IDS = ['inventory', 'sales', 'purchase', 'batch'];
 
-/** SAP's item type: an item that is stocked, or labour that never is. */
+/** SAP's item type (`OITM.ItemType`): a thing, or labour that is never stocked. */
 export const ITEM_TYPE_IDS = ['I', 'L'];
 
-/** SAP's tree type: no bill of materials, or a production one. */
+/**
+ * SAP's tree type (`OITM.TreeType`). The catalogue uses two of the four: `N`
+ * for an item with no bill of materials and `P` for one made from a production
+ * tree — 2,123 of the 4,081 items are `P`.
+ */
 export const TREE_TYPE_IDS = ['N', 'P'];
 
+/** How a component leaves stock when its parent is made (`OITM.IssueMthd`). */
+export const ISSUE_METHOD_IDS = ['B', 'M'];
+
+/** SAP's planning method (`OITM.PlaningSys`): MRP, or none. */
+export const PLANNING_METHOD_IDS = ['M', 'N'];
+
+/** Where the item comes from (`OITM.PrcrmntMtd`): bought, or made. */
+export const PROCUREMENT_METHOD_IDS = ['B', 'M'];
+
+/** Which warehouse a tree's components are drawn from (`OITM.CompoWH`). */
+export const COMPONENT_WAREHOUSE_IDS = ['B', 'P'];
+
+/** How the item's G/L accounts are set (`OITM.GLMethod`). */
+export const VALUATION_METHOD_IDS = ['W', 'C', 'L'];
+
 /**
- * How a stock-tracked item that nobody counts per order is consumed. `time`
- * posts one movement per period elapsed (a nightly job; the fixture pre-posts
- * them); an item with no consumption record is consumed by actual usage.
+ * The units of measure, as `OUOM` holds them. `sap` is the `UomEntry` the item
+ * master stores — it is also what `PriceUnit` points at, so a price is always
+ * "per one of these".
  */
-export const CONSUMPTION_MODE_IDS = ['time'];
+export const ITEM_UOMS = [
+    { id: 'manual', sap: -1 },
+    { id: 'kg', sap: 1 },
+    { id: 'g', sap: 2 },
+    { id: 'l', sap: 3 },
+    { id: 'ml', sap: 4 },
+    { id: 'unit', sap: 5 },
+    { id: 'drop', sap: 6 },
+    { id: 'minute', sap: 7 },
+    { id: 'mg', sap: 8 },
+    { id: 'mcg', sap: 9 },
+    { id: 'jar', sap: 10 },
+];
 
-/** Consumption may only be declared on a stock-tracked item that has no batches. */
-export function consumptionAllowed(flags) {
-    return Boolean(flags?.inventory) && !flags?.batch;
-}
+export const ITEM_UOM_IDS = ITEM_UOMS.map((uom) => uom.id);
 
-/** Units an item is bought, sold or held in. */
-export const ITEM_UOM_IDS = ['g', 'kg', 'ml', 'l', 'unit', 'pack', 'capsule'];
+/** `UomEntry` → the console's unit id, for reading `PriceUnit`. */
+export const UOM_BY_SAP = Object.fromEntries(
+    ITEM_UOMS.map((uom) => [uom.sap, uom.id]),
+);
+
+/** The unit a SAP unit *name* stands for — the item master stores names. */
+export const UOM_BY_NAME = {
+    'ק"ג': 'kg',
+    'ק״ג': 'kg',
+    גרם: 'g',
+    ליטר: 'l',
+    LITER: 'l',
+    'מ"ל': 'ml',
+    'מ״ל': 'ml',
+    "מ''ל": 'ml',
+    "יח'": 'unit',
+    יח: 'unit',
+    "י''ח": 'unit',
+    'י״ח': 'unit',
+    טיפה: 'drop',
+    דקה: 'minute',
+    'מ"ג': 'mg',
+    מיקרוגרם: 'mcg',
+    צנצנת: 'jar',
+    ידני: 'manual',
+};
+
+/**
+ * The unit-of-measure groups (`OUGP`), by the `UgpEntry` the item stores. The
+ * group fixes the base unit an item is counted in.
+ */
+export const UOM_GROUPS = [
+    { id: -1, base: 'manual' },
+    { id: 2, base: 'g' },
+    { id: 3, base: 'kg' },
+    { id: 4, base: 'ml' },
+    { id: 5, base: 'l' },
+    { id: 6, base: 'drop' },
+    { id: 7, base: 'unit' },
+    { id: 8, base: 'mg' },
+    { id: 9, base: 'mcg' },
+    { id: 10, base: 'jar' },
+    { id: 11, base: 'l' },
+];
+
+export const UOM_GROUP_IDS = UOM_GROUPS.map((group) => group.id);
 
 /** Currencies a purchase price is recorded in. */
 export const CURRENCY_IDS = ['ILS', 'EUR', 'USD'];

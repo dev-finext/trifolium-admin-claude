@@ -105,6 +105,10 @@ import {
     buildSupplierPayments,
     INVENTORY_SETTINGS,
 } from '@/demo/purchasing';
+import REAL_ITEM_GROUPS from '@/demo/real/itemGroups.json';
+import REAL_ITEM_PROPERTIES from '@/demo/real/itemProperties.json';
+import REAL_PRICE_LISTS from '@/demo/real/priceLists.json';
+import REAL_WAREHOUSES from '@/demo/real/warehouses.json';
 import { buildServices, SERVICE_STATES } from '@/demo/services';
 import {
     buildStickerPrints,
@@ -155,7 +159,7 @@ export function buildDataset() {
     const batchUse = buildBatchUse(orders, batches, stock);
     const priceGroups = buildPriceGroups();
     const products = buildProducts();
-    const items = buildItems(stock, products, DEMO_SUPPLIERS);
+    const items = buildItems(DEMO_SUPPLIERS);
     const purchaseOrders = buildPurchaseOrders(items, DEMO_SUPPLIERS);
     const supplierNotes = buildSupplierNotes(purchaseOrders, receipts);
     const boms = buildBoms(stock, products);
@@ -228,6 +232,13 @@ export function buildDataset() {
             ...buildSupplierFiles(supplierInvoices, supplierPayments),
         ],
         siteCategories: SITE_CATEGORIES,
+        // SAP's own reference data behind the item card: the item groups, the
+        // price lists an item is priced in, the warehouses it is stocked in and
+        // the sixty-four item properties.
+        itemGroups: REAL_ITEM_GROUPS,
+        priceLists: REAL_PRICE_LISTS,
+        sapWarehouses: REAL_WAREHOUSES,
+        itemProperties: REAL_ITEM_PROPERTIES,
 
         // purchasing (V2)
         purchaseOrders,

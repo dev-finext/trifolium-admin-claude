@@ -62,19 +62,10 @@ const receipts = computed(() => system.supplierReceipts(supplier.value.code));
 
 // V2 — what the item cards and the purchase orders say about this supplier
 const linkedItems = computed(() =>
-    items.rows
-        .filter(
-            (row) =>
-                row.suppliers?.preferred === supplier.value.code ||
-                row.suppliers?.last === supplier.value.code,
-        )
-        .map((row) => ({
-            ...row,
-            role:
-                row.suppliers?.preferred === supplier.value.code
-                    ? 'preferred'
-                    : 'last',
-        })),
+    // SAP names one vendor on an item — `OITM.CardCode`.
+    items.rows.filter(
+        (row) => row.suppliers?.preferred === supplier.value.code,
+    ),
 );
 const supplierPos = computed(() =>
     purchasing.rows.filter((po) => po.supplierCode === supplier.value.code),
@@ -95,12 +86,11 @@ const itemCols = computed(() => [
         label: t('systemContacts.suppliers.items.col.code'),
     },
     { k: 'name', label: t('systemContacts.suppliers.items.col.name') },
-    { k: 'family', label: t('systemContacts.suppliers.items.col.family') },
+    { k: 'group', label: t('systemContacts.suppliers.items.col.family') },
     {
         k: 'price',
         label: t('systemContacts.suppliers.items.col.price'),
     },
-    { k: 'role', label: t('systemContacts.suppliers.items.col.role') },
 ]);
 const poCols = computed(() => [
     {
@@ -686,8 +676,8 @@ function onSaved(changed) {
                     <template #cell-name="{ row }">{{
                         loc({ he: row.names?.he, en: row.names?.en })
                     }}</template>
-                    <template #cell-family="{ row }">{{
-                        t(`items.family.${row.family}`)
+                    <template #cell-group="{ row }">{{
+                        row.groupName || '—'
                     }}</template>
                     <template #cell-price="{ row }">
                         <template v-if="row.price?.lastPurchase">
@@ -695,17 +685,6 @@ function onSaved(changed) {
                             {{ CURRENCY_SYMBOL[row.price.currency] || '' }}
                         </template>
                         <template v-else>—</template>
-                    </template>
-                    <template #cell-role="{ row }">
-                        <AChip
-                            :tone="row.role === 'preferred' ? 'green' : 'gray'"
-                            size="sm"
-                            :dot="false"
-                        >
-                            {{
-                                t(`systemContacts.suppliers.items.${row.role}`)
-                            }}
-                        </AChip>
                     </template>
                 </ADataTable>
                 <AEmpty

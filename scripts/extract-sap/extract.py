@@ -205,6 +205,33 @@ def prep_types(conn):
     ]
 
 
+def item_properties(conn):
+    """All 64 item properties (`OITG`), with how many items carry each.
+
+    SAP's card shows sixty-four checkboxes; forty-two of them were never named
+    and never ticked. `items` is what separates the ones the pharmacy uses.
+    """
+    return [
+        clean(row)
+        for row in dicts(
+            conn,
+            """
+            SELECT g.ItmsTypCod AS code, g.ItmsGrpNam AS name,
+                   (SELECT COUNT(*) FROM OITM i
+                    WHERE CASE g.ItmsTypCod
+                    """
+            + ' '.join(
+                f"WHEN {n} THEN i.QryGroup{n}" for n in range(1, 65)
+            )
+            + """
+                    END = 'Y') AS items
+            FROM OITG g
+            ORDER BY g.ItmsTypCod
+            """,
+        )
+    ]
+
+
 def categories(conn):
     return [
         clean(row)
@@ -220,6 +247,22 @@ def item_groups(conn):
         for row in dicts(
             conn,
             'SELECT ItmsGrpCod AS code, ItmsGrpNam AS name FROM OITB ORDER BY ItmsGrpCod',
+        )
+    ]
+
+
+def price_lists(conn):
+    """The price lists an item is priced in — ITM1's columns, named."""
+    return [
+        clean(row)
+        for row in dicts(
+            conn,
+            """
+            SELECT ListNum AS code, ListName AS name, BASE_NUM AS baseList,
+                   Factor AS factor, PrimCurr AS currency
+            FROM OPLN
+            ORDER BY ListNum
+            """,
         )
     ]
 
@@ -245,14 +288,28 @@ def content_sizes(conn):
 # ---------------------------------------------------------------- catalogue
 ITEM_COLUMNS = """
     ItemCode AS code, ItemName AS nameHe, FrgnName AS nameForeign,
-    ItmsGrpCod AS groupCode, InvntItem AS stockTracked, PrchseItem AS purchase,
-    SellItem AS sell, ManBtchNum AS batchManaged, validFor AS active,
+    ItmsGrpCod AS groupCode, ItemType AS itemType,
+    validFor AS active, frozenFor AS frozen,
+    frozenFrom AS frozenFrom, frozenTo AS frozenTo,
+    ValidComm AS activeComment, FrozenComm AS frozenComment,
+    InvntItem AS stockTracked, PrchseItem AS purchase, SellItem AS sell,
+    ManBtchNum AS batchManaged, TreeType AS treeType, IssueMthd AS issueMethod,
+    CodeBars AS barcode, SWW AS additionalId, PicturName AS picture,
+    CardCode AS supplierCode, SuppCatNum AS supplierCatalogNum,
+    InvntryUom AS stockUom, BuyUnitMsr AS buyUom, NumInBuy AS numInBuy,
+    SalUnitMsr AS salesUom, NumInSale AS numInSale, CntUnitMsr AS countUom,
+    UgpEntry AS uomGroup, PriceUnit AS priceUnit,
+    PurPackMsr AS packUom, PurPackUn AS packQty,
     OnHand AS onHand, IsCommited AS committed, OnOrder AS onOrder,
-    MinLevel AS minLevel, MaxLevel AS maxLevel,
-    BuyUnitMsr AS buyUom, SalUnitMsr AS salesUom, InvntryUom AS stockUom,
-    LastPurPrc AS lastPurchasePrice, CardCode AS supplierCode,
-    SuppCatNum AS supplierCatalogNum, CodeBars AS barcode,
-    TreeType AS treeType, ItemType AS itemType, PriceUnit AS priceUnit,
+    MinLevel AS minLevel, MaxLevel AS maxLevel, ReorderQty AS reorderQty,
+    MinOrdrQty AS minOrderQty, LeadTime AS leadTime,
+    PlaningSys AS planningMethod, PrcrmntMtd AS procurementMethod,
+    ProductSrc AS productSource, CompoWH AS componentWarehouse,
+    LastPurPrc AS lastPurchasePrice, LastPurCur AS lastPurchaseCurrency,
+    LastPurDat AS lastPurchaseOn, LstEvlPric AS lastEvalPrice,
+    LstEvlDate AS lastEvalOn, AvgPrice AS avgPrice,
+    GLMethod AS valuationMethod, ByWh AS byWarehouse,
+    NoDiscount AS noDiscount, InCostRoll AS inCostRoll,
     U_Alcohol AS alcoholPct, U_Oil AS oilPct, U_ExtrRatio AS extractionRatio,
     U_Size AS packageSize,
     U_PregnancyLimits AS pregnancyLimit,
@@ -262,16 +319,19 @@ ITEM_COLUMNS = """
     U_SiteQuantity AS siteQuantity, U_SiteComments AS siteComments,
     U_Category1 AS category1, U_Category2 AS category2,
     U_Category3 AS category3, U_Category4 AS category4,
-    QryGroup40 AS siteSync, QryGroup19 AS therapistDiscount,
-    QryGroup20 AS monthlyPromo,
+    CAST(UserText AS nvarchar(MAX)) AS remarks,
+    CAST(U_Item_SaleText AS nvarchar(MAX)) AS saleText,
     CreateDate AS createdOn, UpdateDate AS updatedOn
 """
 
-PREP_FLAGS = ', '.join(f'QryGroup{n} AS prep{n}' for n in range(1, 18))
+# SAP holds the item properties as 64 Y/N columns; the extract turns the ones
+# that are set into a list of property numbers (OITG.ItmsTypCod).
+PROPERTY_RANGE = range(1, 65)
+PROPERTY_FLAGS = ', '.join(f'QryGroup{n} AS prop{n}' for n in PROPERTY_RANGE)
 
 
-def active_counts(conn, prefixes):
-    """How many active items each family actually holds."""
+def family_counts(conn, prefixes):
+    """How many items each family actually holds — active and not."""
     out = {}
 
     for prefix in prefixes:
@@ -279,7 +339,7 @@ def active_counts(conn, prefixes):
             conn,
             f"""
             SELECT COUNT(*) AS n FROM OITM
-            WHERE validFor = 'Y' AND ItemCode LIKE '{prefix}%'
+            WHERE ItemCode LIKE '{prefix}%'
               AND ItemCode NOT LIKE '[^0-9]%'
             """,
         )
@@ -293,9 +353,15 @@ def items(conn, prefixes, limit, order_by='OnHand DESC'):
 
     Taking the top N by stock would return one family and call it a catalogue.
     Each family instead gets a share of the sample proportional to how many
-    active items it really has, so the mix on screen is the pharmacy's mix.
+    items it really has, so the mix on screen is the pharmacy's mix — inactive
+    and frozen items included, since a quarter of the real catalogue is one or
+    the other.
+
+    Every item comes out with the whole card: the OITM row, its prices in each
+    price list (ITM1), its stock in each warehouse (OITW) and the item
+    properties that are set (QryGroup1..64).
     """
-    counts = active_counts(conn, prefixes)
+    counts = family_counts(conn, prefixes)
     total = sum(counts.values()) or 1
     out = []
 
@@ -304,9 +370,9 @@ def items(conn, prefixes, limit, order_by='OnHand DESC'):
         rows = dicts(
             conn,
             f"""
-            SELECT TOP {share} {ITEM_COLUMNS}, {PREP_FLAGS}
+            SELECT TOP {share} {ITEM_COLUMNS}, {PROPERTY_FLAGS}
             FROM OITM
-            WHERE validFor = 'Y' AND ItemCode LIKE '{prefix}%'
+            WHERE ItemCode LIKE '{prefix}%'
               AND ItemCode NOT LIKE '[^0-9]%'
             ORDER BY {order_by}
             """,
@@ -315,14 +381,59 @@ def items(conn, prefixes, limit, order_by='OnHand DESC'):
         for row in rows:
             item = clean(row)
             item['family'] = family_of(item['code'])
-            item['prepTypes'] = [n for n in range(1, 18) if row.get(f'prep{n}') == 'Y']
+            item['properties'] = [
+                n for n in PROPERTY_RANGE if row.get(f'prop{n}') == 'Y'
+            ]
 
-            for n in range(1, 18):
-                item.pop(f'prep{n}', None)
+            for n in PROPERTY_RANGE:
+                item.pop(f'prop{n}', None)
 
             out.append(item)
 
-    return out[:limit] if len(out) > limit else out
+    picked = out[:limit] if len(out) > limit else out
+    codes = [item['code'] for item in picked]
+    by_code = {item['code']: item for item in picked}
+
+    for item in picked:
+        item['prices'] = []
+        item['warehouses'] = []
+
+    for chunk in _chunks(codes, 200):
+        codes_sql = ','.join(f"'{c}'" for c in chunk)
+
+        for row in dicts(
+            conn,
+            f"""
+            SELECT ItemCode AS code, PriceList AS list, Price AS price,
+                   Currency AS currency
+            FROM ITM1
+            WHERE ItemCode IN ({codes_sql})
+            ORDER BY ItemCode, PriceList
+            """,
+        ):
+            price = clean(row)
+            by_code[price.pop('code')]['prices'].append(price)
+
+        for row in dicts(
+            conn,
+            f"""
+            SELECT ItemCode AS code, WhsCode AS warehouse, OnHand AS onHand,
+                   IsCommited AS committed, OnOrder AS onOrder,
+                   MinStock AS minLevel, MaxStock AS maxLevel
+            FROM OITW
+            WHERE ItemCode IN ({codes_sql})
+            ORDER BY ItemCode, WhsCode
+            """,
+        ):
+            stock = clean(row)
+            by_code[stock.pop('code')]['warehouses'].append(stock)
+
+    return picked
+
+
+def _chunks(values, size):
+    for start in range(0, len(values), size):
+        yield values[start:start + size]
 
 
 def boms(conn, limit, item_codes):
@@ -708,9 +819,11 @@ def main():
     print('reference data')
     counts['orderStates'] = write('orderStates', order_states(conn))
     counts['prepTypes'] = write('prepTypes', prep_types(conn))
+    counts['itemProperties'] = write('itemProperties', item_properties(conn))
     counts['categories'] = write('categories', categories(conn))
     counts['itemGroups'] = write('itemGroups', item_groups(conn))
     counts['warehouses'] = write('warehouses', warehouses(conn))
+    counts['priceLists'] = write('priceLists', price_lists(conn))
     counts['pickupPoints'] = write('pickupPoints', pickup_points(conn))
     counts['contentSizes'] = write('contentSizes', content_sizes(conn))
     counts['valueLists'] = write(

@@ -1,13 +1,11 @@
-// Supplier contacts and supplier cards. English mirror of he/vendors.js.
+// English mirror of he/systemContacts.js — same keys, real translations.
 export default {
     title: 'Third-party system contacts',
     sub: '{contacts} external systems · who to call when an outside system goes down',
-
     tab: {
         contacts: 'External-system contacts',
         suppliers: 'Supplier cards',
     },
-
     kind: {
         raw_materials: 'Raw materials',
         bases_alcohol: 'Bases & alcohol',
@@ -15,33 +13,27 @@ export default {
         logistics: 'Shipping & logistics',
         services: 'Services & systems',
     },
-
     terms: {
         immediate: 'Immediate payment',
         net30: 'Net 30',
         net60: 'Net 60',
         net90: 'Net 90',
     },
-
     payMethod: {
         transfer: 'Bank transfer',
         cheque: 'Cheque',
     },
-
     bizType: {
         ltd: 'Limited company',
         sole_trader: 'Sole trader',
     },
-
     status: {
         active: 'Active supplier',
         suspended: 'Suspended for purchasing',
     },
-
     contacts: {
         add: 'New contact',
         countLabel: 'contacts',
-
         filter: {
             search: 'System · contact · role · phone · notes',
             searchLabel: 'Search contacts',
@@ -54,7 +46,6 @@ export default {
             notesHas: 'With internal notes',
             notesNone: 'Without internal notes',
         },
-
         table: {
             system: 'System',
             contact: 'Contact',
@@ -62,14 +53,12 @@ export default {
             phone: 'Contact phone',
             notes: 'Internal notes',
         },
-
         profile: {
             title: 'Contact card',
             details: 'Contact details',
             notes: 'Internal notes',
             noNotes: 'No internal notes recorded',
         },
-
         editor: {
             newTitle: 'New third-party system contact',
             editTitle: 'Edit contact',
@@ -90,7 +79,6 @@ export default {
             invalid:
                 'A system name, a contact name and a phone number are required.',
         },
-
         remove: {
             title: 'Delete contact',
             body: '{contact} ({system}) will be removed from the contact list.',
@@ -98,23 +86,19 @@ export default {
             effect1: 'The contact details and internal notes are deleted',
             effect2: 'The deletion is written to the system log',
         },
-
         toast: {
             added: 'The contact was added',
             updated: 'The contact was updated',
             removed: 'The contact was deleted',
         },
-
         empty: {
             title: 'No contact found',
             subFiltered: 'Clear the filter or the search',
             subEmpty: 'Add the first contact',
         },
     },
-
     suppliers: {
         countLabel: 'suppliers',
-
         gate: {
             title: 'The supplier cards are locked',
             why: 'A card exposes bank details, trade terms and purchase prices — data that is not part of the team’s daily work.',
@@ -132,7 +116,6 @@ export default {
             locked: 'The supplier cards are locked again',
             failed: 'The unlock was refused',
         },
-
         filter: {
             search: 'Supplier · code · company no. · contact · phone',
             searchLabel: 'Search suppliers',
@@ -156,7 +139,6 @@ export default {
             docsBad: 'Missing or expired',
             docsOk: 'All valid',
         },
-
         table: {
             code: 'Code',
             name: 'Supplier',
@@ -169,7 +151,6 @@ export default {
             open: 'Open balance',
             status: 'Status',
         },
-
         docsOk: 'Valid',
         docsBad: 'Missing / expired',
         docsMissingChip: 'Certificates missing',
@@ -177,42 +158,33 @@ export default {
         supplierCode: 'Supplier code',
         since: 'Supplier since',
         suspendedNote: 'Suspended since {date} — {reason}',
-
         action: {
             orderMail: 'Email an order',
             edit: 'Edit card',
             suspend: 'Suspend supplier',
             reactivate: 'Reactivate',
         },
-
         tab: {
             profile: 'Profile & contact',
             terms: 'Trade & payment terms',
             docs: 'Certificates & documents',
             receipts: 'Goods receipts',
-            // V2
             items: 'Linked items',
             purchasing: 'Purchase orders',
             activities: 'Activities',
         },
-
         filterGroup: {
             who: 'The supplier',
             papers: 'Documents & payment',
         },
-
-        // V2
         items: {
             note: 'The items this supplier is the standing supplier for, or that were last bought from it — from the item card, not a separate list.',
-            preferred: 'Standing supplier',
-            last: 'Last supplier',
             empty: 'No items linked to this supplier',
             col: {
                 code: 'Code',
                 name: 'Item',
                 family: 'Family',
                 price: 'Last purchase price',
-                role: 'Link',
             },
         },
         purchasing: {
@@ -229,7 +201,6 @@ export default {
                 created: 'Created',
             },
         },
-
         card: {
             supplier: 'Supplier card',
             contact: 'Contact',
@@ -242,7 +213,6 @@ export default {
             scans: 'Scans on the card',
             receipts: 'Goods receipts from this supplier',
         },
-
         field: {
             code: 'Supplier code',
             name: 'Supplier name',
@@ -275,7 +245,6 @@ export default {
             open: 'Open balance',
             lastReceipt: 'Last goods receipt',
         },
-
         value: {
             skus: 'One item in the catalog | {n} items in the catalog',
             serviceNoStock: 'A service — no stock items',
@@ -289,7 +258,6 @@ export default {
             paymentBlocked:
                 'The bookkeeping certificate is not valid — no payment can be released until it is renewed. Purchasing itself is not blocked.',
         },
-
         docs: {
             bookkeeping_cert: 'Bookkeeping certificate',
             withholding_tax: 'Withholding-tax certificate',
@@ -308,7 +276,6 @@ export default {
             noScansSub:
                 'Scanned documents are kept on the supplier card. No file is stored right now.',
         },
-
         receipts: {
             id: 'Receipt',
             doc: 'Delivery note',
@@ -321,7 +288,6 @@ export default {
             emptyNone: 'Nothing has been received from this supplier yet',
             emptyService: 'A service supplier — nothing enters stock',
         },
-
         editor: {
             title: 'Edit supplier card',
             note: 'The supplier code appears on every goods receipt and every batch, so it cannot be changed. Changing bank details requires a phone check with the contact before saving.',
@@ -337,7 +303,6 @@ export default {
             effect2:
                 'A change to bank details affects every future payment to this supplier',
         },
-
         suspend: {
             title: 'Suspend a supplier for purchasing',
             body: '{name} will be marked suspended and will not appear in the supplier list when goods are received.',
@@ -347,7 +312,6 @@ export default {
             effect3:
                 'The reason, who acted and the date are written to the log',
         },
-
         reactivate: {
             title: 'Reactivate a supplier',
             body: '{name} will be available again when goods are received.',
@@ -357,7 +321,6 @@ export default {
                 'Missing certificates do not block purchasing — they block payment',
             effect3: 'The action is written to the log',
         },
-
         toast: {
             updated: 'The supplier card was updated',
             suspended: 'The supplier was suspended',
@@ -366,13 +329,11 @@ export default {
             mail: 'An email draft was opened',
             mailBody: '{address} · purchase order',
         },
-
         empty: {
             title: 'No supplier found',
             sub: 'Clear the search or the filter',
         },
     },
-
     toast: {
         failed: 'The change was not saved',
         failedBody: 'The request was rejected. Try again.',

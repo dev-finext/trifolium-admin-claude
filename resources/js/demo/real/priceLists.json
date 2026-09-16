@@ -1,0 +1,72 @@
+[
+ {
+  "code": 1,
+  "name": "03- מחירון לצרכן כולל מע\"מ",
+  "baseList": 8,
+  "factor": 1.18,
+  "currency": "₪"
+ },
+ {
+  "code": 2,
+  "name": "02-קנייה",
+  "baseList": 2,
+  "factor": 1,
+  "currency": "₪"
+ },
+ {
+  "code": 3,
+  "name": "04-עלעלים",
+  "baseList": 3,
+  "factor": 1,
+  "currency": "₪"
+ },
+ {
+  "code": 4,
+  "name": "05-הרבסין",
+  "baseList": 4,
+  "factor": 1,
+  "currency": "₪"
+ },
+ {
+  "code": 5,
+  "name": "DIXA-06",
+  "baseList": 5,
+  "factor": 1,
+  "currency": "₪"
+ },
+ {
+  "code": 6,
+  "name": "03-מטפלים",
+  "baseList": 1,
+  "factor": 0.8,
+  "currency": "₪"
+ },
+ {
+  "code": 7,
+  "name": "07-יונתן רונן",
+  "baseList": 1,
+  "factor": 1.15,
+  "currency": "₪"
+ },
+ {
+  "code": 8,
+  "name": "01- מחירון לצרכן לפני מע\"מ",
+  "baseList": 8,
+  "factor": 1,
+  "currency": "₪"
+ },
+ {
+  "code": 9,
+  "name": "מחירון 09",
+  "baseList": 9,
+  "factor": 1,
+  "currency": "₪"
+ },
+ {
+  "code": 10,
+  "name": "מחירון 10",
+  "baseList": 10,
+  "factor": 1,
+  "currency": "₪"
+ }
+]

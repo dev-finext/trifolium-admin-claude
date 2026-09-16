@@ -1,12 +1,14 @@
 <script setup>
-// The item card. Everything SAP holds on one item, on one panel — the item
-// master's own fields, then what this console adds around them: the stock with
-// its batches, the recipes the item is made from or goes into, the runs, the
-// files.
+// The item card — SAP's item master, laid out the way SAP lays it out.
 //
-// The stock block is where the card drills down: "committed" opens to the orders
-// holding the quantity, "on order" to the purchase orders bringing it in, and
-// every batch still open is listed with its expiry.
+// The cards below are its tabs: general, purchasing, sales, inventory (with the
+// warehouse table), planning, production, properties, remarks, and the
+// user-defined fields the pharmacy added — the lab percentages, the safety
+// limits and the consumer-site block. The price list table is the item's ITM1
+// rows; the warehouse table is its OITW rows.
+//
+// Two blocks are the console's own and say so: the quantity ladder, and the
+// batches and recipes underneath. Everything else is the value SAP holds.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -16,19 +18,14 @@ import LadderCalculator from '@/components/pricing/LadderCalculator.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
+import ADataTable from '@/components/ui/ADataTable.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import {
-    CURRENCY_SYMBOL,
-    ITEM_FLAG_IDS,
-    SAFETY_CONTEXT_IDS,
-    SAFETY_LEVEL,
-} from '@/config';
+import { ITEM_FLAG_IDS, SAFETY_CONTEXT_IDS, SAFETY_LEVEL } from '@/config';
 import { fmtISO } from '@/lib/dates';
-import { ils, num, priceParts } from '@/lib/money';
-import { useInventoryStore } from '@/stores/inventory';
+import { ils, num } from '@/lib/money';
 import { useItemsStore } from '@/stores/items';
 import { useProductionStore } from '@/stores/production';
 
@@ -50,24 +47,21 @@ const emit = defineEmits([
 const { t } = useI18n();
 const { loc } = useLocalized();
 const store = useItemsStore();
-const inventory = useInventoryStore();
 const production = useProductionStore();
 
-const name = computed(() =>
-    props.row
-        ? loc({
-              he: props.row.names.he,
-              en: props.row.names.en || props.row.names.he,
-          })
-        : '',
-);
+const name = computed(() => props.row?.names?.he || '');
 
 const notSet = () => t('items.card.notSet');
 const uomLabel = (id) => (id ? t(`items.uom.${id}`) : notSet());
 const orNotSet = (value) =>
     value === null || value === undefined || value === '' ? notSet() : value;
+const yesNo = (value) => (value ? t('items.card.yes') : t('items.card.no'));
+const qty = (value, unit) =>
+    value === null || value === undefined
+        ? notSet()
+        : `${num(value, 3)} ${uomLabel(unit)}`;
 
-/** The recipe an internal item is made from, and what the runs of it say. */
+/** The recipe this item is made from, and what the runs of it say. */
 const recipe = computed(() =>
     props.row ? store.bomsOfParent(props.row.sku)[0] || null : null,
 );
@@ -81,36 +75,64 @@ const lastUnitCost = computed(() =>
     props.row ? production.lastUnitCost(props.row.sku) : null,
 );
 
-/** When time-consumed stock runs out at the current pace. */
-const runOut = computed(() =>
-    props.row?.consumption
-        ? inventory.runOutOn(props.row.sku, props.row.consumption)
-        : null,
+/** The item's rows in `ITM1`, named by their price list. */
+const priceRows = computed(() =>
+    (props.row?.prices || [])
+        .map((row) => {
+            const list = store.priceLists.find(
+                (entry) => entry.code === row.list,
+            );
+
+            return {
+                id: String(row.list),
+                list: row.list,
+                name: list?.name || String(row.list),
+                base: list?.baseList ?? null,
+                factor: list?.factor ?? null,
+                price: row.price,
+            };
+        })
+        .filter((row) => row.price),
 );
 
-const salePrice = computed(() => {
-    const sale = props.row?.price?.sale;
+const priceCols = computed(() => [
+    { k: 'name', label: t('items.card.priceList') },
+    { k: 'factor', label: t('items.card.priceFactor'), nowrap: true },
+    { k: 'price', label: t('items.card.priceValue'), nowrap: true },
+]);
 
-    return sale === null || sale === undefined ? null : priceParts(sale);
-});
+/** The item's rows in `OITW`, named by their warehouse. */
+const warehouseRows = computed(() =>
+    (props.row?.warehouses || []).map((row) => {
+        const warehouse = store.sapWarehouses.find(
+            (entry) => entry.code === row.warehouse,
+        );
 
-function purchaseText(row) {
-    if (
-        row.price?.lastPurchase === null ||
-        row.price?.lastPurchase === undefined
-    ) {
-        return notSet();
-    }
-
-    return `${CURRENCY_SYMBOL[row.price.currency] || ''}${num(row.price.lastPurchase, 2)} / ${uomLabel(row.uom?.purchase)}`;
-}
-
-const prepNames = computed(() =>
-    (props.row?.prepTypes || []).map((id) => {
-        const type = store.prepTypeById(id);
-
-        return { id, name: type ? loc(type.name) : id };
+        return {
+            id: row.warehouse,
+            name: warehouse?.name || row.warehouse,
+            ...row,
+        };
     }),
+);
+
+const warehouseCols = computed(() => [
+    { k: 'name', label: t('items.card.warehouse') },
+    { k: 'onHand', label: t('items.card.onHand'), nowrap: true },
+    { k: 'committed', label: t('items.card.committed'), nowrap: true },
+    { k: 'onOrder', label: t('items.card.onOrder'), nowrap: true },
+    { k: 'min', label: t('items.card.minLevel'), nowrap: true },
+    { k: 'max', label: t('items.card.maxLevel'), nowrap: true },
+]);
+
+/** The properties that are ticked, by the name `OITG` gives each. */
+const properties = computed(() =>
+    (props.row?.properties || []).map((code) => ({
+        code,
+        name:
+            store.itemProperties.find((entry) => entry.code === code)?.name ||
+            String(code),
+    })),
 );
 
 const categories = computed(() =>
@@ -133,11 +155,14 @@ const categories = computed(() =>
                         <div class="a-dhead-t">
                             <h2 class="a-dhead-h">{{ name }}</h2>
                             <span class="a-code a-tag">{{ row.code }}</span>
-                            <AChip :dot="false">{{
-                                t(`items.family.${row.family}`)
+                            <AChip v-if="row.groupName" :dot="false">{{
+                                row.groupName
                             }}</AChip>
+                            <AChip v-if="row.frozen" tone="blue" size="sm">
+                                {{ t('items.card.frozenYes') }}
+                            </AChip>
                             <AChip
-                                v-if="row.active === false"
+                                v-else-if="!row.active"
                                 tone="gray"
                                 size="sm"
                             >
@@ -147,6 +172,9 @@ const categories = computed(() =>
                         <div class="a-dhead-m">
                             <span v-if="row.names.en" class="ltr">{{
                                 row.names.en
+                            }}</span>
+                            <span>{{
+                                t(`items.itemType.${row.itemType || 'I'}`)
                             }}</span>
                             <span v-if="row.updated">
                                 {{
@@ -182,113 +210,86 @@ const categories = computed(() =>
             </div>
 
             <div class="card-grid">
-                <ACard :title="t('items.card.identity')" icon="tag">
-                    <AKeyValue
-                        :rows="[
-                            [t('items.card.nameHe'), row.names.he],
-                            [t('items.card.nameEn'), orNotSet(row.names.en)],
-                            [
-                                t('items.card.siteName'),
-                                orNotSet(row.names.site),
-                            ],
-                            [
-                                t('items.card.itemType'),
-                                t(`items.itemType.${row.itemType || 'I'}`),
-                            ],
-                            [
-                                t('items.card.treeType'),
-                                t(`items.treeType.${row.treeType || 'N'}`),
-                            ],
-                            [
-                                t('items.card.active'),
-                                row.active === false
-                                    ? t('items.card.activeNo')
-                                    : t('items.card.activeYes'),
-                            ],
-                            [
-                                t('items.card.created'),
-                                row.created ? fmtISO(row.created) : notSet(),
-                            ],
-                        ]"
-                    />
+                <!-- general: SAP's header and General tab -->
+                <ACard :title="t('items.card.general')" icon="tag">
+                    <div class="general">
+                        <div class="pic">
+                            <div v-if="row.picture" class="pic-box">
+                                <img :src="row.picture" :alt="name" />
+                            </div>
+                            <div v-else class="pic-box is-empty">
+                                {{ t('items.card.noPicture') }}
+                            </div>
+                        </div>
+                        <AKeyValue
+                            class="general-kv"
+                            :rows="[
+                                [t('items.card.code'), row.code],
+                                [t('items.card.nameHe'), row.names.he],
+                                [
+                                    t('items.card.nameForeign'),
+                                    orNotSet(row.names.en),
+                                ],
+                                [
+                                    t('items.card.group'),
+                                    orNotSet(row.groupName),
+                                ],
+                                [
+                                    t('items.card.itemType'),
+                                    t(`items.itemType.${row.itemType || 'I'}`),
+                                ],
+                                [
+                                    t('items.card.uomGroup'),
+                                    t(`items.uomGroup.${row.uom?.group ?? -1}`),
+                                ],
+                                [
+                                    t('items.card.barcode'),
+                                    orNotSet(row.barcode),
+                                ],
+                                [
+                                    t('items.card.additionalId'),
+                                    orNotSet(row.additionalId),
+                                ],
+                                [t('items.card.flags'), ''],
+                                [
+                                    t('items.card.state'),
+                                    row.frozen
+                                        ? t('items.card.frozenYes')
+                                        : row.active
+                                          ? t('items.card.activeYes')
+                                          : t('items.card.activeNo'),
+                                ],
+                                [
+                                    t('items.card.created'),
+                                    row.created
+                                        ? fmtISO(row.created)
+                                        : notSet(),
+                                ],
+                            ]"
+                        >
+                            <template #value-8>
+                                <span class="chips">
+                                    <AChip
+                                        v-for="id in ITEM_FLAG_IDS"
+                                        :key="id"
+                                        size="sm"
+                                        :tone="
+                                            row.flags?.[id] ? 'green' : 'gray'
+                                        "
+                                        :dot="false"
+                                    >
+                                        {{ t(`items.flag.${id}`) }}
+                                    </AChip>
+                                </span>
+                            </template>
+                        </AKeyValue>
+                    </div>
                 </ACard>
 
-                <ACard :title="t('items.card.units')" icon="layers">
+                <!-- purchasing and sales: SAP's two data tabs -->
+                <ACard :title="t('items.card.trade')" icon="truck">
                     <AKeyValue
                         :rows="[
-                            [
-                                t('items.card.purchaseUom'),
-                                uomLabel(row.uom?.purchase),
-                            ],
-                            [
-                                t('items.card.salesUom'),
-                                uomLabel(row.uom?.sales),
-                            ],
-                            [
-                                t('items.card.stockUom'),
-                                uomLabel(row.uom?.stock || row.uom?.sales),
-                            ],
-                            [
-                                t('items.card.factor'),
-                                t('items.card.factorText', {
-                                    purchase: uomLabel(row.uom?.purchase),
-                                    factor: num(row.uom?.factor || 1),
-                                    stock: uomLabel(
-                                        row.uom?.stock || row.uom?.sales,
-                                    ),
-                                }),
-                            ],
-                            [
-                                t('items.card.minLevel'),
-                                row.levels?.min != null
-                                    ? `${num(row.levels.min)} ${uomLabel(row.uom?.stock || row.uom?.sales)}`
-                                    : notSet(),
-                            ],
-                            [
-                                t('items.card.maxLevel'),
-                                row.levels?.max != null
-                                    ? `${num(row.levels.max)} ${uomLabel(row.uom?.stock || row.uom?.sales)}`
-                                    : notSet(),
-                            ],
-                            [t('items.card.flags'), ''],
-                        ]"
-                    >
-                        <template #value-6>
-                            <span class="chips">
-                                <AChip
-                                    v-for="id in ITEM_FLAG_IDS"
-                                    :key="id"
-                                    size="sm"
-                                    :tone="row.flags?.[id] ? 'green' : 'gray'"
-                                    :dot="false"
-                                >
-                                    {{ t(`items.flag.${id}`) }}
-                                </AChip>
-                            </span>
-                        </template>
-                    </AKeyValue>
-                </ACard>
-
-                <ACard :title="t('items.card.pricing')" icon="coin">
-                    <AKeyValue
-                        :rows="[
-                            [
-                                t('items.card.salePrice'),
-                                salePrice
-                                    ? `${ils(salePrice.net)} / ${uomLabel(row.uom?.sales)}`
-                                    : notSet(),
-                            ],
-                            salePrice && [
-                                t('items.card.salePriceInc'),
-                                ils(salePrice.display, 0),
-                            ],
-                            [t('items.card.lastPurchase'), purchaseText(row)],
-                            [
-                                t('items.card.lastPurchaseOn'),
-                                row.price?.lastPurchaseOn
-                                    ? fmtISO(row.price.lastPurchaseOn)
-                                    : notSet(),
-                            ],
                             [
                                 t('items.card.preferredSupplier'),
                                 row.preferred
@@ -296,39 +297,247 @@ const categories = computed(() =>
                                     : notSet(),
                             ],
                             [
-                                t('items.card.lastSupplier'),
-                                row.last ? loc(row.last.name) : notSet(),
+                                t('items.card.supplierSapCode'),
+                                orNotSet(row.suppliers?.sapCode),
                             ],
                             [
                                 t('items.card.catalogNum'),
-                                orNotSet(row.catalogNum),
+                                orNotSet(row.suppliers?.catalogNum),
                             ],
-                            [t('items.card.barcode'), orNotSet(row.barcode)],
                             [
-                                t('items.card.packageSize'),
-                                orNotSet(row.packageSize),
+                                t('items.card.purchaseUom'),
+                                uomLabel(row.uom?.purchase),
+                            ],
+                            [
+                                t('items.card.numInBuy'),
+                                t('items.card.numInText', {
+                                    n: num(row.uom?.numInBuy ?? 1, 3),
+                                    unit: uomLabel(row.uom?.stock),
+                                }),
+                            ],
+                            [
+                                t('items.card.packUom'),
+                                orNotSet(row.uom?.packUom),
+                            ],
+                            [
+                                t('items.card.packQty'),
+                                orNotSet(row.uom?.packQty),
+                            ],
+                            [
+                                t('items.card.salesUom'),
+                                uomLabel(row.uom?.sales),
+                            ],
+                            [
+                                t('items.card.numInSale'),
+                                t('items.card.numInText', {
+                                    n: num(row.uom?.numInSale ?? 1, 3),
+                                    unit: uomLabel(row.uom?.stock),
+                                }),
+                            ],
+                            [
+                                t('items.card.lastPurchase'),
+                                row.price?.lastPurchase
+                                    ? `${ils(row.price.lastPurchase, 2)} / ${uomLabel(row.uom?.purchase)}`
+                                    : notSet(),
+                            ],
+                            [
+                                t('items.card.lastPurchaseOn'),
+                                row.price?.lastPurchaseOn
+                                    ? fmtISO(row.price.lastPurchaseOn)
+                                    : notSet(),
+                            ],
+                            [
+                                t('items.card.evalPrice'),
+                                row.price?.evalPrice
+                                    ? ils(row.price.evalPrice, 2)
+                                    : notSet(),
                             ],
                         ]"
                     />
-                    <div class="a-lbl calc-l">{{ t('items.card.ladder') }}</div>
-                    <LadderCalculator :item="row" compact />
                 </ACard>
 
-                <ACard :title="t('items.card.prep')" icon="beaker">
-                    <div class="a-lbl">{{ t('items.card.prepTypes') }}</div>
-                    <div v-if="prepNames.length" class="chips">
+                <!-- the price lists: the item's own ITM1 rows -->
+                <ACard :title="t('items.card.prices')" icon="coin" :pad="false">
+                    <ADataTable
+                        v-if="priceRows.length"
+                        :cols="priceCols"
+                        :rows="priceRows"
+                        row-key="id"
+                    >
+                        <template #cell-name="{ row: price }">
+                            <span class="a-code a-tag">{{ price.list }}</span>
+                            {{ price.name }}
+                        </template>
+                        <template #cell-factor="{ row: price }">
+                            <span
+                                v-if="price.base && price.base !== price.list"
+                            >
+                                {{
+                                    t('items.card.priceFrom', {
+                                        list: price.base,
+                                        factor: num(price.factor, 2),
+                                    })
+                                }}
+                            </span>
+                            <span v-else class="t-sub">—</span>
+                        </template>
+                        <template #cell-price="{ row: price }">
+                            <span class="num">{{ ils(price.price, 2) }}</span>
+                            <div class="t-sub">
+                                {{
+                                    t('items.card.perUnit', {
+                                        unit: uomLabel(row.uom?.price),
+                                    })
+                                }}
+                            </div>
+                        </template>
+                    </ADataTable>
+                    <p v-else class="pad t-sub">
+                        {{ t('items.card.noPrices') }}
+                    </p>
+                    <div class="pad">
+                        <div class="a-lbl">{{ t('items.card.ladder') }}</div>
+                        <LadderCalculator :item="row" compact />
+                    </div>
+                </ACard>
+
+                <!-- inventory: the levels and the warehouse table -->
+                <ACard
+                    :title="t('items.card.inventory')"
+                    icon="grid"
+                    :pad="false"
+                >
+                    <div class="pad">
+                        <AKeyValue
+                            :rows="[
+                                [
+                                    t('items.card.stockUom'),
+                                    uomLabel(row.uom?.stock),
+                                ],
+                                [
+                                    t('items.card.countUom'),
+                                    uomLabel(row.uom?.count),
+                                ],
+                                [
+                                    t('items.card.minLevel'),
+                                    qty(row.levels?.min, row.uom?.stock),
+                                ],
+                                [
+                                    t('items.card.maxLevel'),
+                                    qty(row.levels?.max, row.uom?.stock),
+                                ],
+                                [
+                                    t('items.card.reorderQty'),
+                                    qty(row.levels?.reorder, row.uom?.stock),
+                                ],
+                                [
+                                    t('items.card.byWarehouse'),
+                                    yesNo(row.accounting?.byWarehouse),
+                                ],
+                                [
+                                    t('items.card.valuation'),
+                                    t(
+                                        `items.valuation.${row.accounting?.valuation || 'C'}`,
+                                    ),
+                                ],
+                            ]"
+                        />
+                    </div>
+                    <ADataTable
+                        v-if="warehouseRows.length"
+                        :cols="warehouseCols"
+                        :rows="warehouseRows"
+                        row-key="id"
+                    >
+                        <template #cell-onHand="{ row: wh }">
+                            <span class="num">{{ num(wh.onHand, 3) }}</span>
+                        </template>
+                        <template #cell-committed="{ row: wh }">
+                            <span class="num">{{ num(wh.committed, 3) }}</span>
+                        </template>
+                        <template #cell-onOrder="{ row: wh }">
+                            <span class="num">{{ num(wh.onOrder, 3) }}</span>
+                        </template>
+                        <template #cell-min="{ row: wh }">
+                            <span class="num">{{ num(wh.min, 3) }}</span>
+                        </template>
+                        <template #cell-max="{ row: wh }">
+                            <span class="num">{{ num(wh.max, 3) }}</span>
+                        </template>
+                    </ADataTable>
+                    <p v-else class="pad t-sub">
+                        {{ t('items.card.noWarehouses') }}
+                    </p>
+                    <div v-if="row.flags?.inventory" class="pad pad-top">
+                        <AButton sm icon="check" @click="emit('count', row)">
+                            {{ t('items.card.count') }}
+                        </AButton>
+                    </div>
+                </ACard>
+
+                <!-- planning and production -->
+                <ACard :title="t('items.card.planning')" icon="layers">
+                    <AKeyValue
+                        :rows="[
+                            [
+                                t('items.card.planningMethod'),
+                                t(
+                                    `items.planningMethod.${row.planning?.method || 'N'}`,
+                                ),
+                            ],
+                            [
+                                t('items.card.procurementMethod'),
+                                t(
+                                    `items.procurementMethod.${row.planning?.procurement || 'B'}`,
+                                ),
+                            ],
+                            [
+                                t('items.card.minOrderQty'),
+                                qty(row.levels?.minOrder, row.uom?.purchase),
+                            ],
+                            [
+                                t('items.card.leadTime'),
+                                row.levels?.leadTime
+                                    ? t('items.card.leadTimeDays', {
+                                          n: row.levels.leadTime,
+                                      })
+                                    : notSet(),
+                            ],
+                            [
+                                t('items.card.treeType'),
+                                t(`items.treeType.${row.treeType || 'N'}`),
+                            ],
+                            [
+                                t('items.card.issueMethod'),
+                                t(
+                                    `items.issueMethod.${row.issueMethod || 'M'}`,
+                                ),
+                            ],
+                            [
+                                t('items.card.componentWarehouse'),
+                                t(
+                                    `items.componentWarehouse.${row.planning?.componentWarehouse || 'B'}`,
+                                ),
+                            ],
+                        ]"
+                    />
+                </ACard>
+
+                <!-- the properties SAP ticks on the item -->
+                <ACard :title="t('items.card.properties')" icon="check">
+                    <div v-if="properties.length" class="chips">
                         <AChip
-                            v-for="type in prepNames"
-                            :key="type.id"
+                            v-for="property in properties"
+                            :key="property.code"
                             size="sm"
                             tone="teal"
                             :dot="false"
                         >
-                            {{ type.name }}
+                            {{ property.name }}
                         </AChip>
                     </div>
                     <div v-else class="t-sub">
-                        {{ t('items.card.noPrepTypes') }}
+                        {{ t('items.card.noProperties') }}
                     </div>
 
                     <div class="a-lbl safety-l">
@@ -357,54 +566,82 @@ const categories = computed(() =>
                         :rows="[
                             [
                                 t('items.card.alcoholPct'),
-                                row.lab?.alcoholPct != null
+                                row.lab?.alcoholPct
                                     ? `${num(row.lab.alcoholPct)}%`
+                                    : notSet(),
+                            ],
+                            [
+                                t('items.card.oilPct'),
+                                row.lab?.oilPct
+                                    ? `${num(row.lab.oilPct)}%`
                                     : notSet(),
                             ],
                             [
                                 t('items.card.extractionRatio'),
                                 orNotSet(row.lab?.extractionRatio),
                             ],
+                            [
+                                t('items.card.packageSize'),
+                                orNotSet(row.lab?.packageSize),
+                            ],
                         ]"
                     />
                 </ACard>
 
+                <!-- the consumer site's own fields -->
                 <ACard :title="t('items.card.site')" icon="external">
                     <AKeyValue
                         :rows="[
-                            [t('items.card.sync'), ''],
-                            [t('items.card.categories'), ''],
+                            [t('items.card.siteSync'), ''],
                             [
-                                t('items.card.promo'),
-                                row.site?.promo
-                                    ? t('items.card.yes')
-                                    : t('items.card.no'),
+                                t('items.card.siteName'),
+                                orNotSet(row.site?.name),
                             ],
                             [
                                 t('items.card.siteQty'),
-                                row.site?.qty
-                                    ? `${num(row.site.qty)} ${uomLabel(row.site.unit)}`
+                                row.site?.quantity
+                                    ? `${num(row.site.quantity)} ${uomLabel(row.site.uom)}`
                                     : notSet(),
                             ],
+                            [t('items.card.categories'), ''],
                             [
                                 t('items.card.siteComments'),
                                 orNotSet(row.site?.comments),
                             ],
+                            [t('items.card.saleText'), orNotSet(row.saleText)],
                         ]"
                     >
                         <template #value-0>
-                            <AChip
-                                :tone="row.site?.sync ? 'teal' : 'gray'"
-                                size="sm"
-                            >
-                                {{
-                                    row.site?.sync
-                                        ? t('items.card.syncOn')
-                                        : t('items.card.syncOff')
-                                }}
-                            </AChip>
+                            <span class="chips">
+                                <AChip
+                                    :tone="row.site?.sync ? 'teal' : 'gray'"
+                                    size="sm"
+                                >
+                                    {{
+                                        row.site?.sync
+                                            ? t('items.card.syncOn')
+                                            : t('items.card.syncOff')
+                                    }}
+                                </AChip>
+                                <AChip
+                                    v-if="row.site?.promo"
+                                    tone="amber"
+                                    size="sm"
+                                    :dot="false"
+                                >
+                                    {{ t('items.card.promo') }}
+                                </AChip>
+                                <AChip
+                                    v-if="row.site?.therapistDiscount"
+                                    tone="blue"
+                                    size="sm"
+                                    :dot="false"
+                                >
+                                    {{ t('items.card.therapistDiscount') }}
+                                </AChip>
+                            </span>
                         </template>
-                        <template #value-1>
+                        <template #value-3>
                             <span v-if="categories.length" class="chips">
                                 <AChip
                                     v-for="cat in categories"
@@ -422,28 +659,28 @@ const categories = computed(() =>
                     </AKeyValue>
                 </ACard>
 
+                <!-- SAP's remarks field -->
+                <ACard :title="t('items.card.remarks')" icon="edit">
+                    <p v-if="row.remarks" class="remarks">{{ row.remarks }}</p>
+                    <p v-else class="t-sub">{{ t('items.card.noRemarks') }}</p>
+                </ACard>
+
+                <!-- what the console adds: the runs that make it -->
                 <ACard
-                    v-if="row.flags?.internal"
+                    v-if="recipe"
                     :title="t('items.card.productionRuns')"
                     icon="beaker"
                 >
                     <AKeyValue
                         :rows="[
-                            [
-                                t('items.card.recipe'),
-                                recipe
-                                    ? loc(recipe.name)
-                                    : t('items.card.noRecipe'),
-                            ],
+                            [t('items.card.recipe'), loc(recipe.name)],
                             [
                                 t('items.card.canProduce'),
-                                recipe
-                                    ? t('items.card.canProduceValue', {
-                                          n: num(canProduce),
-                                          qty: num(recipe.yield?.qty || 1),
-                                          uom: recipe.yield?.uom || '',
-                                      })
-                                    : '—',
+                                t('items.card.canProduceValue', {
+                                    n: num(canProduce),
+                                    qty: num(recipe.yield?.qty || 1),
+                                    uom: recipe.yield?.uom || '',
+                                }),
                             ],
                             [
                                 t('items.card.lastUnitCost'),
@@ -479,52 +716,6 @@ const categories = computed(() =>
                         @click="emit('produce', row)"
                     >
                         {{ t('items.card.produce') }}
-                    </AButton>
-                </ACard>
-
-                <ACard
-                    v-if="row.consumption"
-                    :title="t('items.card.consumption')"
-                    icon="grid"
-                >
-                    <AKeyValue
-                        :rows="[
-                            [
-                                t('items.card.consumptionRule'),
-                                t('items.card.consumptionRuleValue', {
-                                    qty: num(row.consumption.qty),
-                                    uom: uomLabel(
-                                        row.uom?.stock || row.uom?.sales,
-                                    ),
-                                    days: num(row.consumption.periodDays),
-                                }),
-                            ],
-                            [
-                                t('items.card.countedOn'),
-                                row.consumption.countedOn
-                                    ? t('items.card.countedOnValue', {
-                                          when: fmtISO(
-                                              row.consumption.countedOn,
-                                          ),
-                                          qty: num(row.consumption.countedQty),
-                                      })
-                                    : notSet(),
-                            ],
-                            [
-                                t('items.card.runOut'),
-                                runOut
-                                    ? fmtISO(runOut)
-                                    : t('items.card.runOutNever'),
-                            ],
-                        ]"
-                    />
-                    <AButton
-                        sm
-                        icon="check"
-                        class="calc-l"
-                        @click="emit('count', row)"
-                    >
-                        {{ t('items.card.count') }}
                     </AButton>
                 </ACard>
 
@@ -569,6 +760,46 @@ const categories = computed(() =>
     }
 }
 
+.general {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+.pic-box {
+    width: 96px;
+    height: 96px;
+    border-radius: var(--a-r);
+    border: 1px solid var(--a-line);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pic-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pic-box.is-empty {
+    background: var(--a-surface-2, transparent);
+    color: var(--a-ink-4);
+    font-size: 11.5px;
+    text-align: center;
+    padding: 6px;
+}
+
+.pad {
+    padding: 14px 16px;
+}
+
+.pad-top {
+    padding-top: 0;
+}
+
 .chips {
     display: inline-flex;
     flex-wrap: wrap;
@@ -578,6 +809,13 @@ const categories = computed(() =>
 .safety-l,
 .calc-l {
     margin-top: 14px;
+}
+
+.remarks {
+    margin: 0;
+    white-space: pre-wrap;
+    font-size: 13.5px;
+    line-height: 1.55;
 }
 
 .runs {

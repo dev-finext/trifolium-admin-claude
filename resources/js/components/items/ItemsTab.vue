@@ -25,7 +25,7 @@ import {
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { CURRENCY_SYMBOL, ITEM_FAMILIES, ITEM_FLAG_IDS } from '@/config';
+import { CURRENCY_SYMBOL, ITEM_FLAG_IDS } from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
 import { ils, num } from '@/lib/money';
@@ -68,12 +68,15 @@ function tally(predicate) {
 }
 
 /** SAP's item groups in code order, each with how many items it holds. */
-const families = computed(() =>
-    ITEM_FAMILIES.map((family) => ({
-        id: family.id,
-        prefix: family.prefix,
-        n: tally((row) => row.family === family.id),
-    })).filter((family) => family.n > 0),
+const groups = computed(() =>
+    store.itemGroups
+        .map((group) => ({
+            id: String(group.code),
+            code: group.code,
+            name: group.name,
+            n: tally((row) => row.group === group.code),
+        }))
+        .filter((group) => group.n > 0),
 );
 
 /** Free text first, then the field filters — the shared engine does the rest. */
@@ -93,16 +96,16 @@ const searched = computed(() => {
 
 const filters = useListFilters(SPEC, state, searched);
 
-const onlyFamily = (id) => state.fam.length === 1 && state.fam[0] === id;
+const onlyGroup = (id) => state.grp.length === 1 && state.grp[0] === id;
 
 /** One group at a time, as SAP's group list reads; the same group again shows all. */
-function pickFamily(id) {
-    const wasOn = onlyFamily(id);
+function pickGroup(id) {
+    const wasOn = onlyGroup(id);
 
-    filters.clearField('fam');
+    filters.clearField('grp');
 
     if (!wasOn) {
-        filters.toggle('fam', id);
+        filters.toggle('grp', id);
     }
 }
 
@@ -170,10 +173,10 @@ const cols = computed(() => [
         sortValue: (row) => row.names.he,
     },
     {
-        k: 'family',
-        label: t('items.col.family'),
+        k: 'group',
+        label: t('items.col.group'),
         sortable: true,
-        sortValue: (row) => t(`items.family.${row.family}`),
+        sortValue: (row) => row.groupName || '',
     },
     { k: 'uom', label: t('items.col.uom'), nowrap: true },
     { k: 'flags', label: t('items.col.flags'), nowrap: true },
@@ -260,7 +263,7 @@ function exportRows() {
     const header = [
         t('items.col.code'),
         t('items.col.name'),
-        t('items.col.family'),
+        t('items.col.group'),
         t('items.col.uom'),
         t('items.col.stock'),
         t('items.col.price'),
@@ -278,7 +281,7 @@ function exportRows() {
                     en: row.names.en || row.names.he,
                 },
             ),
-            t(`items.family.${row.family}`),
+            row.groupName || '',
             uomText(row),
             row.avail ?? '',
             priceText(row),
@@ -320,11 +323,11 @@ function exportRows() {
             />
             <FilterKpi
                 icon="beaker"
-                :label="t('items.kpi.internal')"
-                :value="tally((row) => row.flags?.internal)"
-                :sub="t('items.kpi.internalSub')"
-                :active="state.internal.includes('yes')"
-                @click="filters.toggle('internal', 'yes')"
+                :label="t('items.kpi.tree')"
+                :value="tally((row) => row.treeType === 'P')"
+                :sub="t('items.kpi.treeSub')"
+                :active="state.tree.includes('P')"
+                @click="filters.toggle('tree', 'P')"
             />
             <FilterKpi
                 icon="external"
@@ -385,23 +388,23 @@ function exportRows() {
             <button
                 type="button"
                 class="fam"
-                :class="{ 'is-on': !state.fam.length }"
-                @click="filters.clearField('fam')"
+                :class="{ 'is-on': !state.grp.length }"
+                @click="filters.clearField('grp')"
             >
                 {{ t('items.filter.allFamilies') }}
                 <span class="fam-n">{{ all.length }}</span>
             </button>
             <button
-                v-for="family in families"
-                :key="family.id"
+                v-for="group in groups"
+                :key="group.id"
                 type="button"
                 class="fam"
-                :class="{ 'is-on': onlyFamily(family.id) }"
-                @click="pickFamily(family.id)"
+                :class="{ 'is-on': onlyGroup(group.id) }"
+                @click="pickGroup(group.id)"
             >
-                <span class="fam-p">{{ family.prefix }}</span>
-                {{ t(`items.family.${family.id}`) }}
-                <span class="fam-n">{{ family.n }}</span>
+                <span class="fam-p">{{ group.code }}</span>
+                {{ group.name }}
+                <span class="fam-n">{{ group.n }}</span>
             </button>
         </div>
 
@@ -433,10 +436,15 @@ function exportRows() {
                 </div>
             </template>
 
-            <template #cell-family="{ row }">
-                <AChip :dot="false" size="sm">{{
-                    t(`items.family.${row.family}`)
-                }}</AChip>
+            <template #cell-group="{ row }">
+                <AChip :dot="false" size="sm">{{ row.groupName || '—' }}</AChip>
+                <div v-if="row.frozen || !row.active" class="t-sub">
+                    {{
+                        row.frozen
+                            ? t('items.card.frozenYes')
+                            : t('items.card.activeNo')
+                    }}
+                </div>
             </template>
 
             <template #cell-uom="{ row }">
