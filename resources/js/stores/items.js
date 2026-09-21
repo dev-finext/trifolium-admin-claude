@@ -288,6 +288,30 @@ export const useItemsStore = defineStore('items', () => {
     const prepTypeBySap = (code) =>
         prepTypes.value.find((type) => type.sap === code)?.id || null;
 
+    /**
+     * An item's row in every warehouse, reconciled.
+     *
+     * `OITW` is what SAP held the day the catalogue was read; the console has
+     * moved stock since — receipts, production, counts — and its own figure is
+     * the live one. The warehouse the console counts the item in takes the live
+     * quantity; the rest keep what SAP had, which for six of the seven is zero.
+     */
+    const warehouseRowsOf = (sku) => {
+        const item = itemBySku(sku);
+        const live = inventory.itemBySku(sku);
+
+        return (item?.warehouses || []).map((row) =>
+            live && row.warehouse === live.wh
+                ? {
+                      ...row,
+                      onHand: live.onHand,
+                      committed: live.alloc,
+                      min: live.min ?? row.min,
+                  }
+                : row,
+        );
+    };
+
     /** SAP's item groups (`OITB`), and one group's name. */
     const itemGroups = computed(() => list('itemGroups'));
 
@@ -1074,6 +1098,7 @@ export const useItemsStore = defineStore('items', () => {
         attachmentUrl,
         itemGroups,
         groupName,
+        warehouseRowsOf,
         prepTypeBySap,
         priceLists,
         sapWarehouses,

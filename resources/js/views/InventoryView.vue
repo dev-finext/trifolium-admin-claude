@@ -21,6 +21,7 @@ import DocumentsTab from '@/components/inventory/DocumentsTab.vue';
 import GoodsReceiptModal from '@/components/inventory/GoodsReceiptModal.vue';
 import MovementsTab from '@/components/inventory/MovementsTab.vue';
 import ReceiptDrawer from '@/components/inventory/ReceiptDrawer.vue';
+import StockDrawer from '@/components/inventory/StockDrawer.vue';
 import StockTab from '@/components/inventory/StockTab.vue';
 import PageHead from '@/components/layout/PageHead.vue';
 import AButton from '@/components/ui/AButton.vue';
@@ -44,7 +45,13 @@ const inventory = useInventoryStore();
 const route = useRoute();
 const router = useRouter();
 
-const view = useUrlState({ tab: 'stock', batch: '', receipt: '', doc: '' });
+const view = useUrlState({
+    tab: 'stock',
+    batch: '',
+    receipt: '',
+    doc: '',
+    sku: '',
+});
 
 /** The receipt form and the adjustment are actions, not addresses. */
 const receiving = ref(false);
@@ -91,11 +98,23 @@ const shownDoc = computed(() =>
     view.doc ? inventory.docById(view.doc) : null,
 );
 
+const shownStock = computed(() =>
+    view.sku ? inventory.itemBySku(view.sku) : null,
+);
+
 /** One drawer at a time: opening a batch closes the others, and back. */
 function openBatch(id) {
     view.receipt = '';
     view.doc = '';
+    view.sku = '';
     view.batch = id;
+}
+
+function openStock(sku) {
+    view.batch = '';
+    view.receipt = '';
+    view.doc = '';
+    view.sku = sku;
 }
 
 function openReceipt(id) {
@@ -130,6 +149,11 @@ function goto(tab, patch = {}) {
 }
 
 /** From the stock table into the batches tab, filtered to one item. */
+/** From a stock row to the item's own card, where the master data lives. */
+function openItemCard(sku) {
+    router.push({ name: 'items', query: { item: sku } });
+}
+
 function openItemBatches(sku) {
     goto('batches', { bq: sku, bstate: '', bexp: '' });
 }
@@ -252,6 +276,8 @@ function exportStock() {
     <template v-else>
         <StockTab
             v-if="view.tab === 'stock'"
+            :selected="view.sku"
+            @open="openStock"
             @adjust="adjusting = $event"
             @open-batches="openItemBatches"
             @open-expiring="openExpiring"
@@ -285,6 +311,14 @@ function exportStock() {
         @saved="onAdjusted"
     />
 
+    <StockDrawer
+        :row="shownStock"
+        @close="view.sku = ''"
+        @adjust="adjusting = $event"
+        @open-batch="openBatch"
+        @open-doc="openDoc"
+        @open-item="openItemCard"
+    />
     <DocumentDrawer
         :doc="shownDoc"
         @close="view.doc = ''"

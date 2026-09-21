@@ -39,7 +39,12 @@ import { useItemsStore } from '@/stores/items';
 /** How many item names the low-stock banner lists before it counts the rest. */
 const LOW_PREVIEW = 4;
 
-const emit = defineEmits(['adjust', 'open-batches', 'open-expiring']);
+defineProps({
+    /** The sku whose drawer is open, so its row reads as selected. */
+    selected: { type: String, default: '' },
+});
+
+const emit = defineEmits(['adjust', 'open', 'open-batches', 'open-expiring']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -270,7 +275,13 @@ const cols = computed(() => [
             @clear="clear"
         />
 
-        <ADataTable :cols="cols" :rows="paged" row-key="sku">
+        <ADataTable
+            :cols="cols"
+            :rows="paged"
+            row-key="sku"
+            :selected="selected"
+            @row="emit('open', $event.sku)"
+        >
             <template #empty>
                 <AEmpty
                     icon="grid"

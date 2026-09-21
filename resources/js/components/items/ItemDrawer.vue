@@ -104,7 +104,7 @@ const priceCols = computed(() => [
 
 /** The item's rows in `OITW`, named by their warehouse. */
 const warehouseRows = computed(() =>
-    (props.row?.warehouses || []).map((row) => {
+    (props.row ? store.warehouseRowsOf(props.row.sku) : []).map((row) => {
         const warehouse = store.sapWarehouses.find(
             (entry) => entry.code === row.warehouse,
         );

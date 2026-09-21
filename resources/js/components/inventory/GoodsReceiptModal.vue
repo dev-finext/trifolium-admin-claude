@@ -279,7 +279,6 @@ async function save() {
         :open="open"
         :title="t('inventory.receipt.title')"
         :width="WIDTH"
-        class="a-modal-card--fit"
         @close="emit('close')"
     >
         <div class="head">

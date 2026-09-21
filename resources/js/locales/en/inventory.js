@@ -169,6 +169,9 @@ export default {
             title: 'No items found',
             sub: 'Clear the search or the filter',
         },
+        lowChip: 'Below minimum',
+        adjust: 'Adjust stock',
+        openItem: 'Open the item card',
     },
     receipts: {
         note: 'A goods receipt is the only way stock enters the system. Every line opens a batch with its own batch number and expiry date — and that is where the trace to the customer begins.',
@@ -324,6 +327,7 @@ export default {
             title: 'No movements match the filter',
             sub: 'Clear the filter',
         },
+        none: 'No movements for this item',
     },
     receipt: {
         batchAuto: 'Assigned automatically by item family',

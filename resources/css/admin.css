@@ -1188,8 +1188,11 @@ table.a-table {
     background: #fff;
     border-radius: 14px;
     width: min(620px, 100%);
-    max-height: 86vh;
+    /* The card never grows past the screen: a form taller than the viewport
+       scrolls inside itself, with its header and footer pinned. */
+    max-height: calc(100vh - 48px);
     overflow: auto;
+    overscroll-behavior: contain;
     box-shadow: 0 30px 70px rgba(24, 32, 22, 0.3);
 }
 .a-modal-h {
@@ -1220,16 +1223,6 @@ table.a-table {
     padding-top: 16px;
 }
 /* modal that must show every field at once — no inner scrolling */
-.a-modal-card--fit {
-    max-height: none;
-    overflow: visible;
-}
-@media (max-height: 760px) {
-    .a-modal-card--fit {
-        max-height: 92vh;
-        overflow: auto;
-    }
-}
 /* line editors: one labelled block per line — every field carries its own label */
 .a-lines {
     display: grid;

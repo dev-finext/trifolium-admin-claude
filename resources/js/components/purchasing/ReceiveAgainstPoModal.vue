@@ -169,7 +169,6 @@ async function save() {
         open
         :title="t('purchasing.receive.title', { id: po.id })"
         :width="860"
-        class="a-modal-card--fit"
         @close="emit('close')"
     >
         <p class="a-hint intro">{{ t('purchasing.receive.hint') }}</p>
