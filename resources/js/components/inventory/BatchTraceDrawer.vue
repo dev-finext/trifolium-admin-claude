@@ -186,6 +186,10 @@ const cols = computed(() => [
                                 batch.supplierBatch,
                             ],
                             [
+                                t('inventory.batches.trace.madeOn'),
+                                batch.madeOn ? fmtISO(batch.madeOn) : null,
+                            ],
+                            [
                                 t('inventory.batches.trace.wh'),
                                 t(`warehouse.${batch.wh}.name`),
                             ],
@@ -247,7 +251,7 @@ const cols = computed(() => [
                             </span>
                             <span v-else>—</span>
                         </template>
-                        <template #value-8>
+                        <template #value-9>
                             <AChip
                                 v-if="batch.daysToExp < 0"
                                 tone="red"

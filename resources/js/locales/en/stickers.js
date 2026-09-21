@@ -51,6 +51,7 @@ export default {
         orderId: 'Order no.',
         split: 'Label n of N',
         itemName: 'Item name',
+        foreignName: 'Foreign / Chinese name',
         itemCode: 'Item code',
         batch: 'Batch no.',
         supplierBatch: 'Supplier batch',

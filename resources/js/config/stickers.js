@@ -13,7 +13,9 @@ export const STICKER_TEMPLATE_IDS = ['prep', 'item', 'shipping'];
 /** Default label sizes, millimetres. The template carries its own copy. */
 export const STICKER_SIZES = {
     prep: { w: 120, h: 60 },
-    item: { w: 70, h: 40 },
+    // V3 — the batch label, at the size the pharmacy prints it. Natalie's note
+    // shows the label and says "גודל 120-60 בדומה לשאר המדבקות שלנו כיום".
+    item: { w: 120, h: 60 },
     shipping: { w: 100, h: 60 },
 };
 
@@ -40,11 +42,15 @@ export const STICKER_FIELDS = [
     { id: 'typeText', templates: ['prep'] },
     { id: 'notes', templates: ['prep'] },
     { id: 'regulatory', templates: ['prep'] },
-    { id: 'madeOn', templates: ['prep'] },
+    { id: 'madeOn', templates: ['prep', 'item'] },
     { id: 'expiry', templates: ['prep', 'item'] },
     { id: 'orderId', templates: ['prep', 'shipping'] },
     { id: 'split', templates: ['prep', 'item'] },
     { id: 'itemName', templates: ['item'] },
+    // V3 — the label in Natalie's note carries the botanical name and the
+    // Chinese name under the item's own, and the production date beside the
+    // expiry. Both are on the item card already; neither was on the label.
+    { id: 'foreignName', templates: ['item'] },
     { id: 'itemCode', templates: ['item'] },
     { id: 'batch', templates: ['item'] },
     { id: 'supplierBatch', templates: ['item'] },
@@ -76,3 +82,20 @@ export const STICKER_RULES = {
 
 /** The one barcode symbology the module renders — plain, scanner-friendly. */
 export const BARCODE_SYMBOLOGY = 'code39';
+
+/**
+ * What the batch label's barcode carries. V3.
+ *
+ * Yaron: "ברקוד לסריקה צריך להכיל את המק״ט שצריך לייצר איתו ואת אצווה בהוראת
+ * ייצור" — the item number the run is made with, and the batch. Two values in
+ * one scan, so the separator has to be something a Code 39 reader passes
+ * through unchanged.
+ *
+ * What he asks for after that — "לאפשר לעקוף רק על ידי הרשאת מנהל/אחמ״ש" —
+ * says a scan may be overridden by a supervisor, but not what is being
+ * overridden or where. That is an open question and nothing was built for it.
+ */
+export const BATCH_BARCODE_SEPARATOR = '-';
+
+export const batchBarcode = (itemCode, batch) =>
+    [itemCode, batch].filter(Boolean).join(BATCH_BARCODE_SEPARATOR);

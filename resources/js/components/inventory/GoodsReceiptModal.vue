@@ -82,6 +82,8 @@ function emptyLine() {
         // V3 — Noam: a mark at goods receipt is what tells ground waste from
         // whole herb, so no separate numbering is needed to say the same thing.
         waste: false,
+        // V3 — the supplier's manufacturing date, off the certificate.
+        madeOn: '',
         expiry: '',
         expiryMonths: null,
         wh: WAREHOUSES[0].id,
@@ -466,6 +468,24 @@ async function save() {
                         </label>
                         <div class="a-hint">
                             {{ t('inventory.receipt.wasteHint') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-md${i}`">
+                            {{ t('inventory.receipt.col.madeOn') }}
+                            <V2Badge v="3" size="sm" />
+                        </label>
+                        <AInput
+                            :id="`${uid}-md${i}`"
+                            v-model="line.madeOn"
+                            type="date"
+                            :disabled="Boolean(line.existingBatch)"
+                            :aria-label="
+                                t('inventory.receipt.aria.madeOn', { n: i + 1 })
+                            "
+                        />
+                        <div class="a-hint">
+                            {{ t('inventory.receipt.madeOnHint') }}
                         </div>
                     </div>
                     <div>

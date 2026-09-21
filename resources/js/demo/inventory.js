@@ -394,6 +394,10 @@ export function buildReceipts(stock, productionInputs = []) {
                         spread(`${lineSlot}:jitter`, 0, 180),
                 ),
                 supplierBatch: `L${spread(`${lineSlot}:sbatch`, 10000, 99999)}`,
+                // V3 — the supplier's own manufacturing date, off the same
+                // delivery note as the expiry: a few weeks to a few months
+                // before the goods reached the pharmacy.
+                madeOn: isoDaysAgo(days + spread(`${lineSlot}:made`, 14, 150)),
                 // V2: how many item labels the receipt asked for
                 labels: spread(`${lineSlot}:labels`, 1, 3),
             });
@@ -667,6 +671,7 @@ export function buildBatches(receipts, stock = []) {
                     : line.qty;
 
             batches.push({
+                madeOn: line.madeOn,
                 id: line.batch,
                 // V3 — goods from a supplier carry the supplier's own batch
                 // code as their number, always. Yaron: "אם חומר גלם מגיע מספק

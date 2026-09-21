@@ -290,6 +290,7 @@ export default {
             sku: 'Item code',
             receipt: 'Goods receipt',
             supplierBatch: "Supplier's batch",
+            madeOn: 'Production date',
             wh: 'Warehouse',
             by: 'Received by',
             daysToExp: 'Days to expiry',
@@ -366,6 +367,7 @@ export default {
             batch: 'Batch number',
             supplierBatch: 'Batch number (from the supplier)',
             waste: 'Waste',
+            madeOn: 'Production date',
             expiry: 'Expiry',
             wh: 'Warehouse',
             after: 'Stock after',
@@ -378,6 +380,8 @@ export default {
             'A batch of goods from a supplier is the supplier’s own batch number, exactly as the delivery note writes it. The console does not allocate one of its own.',
         expiryFromSupplier:
             'The expiry comes from the supplier’s certificate and is not calculated. An expiry is only calculated on receipt from in-house production.',
+        madeOnHint:
+            'The supplier’s production date, as printed on the certificate or the package. It goes on the batch label. Not required.',
         wasteYes: 'This material is waste',
         wasteHint:
             'Marking waste tells ground waste from whole material — for a correct stock reading and for priority in production.',
@@ -391,6 +395,7 @@ export default {
         submit: 'Receive into stock · 1 batch | Receive into stock · {n} batches',
         need: 'Required: supplier, delivery-note number, and at least one line with an item, a quantity, a batch number and an expiry date',
         aria: {
+            madeOn: 'Production date on line {n}',
             qty: 'Quantity on line {n}',
             batch: 'Batch number on line {n}',
             supplierBatch: "Supplier's batch on line {n}",

@@ -12,6 +12,7 @@ import AButton from '@/components/ui/AButton.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ASelect from '@/components/ui/ASelect.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { CURRENCY_SYMBOL, DEFAULT_WAREHOUSE } from '@/config';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
@@ -62,7 +63,6 @@ const form = reactive({
         const item = items.itemBySku(line.sku);
         const stock = inventory.itemBySku(line.sku);
         const factor = item?.uom?.factor || 1;
-        const suggested = store.defaultExpiryFor(line.sku);
 
         return {
             sku: line.sku,
@@ -73,8 +73,12 @@ const form = reactive({
             batch: '',
             existingBatch: '',
             supplierBatch: '',
-            expiry: suggested?.iso || '',
-            expiryMonths: suggested?.months || null,
+            // V3 — the supplier's own manufacturing date, and an expiry that
+            // is read off the certificate rather than calculated. See the
+            // goods-receipt modal for why.
+            madeOn: '',
+            expiry: '',
+            expiryMonths: null,
             price: line.price != null ? String(line.price) : '',
             currency: props.po.currency,
             labels: '1',
@@ -144,6 +148,7 @@ async function save() {
             batch: line.existingBatch || line.batch,
             existingBatch: line.existingBatch || null,
             supplierBatch: line.supplierBatch,
+            madeOn: line.madeOn,
             expiry: line.expiry,
             price: line.price === '' ? null : Number(line.price),
             currency: line.currency,
@@ -263,25 +268,40 @@ async function save() {
                         />
                     </div>
                     <div>
-                        <label class="a-lbl">{{
-                            t('purchasing.receive.col.batch')
-                        }}</label>
-                        <div class="a-code a-tag batch-ro">
-                            {{ line.existingBatch || batchFor(i) || '—' }}
-                        </div>
-                        <div class="a-hint">
-                            {{ t('purchasing.receive.batchAuto') }}
-                        </div>
-                    </div>
-                    <div>
-                        <label class="a-lbl" :for="`${uid}-sb${i}`">{{
-                            t('purchasing.receive.col.supplierBatch')
-                        }}</label>
+                        <label class="a-lbl" :for="`${uid}-sb${i}`">
+                            {{ t('inventory.receipt.col.supplierBatch') }}
+                            <span v-if="!line.existingBatch" class="req"
+                                >*</span
+                            >
+                            <V2Badge v="3" size="sm" />
+                        </label>
                         <AInput
+                            v-if="!line.existingBatch"
                             :id="`${uid}-sb${i}`"
                             v-model="line.supplierBatch"
                             ltr
                         />
+                        <div v-else class="a-code a-tag batch-ro">
+                            {{ inventory.batchNo(line.existingBatch) }}
+                        </div>
+                        <div class="a-hint">
+                            {{ t('inventory.receipt.batchIsSupplier') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-md${i}`">
+                            {{ t('inventory.receipt.col.madeOn') }}
+                            <V2Badge v="3" size="sm" />
+                        </label>
+                        <AInput
+                            :id="`${uid}-md${i}`"
+                            v-model="line.madeOn"
+                            type="date"
+                            :disabled="Boolean(line.existingBatch)"
+                        />
+                        <div class="a-hint">
+                            {{ t('inventory.receipt.madeOnHint') }}
+                        </div>
                     </div>
                     <div>
                         <label class="a-lbl" :for="`${uid}-x${i}`"
@@ -294,15 +314,8 @@ async function save() {
                             type="date"
                             :disabled="Boolean(line.existingBatch)"
                         />
-                        <div
-                            v-if="line.expiryMonths && !line.existingBatch"
-                            class="a-hint"
-                        >
-                            {{
-                                t('inventory.receipt.expiryAuto', {
-                                    n: line.expiryMonths,
-                                })
-                            }}
+                        <div v-if="!line.existingBatch" class="a-hint">
+                            {{ t('inventory.receipt.expiryFromSupplier') }}
                         </div>
                     </div>
                     <div>

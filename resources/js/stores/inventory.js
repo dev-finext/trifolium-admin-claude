@@ -673,6 +673,9 @@ export const useInventoryStore = defineStore('inventory', () => {
                 batch: minted.id,
                 number: minted.number,
                 waste: Boolean(line.waste) && !existing,
+                madeOn: existing
+                    ? existing.madeOn || null
+                    : line.madeOn || null,
                 expiry: existing ? existing.expiry : line.expiry,
                 supplierBatch: existing
                     ? existing.supplierBatch
@@ -756,6 +759,10 @@ export const useInventoryStore = defineStore('inventory', () => {
                     supplier,
                     supplierBatch: line.supplierBatch,
                     received: when,
+                    // V3 — when the goods were made, as against when they came
+                    // in. `received` is the pharmacy's date; this is the
+                    // supplier's, and only the supplier can supply it.
+                    madeOn: line.madeOn,
                     qty: line.qty,
                     remaining: line.qty,
                     expiry: line.expiry,
@@ -862,6 +869,8 @@ export const useInventoryStore = defineStore('inventory', () => {
             supplierBatch: null,
             // V3 — what the pharmacy calls this batch. See `batchNo`.
             number: record.number || record.id,
+            // V3 — a batch the pharmacy made was made the day it was received.
+            madeOn: record.received?.iso || null,
             remaining: record.qty,
             daysToExp: -daysSince(record.expiry),
             state: 'active',

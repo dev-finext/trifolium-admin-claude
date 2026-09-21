@@ -51,6 +51,7 @@ export default {
         orderId: 'מספר הזמנה',
         split: 'מדבקה n מתוך N',
         itemName: 'שם הפריט',
+        foreignName: 'שם לועזי / סיני',
         itemCode: 'קוד פריט',
         batch: 'מספר אצווה',
         supplierBatch: 'אצוות ספק',

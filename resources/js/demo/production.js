@@ -332,6 +332,8 @@ export function buildProductionOrders({
         const opened = {
             id: outputId,
             number: outputNumber,
+            // V3 — a batch the pharmacy made was made the day the run finished.
+            madeOn: completedOn.iso,
             sku: bom.parentSku,
             name: parent ? parent.name : bom.name,
             unit: stockUnit,

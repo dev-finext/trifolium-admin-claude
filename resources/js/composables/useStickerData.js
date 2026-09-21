@@ -10,7 +10,7 @@ import { useI18n } from 'vue-i18n';
 import { useCourierName } from '@/components/deliveries/useCourierName';
 import { formatAddress } from '@/components/users/address';
 import { useLocalized } from '@/composables/useLocalized';
-import { ITEM_UOM_IDS, ORG, STICKER_RULES } from '@/config';
+import { batchBarcode, ITEM_UOM_IDS, ORG, STICKER_RULES } from '@/config';
 import { code39Svg, code39Value } from '@/lib/barcode';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
 import { esc, printHtml } from '@/lib/print';
@@ -105,15 +105,25 @@ export function useStickerData() {
             itemName: card
                 ? loc({ he: card.names.he, en: card.names.en || card.names.he })
                 : loc(stock?.name) || line.sku,
+            // V3 — the botanical or Chinese name, as the printed label shows it.
+            foreignName: card?.names?.en || '',
             itemCode: card?.code || line.sku,
-            batch: line.batch || '',
+            batch: inventory.batchNo(line.batch) || line.batch || '',
             supplierBatch: line.supplierBatch || '',
             supplier: loc(receipt.supplier),
             receivedOn: receipt.when?.iso ? fmtISO(receipt.when.iso) : '',
+            // V3 — the supplier's manufacturing date, which is what the
+            // printed label calls "תאריך ייצור". Empty when the delivery note
+            // did not carry one, rather than showing the receipt date under a
+            // heading that says the goods were made that day.
+            madeOn: line.madeOn ? fmtISO(line.madeOn) : '',
             expiry: line.expiry ? fmtISO(line.expiry) : '',
             qty: `${line.qty} ${unit}`.trim(),
             split: `${index}/${total}`,
-            barcode: line.batch || receipt.id,
+            barcode: batchBarcode(
+                card?.code || line.sku,
+                inventory.batchNo(line.batch) || line.batch,
+            ),
         };
     }
 
