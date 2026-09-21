@@ -87,6 +87,11 @@ import {
     DEMO_SESSION,
 } from '@/demo/people';
 import {
+    buildConsumption,
+    buildOpenOrders,
+    buildPurchaseHistory,
+} from '@/demo/planning';
+import {
     buildPriceGroups,
     buildPriceImport,
     DEMO_PRICE_BREAKS,
@@ -292,6 +297,14 @@ export function buildDataset() {
             `${b.when.iso}${b.id}`.localeCompare(`${a.when.iso}${a.id}`),
         ),
         stockKinds: STOCK_KINDS,
+
+        // planning (V3) — the pharmacy's own consumption history, out of SAP
+        consumption: buildConsumption(),
+        openOrders: buildOpenOrders(),
+        purchaseHistory: buildPurchaseHistory(),
+        purchaseRequests: [],
+        planLines: [],
+        coverThresholds: {},
         ingredientPricePrefix: INGREDIENT_PRICE_PREFIX,
 
         // money

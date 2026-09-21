@@ -4,6 +4,7 @@ export default {
     sub: '{open} open orders · {partial} partially received · {notes} delivery notes awaiting an invoice',
 
     tab: {
+        planning: 'Inventory & purchase planning',
         pos: 'Purchase orders',
         notes: 'Supplier delivery notes',
         invoices: 'Supplier invoices',

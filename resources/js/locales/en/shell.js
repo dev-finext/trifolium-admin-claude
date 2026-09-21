@@ -4,8 +4,8 @@ export default {
     // The demo switch that refuses every write, to show the failure state
     v2: {
         badge: 'V2',
-        tip: 'New in version 2 — click for the explanation in “Spec progress”',
-        tipPlain: 'New in version 2',
+        tip: 'New in version {v} — click for the explanation in “Spec progress”',
+        tipPlain: 'New in version {v}',
         show: 'Show V2 markers',
         hide: 'Hide V2 markers',
         on: 'shown',

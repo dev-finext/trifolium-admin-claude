@@ -31,6 +31,8 @@ const props = defineProps({
     maxHeight: { type: [Number, String], default: null },
     /** `{ key, dir }` — bind with `v-model:sort` to own it, or leave it here. */
     sort: { type: Object, default: null },
+    /** `(row) => 'class'` — one more class per row, for meaning, not decoration. */
+    rowClass: { type: Function, default: null },
 });
 
 const emit = defineEmits(['sort', 'update:sort']);
@@ -223,10 +225,13 @@ function activate(row) {
                 <tr
                     v-for="(row, i) in sortedRows"
                     :key="keyOf(row, i)"
-                    :class="{
-                        'is-sel':
-                            selected !== null && selected === keyOf(row, i),
-                    }"
+                    :class="[
+                        {
+                            'is-sel':
+                                selected !== null && selected === keyOf(row, i),
+                        },
+                        rowClass ? rowClass(row) : null,
+                    ]"
                     :tabindex="rowHandler ? 0 : undefined"
                     @click="activate(row)"
                     @keydown.enter.prevent="activate(row)"

@@ -477,6 +477,239 @@ def _chunks(values, size):
         yield values[start:start + size]
 
 
+
+# ----------------------------------------------------------------- V3: planning
+# How many months of consumption history the fixture carries. The pharmacy's own
+# Excel works on fourteen; twenty-four lets the report also show the same period
+# a year back, which is what the purchasing note asks for.
+CONSUMPTION_MONTHS = 24
+
+# What counts as consumption, taken verbatim from the pharmacy's own saved SAP
+# query (OUQR 0654, "ניתוח מלאי - ללא בחירת קבוצה - ללא ספירת מלאי"):
+#
+#   * every inventory movement out (OINM.OutQty) EXCEPT
+#       10000071  inventory posting - a count corrects the book, it is not demand
+#       19        A/P credit memo
+#       21        goods return
+#       60        goods issue - the general issue used to tidy stock
+#       67        warehouse transfer - the note asks for this one too; the saved
+#                 query does not exclude it, but the intent is explicit and only
+#                 32 transfer rows exist in ten years, so the difference is nil
+#   * plus the goods-issue lines a production order raised (IGE1.BaseType = 202),
+#     which is the real consumption the blanket exclusion of 60 above removed.
+CONSUMPTION_SKIP = (10000071, 19, 21, 60, 67)
+
+# The production order's own object type, as SAP writes it into IGE1.BaseType.
+PRODUCTION_ORDER_TYPE = 202
+
+# A sale straight to a customer: the A/R invoice and the delivery note. Column 12
+# of the purchasing note is this slice of the consumption above, so the buyer can
+# see how much of a herb left as raw material rather than into a production run.
+SALES_TYPES = (13, 15)
+
+
+def consumption(conn, codes, months=CONSUMPTION_MONTHS):
+    """Consumption per item per month, on the pharmacy's own definition.
+
+    Returns one row per item that moved at all: `months` maps 'YYYY-MM' to the
+    quantity consumed, `direct` the part of it that was sold as raw material.
+    Months with nothing in them are left out rather than written as zero.
+    """
+    wanted = [c for c in dict.fromkeys(codes) if c]
+
+    if not wanted:
+        return {'from': None, 'to': None, 'months': [], 'rows': []}
+
+    span = dicts(conn, 'SELECT MAX(DocDate) AS last FROM OINM')
+    last = span[0]['last']
+    last = last.date() if isinstance(last, datetime) else last
+    # The month the data ends in is a stub - the backup was taken on the fifth -
+    # so the window closes at the start of it, on the last whole month.
+    end_year, end_month = last.year, last.month
+    start_year, start_month = end_year, end_month - months
+
+    while start_month <= 0:
+        start_month += 12
+        start_year -= 1
+
+    first = date(start_year, start_month, 1)
+    stop = date(end_year, end_month, 1)
+
+    by_code = {}
+
+    def touch(code):
+        if code not in by_code:
+            by_code[code] = {'code': code, 'months': {}, 'direct': {}}
+
+        return by_code[code]
+
+    window = (
+        f"DocDate >= '{first.isoformat()}' AND DocDate < '{stop.isoformat()}'"
+    )
+
+    for chunk in _chunks(wanted, 200):
+        codes_sql = ','.join(f"'{c}'" for c in chunk)
+        skip_sql = ','.join(str(n) for n in CONSUMPTION_SKIP)
+
+        rows = dicts(
+            conn,
+            f"""
+            SELECT ItemCode AS code,
+                   FORMAT(DocDate, 'yyyy-MM') AS ym,
+                   SUM(OutQty) AS qty
+            FROM OINM
+            WHERE ItemCode IN ({codes_sql}) AND {window}
+              AND ISNULL(TransType, 0) NOT IN ({skip_sql})
+              AND OutQty > 0
+            GROUP BY ItemCode, FORMAT(DocDate, 'yyyy-MM')
+            """,
+        )
+
+        for row in rows:
+            touch(row['code'])['months'][row['ym']] = plain(row['qty'])
+
+        rows = dicts(
+            conn,
+            f"""
+            SELECT L.ItemCode AS code,
+                   FORMAT(H.DocDate, 'yyyy-MM') AS ym,
+                   SUM(L.Quantity) AS qty
+            FROM OIGE H
+            JOIN IGE1 L ON L.DocEntry = H.DocEntry
+            WHERE L.ItemCode IN ({codes_sql})
+              AND H.DocDate >= '{first.isoformat()}'
+              AND H.DocDate < '{stop.isoformat()}'
+              AND L.BaseType = {PRODUCTION_ORDER_TYPE}
+            GROUP BY L.ItemCode, FORMAT(H.DocDate, 'yyyy-MM')
+            """,
+        )
+
+        for row in rows:
+            entry = touch(row['code'])
+            was = entry['months'].get(row['ym']) or 0
+            entry['months'][row['ym']] = plain(Decimal(str(was)) + row['qty'])
+
+        sales_sql = ','.join(str(n) for n in SALES_TYPES)
+        rows = dicts(
+            conn,
+            f"""
+            SELECT ItemCode AS code,
+                   FORMAT(DocDate, 'yyyy-MM') AS ym,
+                   SUM(OutQty) AS qty
+            FROM OINM
+            WHERE ItemCode IN ({codes_sql}) AND {window}
+              AND TransType IN ({sales_sql}) AND OutQty > 0
+            GROUP BY ItemCode, FORMAT(DocDate, 'yyyy-MM')
+            """,
+        )
+
+        for row in rows:
+            touch(row['code'])['direct'][row['ym']] = plain(row['qty'])
+
+    months_list = []
+    year, month = start_year, start_month
+
+    while (year, month) < (end_year, end_month):
+        months_list.append(f'{year:04d}-{month:02d}')
+        month += 1
+
+        if month > 12:
+            month = 1
+            year += 1
+
+    return {
+        'from': months_list[0] if months_list else None,
+        'to': months_list[-1] if months_list else None,
+        'months': months_list,
+        'rows': sorted(by_code.values(), key=lambda row: row['code']),
+    }
+
+
+def open_orders(conn, codes):
+    """What is on order for an item, and from whom.
+
+    Column 7 of the purchasing note asks for the quantity ordered and the name
+    behind it - a supplier for a purchase order, the run itself for a production
+    order. SAP keeps the two in different documents; the report needs both.
+    """
+    wanted = [c for c in dict.fromkeys(codes) if c]
+
+    if not wanted:
+        return []
+
+    out = []
+
+    for chunk in _chunks(wanted, 200):
+        codes_sql = ','.join(f"'{c}'" for c in chunk)
+
+        rows = dicts(
+            conn,
+            f"""
+            SELECT L.ItemCode AS code, 'purchase' AS kind,
+                   H.DocNum AS doc, H.CardCode AS partyCode, H.CardName AS party,
+                   L.OpenQty AS qty, L.unitMsr AS uom,
+                   L.ShipDate AS due, H.DocDate AS placed
+            FROM POR1 L
+            JOIN OPOR H ON H.DocEntry = L.DocEntry
+            WHERE L.ItemCode IN ({codes_sql})
+              AND L.LineStatus = 'O' AND L.OpenQty > 0
+            """,
+        )
+        out.extend(clean(row) for row in rows)
+
+        rows = dicts(
+            conn,
+            f"""
+            SELECT ItemCode AS code, 'production' AS kind,
+                   DocNum AS doc, NULL AS partyCode, NULL AS party,
+                   (PlannedQty - CmpltQty) AS qty, Uom AS uom,
+                   DueDate AS due, PostDate AS placed
+            FROM OWOR
+            WHERE ItemCode IN ({codes_sql})
+              AND Status IN ('P', 'R') AND (PlannedQty - CmpltQty) > 0
+            """,
+        )
+        out.extend(clean(row) for row in rows)
+
+    return out
+
+
+def purchase_history(conn, codes):
+    """Who actually supplied an item, how much and at what price.
+
+    The purchasing note asks the report to recommend a supplier - the leading
+    one, what happened when it had none, and the price. That answer is in the
+    receipts: one row per item and supplier, with quantity, price and last date.
+    """
+    wanted = [c for c in dict.fromkeys(codes) if c]
+
+    if not wanted:
+        return []
+
+    out = []
+
+    for chunk in _chunks(wanted, 200):
+        codes_sql = ','.join(f"'{c}'" for c in chunk)
+
+        rows = dicts(
+            conn,
+            f"""
+            SELECT L.ItemCode AS code, H.CardCode AS supplierCode,
+                   H.CardName AS supplier,
+                   COUNT(*) AS lines, SUM(L.Quantity) AS qty,
+                   MAX(H.DocDate) AS lastOn,
+                   MIN(L.Price) AS lowPrice, MAX(L.Price) AS highPrice
+            FROM PDN1 L
+            JOIN OPDN H ON H.DocEntry = L.DocEntry
+            WHERE L.ItemCode IN ({codes_sql}) AND L.Quantity > 0
+            GROUP BY L.ItemCode, H.CardCode, H.CardName
+            """,
+        )
+        out.extend(clean(row) for row in rows)
+
+    return out
+
+
 def boms(conn, limit, item_codes):
     """Bills of materials whose parent is one of the items we extracted."""
     codes = ','.join(f"'{c}'" for c in item_codes) or "''"
@@ -932,6 +1165,16 @@ def main():
     counts['products'] = write('products', products)
     counts['boms'] = write('boms', bom_rows)
     counts['priceTiers'] = write('priceTiers', price_tiers(conn))
+
+    # V3 - inventory planning and purchasing. The consumption history is the
+    # pharmacy's own, on the pharmacy's own definition; see CONSUMPTION_SKIP.
+    print('planning history')
+    all_codes = [item['code'] for item in ingredients + products]
+    counts['consumption'] = write('consumption', consumption(conn, all_codes))
+    counts['openOrders'] = write('openOrders', open_orders(conn, all_codes))
+    counts['purchaseHistory'] = write(
+        'purchaseHistory', purchase_history(conn, all_codes)
+    )
     counts['batches'] = write('batches', batches(conn, COUNTS['batches']))
 
     write(

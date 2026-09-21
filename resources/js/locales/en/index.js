@@ -19,6 +19,7 @@ import log from '@/locales/en/log';
 import messaging from '@/locales/en/messaging';
 import nav from '@/locales/en/nav';
 import orders from '@/locales/en/orders';
+import planning from '@/locales/en/planning';
 import pricing from '@/locales/en/pricing';
 import production from '@/locales/en/production';
 import products from '@/locales/en/products';
@@ -54,6 +55,7 @@ export default {
     messaging,
     nav,
     orders,
+    planning,
     pricing,
     production,
     products,

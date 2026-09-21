@@ -3398,3 +3398,20 @@ a.a-v2:focus-visible {
 .a-v2toggle:not(.is-on) .a-v2 {
     background: #9aa39a;
 }
+
+/* V3 — the planning report colours a row by how much cover it has left. The
+   client asked for exactly this: a report of two thousand rows cannot be read
+   line by line, so what is short must show itself. The threshold is three
+   months by default and settable per item group; the tone, not the number, is
+   what carries here. Kept lighter than a chip, so a whole screen of red rows is
+   still readable. */
+tr.cover-critical > td {
+    background: var(--a-red-bg);
+}
+tr.cover-low > td {
+    background: var(--a-amber-bg);
+}
+tr.cover-critical:hover > td,
+tr.cover-low:hover > td {
+    filter: brightness(0.98);
+}

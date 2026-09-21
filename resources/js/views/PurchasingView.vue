@@ -4,9 +4,12 @@
 // Second-version material.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
 import PageHead from '@/components/layout/PageHead.vue';
 import ConsumptionTab from '@/components/purchasing/ConsumptionTab.vue';
+import PlanningRowDrawer from '@/components/purchasing/PlanningRowDrawer.vue';
+import PlanningTab from '@/components/purchasing/PlanningTab.vue';
 import PurchaseOrderDrawer from '@/components/purchasing/PurchaseOrderDrawer.vue';
 import PurchaseOrderEditor from '@/components/purchasing/PurchaseOrderEditor.vue';
 import PurchaseOrdersTab from '@/components/purchasing/PurchaseOrdersTab.vue';
@@ -22,14 +25,17 @@ import V2Badge from '@/components/ui/V2Badge.vue';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { useDatasetStore } from '@/stores/dataset';
+import { usePlanningStore } from '@/stores/planning';
 import { usePurchasingStore } from '@/stores/purchasing';
 
 const { t } = useI18n();
 const { push } = useToast();
 const dataset = useDatasetStore();
 const store = usePurchasingStore();
+const planning = usePlanningStore();
+const router = useRouter();
 
-const view = useUrlState({ tab: 'pos', po: '' });
+const view = useUrlState({ tab: 'planning', po: '', item: '' });
 
 const editing = ref(null);
 const receiving = ref(null);
@@ -41,6 +47,14 @@ const counts = computed(() => ({
 }));
 
 const tabs = computed(() => [
+    {
+        id: 'planning',
+        label: t('purchasing.tab.planning'),
+        icon: 'chart',
+        n: planningReport.value.rows.filter((row) =>
+            ['low', 'critical'].includes(row.coverState),
+        ).length,
+    },
     {
         id: 'pos',
         label: t('purchasing.tab.pos'),
@@ -73,6 +87,19 @@ const tabs = computed(() => [
 
 const openPo = computed(() =>
     view.po ? store.rows.find((row) => row.id === view.po) || null : null,
+);
+
+/**
+ * The planning report, computed once for the view: the tab reads it for the
+ * table and the drawer reads the one row out of it, so the two can never show a
+ * different number for the same item.
+ */
+const planningReport = computed(() => planning.report());
+
+const openPlanning = computed(() =>
+    view.item
+        ? planningReport.value.rows.find((row) => row.sku === view.item) || null
+        : null,
 );
 
 function onSaved(result) {
@@ -141,7 +168,15 @@ function onCancelled(po) {
         />
         <SupplierPaymentsTab v-else-if="view.tab === 'payments'" />
         <ConsumptionTab v-else-if="view.tab === 'consumption'" />
+        <PlanningTab v-else :selected="view.item" @open="view.item = $event" />
     </template>
+
+    <PlanningRowDrawer
+        :row="openPlanning"
+        :months="planningReport.months"
+        @close="view.item = ''"
+        @open-item="router.push({ name: 'items', query: { sku: $event } })"
+    />
 
     <PurchaseOrderDrawer
         :po="openPo"

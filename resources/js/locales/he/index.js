@@ -23,6 +23,7 @@ import log from '@/locales/he/log';
 import messaging from '@/locales/he/messaging';
 import nav from '@/locales/he/nav';
 import orders from '@/locales/he/orders';
+import planning from '@/locales/he/planning';
 import pricing from '@/locales/he/pricing';
 import production from '@/locales/he/production';
 import products from '@/locales/he/products';
@@ -58,6 +59,7 @@ export default {
     messaging,
     nav,
     orders,
+    planning,
     pricing,
     production,
     products,

@@ -9,8 +9,8 @@ export default {
     // The V2 review markers — demo only. `badge` is the literal on the red pill.
     v2: {
         badge: 'V2',
-        tip: 'חדש בגרסה 2 — לחיצה פותחת את ההסבר בעמוד ״התקדמות אפיון״',
-        tipPlain: 'חדש בגרסה 2',
+        tip: 'חדש בגרסה {v} — לחיצה פותחת את ההסבר בעמוד ״התקדמות אפיון״',
+        tipPlain: 'חדש בגרסה {v}',
         show: 'הצגת סימוני V2',
         hide: 'הסתרת סימוני V2',
         on: 'מוצג',
