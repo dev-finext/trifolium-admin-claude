@@ -433,8 +433,14 @@ export const useProductionStore = defineStore('production', () => {
 
         const stockUnit = parent?.unit || order.uom;
         const outputQty = round2(toStockUnits(yieldQty, order.uom, stockUnit));
+        // V3 — the output takes the next number in the pharmacy's own running
+        // series, allocated by the system and not editable.
+        const outputNo = inventory.nextBatchNumber({
+            sku: order.parentSku,
+            kind: 'production',
+        });
         const output = inventory.openBatch({
-            id: inventory.nextBatchFor(order.parentSku),
+            ...outputNo,
             sku: order.parentSku,
             name: parent ? parent.name : order.name,
             unit: stockUnit,
@@ -476,8 +482,14 @@ export const useProductionStore = defineStore('production', () => {
                 toStockUnits(wasteQty, order.uom, stockUnit),
             );
 
+            // V3 — waste carries the production order's own number, which is
+            // how the pharmacy tells ground waste from whole herb today.
             waste = inventory.openBatch({
-                id: inventory.nextBatchFor(order.parentSku, { waste: true }),
+                ...inventory.nextBatchNumber({
+                    sku: order.parentSku,
+                    kind: 'waste',
+                    production: order.id,
+                }),
                 sku: order.parentSku,
                 name: output.name,
                 unit: stockUnit,

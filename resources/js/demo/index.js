@@ -164,18 +164,15 @@ export function buildDataset() {
     const boms = buildBoms(stock, products);
     // The receipts open batches for what the production runs will consume
     // first, so a run dated weeks ago has something to draw from.
-    const receipts = buildReceipts(
-        stock,
-        [
-            ...new Set(
-                boms
-                    .filter((bom) => (bom.yield?.qty || 1) > 1)
-                    .flatMap((bom) =>
-                        bom.components.map((component) => component.sku),
-                    ),
-            ),
-        ],
-    );
+    const receipts = buildReceipts(stock, [
+        ...new Set(
+            boms
+                .filter((bom) => (bom.yield?.qty || 1) > 1)
+                .flatMap((bom) =>
+                    bom.components.map((component) => component.sku),
+                ),
+        ),
+    ]);
     const batches = buildBatches(receipts, stock);
     const batchUse = buildBatchUse(orders, batches, stock);
     const priceGroups = buildPriceGroups();

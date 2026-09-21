@@ -10,13 +10,15 @@ import ACard from '@/components/ui/ACard.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
-import { ITEM_FAMILY_IDS, PICK_MODE_IDS } from '@/config';
+import { BATCH_KIND_IDS, ITEM_FAMILY_IDS, PICK_MODE_IDS } from '@/config';
+import { useInventoryStore } from '@/stores/inventory';
 import { usePurchasingStore } from '@/stores/purchasing';
 
 const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
 const store = usePurchasingStore();
+const inventory = useInventoryStore();
 
 const settings = computed(() => store.settings);
 
@@ -100,8 +102,21 @@ async function setExpiry(family, value) {
 
                 <div class="a-sect-t series-t">
                     {{ t('inventory.settings.seriesTitle') }}
+                    <V2Badge v="3" size="sm" />
                 </div>
-                <p class="a-hint">{{ t('inventory.settings.seriesHint') }}</p>
+                <dl class="series">
+                    <template v-for="kind in BATCH_KIND_IDS" :key="kind">
+                        <dt>{{ t(`inventory.settings.kind.${kind}`) }}</dt>
+                        <dd>{{ t(`inventory.settings.kindRule.${kind}`) }}</dd>
+                    </template>
+                </dl>
+                <p class="a-hint">
+                    {{
+                        t('inventory.settings.seriesHint', {
+                            next: inventory.houseSerial + 1,
+                        })
+                    }}
+                </p>
             </section>
 
             <section>

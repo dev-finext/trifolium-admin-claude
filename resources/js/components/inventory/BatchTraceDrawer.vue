@@ -101,7 +101,9 @@ const cols = computed(() => [
                         <div class="a-dhead-t">
                             <h2 class="a-dhead-h">
                                 {{ t('inventory.batches.trace.title') }}
-                                <span class="num">{{ batch.id }}</span>
+                                <span class="num">{{
+                                    inventory.batchNo(batch)
+                                }}</span>
                             </h2>
                             <AChip
                                 :tone="BATCH_STATES[batch.state]?.tone"
@@ -349,7 +351,7 @@ const cols = computed(() => [
                             class="a-linkbtn"
                             @click="emit('open-batch', row.batch)"
                         >
-                            <ANum>{{ row.batch }}</ANum>
+                            <ANum>{{ inventory.batchNo(row.batch) }}</ANum>
                         </button>
                     </template>
                     <template #cell-qty="{ row }">

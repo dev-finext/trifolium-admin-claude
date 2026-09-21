@@ -15,6 +15,7 @@ import { useLocalized } from '@/composables/useLocalized';
 import { CURRENCY_SYMBOL } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { num } from '@/lib/money';
+import { useInventoryStore } from '@/stores/inventory';
 
 const props = defineProps({
     /** The receipt to show, or null while the drawer is closed. */
@@ -25,6 +26,7 @@ const emit = defineEmits(['close', 'open-batch']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
+const inventory = useInventoryStore();
 
 const cols = computed(() => [
     {
@@ -141,7 +143,9 @@ const lines = computed(() => props.receipt?.lines || []);
                             class="a-linkbtn"
                             @click="emit('open-batch', row.batch)"
                         >
-                            <span class="num">{{ row.batch }}</span>
+                            <span class="num">{{
+                                inventory.batchNo(row.batch)
+                            }}</span>
                         </button>
                     </template>
                     <template #cell-name="{ row }">

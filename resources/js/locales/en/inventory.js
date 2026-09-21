@@ -116,12 +116,24 @@ export default {
             'FEFO is how the pharmacy works — the batch nearest to expiry goes first. FIFO is kept as an option, as the specification asked.',
         expiryTitle: 'Default shelf life by item family',
         expiryHint:
-            'Calculated automatically on receipt and on return from production, by the item’s family · can be overridden per batch',
+            'The expiry is suggested automatically on receipt from in-house production only, from the item’s family, and can be changed on any batch. On goods received from a supplier the expiry comes from the supplier’s certificate and is not calculated. Powder — two years, tincture — three, as stated; the rest are the console’s defaults and await confirmation.',
         months: 'months',
         none: 'None',
         seriesTitle: 'Batch numbering',
         seriesHint:
-            'Batch numbers are assigned automatically: the item family’s code prefix and a serial that runs per family — 10-00124, say. Waste batches carry a W.',
+            'The running series carries on from where the workbook and SAP stopped rather than restarting. The next number to be issued: {next}.',
+        kind: {
+            production: 'Received from in-house production',
+            purchase: 'Received from a supplier',
+            waste: 'Waste',
+        },
+        kindRule: {
+            production:
+                'A running number the system allocates, with no manual editing — so no number is used twice',
+            purchase:
+                'The supplier’s own batch number, exactly as the delivery note writes it, even when that number already exists in the system',
+            waste: 'The number of the production order the waste came out of',
+        },
     },
     stock: {
         lowTitle: '{n} items below their minimum',
@@ -352,7 +364,8 @@ export default {
             item: 'Item',
             qty: 'Quantity',
             batch: 'Batch number',
-            supplierBatch: "Supplier's batch",
+            supplierBatch: 'Batch number (from the supplier)',
+            waste: 'Waste',
             expiry: 'Expiry',
             wh: 'Warehouse',
             after: 'Stock after',
@@ -361,6 +374,13 @@ export default {
             labels: 'Labels',
         },
         supplierBatchPh: "Batch number at the supplier's",
+        batchIsSupplier:
+            'A batch of goods from a supplier is the supplier’s own batch number, exactly as the delivery note writes it. The console does not allocate one of its own.',
+        expiryFromSupplier:
+            'The expiry comes from the supplier’s certificate and is not calculated. An expiry is only calculated on receipt from in-house production.',
+        wasteYes: 'This material is waste',
+        wasteHint:
+            'Marking waste tells ground waste from whole material — for a correct stock reading and for priority in production.',
         supplierPick: 'Choose a supplier from the list…',
         supplierOther: 'Other supplier — type the name',
         existingNew: 'New batch',

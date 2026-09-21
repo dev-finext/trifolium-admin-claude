@@ -246,7 +246,7 @@ const isOrderRef = (move) => ORDER_REF_KINDS.includes(move.kind);
                     class="a-linkbtn"
                     @click.stop="emit('open-batch', row.batch)"
                 >
-                    <ANum>{{ row.batch }}</ANum>
+                    <ANum>{{ inventory.batchNo(row.batch) }}</ANum>
                 </button>
             </template>
             <template #cell-qty="{ row }">

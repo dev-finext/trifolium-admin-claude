@@ -5,6 +5,7 @@
 // components' batches, really opened a `P-` batch (and a `W-` waste batch)
 // on the parent, and left the movements behind; an issued run has really
 // reserved its components. What the screens add up is what happened.
+import { HOUSE_SERIES_NEXT } from '@/config/batches';
 import { DEFAULT_WAREHOUSE } from '@/config/inventory';
 import { familyOfCode, ITEM_FAMILY } from '@/config/items';
 import { PRODUCTION_SERIES } from '@/config/production';
@@ -315,15 +316,22 @@ export function buildProductionOrders({
         const outputQty = round2(
             toStockUnits(yieldQty, bom.yield.uom, stockUnit),
         );
+        // V3 — the number a completed run's output takes is the next one in
+        // the pharmacy's own running series, which the console carries on from
+        // the workbook and from SAP rather than restarting. Waste takes the
+        // production order's number instead, which is how the pharmacy tells
+        // ground waste from whole herb today.
         const prefix = ITEM_FAMILY[familyOfCode(bom.parentSku)]?.prefix || '00';
         const serial = String(batchNo).padStart(5, '0');
         const outputId = `${prefix}-${serial}`;
+        const outputNumber = String(HOUSE_SERIES_NEXT + i);
         const wasteId = wasteQty ? `${prefix}-${serial}W` : null;
 
         batchNo += 1;
 
         const opened = {
             id: outputId,
+            number: outputNumber,
             sku: bom.parentSku,
             name: parent ? parent.name : bom.name,
             unit: stockUnit,
@@ -374,6 +382,7 @@ export function buildProductionOrders({
             batches.unshift({
                 ...opened,
                 id: wasteId,
+                number: id,
                 source: 'waste',
                 qty: wasteStock,
                 remaining: wasteStock,

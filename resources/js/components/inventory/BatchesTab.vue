@@ -71,6 +71,7 @@ const searched = computed(() =>
         ? inventory.batches.filter((batch) =>
               searchHaystack(
                   batch.id,
+                  batch.number,
                   batch.name,
                   batch.sku,
                   batch.supplier,
@@ -290,7 +291,7 @@ const cols = computed(() => [
             </template>
 
             <template #cell-id="{ row }">
-                <span class="t-strong num">{{ row.id }}</span>
+                <span class="t-strong num">{{ inventory.batchNo(row) }}</span>
             </template>
             <template #cell-name="{ row }">
                 <div class="t-strong">{{ loc(row.name) }}</div>
@@ -298,7 +299,13 @@ const cols = computed(() => [
             </template>
             <template #cell-supplier="{ row }">
                 <div>{{ loc(row.supplier) }}</div>
-                <div v-if="row.supplierBatch" class="t-sub ltr">
+                <div
+                    v-if="
+                        row.supplierBatch &&
+                        row.supplierBatch !== inventory.batchNo(row)
+                    "
+                    class="t-sub ltr"
+                >
                     {{ row.supplierBatch }}
                 </div>
             </template>

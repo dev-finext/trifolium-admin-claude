@@ -4,6 +4,7 @@
 // rules, taxonomies, thresholds. There is not one sample record in this
 // directory — all fabricated content lives in resources/js/demo/ and is reached
 // through resources/js/data/source.js.
+export * from '@/config/batches';
 export * from '@/config/catalog';
 export * from '@/config/customers';
 export * from '@/config/crm';

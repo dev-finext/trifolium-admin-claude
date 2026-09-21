@@ -16,11 +16,18 @@ import { L } from '@/lib/localized';
 
 /**
  * The batch-handling settings — data, edited in the console, never a constant:
- * the pick rule, the default shelf life per item family, and the prefix each
- * batch source numbers under.
+ * the pick rule and the default shelf life per item family. How a batch is
+ * numbered is not a figure here; it follows from where the batch came from, and
+ * config/batches.js states the rule.
  */
 export const INVENTORY_SETTINGS = {
     pickMode: 'fefo',
+    // V3 — two of these are the pharmacy's own words, from Natalie's note:
+    // "אבקה - שנתיים / טינקטורה - 3 שנים". `herb_1to1` is the powder block
+    // (11xxxx) and `tincture` is 20xxxx. "מוצר מדף - תלוי סוג מוצר" was left
+    // open, so a shelf product falls through to its preparation type rather
+    // than to a figure nobody stated. The rest are the console's own defaults
+    // and are marked as such on the settings card.
     defaultExpiryMonths: {
         herb: 24,
         herb_1to1: 24,
@@ -28,7 +35,7 @@ export const INVENTORY_SETTINGS = {
         hydrosol: 12,
         essential_oil: 36,
         supplement: 24,
-        tincture: 24,
+        tincture: 36,
         infused_oil: 12,
         formula: 12,
         private_label: 24,

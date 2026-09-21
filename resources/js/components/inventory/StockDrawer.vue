@@ -213,7 +213,9 @@ const movementCols = computed(() => [
                         @row="emit('open-batch', $event.id)"
                     >
                         <template #cell-id="{ row: batch }">
-                            <span class="a-code a-tag">{{ batch.id }}</span>
+                            <span class="a-code a-tag">{{
+                                inventory.batchNo(batch)
+                            }}</span>
                         </template>
                         <template #cell-qty="{ row: batch }">
                             <ANum>{{ num(batch.remaining, 3) }}</ANum>
@@ -277,7 +279,7 @@ const movementCols = computed(() => [
                                 @click="emit('open-batch', move.batch)"
                             >
                                 <span class="a-code a-tag">{{
-                                    move.batch
+                                    inventory.batchNo(move.batch)
                                 }}</span>
                             </button>
                             <span v-else class="t-sub">—</span>

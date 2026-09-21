@@ -27,7 +27,6 @@ import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
-import { usePurchasingStore } from '@/stores/purchasing';
 
 /** One field to a row, label beside it: the form no longer needs the width. */
 const WIDTH = 860;
@@ -46,7 +45,6 @@ const { loc } = useLocalized();
 const dataset = useDatasetStore();
 const inventory = useInventoryStore();
 const items = useItemsStore();
-const purchasing = usePurchasingStore();
 const uid = useId();
 
 const supplierCode = ref('');
@@ -57,8 +55,12 @@ const note = ref('');
 const lines = ref([]);
 
 /**
- * The batch number line `i` opens: the item family's next serial, counting
- * the earlier lines of this receipt that open a batch in the same family.
+ * The batch number line `i` opens. V3.
+ *
+ * Goods from a supplier keep the supplier's own batch code, always — Yaron:
+ * "אם חומר גלם מגיע מספק המוצר מקבל אצוות ספק תמיד לא משנה אם מספר קיים
+ * במערכת". So there is nothing for the console to allocate here: the number is
+ * whatever the delivery note says, and the line cannot be saved without it.
  */
 function batchFor(i) {
     const line = lines.value[i];
@@ -67,18 +69,7 @@ function batchFor(i) {
         return '';
     }
 
-    const next = inventory.nextBatchFor(line.sku);
-    const head = next.slice(0, next.indexOf('-') + 1);
-    const ahead = lines.value
-        .slice(0, i)
-        .filter(
-            (other) =>
-                other.sku &&
-                !other.existingBatch &&
-                inventory.nextBatchFor(other.sku).startsWith(head),
-        ).length;
-
-    return `${head}${String(Number(next.slice(head.length)) + ahead).padStart(5, '0')}`;
+    return String(line.supplierBatch || '').trim();
 }
 
 function emptyLine() {
@@ -88,6 +79,9 @@ function emptyLine() {
         batch: '',
         existingBatch: '',
         supplierBatch: '',
+        // V3 — Noam: a mark at goods receipt is what tells ground waste from
+        // whole herb, so no separate numbering is needed to say the same thing.
+        waste: false,
         expiry: '',
         expiryMonths: null,
         wh: WAREHOUSES[0].id,
@@ -156,18 +150,22 @@ const valid = computed(
         good.value.length > 0,
 );
 
+/**
+ * V3 — nothing is guessed for goods that came from a supplier.
+ *
+ * The console used to offer an expiry date computed from the item's family.
+ * Natalie scoped that calculation to production only — "שים לב שרק מייצור פנימי
+ * ולא הזמנת רכש מספק" — and for a pharmacy it is the safer reading anyway: a
+ * purchased batch's expiry is a fact printed on the supplier's certificate, and
+ * a date the software invented for it would be a date nobody checked.
+ */
 function onItem(line, sku) {
     const item = inventory.itemBySku(sku);
-    const suggested = purchasing.defaultExpiryFor(sku);
 
     line.sku = sku;
     line.wh = item ? item.wh : WAREHOUSES[0].id;
     line.existingBatch = '';
-    line.expiryMonths = suggested?.months || null;
-
-    if (suggested && !line.expiry) {
-        line.expiry = suggested.iso;
-    }
+    line.expiryMonths = null;
 }
 
 function onQty(line, value) {
@@ -424,26 +422,15 @@ async function save() {
                         />
                     </div>
                     <div>
-                        <label class="a-lbl">
-                            {{ t('inventory.receipt.col.batch') }}
-                        </label>
-                        <div
-                            class="a-code a-tag batch-ro"
-                            :aria-label="
-                                t('inventory.receipt.aria.batch', { n: i + 1 })
-                            "
-                        >
-                            {{ line.existingBatch || batchFor(i) || '—' }}
-                        </div>
-                        <div class="a-hint">
-                            {{ t('inventory.receipt.batchAuto') }}
-                        </div>
-                    </div>
-                    <div>
                         <label class="a-lbl" :for="`${uid}-sb${i}`">
                             {{ t('inventory.receipt.col.supplierBatch') }}
+                            <span v-if="!line.existingBatch" class="a-req">{{
+                                t('labels.required')
+                            }}</span>
+                            <V2Badge v="3" size="sm" />
                         </label>
                         <AInput
+                            v-if="!line.existingBatch"
                             :id="`${uid}-sb${i}`"
                             v-model="line.supplierBatch"
                             ltr
@@ -456,6 +443,30 @@ async function save() {
                                 t('inventory.receipt.supplierBatchPh')
                             "
                         />
+                        <div v-else class="a-code a-tag batch-ro">
+                            {{ inventory.batchNo(line.existingBatch) }}
+                        </div>
+                        <div class="a-hint">
+                            {{ t('inventory.receipt.batchIsSupplier') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-ws${i}`">
+                            {{ t('inventory.receipt.col.waste') }}
+                            <V2Badge v="3" size="sm" />
+                        </label>
+                        <label class="a-check">
+                            <input
+                                :id="`${uid}-ws${i}`"
+                                v-model="line.waste"
+                                type="checkbox"
+                                :disabled="Boolean(line.existingBatch)"
+                            />
+                            <span>{{ t('inventory.receipt.wasteYes') }}</span>
+                        </label>
+                        <div class="a-hint">
+                            {{ t('inventory.receipt.wasteHint') }}
+                        </div>
                     </div>
                     <div>
                         <label class="a-lbl" :for="`${uid}-x${i}`">
@@ -473,15 +484,8 @@ async function save() {
                                 t('inventory.receipt.aria.expiry', { n: i + 1 })
                             "
                         />
-                        <div
-                            v-if="line.expiryMonths && !line.existingBatch"
-                            class="a-hint"
-                        >
-                            {{
-                                t('inventory.receipt.expiryAuto', {
-                                    n: line.expiryMonths,
-                                })
-                            }}
+                        <div v-if="!line.existingBatch" class="a-hint">
+                            {{ t('inventory.receipt.expiryFromSupplier') }}
                         </div>
                     </div>
                     <div>

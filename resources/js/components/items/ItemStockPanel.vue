@@ -275,7 +275,7 @@ const batchCols = computed(() => [
                     </p>
                 </template>
                 <template #cell-id="{ row: batch }"
-                    ><ANum>{{ batch.id }}</ANum></template
+                    ><ANum>{{ batch.number || batch.id }}</ANum></template
                 >
                 <template #cell-remaining="{ row: batch }">
                     <ANum>{{ num(batch.remaining) }}</ANum>

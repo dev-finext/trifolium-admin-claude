@@ -17,11 +17,12 @@ import { computed } from 'vue';
 import {
     ADJUST_REASON,
     BATCH_EXPIRY_WARN_DAYS,
+    batchNumberFor,
     BATCH_PICK,
+    DEFAULT_BATCH_NUMBER_SCHEME,
     DEFAULT_WAREHOUSE,
-    familyOfCode,
+    HOUSE_SERIES_NEXT,
     INVENTORY_DOC_SERIES,
-    ITEM_FAMILY,
 } from '@/config';
 import { persist } from '@/data/source';
 import { daysSince, fmtISO, hm, isoDaysAgo, now, stamp } from '@/lib/dates';
@@ -404,25 +405,94 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
 
     /**
-     * The batch number an item's next batch opens under: the family's code
-     * prefix, a dash and a five-digit serial that runs per family —
-     * `10-00124`. Nobody types it. A waste batch carries a W.
+     * The number shown, printed and scanned for a batch. V3.
+     *
+     * A batch's `id` is the record's key and nothing else; `number` is what the
+     * pharmacy calls it. The two are the same for a batch this console
+     * numbered, and differ whenever a supplier's code is not unique — 2,914 of
+     * the numbers in the live database are shared by more than one item, so the
+     * number cannot also be the key.
      */
-    const nextBatchFor = (sku, { waste = false } = {}) => {
-        const prefix = ITEM_FAMILY[familyOfCode(sku)]?.prefix || '00';
-        const head = `${prefix}-`;
-        const highest = batches.value.reduce((top, batch) => {
-            const id = String(batch.id);
+    const batchNo = (batch) => {
+        const row = typeof batch === 'string' ? batchById(batch) : batch;
 
-            return id.startsWith(head)
-                ? Math.max(
-                      top,
-                      Number(id.slice(head.length).replace(/\D+$/, '')) || 0,
-                  )
-                : top;
-        }, 0);
+        return row ? row.number || row.id : batch || '';
+    };
 
-        return `${head}${String(highest + 1).padStart(5, '0')}${waste ? 'W' : ''}`;
+    /**
+     * The next number in the pharmacy's own running series. V3.
+     *
+     * It carries on from the workbook and from SAP rather than restarting, so
+     * no number is ever handed out twice and an old label still means what it
+     * meant. Natalie: "סדר רץ של ספרור אצוות בקבלה מיצור צריך להתקבל אוטומטית
+     * מהמערכת ללא יכולת שינוי ידנית כדי למנוע כפילויות".
+     */
+    const houseSerial = computed(() =>
+        batches.value.reduce((top, batch) => {
+            const n = Number(batch.number ?? batch.id);
+
+            return Number.isInteger(n) && n > top ? n : top;
+        }, HOUSE_SERIES_NEXT - 1),
+    );
+
+    /**
+     * How many batches an item has already had this year — the serial inside a
+     * structured number, for the scheme Yaron proposed.
+     */
+    const yearSerialOf = (sku, year) =>
+        batches.value.filter(
+            (batch) =>
+                batch.sku === sku &&
+                String(batch.number || '').startsWith(`${year}${sku}`),
+        ).length + 1;
+
+    /** The numbering scheme in force — a setting, because it is not settled. */
+    const batchScheme = computed(
+        () =>
+            dataset.data.inventorySettings?.batchScheme ||
+            DEFAULT_BATCH_NUMBER_SCHEME,
+    );
+
+    /**
+     * The number and the key a new batch opens under. V3.
+     *
+     * `ahead` lets one screen number several new batches in one go — a receipt
+     * of eight herbs — without each asking the store and getting the same
+     * answer.
+     */
+    const nextBatchNumber = ({
+        sku,
+        kind = 'production',
+        supplierBatch = '',
+        production = '',
+        ahead = 0,
+    } = {}) => {
+        const year = String(isoDaysAgo(0).slice(2, 4));
+        const number = batchNumberFor({
+            kind,
+            sku,
+            scheme: batchScheme.value,
+            serial: houseSerial.value + 1 + ahead,
+            yearSerial: yearSerialOf(sku, year) + ahead,
+            supplierBatch,
+            production,
+            year,
+        });
+
+        if (!number) {
+            return { number: '', id: '' };
+        }
+
+        // The key has to be unique even when the number is not.
+        let id = number;
+        let n = 1;
+
+        while (batches.value.some((batch) => batch.id === id)) {
+            n += 1;
+            id = `${number}/${n}`;
+        }
+
+        return { number, id };
     };
 
     /** Distinct suppliers and receivers across the receipts, with their counts. */
@@ -582,13 +652,27 @@ export const useInventoryStore = defineStore('inventory', () => {
                 ? batchById(line.existingBatch)
                 : null;
 
+            // V3 — the number is the supplier's own code; the key is derived
+            // from it and made unique, because two items may legitimately carry
+            // the same supplier batch.
+            const minted = existing
+                ? { id: existing.id, number: batchNo(existing) }
+                : nextBatchNumber({
+                      sku: line.sku,
+                      kind: line.waste ? 'waste' : 'purchase',
+                      supplierBatch: line.supplierBatch,
+                      production: line.supplierBatch,
+                  });
+
             return {
                 sku: line.sku,
                 name: item ? item.name : line.sku,
                 unit: item ? item.unit : null,
                 qty: Number(line.qty),
                 wh: line.wh,
-                batch: existing ? existing.id : String(line.batch || '').trim(),
+                batch: minted.id,
+                number: minted.number,
+                waste: Boolean(line.waste) && !existing,
                 expiry: existing ? existing.expiry : line.expiry,
                 supplierBatch: existing
                     ? existing.supplierBatch
@@ -656,10 +740,18 @@ export const useInventoryStore = defineStore('inventory', () => {
             } else {
                 const batch = {
                     id: line.batch,
+                    // V3 — what the pharmacy calls it, which for goods from a
+                    // supplier is the supplier's own batch code.
+                    number: line.number,
                     sku: line.sku,
                     name: line.name,
                     unit: line.unit,
                     wh: line.wh,
+                    // Every batch says where it came from; without it the trace
+                    // drawer has nothing to show and FEFO cannot tell waste
+                    // from whole material.
+                    source: line.waste ? 'waste' : 'supplier',
+                    production: null,
                     receipt: id,
                     supplier,
                     supplierBatch: line.supplierBatch,
@@ -669,6 +761,9 @@ export const useInventoryStore = defineStore('inventory', () => {
                     expiry: line.expiry,
                     daysToExp: -daysSince(line.expiry),
                     state: 'active',
+                    waste: Boolean(line.waste),
+                    unitCost: line.price ?? null,
+                    components: null,
                     by,
                 };
 
@@ -765,6 +860,8 @@ export const useInventoryStore = defineStore('inventory', () => {
             production: null,
             supplier: null,
             supplierBatch: null,
+            // V3 — what the pharmacy calls this batch. See `batchNo`.
+            number: record.number || record.id,
             remaining: record.qty,
             daysToExp: -daysSince(record.expiry),
             state: 'active',
@@ -793,7 +890,11 @@ export const useInventoryStore = defineStore('inventory', () => {
         }
 
         const row = itemBySku(sku);
-        const id = nextBatchFor(sku, { waste: true });
+        const { id, number } = nextBatchNumber({
+            sku,
+            kind: 'waste',
+            production: parts[0]?.production || '',
+        });
         const qty = parts.reduce((sum, batch) => sum + batch.remaining, 0);
         const earliest = parts.reduce((best, batch) =>
             batch.daysToExp < best.daysToExp ? batch : best,
@@ -821,13 +922,14 @@ export const useInventoryStore = defineStore('inventory', () => {
 
         const merged = {
             id,
+            number,
             sku,
             name: row ? row.name : earliest.name,
             unit: earliest.unit,
             wh: earliest.wh,
             source: 'waste',
             receipt: null,
-            production: null,
+            production: parts[0]?.production || null,
             supplier: null,
             supplierBatch: null,
             received: when,
@@ -1247,7 +1349,10 @@ export const useInventoryStore = defineStore('inventory', () => {
         receiptSuppliers,
         receiptReceivers,
         supplierHints,
-        nextBatchFor,
+        batchNo,
+        houseSerial,
+        batchScheme,
+        nextBatchNumber,
         pickMode,
 
         itemBySku,

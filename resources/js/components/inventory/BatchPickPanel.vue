@@ -115,7 +115,9 @@ const hasOpenBatches = computed(
 
         <ADataTable v-if="rows.length" :cols="cols" :rows="rows" row-key="id">
             <template #cell-batch="{ row }">
-                <span class="t-strong num">{{ row.batch }}</span>
+                <span class="t-strong num">{{
+                    inventory.batchNo(row.batch)
+                }}</span>
             </template>
             <template #cell-expiry="{ row }">
                 <ANum>{{ row.expiry }}</ANum>

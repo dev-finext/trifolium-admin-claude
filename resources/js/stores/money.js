@@ -31,11 +31,7 @@ import {
     PAYMENT_METHODS,
 } from '@/config';
 import { persist } from '@/data/source';
-import {
-    allocationOf,
-    documentLines,
-    documentSendable,
-} from '@/demo/money';
+import { allocationOf, documentLines, documentSendable } from '@/demo/money';
 import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { L } from '@/lib/localized';
 import { num, priceParts } from '@/lib/money';
@@ -514,7 +510,8 @@ export const useMoneyStore = defineStore('money', () => {
     /** Documents no loaded order stands behind — counter sales, workshops. */
     const documentsWithoutOrder = computed(() =>
         documents.value.filter((document) => {
-            const ids = document.orders || (document.order ? [document.order] : []);
+            const ids =
+                document.orders || (document.order ? [document.order] : []);
 
             return !ids.some((id) => orderById(id));
         }),
@@ -546,7 +543,9 @@ export const useMoneyStore = defineStore('money', () => {
                         0,
                     ) + (document.legacy || 0),
                 );
-                const diff = round2((document.total ?? document.amt) - expected);
+                const diff = round2(
+                    (document.total ?? document.amt) - expected,
+                );
 
                 return diff === 0
                     ? null
@@ -1024,7 +1023,8 @@ export const useMoneyStore = defineStore('money', () => {
             : {
                   lines: [
                       {
-                          kind: order.type === 'formula' ? 'component' : 'shelf',
+                          kind:
+                              order.type === 'formula' ? 'component' : 'shelf',
                           code: null,
                           label: L('זיכוי חלקי', 'Partial credit'),
                           qty: 1,

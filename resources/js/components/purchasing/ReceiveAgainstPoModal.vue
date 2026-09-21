@@ -34,8 +34,11 @@ const store = usePurchasingStore();
 const uid = useId();
 
 /**
- * The batch number line `i` opens: the item family's next serial, counting
- * the earlier lines of this receipt that open a batch in the same family.
+ * The batch number line `i` opens. V3.
+ *
+ * Goods against a purchase order are goods from a supplier, so the batch is the
+ * supplier's own code and nothing else — Yaron: "אם חומר גלם מגיע מספק המוצר
+ * מקבל אצוות ספק תמיד לא משנה אם מספר קיים במערכת".
  */
 function batchFor(i) {
     const line = form.lines[i];
@@ -44,18 +47,7 @@ function batchFor(i) {
         return '';
     }
 
-    const next = inventory.nextBatchFor(line.sku);
-    const head = next.slice(0, next.indexOf('-') + 1);
-    const ahead = form.lines
-        .slice(0, i)
-        .filter(
-            (other) =>
-                other.sku &&
-                !other.existingBatch &&
-                inventory.nextBatchFor(other.sku).startsWith(head),
-        ).length;
-
-    return `${head}${String(Number(next.slice(head.length)) + ahead).padStart(5, '0')}`;
+    return String(line.supplierBatch || '').trim();
 }
 
 const openLines = props.po.lines.filter(

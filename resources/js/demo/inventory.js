@@ -668,6 +668,12 @@ export function buildBatches(receipts, stock = []) {
 
             batches.push({
                 id: line.batch,
+                // V3 — goods from a supplier carry the supplier's own batch
+                // code as their number, always. Yaron: "אם חומר גלם מגיע מספק
+                // המוצר מקבל אצוות ספק תמיד". The key stays the console's own,
+                // because 2,914 numbers in the live database are shared by more
+                // than one item and a key cannot be.
+                number: line.supplierBatch,
                 sku: line.sku,
                 name: line.name,
                 unit: line.unit,

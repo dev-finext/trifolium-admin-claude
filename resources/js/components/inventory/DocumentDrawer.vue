@@ -14,6 +14,7 @@ import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { INVENTORY_DOC } from '@/config';
 import { ils, num } from '@/lib/money';
+import { useInventoryStore } from '@/stores/inventory';
 
 const props = defineProps({
     /** The document, or null while the drawer is closed. */
@@ -24,6 +25,7 @@ const emit = defineEmits(['close', 'open-batch', 'open-item']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
+const inventory = useInventoryStore();
 
 const isCount = computed(() => props.doc?.type === 'count');
 
@@ -154,7 +156,9 @@ const unit = (line) => (line.unit ? t(`items.uom.${line.unit}`) : '');
                             class="a-linkish"
                             @click="emit('open-batch', row.batch)"
                         >
-                            <span class="a-code a-tag">{{ row.batch }}</span>
+                            <span class="a-code a-tag">{{
+                                inventory.batchNo(row.batch)
+                            }}</span>
                         </button>
                         <span v-else class="t-sub">—</span>
                     </template>
