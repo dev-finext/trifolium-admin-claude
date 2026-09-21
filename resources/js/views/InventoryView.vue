@@ -149,6 +149,11 @@ function goto(tab, patch = {}) {
 }
 
 /** From the stock table into the batches tab, filtered to one item. */
+/** From a batch back to the run that made it. */
+function openProduction(id) {
+    router.push({ name: 'production', query: { order: id } });
+}
+
 /** From a stock row to the item's own card, where the master data lives. */
 function openItemCard(sku) {
     router.push({ name: 'items', query: { item: sku } });
@@ -334,5 +339,7 @@ function exportStock() {
         :batch="tracedBatch"
         @close="view.batch = ''"
         @open-receipt="openReceipt"
+        @open-batch="openBatch"
+        @open-production="openProduction"
     />
 </template>

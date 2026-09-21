@@ -20,7 +20,7 @@ import OrderLink from '@/components/ui/OrderLink.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { BATCH_STATES } from '@/config';
 import { fmtISO } from '@/lib/dates';
-import { num } from '@/lib/money';
+import { ils, num } from '@/lib/money';
 import { useInventoryStore } from '@/stores/inventory';
 
 const props = defineProps({
@@ -28,7 +28,12 @@ const props = defineProps({
     batch: { type: Object, default: null },
 });
 
-const emit = defineEmits(['close', 'open-receipt']);
+const emit = defineEmits([
+    'close',
+    'open-receipt',
+    'open-production',
+    'open-batch',
+]);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -37,6 +42,27 @@ const inventory = useInventoryStore();
 const uses = computed(() =>
     props.batch ? inventory.useOfBatch(props.batch.id) : [],
 );
+
+/**
+ * What went into a batch the pharmacy made: the production run records which
+ * component batch each quantity was drawn from, which is the other half of the
+ * trace — forward to the customer, backward to the herb.
+ */
+const madeFrom = computed(() =>
+    (props.batch?.components || []).map((one, i) => ({
+        id: `${one.batch}-${i}`,
+        ...one,
+        name: inventory.itemBySku(one.sku)?.name || one.sku,
+        unit: inventory.itemBySku(one.sku)?.unit || null,
+    })),
+);
+
+const madeFromCols = computed(() => [
+    { k: 'sku', label: t('inventory.batches.trace.sku'), nowrap: true },
+    { k: 'name', label: t('inventory.batches.col.name') },
+    { k: 'batch', label: t('inventory.batches.trace.fromBatch'), nowrap: true },
+    { k: 'qty', label: t('inventory.batches.trace.drawnQty'), nowrap: true },
+]);
 
 const unitLabel = computed(() =>
     props.batch ? t(`inventory.unit.${props.batch.unit}`) : '',
@@ -88,10 +114,17 @@ const cols = computed(() => [
                             </AChip>
                         </div>
                         <div class="a-dhead-m">
-                            <span>
+                            <span v-if="batch.supplier">
                                 {{
                                     t('inventory.batches.trace.supplier', {
                                         name: loc(batch.supplier),
+                                    })
+                                }}
+                            </span>
+                            <span v-else-if="batch.production">
+                                {{
+                                    t('inventory.batches.trace.fromRun', {
+                                        id: batch.production,
                                     })
                                 }}
                             </span>
@@ -106,9 +139,9 @@ const cols = computed(() => [
                             <span>
                                 {{
                                     t('inventory.batches.trace.remaining', {
-                                        left: num(batch.remaining),
+                                        left: num(batch.remaining, 3),
                                         unit: unitLabel,
-                                        qty: num(batch.qty),
+                                        qty: num(batch.qty, 3),
                                     })
                                 }}
                             </span>
@@ -131,8 +164,20 @@ const cols = computed(() => [
                         :rows="[
                             [t('inventory.batches.trace.sku'), batch.sku],
                             [
+                                t('inventory.batches.trace.source'),
+                                t(`inventory.batchSource.${batch.source}`),
+                            ],
+                            [
                                 t('inventory.batches.trace.receipt'),
                                 batch.receipt,
+                            ],
+                            [
+                                t('inventory.batches.trace.production'),
+                                batch.production,
+                            ],
+                            [
+                                t('inventory.batches.trace.unitCost'),
+                                batch.unitCost,
                             ],
                             [
                                 t('inventory.batches.trace.supplierBatch'),
@@ -150,21 +195,57 @@ const cols = computed(() => [
                             <span class="a-code a-tag">{{ batch.sku }}</span>
                         </template>
                         <template #value-1>
+                            <AChip
+                                :tone="batch.waste ? 'red' : 'gray'"
+                                size="sm"
+                                :dot="false"
+                            >
+                                {{
+                                    batch.waste
+                                        ? t('inventory.batches.trace.wasteChip')
+                                        : t(
+                                              `inventory.batchSource.${batch.source}`,
+                                          )
+                                }}
+                            </AChip>
+                        </template>
+                        <template #value-2>
                             <button
+                                v-if="batch.receipt"
                                 type="button"
                                 class="a-linkbtn"
                                 @click="emit('open-receipt', batch.receipt)"
                             >
                                 <ANum>{{ batch.receipt }}</ANum>
                             </button>
+                            <span v-else>—</span>
                         </template>
-                        <template #value-2>
+                        <template #value-3>
+                            <button
+                                v-if="batch.production"
+                                type="button"
+                                class="a-linkbtn"
+                                @click="
+                                    emit('open-production', batch.production)
+                                "
+                            >
+                                <ANum>{{ batch.production }}</ANum>
+                            </button>
+                            <span v-else>—</span>
+                        </template>
+                        <template #value-4>
+                            <span v-if="batch.unitCost">
+                                {{ ils(batch.unitCost, 2) }}
+                            </span>
+                            <span v-else>—</span>
+                        </template>
+                        <template #value-5>
                             <span v-if="batch.supplierBatch" class="ltr">
                                 {{ batch.supplierBatch }}
                             </span>
                             <span v-else>—</span>
                         </template>
-                        <template #value-5>
+                        <template #value-8>
                             <AChip
                                 v-if="batch.daysToExp < 0"
                                 tone="red"
@@ -249,6 +330,37 @@ const cols = computed(() => [
             </div>
 
             <!-- V2: analyses behind the approval code -->
+            <ACard
+                v-if="madeFrom.length"
+                :title="t('inventory.batches.trace.madeFrom')"
+                icon="beaker"
+                :pad="false"
+            >
+                <ADataTable :cols="madeFromCols" :rows="madeFrom" row-key="id">
+                    <template #cell-sku="{ row }">
+                        <span class="a-code a-tag">{{ row.sku }}</span>
+                    </template>
+                    <template #cell-name="{ row }">{{
+                        loc(row.name)
+                    }}</template>
+                    <template #cell-batch="{ row }">
+                        <button
+                            type="button"
+                            class="a-linkbtn"
+                            @click="emit('open-batch', row.batch)"
+                        >
+                            <ANum>{{ row.batch }}</ANum>
+                        </button>
+                    </template>
+                    <template #cell-qty="{ row }">
+                        <ANum>{{ num(row.qty, 3) }}</ANum>
+                        <template v-if="row.unit">
+                            {{ t(`inventory.unit.${row.unit}`) }}
+                        </template>
+                    </template>
+                </ADataTable>
+            </ACard>
+
             <ACard :title="t('inventory.batches.trace.analyses')" icon="file">
                 <ActionGate id="batch_analyses">
                     <AttachmentsPanel entity="batch" :ref-id="batch.id" bare />
