@@ -297,7 +297,7 @@ const title = computed(() =>
                             />
                         </div>
 
-                        <div class="a-line-body">
+                        <div class="a-line-body a-line-body--stacked">
                             <div class="a-line-wide">
                                 <label class="a-lbl" :for="`${uid}-i${i}`"
                                     >{{ t('items.bom.drawer.colItem') }}

@@ -471,6 +471,9 @@ function itemOf(real, supplierByCode) {
                 : null,
             sapCode: real.supplierCode || null,
             catalogNum: real.supplierCatalogNum || null,
+            // What the vendor calls it. SAP keeps the field (`OSCN.Descriptio`)
+            // and has never filled one of its 130 rows.
+            itemName: null,
         },
         uom: {
             stock: stockUom,
@@ -565,6 +568,8 @@ function itemOf(real, supplierByCode) {
         // notes into it as often as a therapist code. It carries verbatim.
         forTherapist: textOf(real.forTherapist),
         remarks: textOf(real.remarks),
+        // The console's own: a note for the office, printed nowhere.
+        internalNotes: null,
         saleText: textOf(real.saleText),
         created: real.createdOn || null,
         updated: real.updatedOn || null,

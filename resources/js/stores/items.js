@@ -12,9 +12,8 @@ import { computed } from 'vue';
 
 import {
     DEFAULT_WAREHOUSE,
-    ITEM_CODE_DIGITS,
+    familyOfCode,
     ITEM_UOMS,
-    ITEM_FAMILY,
     ITEM_FLAG_IDS,
     TERMINAL_STATUS_IDS,
 } from '@/config';
@@ -305,20 +304,25 @@ export const useItemsStore = defineStore('items', () => {
     const itemProperties = computed(() => list('itemProperties'));
 
     /** The next free code in a family — `10` + `0026`. */
-    const nextCode = (family) => {
-        const prefix = ITEM_FAMILY[family]?.prefix || '00';
-        const highest = items.value
-            .filter((item) => String(item.code).startsWith(prefix))
-            .reduce(
-                (top, item) =>
-                    Math.max(
-                        top,
-                        Number(String(item.code).slice(prefix.length)) || 0,
-                    ),
-                0,
-            );
+    const nextCode = (group) => {
+        const code = numberOrNull(group);
+        const numbered = items.value
+            .filter((item) => item.group === code)
+            .map((item) => String(item.code))
+            .filter((one) => /^\d+$/.test(one));
 
-        return `${prefix}${String(highest + 1).padStart(ITEM_CODE_DIGITS, '0')}`;
+        if (!numbered.length) {
+            return '';
+        }
+
+        // A category is numbered in one series — every tincture is 20xxxx —
+        // so the next number is simply the highest in that series plus one.
+        const highest = numbered.reduce(
+            (top, one) => Math.max(top, Number(one)),
+            0,
+        );
+
+        return String(highest + 1).padStart(6, '0');
     };
 
     const codeTaken = (code, exceptSku) =>
@@ -513,7 +517,10 @@ export const useItemsStore = defineStore('items', () => {
                 site: form.names?.site || null,
             },
             group: numberOrNull(form.group),
-            family: form.family || null,
+            // The numbering block is read off the item number — it is what
+            // numbers the batches and sets a default shelf life, and nobody
+            // picks it: the category picks the number, the number the block.
+            family: familyOfCode(form.code || existingSku) || null,
             itemType: form.itemType || 'I',
             treeType: form.treeType || 'N',
             issueMethod: form.issueMethod || 'M',
@@ -531,6 +538,9 @@ export const useItemsStore = defineStore('items', () => {
                 preferred: form.suppliers?.preferred || null,
                 sapCode: form.suppliers?.sapCode || null,
                 catalogNum: form.suppliers?.catalogNum || null,
+                // What the vendor calls it — SAP keeps the field in `OSCN` and
+                // has never filled it.
+                itemName: form.suppliers?.itemName || null,
             },
             uom: {
                 stock: form.uom?.stock || 'unit',
@@ -609,6 +619,8 @@ export const useItemsStore = defineStore('items', () => {
             })),
             forTherapist: form.forTherapist || null,
             remarks: form.remarks || null,
+            // The console's own: a note for the office that never prints.
+            internalNotes: form.internalNotes || null,
             saleText: form.saleText || null,
             // The console's own: which quantity ladder prices it.
             priceGroup: form.priceGroup || null,

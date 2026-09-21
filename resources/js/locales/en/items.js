@@ -110,7 +110,7 @@ export default {
         quality: 'Card completeness',
     },
     filter: {
-        allFamilies: 'All groups',
+        allFamilies: 'All categories',
         batchState: {
             yes: 'Batch-managed',
             no: 'Not batch-managed',
@@ -128,7 +128,7 @@ export default {
             site: 'Site sync',
             bom: 'Bill of materials',
             files: 'Attachments',
-            grp: 'Item group',
+            grp: 'Category',
             state: 'Status',
             tree: 'Bill of materials',
         },
@@ -180,7 +180,7 @@ export default {
         price: 'Last purchase',
         supplier: 'Preferred supplier',
         site: 'Site',
-        group: 'Item group',
+        group: 'Category',
     },
     cell: {
         fixedPrice: 'Fixed',
@@ -293,7 +293,7 @@ export default {
         general: 'General',
         code: 'Item number',
         nameForeign: 'Foreign name',
-        group: 'Item group',
+        group: 'Category',
         uomGroup: 'UoM group',
         additionalId: 'Additional identifier',
         state: 'Status',
@@ -338,9 +338,12 @@ export default {
         siteSync: 'Site sync',
         saleText: 'Marketing text',
         therapistDiscount: 'Practitioner discount',
-        remarks: 'Item remarks',
+        remarks: 'Production remarks',
         noRemarks: 'No remarks',
         forTherapist: 'Product for therapist no.',
+        supplierItemName: 'Vendor’s name for the item',
+        internalNotes: 'Internal note',
+        notes: 'Remarks',
     },
     editor: {
         priceGroup: 'Tiered list',
@@ -357,10 +360,9 @@ export default {
         notSet: 'Not set',
         noSupplier: 'No supplier',
         noCategory: 'None',
-        family: 'Numbering block',
         code: 'Item number',
         codeHint:
-            '6 digits · assigned automatically in the group’s numbering block',
+            'Assigned automatically — the next number in the category’s series',
         nameHe: 'Description',
         siteName: 'Site name',
         siteNameHint:
@@ -374,9 +376,7 @@ export default {
         active: 'Active',
         itemType: 'Item type',
         treeType: 'Bill of materials',
-        group: 'Item group',
-        familyHint:
-            'Not a SAP field — it sets the batch numbering and the default shelf life',
+        group: 'Category',
         nameForeign: 'Foreign name',
         nameForeignHint:
             'The botanical name, the pinyin or the English name — as in SAP',
@@ -399,11 +399,18 @@ export default {
         properties: 'Properties and safety',
         propertiesHint:
             'SAP carries sixty-four properties; the ones in use are shown. Ticking 15 / 19 / 20 / 40 is what makes an item a shelf product, eligible for the practitioner discount, the promotion of the month, and synced to the consumer site.',
-        remarks: 'Item remarks',
+        remarks: 'Remarks',
         remarksHint: 'SAP’s remarks field — printed on the prep sheet',
         saleTextHint: 'The marketing text the consumer site shows',
         forTherapistHint:
             'A SAP field that in practice holds both therapist codes and free notes — carried verbatim',
+        codePending: 'Set by the category',
+        flagsHint:
+            'The four flags decide what the rest of the card is for: an item nobody sells has no price and no site, one nobody buys has no vendor, and one nobody stocks has no levels and no batches.',
+        supplierItemNameHint:
+            'What the vendor calls it on their own paperwork · optional',
+        internalNotesHint:
+            'For the office only · never printed, never shown on the site · SAP has no equivalent',
     },
     validate: {
         nameShort: 'Enter an item name',
@@ -413,6 +420,7 @@ export default {
         number: 'A positive number',
         group: 'Please choose an item group',
         positive: 'A number greater than zero',
+        codeMissing: 'Choose a category so a number can be assigned',
     },
     prep: {
         sub: '{n} preparation types · the fixed label text, shelf life and “contains” are edited here, not in code',

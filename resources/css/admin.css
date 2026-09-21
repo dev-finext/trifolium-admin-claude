@@ -1283,6 +1283,15 @@ table.a-table {
 .a-line-wide {
     grid-column: span 2;
 }
+/* One field per row. A grid puts every label on the same line as its
+   neighbours', which reads as a header row over bare inputs however firmly
+   each label belongs to the field under it. Stacked, it cannot. */
+.a-line-body--stacked {
+    grid-template-columns: minmax(0, 1fr);
+}
+.a-line-body--stacked .a-line-wide {
+    grid-column: span 1;
+}
 @container (max-width: 359px) {
     .a-line-wide {
         grid-column: auto;
@@ -2880,10 +2889,19 @@ table.a-table.tp-table-lg thead th {
     margin-top: 6px;
     line-height: 1.5;
 }
-.a-input:disabled {
+.a-input:disabled,
+.a-select:disabled,
+.a-textarea:disabled,
+.a-check:disabled {
     background: var(--a-sunk);
     color: var(--a-ink-4);
     cursor: not-allowed;
+}
+/* A field the item's own flags make irrelevant: greyed with its label. */
+.is-off .a-lbl,
+.is-off .a-hint {
+    color: var(--a-ink-4);
+    opacity: 0.65;
 }
 .a-prodform {
     display: grid;

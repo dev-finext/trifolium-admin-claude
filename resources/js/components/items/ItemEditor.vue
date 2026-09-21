@@ -8,7 +8,7 @@
 //
 // The price list table and the warehouse table are shown on the card; they are
 // not edited here, because in SAP both are maintained from their own windows.
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
@@ -22,7 +22,6 @@ import { useLocalized } from '@/composables/useLocalized';
 import {
     COMPONENT_WAREHOUSE_IDS,
     ISSUE_METHOD_IDS,
-    ITEM_FAMILY,
     ITEM_FLAG_IDS,
     ITEM_TYPE_IDS,
     ITEM_UOM_IDS,
@@ -54,7 +53,6 @@ const catalog = useCatalogStore();
 
 const isNew = computed(() => !props.item.sku);
 const touched = reactive({});
-const codeTouched = ref(Boolean(props.item.code));
 
 const source = props.item;
 
@@ -70,16 +68,10 @@ const groupCode = (value) =>
         ? null
         : Number(value);
 
-/** The numbering block a group's items are usually numbered in. */
-const familyOfGroup = (group) =>
-    store.items.find((item) => item.group === groupCode(group))?.family ||
-    'herb';
-
 const form = reactive({
     // SAP's item number is the key; the numbering block is the console's own.
     code: source.code || '',
     group: source.group ?? null,
-    family: source.family || 'herb',
     names: {
         he: source.names?.he || '',
         en: source.names?.en || '',
@@ -107,6 +99,7 @@ const form = reactive({
         preferred: source.suppliers?.preferred || '',
         sapCode: source.suppliers?.sapCode || '',
         catalogNum: source.suppliers?.catalogNum || '',
+        itemName: source.suppliers?.itemName || '',
     },
     uom: {
         stock: source.uom?.stock || 'kg',
@@ -168,6 +161,7 @@ const form = reactive({
     properties: [...(source.properties || [])],
     forTherapist: source.forTherapist || '',
     remarks: source.remarks || '',
+    internalNotes: source.internalNotes || '',
     saleText: source.saleText || '',
     priceGroup: source.priceGroup || '',
 });
@@ -182,23 +176,34 @@ watch(
     },
 );
 
-// A new item is numbered in the block its group is usually numbered in, until
-// the number is typed by hand.
+// The category picks the number: the next one in that category's own series.
+// Nobody types it.
 watch(
     () => form.group,
     (group) => {
-        if (!isNew.value || codeTouched.value || groupCode(group) === null) {
+        if (!isNew.value || groupCode(group) === null) {
             return;
         }
 
-        form.family = familyOfGroup(group);
-        form.code = store.nextCode(form.family);
+        form.code = store.nextCode(group);
     },
 );
 
 function mark(field) {
     touched[field] = true;
 }
+
+/**
+ * What the four flags switch off. An item nobody sells has no sales unit, no
+ * price and nothing to say to the consumer site; one nobody buys has no vendor;
+ * one nobody stocks has no levels and no batches. The fields stay on the card —
+ * SAP keeps them too — and read as unavailable rather than disappearing.
+ */
+const off = computed(() => ({
+    sales: !form.flags.sales,
+    purchase: !form.flags.purchase,
+    inventory: !form.flags.inventory,
+}));
 
 const nonNegative = (value) => value === '' || Number(value) >= 0;
 
@@ -213,11 +218,13 @@ const errors = computed(() => {
                 : he.length > 200
                   ? t('items.validate.nameLong')
                   : '',
-        code: !/^\d{6}$/.test(code)
-            ? t('items.validate.codeFormat')
-            : store.codeTaken(code, props.item.sku || null)
-              ? t('items.validate.codeTaken')
-              : '',
+        code: !code
+            ? t('items.validate.codeMissing')
+            : !/^\d{6}$/.test(code)
+              ? t('items.validate.codeFormat')
+              : store.codeTaken(code, props.item.sku || null)
+                ? t('items.validate.codeTaken')
+                : '',
         group: groupCode(form.group) === null ? t('items.validate.group') : '',
         numIn:
             Number(form.uom.numInBuy) > 0 && Number(form.uom.numInSale) > 0
@@ -251,7 +258,6 @@ const draft = computed(() => ({
     sku: isNew.value ? form.code.trim() : props.item.sku,
     code: form.code.trim(),
     group: groupCode(form.group),
-    family: form.family,
     names: {
         he: form.names.he.trim(),
         en: form.names.en.trim() || null,
@@ -274,6 +280,7 @@ const draft = computed(() => ({
         preferred: form.suppliers.preferred || null,
         sapCode: form.suppliers.sapCode || null,
         catalogNum: form.suppliers.catalogNum.trim() || null,
+        itemName: form.suppliers.itemName.trim() || null,
     },
     uom: {
         stock: form.uom.stock,
@@ -340,6 +347,7 @@ const draft = computed(() => ({
     warehouses: source.warehouses || [],
     forTherapist: form.forTherapist.trim() || null,
     remarks: form.remarks.trim() || null,
+    internalNotes: form.internalNotes.trim() || null,
     saleText: form.saleText.trim() || null,
     priceGroup: form.priceGroup || null,
 }));
@@ -370,13 +378,6 @@ const groupOptions = computed(() =>
     store.itemGroups.map((group) => ({
         value: group.code,
         label: `${group.name} · ${group.code}`,
-    })),
-);
-
-const familyOptions = computed(() =>
-    Object.entries(ITEM_FAMILY).map(([id, family]) => ({
-        value: id,
-        label: `${t(`items.family.${id}`)} · ${family.prefix}`,
     })),
 );
 
@@ -514,6 +515,26 @@ const title = computed(() =>
             <!-- general: SAP's header and General tab -->
             <section>
                 <div class="a-sect-t">{{ t('items.editor.general') }}</div>
+                <p class="a-hint flags-hint">
+                    {{ t('items.editor.flagsHint') }}
+                </p>
+                <div class="flags flags-first">
+                    <label
+                        v-for="id in ITEM_FLAG_IDS"
+                        :key="id"
+                        class="check"
+                        :class="{ 'is-off': id === 'batch' && off.inventory }"
+                    >
+                        <input
+                            v-model="form.flags[id]"
+                            type="checkbox"
+                            class="a-check"
+                            :disabled="id === 'batch' && off.inventory"
+                        />
+                        {{ t(`items.flag.${id}`) }}
+                    </label>
+                </div>
+
                 <div class="a-3col">
                     <div>
                         <label class="a-lbl"
@@ -535,35 +556,14 @@ const title = computed(() =>
                             >{{ t('items.editor.code') }}
                             <span class="req">*</span></label
                         >
-                        <AInput
-                            v-if="isNew"
-                            v-model="form.code"
-                            ltr
-                            class="a-w100"
-                            @input="codeTouched = true"
-                            @blur="mark('code')"
-                        />
-                        <div v-else class="a-code a-tag ro">
-                            {{ item.code }}
+                        <div class="a-code a-tag ro">
+                            {{ form.code || t('items.editor.codePending') }}
                         </div>
                         <div v-if="show('code')" class="a-inv">
                             {{ show('code') }}
                         </div>
                         <div v-else class="a-hint">
                             {{ t('items.editor.codeHint') }}
-                        </div>
-                    </div>
-                    <div>
-                        <label class="a-lbl">{{
-                            t('items.editor.family')
-                        }}</label>
-                        <ASelect
-                            v-model="form.family"
-                            :options="familyOptions"
-                            class="a-w100"
-                        />
-                        <div class="a-hint">
-                            {{ t('items.editor.familyHint') }}
                         </div>
                     </div>
                 </div>
@@ -628,17 +628,6 @@ const title = computed(() =>
                             class="a-w100"
                         />
                     </div>
-                </div>
-
-                <div class="flags">
-                    <label v-for="id in ITEM_FLAG_IDS" :key="id" class="check">
-                        <input
-                            v-model="form.flags[id]"
-                            type="checkbox"
-                            class="a-check"
-                        />
-                        {{ t(`items.flag.${id}`) }}
-                    </label>
                 </div>
 
                 <div class="a-3col top">
@@ -728,25 +717,40 @@ const title = computed(() =>
                 <div class="a-sect-t">{{ t('items.editor.trade') }}</div>
                 <ActionGate id="item_price" compact>
                     <div class="a-3col">
-                        <div>
+                        <div :class="{ 'is-off': off.purchase }">
                             <label class="a-lbl">{{
                                 t('items.card.preferredSupplier')
                             }}</label>
                             <ASelect
                                 v-model="form.suppliers.preferred"
                                 :options="supplierOptions"
+                                :disabled="off.purchase"
                                 class="a-w100"
                             />
                         </div>
-                        <div>
+                        <div :class="{ 'is-off': off.purchase }">
                             <label class="a-lbl">{{
                                 t('items.card.catalogNum')
                             }}</label>
                             <AInput
                                 v-model="form.suppliers.catalogNum"
                                 ltr
+                                :disabled="off.purchase"
                                 class="a-w100"
                             />
+                        </div>
+                        <div :class="{ 'is-off': off.purchase }">
+                            <label class="a-lbl">{{
+                                t('items.card.supplierItemName')
+                            }}</label>
+                            <AInput
+                                v-model="form.suppliers.itemName"
+                                :disabled="off.purchase"
+                                class="a-w100"
+                            />
+                            <div class="a-hint">
+                                {{ t('items.editor.supplierItemNameHint') }}
+                            </div>
                         </div>
                         <div>
                             <label class="a-lbl">{{
@@ -754,6 +758,7 @@ const title = computed(() =>
                             }}</label>
                             <AInput
                                 v-model="form.price.lastPurchase"
+                                :disabled="off.purchase"
                                 type="number"
                                 ltr
                                 class="a-w100"
@@ -772,6 +777,7 @@ const title = computed(() =>
                             }}</label>
                             <ASelect
                                 v-model="form.uom.purchase"
+                                :disabled="off.purchase"
                                 :options="uomOptions"
                                 class="a-w100"
                             />
@@ -782,6 +788,7 @@ const title = computed(() =>
                             }}</label>
                             <AInput
                                 v-model="form.uom.numInBuy"
+                                :disabled="off.purchase"
                                 type="number"
                                 step="0.001"
                                 ltr
@@ -801,9 +808,14 @@ const title = computed(() =>
                                 t('items.card.packUom')
                             }}</label>
                             <div class="pair">
-                                <AInput v-model="form.uom.packUom" ltr />
+                                <AInput
+                                    v-model="form.uom.packUom"
+                                    :disabled="off.purchase"
+                                    ltr
+                                />
                                 <AInput
                                     v-model="form.uom.packQty"
+                                    :disabled="off.purchase"
                                     type="number"
                                     ltr
                                 />
@@ -815,6 +827,7 @@ const title = computed(() =>
                             }}</label>
                             <ASelect
                                 v-model="form.uom.sales"
+                                :disabled="off.sales"
                                 :options="uomOptions"
                                 class="a-w100"
                             />
@@ -825,6 +838,7 @@ const title = computed(() =>
                             }}</label>
                             <AInput
                                 v-model="form.uom.numInSale"
+                                :disabled="off.sales"
                                 type="number"
                                 step="0.001"
                                 ltr
@@ -841,6 +855,7 @@ const title = computed(() =>
                             }}</label>
                             <ASelect
                                 v-model="form.uom.price"
+                                :disabled="off.sales"
                                 :options="uomOptions"
                                 class="a-w100"
                             />
@@ -854,6 +869,7 @@ const title = computed(() =>
                             }}</label>
                             <AInput
                                 v-model="form.price.sale"
+                                :disabled="off.sales"
                                 type="number"
                                 ltr
                                 class="a-w100"
@@ -872,6 +888,7 @@ const title = computed(() =>
                             }}</label>
                             <ASelect
                                 v-model="form.priceGroup"
+                                :disabled="off.sales"
                                 :options="priceGroupOptions"
                                 class="a-w100"
                             />
@@ -893,6 +910,7 @@ const title = computed(() =>
                         }}</label>
                         <ASelect
                             v-model="form.uom.stock"
+                            :disabled="off.inventory"
                             :options="uomOptions"
                             class="a-w100"
                         />
@@ -903,6 +921,7 @@ const title = computed(() =>
                         }}</label>
                         <ASelect
                             v-model="form.uom.count"
+                            :disabled="off.inventory"
                             :options="uomOptions"
                             class="a-w100"
                         />
@@ -913,6 +932,7 @@ const title = computed(() =>
                         }}</label>
                         <ASelect
                             v-model="form.accounting.valuation"
+                            :disabled="off.inventory"
                             :options="valuationOptions"
                             class="a-w100"
                         />
@@ -923,6 +943,7 @@ const title = computed(() =>
                         }}</label>
                         <AInput
                             v-model="form.levels.min"
+                            :disabled="off.inventory"
                             type="number"
                             ltr
                             class="a-w100"
@@ -938,6 +959,7 @@ const title = computed(() =>
                         }}</label>
                         <AInput
                             v-model="form.levels.max"
+                            :disabled="off.inventory"
                             type="number"
                             ltr
                             class="a-w100"
@@ -950,6 +972,7 @@ const title = computed(() =>
                         }}</label>
                         <AInput
                             v-model="form.levels.reorder"
+                            :disabled="off.inventory"
                             type="number"
                             ltr
                             class="a-w100"
@@ -1151,7 +1174,11 @@ const title = computed(() =>
                         <label class="a-lbl">{{
                             t('items.card.siteName')
                         }}</label>
-                        <AInput v-model="form.site.name" class="a-w100" />
+                        <AInput
+                            v-model="form.site.name"
+                            :disabled="off.sales"
+                            class="a-w100"
+                        />
                         <div class="a-hint">
                             {{ t('items.editor.siteNameHint') }}
                         </div>
@@ -1163,11 +1190,13 @@ const title = computed(() =>
                         <div class="pair">
                             <AInput
                                 v-model="form.site.quantity"
+                                :disabled="off.sales"
                                 type="number"
                                 ltr
                             />
                             <ASelect
                                 v-model="form.site.uom"
+                                :disabled="off.sales"
                                 :options="uomOptionsBlank"
                             />
                         </div>
@@ -1178,6 +1207,7 @@ const title = computed(() =>
                         }}</label>
                         <AInput
                             v-model="form.site.comments"
+                            :disabled="off.sales"
                             class="a-w100"
                             :maxlength="150"
                         />
@@ -1197,6 +1227,7 @@ const title = computed(() =>
                     <label class="a-lbl">{{ t('items.card.saleText') }}</label>
                     <ATextarea
                         v-model="form.saleText"
+                        :disabled="off.sales"
                         :rows="3"
                         class="a-w100"
                     />
@@ -1206,11 +1237,24 @@ const title = computed(() =>
                 </div>
             </section>
 
-            <!-- SAP's remarks field -->
+            <!-- SAP's remarks field, and the console's own internal note -->
             <section>
                 <div class="a-sect-t">{{ t('items.editor.remarks') }}</div>
+                <label class="a-lbl">{{ t('items.card.remarks') }}</label>
                 <ATextarea v-model="form.remarks" :rows="4" class="a-w100" />
                 <div class="a-hint">{{ t('items.editor.remarksHint') }}</div>
+
+                <label class="a-lbl top">{{
+                    t('items.card.internalNotes')
+                }}</label>
+                <ATextarea
+                    v-model="form.internalNotes"
+                    :rows="3"
+                    class="a-w100"
+                />
+                <div class="a-hint">
+                    {{ t('items.editor.internalNotesHint') }}
+                </div>
 
                 <label class="a-lbl top">{{
                     t('items.card.forTherapist')
@@ -1253,6 +1297,20 @@ const title = computed(() =>
     color: var(--a-red);
 }
 
+/* A field the four flags switched off greys its label and hint with it, so the
+   form says "not relevant here" rather than just refusing the click. */
+.ie div:has(> .a-input:disabled) > .a-lbl,
+.ie div:has(> .a-select:disabled) > .a-lbl,
+.ie div:has(> .a-textarea:disabled) > .a-lbl,
+.ie div:has(> .a-input:disabled) > .a-hint,
+.ie div:has(> .a-select:disabled) > .a-hint,
+.ie div:has(> .a-textarea:disabled) > .a-hint,
+.ie .is-off > .a-lbl,
+.ie .is-off > .a-hint,
+.ie label.is-off {
+    opacity: 0.5;
+}
+
 .ro {
     display: inline-block;
     margin-top: 6px;
@@ -1262,6 +1320,17 @@ const title = computed(() =>
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
+}
+
+.flags-hint {
+    margin: 0 0 4px;
+}
+
+.flags-first {
+    margin-top: 0;
+    padding: 10px 14px;
+    border: 1px solid var(--a-line);
+    border-radius: var(--a-r);
 }
 
 .flags {

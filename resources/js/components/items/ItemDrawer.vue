@@ -305,6 +305,10 @@ const categories = computed(() =>
                                 orNotSet(row.suppliers?.catalogNum),
                             ],
                             [
+                                t('items.card.supplierItemName'),
+                                orNotSet(row.suppliers?.itemName),
+                            ],
+                            [
                                 t('items.card.purchaseUom'),
                                 uomLabel(row.uom?.purchase),
                             ],
@@ -659,9 +663,18 @@ const categories = computed(() =>
                     </AKeyValue>
                 </ACard>
 
-                <!-- SAP's remarks field -->
-                <ACard :title="t('items.card.remarks')" icon="edit">
+                <!-- SAP's remarks field, and the console's own internal note -->
+                <ACard :title="t('items.card.notes')" icon="edit">
+                    <div class="a-lbl">{{ t('items.card.remarks') }}</div>
                     <p v-if="row.remarks" class="remarks">{{ row.remarks }}</p>
+                    <p v-else class="t-sub">{{ t('items.card.noRemarks') }}</p>
+
+                    <div class="a-lbl safety-l">
+                        {{ t('items.card.internalNotes') }}
+                    </div>
+                    <p v-if="row.internalNotes" class="remarks">
+                        {{ row.internalNotes }}
+                    </p>
                     <p v-else class="t-sub">{{ t('items.card.noRemarks') }}</p>
 
                     <template v-if="row.forTherapist">

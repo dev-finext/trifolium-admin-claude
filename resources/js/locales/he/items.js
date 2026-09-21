@@ -109,7 +109,7 @@ export default {
         quality: 'שלמות הכרטיס',
     },
     filter: {
-        allFamilies: 'כל הקבוצות',
+        allFamilies: 'כל הקטגוריות',
         batchState: {
             yes: 'מנוהל אצווה',
             no: 'לא מנוהל אצווה',
@@ -127,7 +127,7 @@ export default {
             site: 'סנכרון לאתר',
             bom: 'עץ מוצר',
             files: 'קבצים מצורפים',
-            grp: 'קבוצת פריט',
+            grp: 'קטגוריה',
             state: 'סטטוס',
             tree: 'עץ מוצר',
         },
@@ -179,7 +179,7 @@ export default {
         price: 'קניה אחרונה',
         supplier: 'ספק קבוע',
         site: 'אתר',
-        group: 'קבוצת פריט',
+        group: 'קטגוריה',
     },
     cell: {
         fixedPrice: 'קבוע',
@@ -290,7 +290,7 @@ export default {
         general: 'כללי',
         code: 'מספר פריט',
         nameForeign: 'שם לועזי',
-        group: 'קבוצת פריט',
+        group: 'קטגוריה',
         uomGroup: 'קבוצת יחידות מידה',
         additionalId: 'מזהה נוסף',
         state: 'סטטוס',
@@ -335,9 +335,12 @@ export default {
         siteSync: 'סנכרון לאתר',
         saleText: 'טקסט שיווקי',
         therapistDiscount: 'הנחת מטפלים',
-        remarks: 'הערות פריט',
+        remarks: 'הערות ייצור',
         noRemarks: 'אין הערות',
         forTherapist: 'מוצר עבור מטפל מס׳',
+        supplierItemName: 'שם הפריט אצל הספק',
+        internalNotes: 'הערות פנימיות למוצר',
+        notes: 'הערות',
     },
     editor: {
         priceGroup: 'מחירון מדורג',
@@ -354,9 +357,8 @@ export default {
         notSet: 'לא הוגדר',
         noSupplier: 'ללא ספק',
         noCategory: 'ללא',
-        family: 'בלוק מספור',
         code: 'מספר פריט',
-        codeHint: '6 ספרות · מוקצה אוטומטית בבלוק המספור של הקבוצה',
+        codeHint: 'מוקצה אוטומטית — המספר הבא בסדרה של הקטגוריה',
         nameHe: 'תיאור',
         siteName: 'שם לאתר',
         siteNameHint: 'כפי שיופיע באתר הצרכני — יכול להיות שונה מהשם הפנימי',
@@ -369,8 +371,7 @@ export default {
         active: 'פעיל',
         itemType: 'סוג פריט',
         treeType: 'עץ מוצר',
-        group: 'קבוצת פריט',
-        familyHint: 'לא שדה של SAP — קובע את מספור האצוות ותוקף ברירת המחדל',
+        group: 'קטגוריה',
         nameForeign: 'שם לועזי',
         nameForeignHint: 'השם הבוטני, הפין-יין או השם באנגלית — כמו בסאפ',
         uomGroup: 'קבוצת יחידות מידה',
@@ -391,11 +392,17 @@ export default {
         properties: 'מאפיינים ובטיחות',
         propertiesHint:
             'ב-SAP יש 64 מאפיינים; מוצגים אלה שנעשה בהם שימוש. סימון 15/19/20/40 הוא מה שהופך פריט למוצר מדף, לזכאי הנחת מטפלים, למבצע החודש ולמסונכרן לאתר.',
-        remarks: 'הערות פריט',
+        remarks: 'הערות',
         remarksHint: 'שדה ההערות של SAP — מודפס בדף ההכנה',
         saleTextHint: 'הטקסט השיווקי שמופיע באתר הצרכני',
         forTherapistHint:
             'שדה של SAP שבפועל מוזנים בו גם קודי מטפל וגם הערות חופשיות — נשמר כפי שהוא',
+        codePending: 'ייקבע לפי הקטגוריה',
+        flagsHint:
+            'ארבעת הדגלים קובעים מה רלוונטי בשאר הכרטיס: פריט שלא נמכר אין לו מחיר ואין לו אתר, פריט שלא נקנה אין לו ספק, ופריט שלא מנוהל במלאי אין לו רמות ואין לו אצוות.',
+        supplierItemNameHint: 'איך הספק קורא לפריט בתעודות שלו · רשות',
+        internalNotesHint:
+            'למשרד בלבד · לא מודפס ולא מוצג באתר · אין לזה מקבילה ב-SAP',
     },
     validate: {
         nameShort: 'נא להזין שם פריט',
@@ -405,6 +412,7 @@ export default {
         number: 'מספר חיובי',
         group: 'נא לבחור קבוצת פריט',
         positive: 'מספר גדול מאפס',
+        codeMissing: 'נא לבחור קטגוריה כדי שיוקצה מספר',
     },
     prep: {
         sub: '{n} סוגי הכנה · הטקסט הקבוע למדבקה, התוקף ו״מכיל״ נערכים כאן ולא בקוד',
