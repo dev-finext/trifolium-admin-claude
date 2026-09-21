@@ -340,7 +340,6 @@ export default {
         therapistDiscount: 'Practitioner discount',
         remarks: 'Production remarks',
         noRemarks: 'No remarks',
-        forTherapist: 'Product for therapist no.',
         supplierItemName: 'Vendor’s name for the item',
         internalNotes: 'Internal note',
         notes: 'Remarks',
@@ -402,8 +401,6 @@ export default {
         remarks: 'Remarks',
         remarksHint: 'SAP’s remarks field — printed on the prep sheet',
         saleTextHint: 'The marketing text the consumer site shows',
-        forTherapistHint:
-            'A SAP field that in practice holds both therapist codes and free notes — carried verbatim',
         codePending: 'Set by the category',
         flagsHint:
             'The four flags decide what the rest of the card is for: an item nobody sells has no price and no site, one nobody buys has no vendor, and one nobody stocks has no levels and no batches.',

@@ -159,7 +159,6 @@ const form = reactive({
         ),
     },
     properties: [...(source.properties || [])],
-    forTherapist: source.forTherapist || '',
     remarks: source.remarks || '',
     internalNotes: source.internalNotes || '',
     saleText: source.saleText || '',
@@ -366,7 +365,6 @@ const draft = computed(() => ({
         .filter(Boolean),
     prices: source.prices || [],
     warehouses: source.warehouses || [],
-    forTherapist: form.forTherapist.trim() || null,
     remarks: form.remarks.trim() || null,
     internalNotes: form.internalNotes.trim() || null,
     saleText: form.saleText.trim() || null,
@@ -1275,14 +1273,6 @@ const title = computed(() =>
                 />
                 <div class="a-hint">
                     {{ t('items.editor.internalNotesHint') }}
-                </div>
-
-                <label class="a-lbl top">{{
-                    t('items.card.forTherapist')
-                }}</label>
-                <AInput v-model="form.forTherapist" class="a-w100" />
-                <div class="a-hint">
-                    {{ t('items.editor.forTherapistHint') }}
                 </div>
             </section>
         </div>

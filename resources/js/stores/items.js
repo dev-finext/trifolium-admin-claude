@@ -688,7 +688,6 @@ export const useItemsStore = defineStore('items', () => {
                 min: numberOrNull(row.min) ?? 0,
                 max: numberOrNull(row.max) ?? 0,
             })),
-            forTherapist: form.forTherapist || null,
             remarks: form.remarks || null,
             // The console's own: a note for the office that never prints.
             internalNotes: form.internalNotes || null,

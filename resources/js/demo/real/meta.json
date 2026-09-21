@@ -1,7 +1,7 @@
 {
  "source": "TR_backup_2026_08_05_180002_6205496.bak (SAP Business One)",
  "database": "TR",
- "extractedOn": "2026-09-16",
+ "extractedOn": "2026-09-21",
  "rows": {
   "orderStates": 8,
   "prepTypes": 17,

@@ -564,9 +564,6 @@ function itemOf(real, supplierByCode) {
         onHand: numberOf(real.onHand) ?? 0,
         committed: numberOf(real.committed) ?? 0,
         onOrder: numberOf(real.onOrder) ?? 0,
-        // SAP's label is "product for therapist no.", and the pharmacy types
-        // notes into it as often as a therapist code. It carries verbatim.
-        forTherapist: textOf(real.forTherapist),
         remarks: textOf(real.remarks),
         // The console's own: a note for the office, printed nowhere.
         internalNotes: null,
