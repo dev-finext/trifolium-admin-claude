@@ -22,6 +22,7 @@ import ANum from '@/components/ui/ANum.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import ATabs from '@/components/ui/ATabs.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
+import ChangeLogPanel from '@/components/ui/ChangeLogPanel.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
@@ -59,6 +60,24 @@ const view = useUrlState({ ptab: 'profile' });
 
 const editing = ref(false);
 const moving = ref(false);
+const askActive = ref(false);
+
+/** A card is active unless it says otherwise — that is the default everywhere. */
+const isActive = computed(
+    () => (props.patient.status || 'active') === 'active',
+);
+
+function setActive() {
+    people.setActive(props.patient, 'patient', !isActive.value);
+    askActive.value = false;
+    push({
+        title: isActive.value
+            ? t('users.active.toastOn')
+            : t('users.active.toastOff'),
+        body: loc(props.patient.name),
+    });
+}
+
 const movingConfirm = ref(false);
 const target = ref('');
 const reason = ref('');
@@ -246,6 +265,16 @@ function applyTransfer() {
                     {{ t('users.customer.transfer') }}
                 </AButton>
                 <AButton
+                    :icon="isActive ? 'lock' : 'check'"
+                    @click="askActive = true"
+                >
+                    {{
+                        isActive
+                            ? t('users.active.deactivate')
+                            : t('users.active.activate')
+                    }}
+                </AButton>
+                <AButton
                     kind="p"
                     icon="edit"
                     :title="t('users.customer.editHint')"
@@ -385,6 +414,8 @@ function applyTransfer() {
                     <dd>{{ t('users.customer.shipMsgs') }}</dd>
                 </AKeyValue>
             </ACard>
+
+            <ChangeLogPanel entity="patient" :ref-id="patient.code" />
 
             <ACard :title="t('users.customer.site')" icon="external">
                 <template #right>
@@ -731,6 +762,27 @@ function applyTransfer() {
         :pin="dataset.session?.pin || true"
         @close="movingConfirm = false"
         @confirm="applyTransfer"
+    />
+
+    <ConfirmDialog
+        :open="askActive"
+        :title="
+            isActive ? t('users.active.offTitle') : t('users.active.onTitle')
+        "
+        :body="
+            isActive
+                ? t('users.active.offBody', { name: loc(props.patient.name) })
+                : t('users.active.onBody', { name: loc(props.patient.name) })
+        "
+        :effects="[
+            isActive ? t('users.active.offEffect') : t('users.active.onEffect'),
+            t('users.active.logEffect'),
+        ]"
+        :confirm-label="
+            isActive ? t('users.active.deactivate') : t('users.active.activate')
+        "
+        @close="askActive = false"
+        @confirm="setActive"
     />
 </template>
 

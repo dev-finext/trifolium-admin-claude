@@ -1,40 +1,28 @@
-// Users, approvals, practitioner cards and customers.
-//
-// Two audiences share this screen and the words keep them apart: a practitioner
-// holds a card in our database, signs in with his customer number and carries a
-// discount, credit terms and a points wallet; a customer is the person he treats
-// — local personal data only, no login, and always bound to exactly one
-// practitioner.
+// English mirror of he/users.js — same keys, real translations.
 export default {
     title: 'Users & approvals',
     crumb: 'Users',
     sub: '{pending} registrations awaiting approval · {practitioners} practitioners · {suppliers} suppliers · {customers} customers',
-
     tab: {
         pending: 'Awaiting approval',
         directory: 'Practitioners',
         suppliers: 'Suppliers',
         customers: 'Customers',
     },
-
     role: {
         practitioner: 'Practitioner',
         student: 'Student',
     },
-
     sexLabel: {
         f: 'Female',
         m: 'Male',
     },
-
     source: {
         practitioner_order: 'Created by a practitioner order',
         website: 'Self-registered on the website',
         admin_entry: 'Entered by an admin',
     },
-
     field: {
-        // V2
         accountingEmail: 'Accounting email',
         bizNum: 'Business / company no.',
         payMethod: 'Standing payment method',
@@ -93,7 +81,6 @@ export default {
         bf: 'Breastfeeding',
         meds: 'Regular medications',
     },
-
     hint: {
         tzRequired: 'Required for the safety declaration and the tax documents',
         phoneUpdates: 'Delivery updates are sent to this number',
@@ -102,19 +89,16 @@ export default {
             "Shown to the pharmacist on every one of the customer's orders",
         clinicEmpty: 'Empty = not listed as a practitioner on the website',
         defaultDisc: 'System default: {n}%',
-        // V2
         shelfDisc:
             'The discount on shelf products, separate from the base discount · default 40%',
         accountingEmail: 'Invoices and receipts are sent to it',
         payMethod: 'Empty = per order',
     },
-
     addr: {
         apt: 'apt. {n}',
         floor: 'floor {n}',
         entry: 'entrance {n}',
     },
-
     doc: {
         cert: 'Certification diploma',
         studyCert: 'Proof of studies',
@@ -132,7 +116,6 @@ export default {
         noImage: 'No photo uploaded',
         noImageSub: 'Required to appear on the website practitioner page',
     },
-
     export: {
         practitioners: 'Export practitioner list',
         customers: 'Export customer list',
@@ -146,7 +129,6 @@ export default {
         declarationsBody: '{n} declarations · PDF',
         rowsBody: '{n} rows · {file}',
     },
-
     pending: {
         count: 'requests · of {n}',
         search: 'Name · email · phone · ID · city',
@@ -177,7 +159,6 @@ export default {
         clinicImgMissing: 'no clinic photo',
         review: 'Review & approve',
     },
-
     approval: {
         waiting: 'Awaiting approval',
         submitted: 'Submitted {when}',
@@ -226,14 +207,12 @@ export default {
         rejectedTitle: 'Registration rejected',
         rejectedBody: 'A message was sent with the reason: {reason}',
     },
-
     filterGroup: {
         who: 'Who they are',
         money: 'Money',
         safety: 'Safety',
         site: 'Site & payment',
     },
-
     filter: {
         practitionerNoun: 'practitioners',
         patientNoun: 'customers',
@@ -282,7 +261,6 @@ export default {
             consent: 'No signed consent',
         },
     },
-
     directory: {
         count: 'practitioners · of {n}',
         search: 'Name · customer number · phone · email',
@@ -320,7 +298,6 @@ export default {
         emptyTitle: 'No practitioners found',
         emptySub: 'Clear the search or the filter',
     },
-
     card: {
         tab: {
             profile: 'Profile',
@@ -328,11 +305,9 @@ export default {
             orders: 'Order history',
             points: 'Points',
             documentation: 'Documentation',
-            // V2
             activities: 'Activities',
             files: 'Files',
         },
-        // V2
         accounting: 'Accounting & payment',
         payMethodNone: 'Not set — per order',
         filesTitle: 'Agreements & documents',
@@ -382,7 +357,6 @@ export default {
         ordersNoMatchTitle: 'No orders match the filter',
         ordersNoMatchSub: 'Clear the filter',
     },
-
     credit: {
         title: 'Payment track — credit terms',
         approved: 'Approved',
@@ -429,7 +403,6 @@ export default {
         revokedToastTitle: 'Credit terms revoked',
         revokedToastBody: 'Reason: {reason}',
     },
-
     points: {
         title: 'Points ledger · {name}',
         balance: 'Balance: {n} pts',
@@ -480,7 +453,6 @@ export default {
         doneBody:
             '{delta} pts · new balance {balance} · written to the points ledger and the system log',
     },
-
     signatures: {
         title: 'Signed signatures & declarations',
         col: {
@@ -500,7 +472,6 @@ export default {
         emptyTitle: 'No signatures in the archive',
         emptySub: 'Signed safety declarations will appear here',
     },
-
     documentation: {
         note: 'Manual documentation here is for general calls with the practitioner that belong to no particular order. Documentation about an order goes on that order’s own "Documentation" tab.',
         addTitle: 'Manual documentation',
@@ -538,7 +509,6 @@ export default {
         addedFixTitle: 'Correction documented',
         addedBody: 'Filed as {actor}',
     },
-
     edit: {
         practitionerTitle: 'Edit card · {name}',
         customerTitle: 'Edit customer card · {name}',
@@ -567,7 +537,6 @@ export default {
         uploadBody: '{doc} · will be stored on the practitioner card',
         resetTitle: 'Password reset link sent',
     },
-
     customers: {
         count: 'customers · of {n}',
         search: 'Name · customer number · ID · phone · practitioner',
@@ -609,17 +578,14 @@ export default {
             allerg: 'Sensitivity: {what}',
         },
     },
-
     customer: {
         tab: {
             profile: 'Profile',
             link: 'Practitioner link',
             orders: 'Orders',
             safety: 'Safety & declarations',
-            // V2
             activities: 'Activities',
         },
-        // V2
         site: 'Consumer site',
         siteAccount: 'Site account',
         siteAccountOn: 'Yes — the customer also orders alone',
@@ -695,7 +661,6 @@ export default {
         noDeclTitle: 'No declarations in the archive',
         noDeclSub: 'A safety declaration is signed on the order itself',
     },
-
     transfer: {
         title: 'Move customer to another practitioner · {name}',
         note: 'A customer is linked to one practitioner at any moment. Historical orders stay with the practitioner who placed them — only orders from now on are attributed to the new practitioner.',
@@ -720,8 +685,6 @@ export default {
         doneTitle: 'Customer moved',
         doneBody: '{name} → {to}',
     },
-
-    // V2 — the duplicate check on a card being created
     duplicates: {
         title: 'Duplicate check',
         idle: 'Enter an ID, phone or email — the check runs as you type, against practitioners, customers and waiting registrations',
@@ -739,7 +702,6 @@ export default {
             pending: 'Waiting registration',
         },
     },
-
     newCustomer: {
         title: 'New customer',
         note: 'Every customer must be linked to a practitioner — without choosing one the card cannot be saved. In most cases the customer is created automatically the first time a practitioner orders for him; creating one by hand here is for data fixes and for migrating long-standing customers.',
@@ -754,5 +716,25 @@ export default {
         doneTitle: 'Customer card created',
         doneBody:
             '{code} · linked to {name} · medical-information consent is required on the first order',
+    },
+    active: {
+        activate: 'Activate',
+        deactivate: 'Deactivate',
+        onTitle: 'Activate the card',
+        offTitle: 'Deactivate the card',
+        onBody: '{name} becomes active again and returns to daily work.',
+        offBody:
+            '{name} is marked inactive. Nothing is deleted and the history stays where it is.',
+        onEffect: 'The card returns to the lists and to search as before',
+        offEffect:
+            'The card reads as inactive and is not offered in new actions',
+        logEffect:
+            'The change is written to the card’s log and to the system log',
+        toastOn: 'Card activated',
+        toastOff: 'Card deactivated',
+    },
+    status: {
+        active: 'Active',
+        inactive: 'Inactive',
     },
 };

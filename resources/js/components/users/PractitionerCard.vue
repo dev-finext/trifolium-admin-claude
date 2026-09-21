@@ -23,6 +23,7 @@ import ASwitch from '@/components/ui/ASwitch.vue';
 import ATabs from '@/components/ui/ATabs.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
+import ChangeLogPanel from '@/components/ui/ChangeLogPanel.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
@@ -63,6 +64,24 @@ const dataset = useDatasetStore();
 const view = useUrlState({ ctab: 'profile' });
 
 const editing = ref(false);
+const askActive = ref(false);
+
+/** A card is active unless it says otherwise — that is the default everywhere. */
+const isActive = computed(
+    () => (props.practitioner.status || 'active') === 'active',
+);
+
+function setActive() {
+    people.setActive(props.practitioner, 'practitioner', !isActive.value);
+    askActive.value = false;
+    push({
+        title: isActive.value
+            ? t('users.active.toastOn')
+            : t('users.active.toastOff'),
+        body: loc(props.practitioner.name),
+    });
+}
+
 const creditIntent = ref(null);
 
 // In-drawer order and documentation filters stay local, like the wallet ledger
@@ -466,6 +485,16 @@ function onReset() {
                     {{ t('users.card.message') }}
                 </AButton>
                 <AButton
+                    :icon="isActive ? 'lock' : 'check'"
+                    @click="askActive = true"
+                >
+                    {{
+                        isActive
+                            ? t('users.active.deactivate')
+                            : t('users.active.activate')
+                    }}
+                </AButton>
+                <AButton
                     kind="p"
                     icon="edit"
                     :title="t('users.card.editHint')"
@@ -654,6 +683,8 @@ function onReset() {
                     <dd>{{ t('users.card.clinicAddress') }}</dd>
                 </AKeyValue>
             </ACard>
+
+            <ChangeLogPanel entity="practitioner" :ref-id="practitioner.code" />
 
             <ACard :title="t('users.card.accounting')" icon="card">
                 <template #right>
@@ -1078,6 +1109,31 @@ function onReset() {
         :pin="dataset.session?.pin || true"
         @close="creditIntent = null"
         @confirm="applyCredit"
+    />
+
+    <ConfirmDialog
+        :open="askActive"
+        :title="
+            isActive ? t('users.active.offTitle') : t('users.active.onTitle')
+        "
+        :body="
+            isActive
+                ? t('users.active.offBody', {
+                      name: loc(props.practitioner.name),
+                  })
+                : t('users.active.onBody', {
+                      name: loc(props.practitioner.name),
+                  })
+        "
+        :effects="[
+            isActive ? t('users.active.offEffect') : t('users.active.onEffect'),
+            t('users.active.logEffect'),
+        ]"
+        :confirm-label="
+            isActive ? t('users.active.deactivate') : t('users.active.activate')
+        "
+        @close="askActive = false"
+        @confirm="setActive"
     />
 </template>
 

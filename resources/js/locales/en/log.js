@@ -1,16 +1,12 @@
-// The system log. English mirror of he/log.js. Action names live in enums under
-// logAction.<id>, not here.
+// English mirror of he/log.js — same keys, real translations.
 export default {
     title: 'System log',
     sub: '{n} entries · every action by an agent, by the system and by an external interface',
-
     readOnly: {
         title: 'The log is read-only.',
         body: 'Entries cannot be edited or deleted — a correction is always recorded as a new entry.',
     },
-
     inRange: 'One entry in range | {n} entries in range',
-
     filter: {
         search: 'Free text: entity · value · IP · who acted',
         searchLabel: 'Search the log',
@@ -26,7 +22,6 @@ export default {
         sourceAll: 'Source — all',
         label: 'entries',
     },
-
     table: {
         when: 'Date & time',
         actor: 'Who acted',
@@ -36,7 +31,6 @@ export default {
         source: 'Source',
         ip: 'IP address',
     },
-
     entity: {
         order: 'Order',
         document: 'Document',
@@ -59,11 +53,10 @@ export default {
         supplier: 'Supplier',
         sticker_template: 'Sticker template',
         sticker_note: 'Sticker note',
+        patient: 'Customer',
     },
-
     loadMore: 'Load {n} more entries',
     shownOf: 'Showing {shown} of {total}',
-
     export: {
         action: 'Export CSV',
         done: 'The file was downloaded',
@@ -71,9 +64,15 @@ export default {
         empty: 'Nothing to export',
         emptyBody: 'Widen the date range or clear the filter.',
     },
-
     empty: {
         title: 'No entry matches the filter',
         sub: 'Widen the date range or clear the filter',
+    },
+    record: {
+        title: 'Change log',
+        count: '{n} entries',
+        empty: 'Nothing has changed on this card yet',
+        fieldChanged: 'Changed · {field}',
+        older: 'and {n} older entries — in the system log',
     },
 };

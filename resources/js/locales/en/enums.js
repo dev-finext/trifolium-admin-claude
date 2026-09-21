@@ -360,6 +360,7 @@ export default {
         stock_adjust: 'Stock adjusted',
         login: 'Signed in',
         export: 'Data exported',
+        customer_update: 'Customer card updated',
     },
     logSource: {
         manual: 'Manual',

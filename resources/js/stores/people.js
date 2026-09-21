@@ -261,7 +261,14 @@ export const usePeopleStore = defineStore('people', () => {
      * taxonomy is closed, which is what keeps the log filterable in both
      * languages.
      */
-    function writeLog({ act, entType, ent, from = null, to = null }) {
+    function writeLog({
+        act,
+        entType,
+        ent,
+        field = null,
+        from = null,
+        to = null,
+    }) {
         if (!Array.isArray(dataset.data.log)) {
             return;
         }
@@ -275,6 +282,7 @@ export const usePeopleStore = defineStore('people', () => {
             entType,
             ent,
             valueType: 'plain',
+            field,
             from,
             to,
             src: 'manual',
@@ -361,6 +369,23 @@ export const usePeopleStore = defineStore('people', () => {
      * each one becomes its own log row so the before/after values stay readable
      * in either language.
      */
+    /** The label a changed field is written into the log under. */
+    const FIELD_LABELS = {
+        first: 'users.field.first',
+        last: 'users.field.last',
+        phone: 'users.field.phone',
+        email: 'users.field.email',
+        city: 'users.field.city',
+        clinic: 'users.field.clinic',
+        therapy: 'users.field.therapy',
+        disc: 'users.field.disc',
+        status: 'users.field.status',
+        tz: 'users.field.tz',
+        bizNum: 'users.field.bizNum',
+    };
+
+    const fieldLabel = (key) => FIELD_LABELS[key] || key;
+
     function savePractitioner(practitioner, changes) {
         changes.forEach((change) => {
             practitioner[change.key] = change.to;
@@ -371,6 +396,7 @@ export const usePeopleStore = defineStore('people', () => {
                         : 'practitioner_update',
                 entType: 'practitioner',
                 ent: practitioner.code,
+                field: fieldLabel(change.key),
                 from: change.from === '' ? null : String(change.from),
                 to: String(change.to),
             });
@@ -496,6 +522,14 @@ export const usePeopleStore = defineStore('people', () => {
     function savePatient(patient, changes) {
         changes.forEach((change) => {
             patient[change.key] = change.to;
+            writeLog({
+                act: 'customer_update',
+                entType: 'patient',
+                ent: patient.code,
+                field: fieldLabel(change.key),
+                from: change.from === '' ? null : String(change.from),
+                to: String(change.to),
+            });
         });
 
         if (changes.length) {
@@ -508,6 +542,42 @@ export const usePeopleStore = defineStore('people', () => {
                 'PATCH',
             );
         }
+    }
+
+    /**
+     * Make a card active or inactive. An inactive practitioner cannot place an
+     * order and an inactive customer cannot be given one; nothing is deleted
+     * and the history stays exactly where it was.
+     */
+    function setActive(record, entType, active, reason = '') {
+        const was = record.status || 'active';
+        const now = active ? 'active' : 'inactive';
+
+        if (was === now) {
+            return record;
+        }
+
+        record.status = now;
+        writeLog({
+            act:
+                entType === 'patient'
+                    ? 'customer_update'
+                    : 'practitioner_update',
+            entType,
+            ent: record.code,
+            field: 'users.field.status',
+            // The log stores the label key, so a card read in either language
+            // says what the status became in that language.
+            from: `users.status.${was}`,
+            to: `users.status.${now}`,
+        });
+        save(
+            `${entType === 'patient' ? 'patients' : 'practitioners'}/${record.code}`,
+            { status: now, reason: reason.trim() || null },
+            'PATCH',
+        );
+
+        return record;
     }
 
     /**
@@ -682,6 +752,7 @@ export const usePeopleStore = defineStore('people', () => {
         approveRegistration,
         rejectRegistration,
         savePractitioner,
+        setActive,
         setCreditTerms,
         creditPoints,
         resetPractitionerPassword,

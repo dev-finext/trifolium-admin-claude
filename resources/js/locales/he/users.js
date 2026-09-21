@@ -1,40 +1,28 @@
-// Users, approvals, practitioner cards and patients.
-//
-// Two audiences share this screen and the words keep them apart: a מטפל
-// (practitioner) holds a card in our database, signs in with his customer
-// number and carries a discount, credit terms and a points wallet; a לקוח
-// (patient) is the person he treats — local personal data only, no login, and
-// always bound to exactly one practitioner.
+// משתמשים ואישורים — מטפלים, לקוחות, רישום ואישורים.
 export default {
     title: 'משתמשים ואישורים',
     crumb: 'משתמשים',
     sub: '{pending} הרשמות ממתינות · {practitioners} מטפלים · {suppliers} ספקים · {customers} לקוחות',
-
     tab: {
         pending: 'ממתינים לאישור',
         directory: 'מטפלים',
         suppliers: 'ספקים',
         customers: 'לקוחות',
     },
-
     role: {
         practitioner: 'מטפל',
         student: 'סטודנט',
     },
-
     sexLabel: {
         f: 'אישה',
         m: 'גבר',
     },
-
     source: {
         practitioner_order: 'נוצר מהזמנת מטפל',
         website: 'נרשם באתר',
         admin_entry: 'הוזן ע״י אדמין',
     },
-
     field: {
-        // V2
         accountingEmail: 'מייל להנהלת חשבונות',
         bizNum: 'מספר עוסק / ח.פ',
         payMethod: 'אמצעי תשלום קבוע',
@@ -93,7 +81,6 @@ export default {
         bf: 'הנקה',
         meds: 'תרופות קבועות',
     },
-
     hint: {
         tzRequired: 'נדרש להצהרת הבטיחות ולמסמכי המס',
         phoneUpdates: 'אליו נשלחים עדכוני משלוח',
@@ -101,18 +88,15 @@ export default {
         allergShown: 'מוצג לרוקח בכל הזמנה של הלקוח',
         clinicEmpty: 'ריק = לא מופיע כמטפל באתר',
         defaultDisc: 'ברירת המחדל במערכת: {n}%',
-        // V2
         shelfDisc: 'ההנחה על מוצרי מדף, בנפרד מההנחה הבסיסית · ברירת המחדל 40%',
         accountingEmail: 'אליו נשלחות החשבוניות והקבלות',
         payMethod: 'ריק = לפי ההזמנה',
     },
-
     addr: {
         apt: 'דירה {n}',
         floor: 'קומה {n}',
         entry: 'כניסה {n}',
     },
-
     doc: {
         cert: 'תעודת הסמכה',
         studyCert: 'אישור לימודים',
@@ -130,7 +114,6 @@ export default {
         noImage: 'לא הועלתה תמונה',
         noImageSub: 'נדרשת להצגה בדף המטפלים באתר',
     },
-
     export: {
         practitioners: 'ייצוא רשימת מטפלים',
         customers: 'ייצוא רשימת לקוחות',
@@ -144,7 +127,6 @@ export default {
         declarationsBody: '{n} הצהרות · PDF',
         rowsBody: '{n} שורות · {file}',
     },
-
     pending: {
         count: 'בקשות · מתוך {n}',
         search: 'שם · אימייל · טלפון · ת״ז · עיר',
@@ -175,7 +157,6 @@ export default {
         clinicImgMissing: 'ללא תמונת קליניקה',
         review: 'בדיקה ואישור',
     },
-
     approval: {
         waiting: 'ממתין לאישור',
         submitted: 'הוגש {when}',
@@ -221,14 +202,12 @@ export default {
         rejectedTitle: 'ההרשמה נדחתה',
         rejectedBody: 'נשלחה הודעה עם הסיבה: {reason}',
     },
-
     filterGroup: {
         who: 'מי זה',
         money: 'כספים',
         safety: 'בטיחות',
         site: 'אתר ותשלום',
     },
-
     filter: {
         practitionerNoun: 'מטפלים',
         patientNoun: 'לקוחות',
@@ -277,7 +256,6 @@ export default {
             consent: 'ללא הסכמה חתומה',
         },
     },
-
     directory: {
         count: 'מטפלים · מתוך {n}',
         search: 'שם · מספר לקוח · טלפון · אימייל',
@@ -315,7 +293,6 @@ export default {
         emptyTitle: 'לא נמצאו מטפלים',
         emptySub: 'נקה את החיפוש או את הסינון',
     },
-
     card: {
         tab: {
             profile: 'פרופיל',
@@ -323,11 +300,9 @@ export default {
             orders: 'היסטוריית הזמנות',
             points: 'נקודות',
             documentation: 'תיעודים',
-            // V2
             activities: 'פעילויות',
             files: 'קבצים',
         },
-        // V2
         accounting: 'חשבונאות ותשלום',
         payMethodNone: 'לא הוגדר — לפי ההזמנה',
         filesTitle: 'הסכמים ומסמכים',
@@ -377,7 +352,6 @@ export default {
         ordersNoMatchTitle: 'אין הזמנות שתואמות את הסינון',
         ordersNoMatchSub: 'נקה את הסינון',
     },
-
     credit: {
         title: 'מסלול תשלום — הקפה',
         approved: 'מאושר',
@@ -420,7 +394,6 @@ export default {
         revokedToastTitle: 'מסלול ההקפה בוטל',
         revokedToastBody: 'סיבה: {reason}',
     },
-
     points: {
         title: 'יומן נקודות · {name}',
         balance: 'יתרה: {n} נק׳',
@@ -470,7 +443,6 @@ export default {
         doneBody:
             '{delta} נק׳ · יתרה חדשה {balance} · נרשם ביומן הנקודות ובלוג המערכת',
     },
-
     signatures: {
         title: 'חתימות והצהרות חתומות',
         col: {
@@ -490,7 +462,6 @@ export default {
         emptyTitle: 'אין חתימות בארכיון',
         emptySub: 'הצהרות בטיחות חתומות יופיעו כאן',
     },
-
     documentation: {
         note: 'תיעוד ידני כאן מיועד לשיחות כלליות עם המטפל שאינן קשורות להזמנה מסוימת. תיעוד שקשור להזמנה — בלשונית ״תיעודים״ של אותה הזמנה.',
         addTitle: 'תיעוד ידני',
@@ -527,7 +498,6 @@ export default {
         addedFixTitle: 'תיעוד תיקון נוסף',
         addedBody: 'התיעוד נרשם בשם {actor}',
     },
-
     edit: {
         practitionerTitle: 'עריכת כרטיס · {name}',
         customerTitle: 'עריכת כרטיס לקוח · {name}',
@@ -556,7 +526,6 @@ export default {
         uploadBody: '{doc} · יישמר בכרטיס המטפל',
         resetTitle: 'נשלח קישור לאיפוס סיסמה',
     },
-
     customers: {
         count: 'לקוחות · מתוך {n}',
         search: 'שם · מספר לקוח · ת״ז · טלפון · מטפל',
@@ -598,17 +567,14 @@ export default {
             allerg: 'רגישות: {what}',
         },
     },
-
     customer: {
         tab: {
             profile: 'פרופיל',
             link: 'קישור למטפל',
             orders: 'הזמנות',
             safety: 'בטיחות והצהרות',
-            // V2
             activities: 'פעילויות',
         },
-        // V2
         site: 'אתר צרכני',
         siteAccount: 'חשבון באתר',
         siteAccountOn: 'קיים — הלקוח מזמין גם בעצמו',
@@ -681,7 +647,6 @@ export default {
         noDeclTitle: 'אין הצהרות בארכיון',
         noDeclSub: 'הצהרת בטיחות נחתמת בהזמנה עצמה',
     },
-
     transfer: {
         title: 'העברת לקוח למטפל אחר · {name}',
         note: 'לקוח מקושר למטפל אחד בכל רגע נתון. ההזמנות ההיסטוריות נשארות אצל המטפל שביצע אותן — רק ההזמנות מכאן והלאה ישויכו למטפל החדש.',
@@ -704,8 +669,6 @@ export default {
         doneTitle: 'הלקוח הועבר',
         doneBody: '{name} → {to}',
     },
-
-    // V2 — the duplicate check on a card being created
     duplicates: {
         title: 'בדיקת כפילויות',
         idle: 'הזן ת״ז, טלפון או מייל — הבדיקה רצה בזמן ההקלדה מול מטפלים, לקוחות והרשמות ממתינות',
@@ -723,7 +686,6 @@ export default {
             pending: 'הרשמה ממתינה',
         },
     },
-
     newCustomer: {
         title: 'לקוח חדש',
         note: 'כל לקוח חייב להיות מקושר למטפל — בלי בחירת מטפל לא ניתן לשמור את הכרטיס. ברוב המקרים הלקוח נוצר אוטומטית כשהמטפל מזמין עבורו בפעם הראשונה; יצירה ידנית כאן היא לתיקוני נתונים ולהעברת לקוחות ותיקים.',
@@ -737,5 +699,23 @@ export default {
         doneTitle: 'כרטיס הלקוח נוצר',
         doneBody:
             '{code} · מקושר ל{name} · נדרשת הסכמת מידע רפואי בהזמנה הראשונה',
+    },
+    active: {
+        activate: 'הפעלה',
+        deactivate: 'השבתה',
+        onTitle: 'הפעלת הכרטיס',
+        offTitle: 'השבתת הכרטיס',
+        onBody: '{name} יחזור להיות פעיל ויוכל לשוב לעבודה השוטפת.',
+        offBody:
+            '{name} יסומן כלא פעיל. שום דבר לא נמחק וההיסטוריה נשארת במקומה.',
+        onEffect: 'הכרטיס חוזר לרשימות ולחיפוש כרגיל',
+        offEffect: 'הכרטיס יסומן כלא פעיל ולא יוצע בפעולות חדשות',
+        logEffect: 'השינוי נרשם ביומן הכרטיס וביומן המערכת',
+        toastOn: 'הכרטיס הופעל',
+        toastOff: 'הכרטיס הושבת',
+    },
+    status: {
+        active: 'פעיל',
+        inactive: 'לא פעיל',
     },
 };

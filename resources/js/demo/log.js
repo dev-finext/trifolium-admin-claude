@@ -26,6 +26,7 @@ export const LOG_ENTITY_TYPE_IDS = [
     'document',
     'order_item',
     'practitioner',
+    'patient',
     'message',
     'message_template',
     'batch',

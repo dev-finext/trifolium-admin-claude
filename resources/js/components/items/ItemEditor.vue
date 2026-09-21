@@ -245,6 +245,27 @@ const errors = computed(() => {
 });
 
 const hasErrors = computed(() => Object.values(errors.value).some(Boolean));
+
+/** Which field each check belongs to, so what is missing can be named. */
+const ERROR_FIELDS = {
+    group: 'items.editor.group',
+    code: 'items.editor.code',
+    he: 'items.editor.nameHe',
+    numIn: 'items.card.numInBuy',
+    levels: 'items.card.minLevel',
+    price: 'items.card.salePrice',
+};
+
+/** What still stands between the form and a save, named field by field. */
+const needs = computed(() =>
+    Object.entries(errors.value)
+        .filter(([, message]) => message)
+        .map(([key, message]) => ({
+            key,
+            label: t(ERROR_FIELDS[key] || 'items.editor.general'),
+            message,
+        })),
+);
 const valid = computed(() => !hasErrors.value);
 
 function show(field) {
@@ -1275,9 +1296,17 @@ const title = computed(() =>
                 }}
             </AButton>
             <AButton @click="emit('close')">{{ t('actions.cancel') }}</AButton>
-            <span v-if="hasErrors" class="a-rf-need">{{
-                t('items.editor.fixErrors')
-            }}</span>
+            <div v-if="needs.length" class="needs">
+                <span class="a-rf-need">{{
+                    t('items.editor.fixErrors', { n: needs.length })
+                }}</span>
+                <ul class="needs-list">
+                    <li v-for="need in needs" :key="need.key">
+                        <span class="needs-field">{{ need.label }}</span>
+                        <span class="needs-why">{{ need.message }}</span>
+                    </li>
+                </ul>
+            </div>
         </template>
     </AModal>
 </template>
@@ -1295,6 +1324,31 @@ const title = computed(() =>
 
 .req {
     color: var(--a-red);
+}
+
+/* What the save button is waiting for, spelled out beside it. */
+.needs {
+    display: grid;
+    gap: 2px;
+}
+
+.needs-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+    font-size: 12.5px;
+    color: var(--a-ink-4);
+}
+
+.needs-field {
+    font-weight: 600;
+}
+
+.needs-why::before {
+    content: ' — ';
 }
 
 /* A field the four flags switched off greys its label and hint with it, so the

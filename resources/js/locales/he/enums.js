@@ -360,6 +360,7 @@ export default {
         stock_adjust: 'התאמת מלאי',
         login: 'התחברות למערכת',
         export: 'ייצוא נתונים',
+        customer_update: 'עדכון כרטיס לקוח',
     },
     logSource: {
         manual: 'ידני',

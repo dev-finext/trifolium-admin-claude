@@ -482,11 +482,82 @@ export const useItemsStore = defineStore('items', () => {
             actorType: 'agent',
             actor: dataset.me?.name || null,
             valueType: 'plain',
+            field: null,
             from: null,
             to: null,
             src: 'manual',
             ip: null,
             ...row,
+        });
+    }
+
+    /**
+     * The fields a change log follows, and the label each is written under.
+     * Anything not here — the price rows, the warehouse rows, the properties —
+     * is logged as a whole rather than value by value.
+     */
+    const TRACKED = [
+        ['names.he', 'items.editor.nameHe'],
+        ['names.en', 'items.editor.nameForeign'],
+        ['group', 'items.editor.group'],
+        ['itemType', 'items.card.itemType'],
+        ['treeType', 'items.card.treeType'],
+        ['active', 'items.card.active'],
+        ['flags.inventory', 'items.flag.inventory'],
+        ['flags.sales', 'items.flag.sales'],
+        ['flags.purchase', 'items.flag.purchase'],
+        ['flags.batch', 'items.flag.batch'],
+        ['barcode', 'items.card.barcode'],
+        ['suppliers.preferred', 'items.card.preferredSupplier'],
+        ['suppliers.catalogNum', 'items.card.catalogNum'],
+        ['suppliers.itemName', 'items.card.supplierItemName'],
+        ['uom.stock', 'items.card.stockUom'],
+        ['uom.purchase', 'items.card.purchaseUom'],
+        ['uom.sales', 'items.card.salesUom'],
+        ['levels.min', 'items.card.minLevel'],
+        ['levels.max', 'items.card.maxLevel'],
+        ['price.sale', 'items.card.salePrice'],
+        ['price.lastPurchase', 'items.card.lastPurchase'],
+        ['priceGroup', 'items.card.ladder'],
+        ['site.sync', 'items.card.siteSync'],
+        ['remarks', 'items.card.remarks'],
+        ['internalNotes', 'items.card.internalNotes'],
+    ];
+
+    const at = (record, path) =>
+        path.split('.').reduce((node, key) => node?.[key], record);
+
+    /** A value as the log stores it — a flag reads as on or off, not as true. */
+    const logValue = (value) => {
+        if (value === true || value === false) {
+            return value ? 'V' : '—';
+        }
+
+        if (value === null || value === undefined || value === '') {
+            return null;
+        }
+
+        return isLocalized(value) ? value.he : String(value);
+    };
+
+    /** One row per field the save moved, so the card can show its own history. */
+    function logChanges(before, after, sku) {
+        TRACKED.forEach(([path, label]) => {
+            const was = logValue(at(before, path));
+            const now = logValue(at(after, path));
+
+            if (was === now) {
+                return;
+            }
+
+            writeLog({
+                act: 'item_update',
+                entType: 'catalog_item',
+                ent: sku,
+                field: label,
+                from: was,
+                to: now,
+            });
         });
     }
 
@@ -687,7 +758,7 @@ export const useItemsStore = defineStore('items', () => {
             return { created: false, item: null };
         }
 
-        const before = item.names.he;
+        const before = JSON.parse(JSON.stringify(item));
 
         Object.assign(item, record);
 
@@ -704,13 +775,7 @@ export const useItemsStore = defineStore('items', () => {
             stockRow.low = stockRow.avail < stockRow.min;
         }
 
-        writeLog({
-            act: 'item_update',
-            entType: 'catalog_item',
-            ent: item.sku,
-            from: before,
-            to: item.names.he,
-        });
+        logChanges(before, item, item.sku);
         await persist(`items/${item.sku}`, item, 'PUT');
 
         return { created: false, item };

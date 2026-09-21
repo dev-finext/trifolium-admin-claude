@@ -22,6 +22,7 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
+import ChangeLogPanel from '@/components/ui/ChangeLogPanel.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { ITEM_FLAG_IDS, SAFETY_CONTEXT_IDS, SAFETY_LEVEL } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -752,6 +753,8 @@ const categories = computed(() =>
                     :ref-id="row.sku"
                     :title="t('items.card.files')"
                 />
+
+                <ChangeLogPanel entity="catalog_item" :ref-id="row.sku" />
             </div>
         </template>
     </ADrawer>
