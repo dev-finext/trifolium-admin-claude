@@ -1285,12 +1285,39 @@ table.a-table {
 }
 /* One field per row. A grid puts every label on the same line as its
    neighbours', which reads as a header row over bare inputs however firmly
-   each label belongs to the field under it. Stacked, it cannot. */
+   each label belongs to the field under it. One per row, it cannot. */
 .a-line-body--stacked {
     grid-template-columns: minmax(0, 1fr);
 }
 .a-line-body--stacked .a-line-wide {
     grid-column: span 1;
+}
+/* Given the width, the label sits beside its own field instead of above it.
+   One field still owns one row — a label can never be read as a column
+   heading when the thing it names is right next to it — and a nine-field
+   receipt line stops being a thousand pixels tall. */
+@container (min-width: 560px) {
+    .a-line-body--stacked > div {
+        display: grid;
+        grid-template-columns: 190px minmax(0, 1fr);
+        column-gap: 14px;
+        row-gap: 4px;
+        align-items: start;
+    }
+    .a-line-body--stacked > div > * {
+        grid-column: 2;
+    }
+    .a-line-body--stacked > div > .a-lbl {
+        grid-column: 1;
+        grid-row: 1;
+        margin: 0;
+        padding-top: 8px;
+        text-align: start;
+    }
+    .a-line-body--stacked > div > .a-hint,
+    .a-line-body--stacked > div > .a-inv {
+        margin-top: 0;
+    }
 }
 @container (max-width: 359px) {
     .a-line-wide {

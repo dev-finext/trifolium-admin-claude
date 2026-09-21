@@ -29,8 +29,8 @@ import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 import { usePurchasingStore } from '@/stores/purchasing';
 
-/** Six fields to a row — a receipt line's ten sit on two rows. */
-const WIDTH = 1180;
+/** One field to a row, label beside it: the form no longer needs the width. */
+const WIDTH = 860;
 
 /** The supplier select's value for "not on the list — type it". */
 const OTHER = '__other';
@@ -370,7 +370,7 @@ async function save() {
                     />
                 </div>
 
-                <div class="a-line-body">
+                <div class="a-line-body a-line-body--stacked">
                     <div class="a-line-wide">
                         <label class="a-lbl" :for="`${uid}-i${i}`">
                             {{ t('inventory.receipt.col.item') }}

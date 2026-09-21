@@ -168,7 +168,7 @@ async function save() {
     <AModal
         open
         :title="t('purchasing.receive.title', { id: po.id })"
-        :width="1180"
+        :width="860"
         class="a-modal-card--fit"
         @close="emit('close')"
     >
@@ -239,7 +239,7 @@ async function save() {
                     />
                 </div>
 
-                <div class="a-line-body">
+                <div class="a-line-body a-line-body--stacked">
                     <div>
                         <label class="a-lbl" :for="`${uid}-q${i}`"
                             >{{ t('purchasing.receive.col.qty') }}
