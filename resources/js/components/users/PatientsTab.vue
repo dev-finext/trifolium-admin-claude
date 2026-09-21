@@ -17,6 +17,7 @@ import AModal from '@/components/ui/AModal.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
 import APagination from '@/components/ui/APagination.vue';
+import ASelect from '@/components/ui/ASelect.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';

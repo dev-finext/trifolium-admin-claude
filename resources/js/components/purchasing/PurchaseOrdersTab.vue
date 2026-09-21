@@ -27,6 +27,7 @@ import {
     CURRENCY_SYMBOL,
     PO_FILTER_FIELDS,
     PO_FILTER_GROUPS,
+    PO_RECEIVABLE_STATE_IDS,
     PO_STATE,
 } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -57,6 +58,17 @@ const state = useUrlState({
 const all = computed(() => store.rows);
 
 const tally = (predicate) => all.value.filter(predicate).length;
+
+/**
+ * What is still outstanding across every order that has not closed — the figure
+ * the "open value" tile reports. It was referenced by the template and never
+ * defined, so the tile read as an empty currency sign.
+ */
+const openValue = computed(() =>
+    all.value
+        .filter((row) => PO_RECEIVABLE_STATE_IDS.includes(row.state))
+        .reduce((sum, row) => sum + (Number(row.openValue) || 0), 0),
+);
 
 const searched = computed(() => {
     const term = state.pq.trim().toLowerCase();
