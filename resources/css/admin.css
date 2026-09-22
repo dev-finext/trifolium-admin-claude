@@ -985,10 +985,30 @@ table.a-table {
     font-size: 14px;
     color: var(--a-ink-3);
 }
+/* The box itself. It is 18 by 18 — never put it on the label around the box,
+   which would squeeze the label to the size of the box and spill its text out. */
 .a-check {
     width: 18px;
     height: 18px;
     accent-color: var(--a-accent);
+}
+/* The label that wraps a box and the text beside it. The box keeps its size, the
+   text takes the rest and wraps as text, not one letter per line. */
+.a-checkrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    cursor: pointer;
+}
+.a-checkrow > input {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--a-accent);
+}
+.a-checkrow > span {
+    min-width: 0;
 }
 /* The last-resort notice, shown in place of the console when a render error tears
    the component tree down. It depends on nothing the app renders. */

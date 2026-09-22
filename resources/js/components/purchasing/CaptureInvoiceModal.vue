@@ -161,15 +161,15 @@ async function save() {
                     <label
                         v-for="note in openNotes"
                         :key="note.id"
-                        class="a-check ci-note"
+                        class="a-checkrow ci-note"
                     >
                         <input
                             type="checkbox"
                             :checked="form.notes.includes(note.id)"
                             @change="toggleNote(note.id)"
                         />
-                        <span class="a-code a-tag">{{ note.id }}</span>
-                        <span class="t-sub"
+                        <span class="a-code a-tag ci-id">{{ note.id }}</span>
+                        <span class="t-sub ci-po"
                             >{{ note.po }} · {{ note.when.stamp }}</span
                         >
                         <ANum class="ci-net">{{
@@ -270,16 +270,33 @@ async function save() {
 .ci-notes {
     display: grid;
     gap: 6px;
+    max-height: 190px;
+    overflow: auto;
 }
 
+/* A delivery note the invoice may cover: the box, its number, the order and date
+   it came in on, and what it comes to — the amount pushed to the far end. */
 .ci-note {
-    display: flex;
     gap: 10px;
-    align-items: baseline;
+    padding: 4px 2px;
+}
+
+.ci-id {
+    flex: none;
+}
+
+.ci-po {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .ci-net {
+    flex: none;
     margin-inline-start: auto;
+    font-weight: 600;
 }
 
 .ci-total {

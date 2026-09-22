@@ -40,7 +40,7 @@ function onNumber(key, event) {
             <label
                 v-for="id in LADDER_FORMULA_KIND_IDS"
                 :key="id"
-                class="a-check ff-radio"
+                class="a-checkrow ff-radio"
             >
                 <input
                     type="radio"
@@ -139,8 +139,6 @@ function onNumber(key, event) {
 
 .ff-radio {
     display: inline-flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .ff-grid {

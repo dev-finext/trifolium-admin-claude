@@ -457,7 +457,7 @@ async function save() {
                             {{ t('inventory.receipt.col.waste') }}
                             <V2Badge v="3" size="sm" />
                         </label>
-                        <label class="a-check">
+                        <label class="a-checkrow waste">
                             <input
                                 :id="`${uid}-ws${i}`"
                                 v-model="line.waste"
