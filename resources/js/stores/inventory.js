@@ -193,6 +193,22 @@ export const MOVEMENT_FILTER_FIELDS = [
     },
     { key: 'mwh', group: 'what', kind: 'set', values: (move) => [move.wh] },
     { key: 'mitem', group: 'where', kind: 'set', values: (move) => [move.sku] },
+    // V3 — what turns the ledger into the batch report. `batchNo` and
+    // `batchSource` are put on the row by the screen, which has the batch
+    // records; a filter field never reaches into a store.
+    {
+        key: 'mbatch',
+        group: 'where',
+        kind: 'set',
+        values: (move) => (move.batch ? [move.batch] : []),
+    },
+    {
+        key: 'msource',
+        group: 'what',
+        kind: 'set',
+        prefix: 'inventory.batchSource',
+        values: (move) => (move.batchSource ? [move.batchSource] : []),
+    },
     {
         key: 'mdir',
         group: 'where',

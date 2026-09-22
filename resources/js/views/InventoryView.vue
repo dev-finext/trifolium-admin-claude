@@ -110,6 +110,24 @@ function openBatch(id) {
     view.batch = id;
 }
 
+/**
+ * The batch report, narrowed to one batch. V3.
+ *
+ * `mbatch` belongs to the ledger tab's own URL state, not to this screen's, so
+ * the query is written in one go and the tab reads it when it mounts — two
+ * separate writes would race each other through `router.replace`.
+ */
+function openReport(id) {
+    router.replace({
+        query: {
+            ...route.query,
+            tab: 'movements',
+            batch: undefined,
+            mbatch: id,
+        },
+    });
+}
+
 function openStock(sku) {
     view.batch = '';
     view.receipt = '';
@@ -301,6 +319,7 @@ function exportStock() {
         <MovementsTab
             v-else-if="view.tab === 'movements'"
             @open-batch="openBatch"
+            @open-production="openProduction"
             @open-receipt="openReceipt"
         />
     </template>
@@ -341,5 +360,6 @@ function exportStock() {
         @open-receipt="openReceipt"
         @open-batch="openBatch"
         @open-production="openProduction"
+        @open-report="openReport"
     />
 </template>

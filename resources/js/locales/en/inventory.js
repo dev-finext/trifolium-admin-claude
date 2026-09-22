@@ -32,6 +32,8 @@ export default {
             mwh: 'Warehouse',
             mitem: 'Item',
             mdir: 'Direction',
+            mbatch: 'Batch',
+            msource: 'Batch source',
         },
         stockState: {
             out: 'Out of stock',
@@ -279,6 +281,15 @@ export default {
             title: 'No batches match the filter',
             sub: 'Clear the filter',
         },
+        receipts: {
+            title: 'Goods receipts into this batch',
+            hint: 'The same batch can be received more than once — a supplier ships the rest of the lot later. The expiry stays one date for the whole batch; the receipt dates are a list.',
+            when: 'Received on',
+            qty: 'Quantity received',
+            doc: 'Receipt',
+            by: 'Received by',
+            more: '{n} receipts',
+        },
         moves: {
             title: 'Batch movements',
             hint: 'Every movement this batch had — the receipt that opened it, the production orders that drew on it, the orders it went out on, and any count or adjustment that corrected it. Click a document number to open it.',
@@ -287,7 +298,9 @@ export default {
             qty: 'Quantity',
             ref: 'Document',
             by: 'Who',
+            source: 'Batch source',
             none: 'No movements recorded for this batch.',
+            inReport: 'Open the batch movements report, filtered to this batch',
         },
         dates: {
             edit: 'Edit dates',
@@ -348,6 +361,8 @@ export default {
         note: 'Every movement is written from the record behind it: a goods receipt, a batch allocated to compounding, or a stock adjustment written to the log. Nothing moves without a batch and without someone who moved it.',
         count: 'movements',
         search: 'Batch · item · item code · reference',
+        export: 'Export the report',
+        exported: '{n} rows exported',
         filter: {
             kind: 'Movement kind — all',
             wh: 'Warehouse — all',

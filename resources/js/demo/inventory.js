@@ -358,6 +358,8 @@ export function buildReceipts(stock, productionInputs = []) {
     };
     const deal = [];
     let dealt = 0;
+    // The line a later delivery repeats — filled once the first receipt is built.
+    let repeatOf = null;
 
     for (let i = RECEIPT_COUNT - 1; i >= 0; i -= 1) {
         deal[i] = { count: spread(`receipt:${i}:lines`, 3, 6), from: dealt };
@@ -403,6 +405,17 @@ export function buildReceipts(stock, productionInputs = []) {
             });
         }
 
+        // V3 — the newest delivery brings a second shipment of a lot the
+        // pharmacy already has on the shelf: same item, same supplier batch,
+        // same expiry. It joins the batch that is already open rather than
+        // opening a second one under the same number.
+        if (i === 0 && repeatOf) {
+            lines.push({
+                ...repeatOf,
+                qty: receiptQty('repeat:qty', repeatOf),
+            });
+        }
+
         receipts.unshift({
             id: `GR-26${70 + i * 2}`,
             supplier: supplier.name,
@@ -419,6 +432,11 @@ export function buildReceipts(stock, productionInputs = []) {
             lines,
             batches: lines.map((line) => line.batch),
         });
+
+        // The oldest receipt in the run donates the lot that comes again.
+        if (i === RECEIPT_COUNT - 1) {
+            repeatOf = lines[0] || null;
+        }
     }
 
     return receipts;
@@ -657,9 +675,21 @@ export function buildInventoryDocs({ receipts, production, stock }) {
  */
 export function buildBatches(receipts, stock = []) {
     const batches = [];
+    const byId = new Map();
 
     receipts.forEach((receipt) => {
         receipt.lines.forEach((line) => {
+            // V3 — a second delivery of the same lot grows the batch that is
+            // already open and adds its own date to the batch's receipt list.
+            const already = byId.get(line.batch);
+
+            if (already) {
+                already.qty = round2(already.qty + line.qty);
+                already.remaining = round2(already.remaining + line.qty);
+
+                return;
+            }
+
             const daysToExp = -daysSince(line.expiry);
             const remaining =
                 receipt.when.daysAgo > 60
@@ -670,7 +700,7 @@ export function buildBatches(receipts, stock = []) {
                       )
                     : line.qty;
 
-            batches.push({
+            const opened = {
                 madeOn: line.madeOn,
                 id: line.batch,
                 // V3 — goods from a supplier carry the supplier's own batch
@@ -698,7 +728,10 @@ export function buildBatches(receipts, stock = []) {
                 unitCost: null,
                 components: null,
                 by: receipt.by,
-            });
+            };
+
+            byId.set(opened.id, opened);
+            batches.push(opened);
         });
     });
 
@@ -872,7 +905,7 @@ export function buildMovements(receipts, batchUse) {
     receipts.forEach((receipt) => {
         receipt.lines.forEach((line) => {
             rows.push({
-                id: `mv-in-${line.batch}`,
+                id: `mv-in-${receipt.id}-${line.batch}`,
                 kind: 'goods_in',
                 sku: line.sku,
                 name: line.name,

@@ -39,6 +39,7 @@ const emit = defineEmits([
     'open-production',
     'open-batch',
     'open-doc',
+    'open-report',
 ]);
 
 const { t } = useI18n();
@@ -145,6 +146,24 @@ const unitLabel = computed(() =>
     props.batch ? t(`inventory.unit.${props.batch.unit}`) : '',
 );
 
+/**
+ * Every goods receipt that fed this batch, oldest first. V3.
+ *
+ * The same lot may arrive more than once — a supplier ships the rest of it a
+ * month later — and both deliveries belong to one batch under one number. The
+ * batch therefore has one expiry and a list of receipt dates.
+ */
+const receipts = computed(() =>
+    props.batch ? inventory.receiptsOfBatch(props.batch.id) : [],
+);
+
+const receiptCols = computed(() => [
+    { k: 'when', label: t('inventory.batches.receipts.when'), nowrap: true },
+    { k: 'qty', label: t('inventory.batches.receipts.qty'), nowrap: true },
+    { k: 'ref', label: t('inventory.batches.receipts.doc'), nowrap: true },
+    { k: 'by', label: t('inventory.batches.receipts.by') },
+]);
+
 /** `received` travels as the same moment object every record's date field uses. */
 const receivedOn = computed(() => {
     const received = props.batch?.received;
@@ -210,6 +229,14 @@ const cols = computed(() => [
                             <span>
                                 {{ t('inventory.batches.trace.received') }}
                                 <ANum>{{ receivedOn }}</ANum>
+                                <template v-if="receipts.length > 1">
+                                    ·
+                                    {{
+                                        t('inventory.batches.receipts.more', {
+                                            n: receipts.length,
+                                        })
+                                    }}
+                                </template>
                             </span>
                             <span>
                                 {{ t('inventory.batches.trace.expiry') }}
@@ -448,11 +475,57 @@ const cols = computed(() => [
                 </ADataTable>
             </ACard>
 
+            <ACard
+                v-if="receipts.length"
+                :title="t('inventory.batches.receipts.title')"
+                icon="inbox"
+            >
+                <template #right>
+                    <V2Badge v="3" size="sm" />
+                </template>
+                <p class="a-hint">
+                    {{ t('inventory.batches.receipts.hint') }}
+                </p>
+                <ADataTable :cols="receiptCols" :rows="receipts" row-key="id">
+                    <template #cell-when="{ row }">
+                        <ANum>{{ row.when.stamp }}</ANum>
+                    </template>
+                    <template #cell-qty="{ row }">
+                        <ANum>{{ num(row.qty, 3) }}</ANum>
+                        <span v-if="row.unit"
+                            >&nbsp;{{ t(`inventory.unit.${row.unit}`) }}</span
+                        >
+                    </template>
+                    <template #cell-ref="{ row }">
+                        <button
+                            type="button"
+                            class="a-linkbtn"
+                            @click="emit('open-receipt', row.ref)"
+                        >
+                            <ANum>{{ row.ref }}</ANum>
+                        </button>
+                    </template>
+                    <template #cell-by="{ row }">
+                        <span v-if="row.by">{{ loc(row.by) }}</span>
+                        <span v-else class="a-trace-n">—</span>
+                    </template>
+                </ADataTable>
+            </ACard>
+
             <ACard :title="t('inventory.batches.moves.title')" icon="list">
                 <template #right>
                     <V2Badge v="3" size="sm" />
                 </template>
                 <p class="a-hint">{{ t('inventory.batches.moves.hint') }}</p>
+                <p v-if="moves.length" class="a-trace-report">
+                    <button
+                        type="button"
+                        class="a-linkbtn"
+                        @click="emit('open-report', batch.id)"
+                    >
+                        {{ t('inventory.batches.moves.inReport') }}
+                    </button>
+                </p>
                 <ADataTable
                     v-if="moves.length"
                     :cols="moveCols"
@@ -606,5 +679,9 @@ const cols = computed(() => [
 .bd-form {
     display: grid;
     gap: 14px;
+}
+
+.a-trace-report {
+    margin: 0 0 10px;
 }
 </style>
