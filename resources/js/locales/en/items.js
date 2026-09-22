@@ -254,6 +254,7 @@ export default {
         minText: 'minimum {n}',
         batches: 'Open batches',
         drill: '{n} records · click to list',
+        batchesAll: '{n} batches in all · click to list',
         noCommitted: 'No open orders hold this item',
         noOnOrder: 'No open purchase orders for this item',
         noBatches: 'No open batches',

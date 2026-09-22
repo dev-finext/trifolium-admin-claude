@@ -222,7 +222,7 @@ const batchCols = computed(() => [
                     </div>
                     <div class="tile-s">
                         {{
-                            t('items.card.drill', {
+                            t('items.card.batchesAll', {
                                 n: batches.length,
                             })
                         }}
