@@ -475,9 +475,9 @@ const cols = computed(() => [
                         <span :class="{ 'is-out': row.qty < 0 }">
                             <ANum>{{ num(row.qty, 3) }}</ANum>
                         </span>
-                        <span v-if="row.unit">
-                            &nbsp;{{ t(`inventory.unit.${row.unit}`) }}
-                        </span>
+                        <span v-if="row.unit"
+                            >&nbsp;{{ t(`inventory.unit.${row.unit}`) }}</span
+                        >
                     </template>
                     <template #cell-ref="{ row }">
                         <button
