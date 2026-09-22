@@ -330,6 +330,33 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     const useOfBatch = (id) => batchUse.value.filter((row) => row.batch === id);
 
+    /**
+     * Every movement a batch ever had, newest first. V3.
+     *
+     * Natalie: "באצוות צריך להיות קישור לכל ההזמנות שנוצרו מאותה האצווה - דוח
+     * תנועות מספרי אצוות". Every movement in the ledger carries the batch it
+     * moved, so the report is a filter, not a new record — the receipt that
+     * opened it, the runs that drew on it, the orders it went out on, and any
+     * count or adjustment that corrected it, each with the document behind it.
+     */
+    const movementsOfBatch = (id) =>
+        movements.value
+            .filter((move) => move.batch === id)
+            .slice()
+            .sort((a, b) =>
+                `${b.when.iso}${b.id}`.localeCompare(`${a.when.iso}${a.id}`),
+            );
+
+    /**
+     * The receipts that fed a batch, oldest first. A batch may be topped up by
+     * a later delivery, and then it has more than one — which is the list of
+     * dates the specification asks for.
+     */
+    const receiptsOfBatch = (id) =>
+        movementsOfBatch(id)
+            .filter((move) => move.kind === 'goods_in')
+            .reverse();
+
     /** Open waste batches of one item, nearest expiry first. */
     const wasteBatchesOf = (sku) =>
         batchesOf(sku)
@@ -857,6 +884,76 @@ export const useInventoryStore = defineStore('inventory', () => {
      *                    moved: Array<{id: string, delta: number}>}>}
      */
     /**
+     * Correct a batch's two dates. V3.
+     *
+     * Natalie asks for both to be editable and for each to be one field, not a
+     * list: "לאצווה ניתן לערוך את תאריך התוקף - תמיד שדה אחד (לא רשימה)" and
+     * "לאצווה ניתן לערוך את תאריך הייצור (שדה אחד)". Changing the expiry moves
+     * the batch through the expiry states, so the record is re-aged; every
+     * change is written to the log with what it was and what it became.
+     */
+    async function editBatchDates(id, { expiry, madeOn, reason = '' } = {}) {
+        const batch = batchById(id);
+
+        if (!batch) {
+            return null;
+        }
+
+        const changes = [];
+
+        if (expiry && expiry !== batch.expiry) {
+            changes.push([
+                'inventory.batches.trace.expiry',
+                batch.expiry,
+                expiry,
+            ]);
+            batch.expiry = expiry;
+            batch.daysToExp = -daysSince(expiry);
+        }
+
+        const was = batch.madeOn || null;
+        const now = madeOn || null;
+
+        if (now !== was) {
+            changes.push(['inventory.batches.trace.madeOn', was, now]);
+            batch.madeOn = now;
+        }
+
+        if (!changes.length) {
+            return batch;
+        }
+
+        // A rejected batch stays rejected whatever its dates now say; anything
+        // else is re-read against the new expiry.
+        syncBatch(batch);
+
+        changes.forEach(([field, from, to]) => {
+            writeLog({
+                act: 'batch_update',
+                entType: 'batch',
+                ent: id,
+                valueType: 'date',
+                field,
+                from,
+                to,
+                note: reason.trim() || null,
+            });
+        });
+
+        await persist(
+            `inventory/batches/${id}`,
+            {
+                expiry: batch.expiry,
+                madeOn: batch.madeOn,
+                reason: reason.trim() || null,
+            },
+            'PATCH',
+        );
+
+        return batch;
+    }
+
+    /**
      * Open a batch that did not come through a goods receipt — a production
      * run's output or its waste. The record is completed with the fields every
      * batch carries, aged against its expiry, and put first in the list.
@@ -1379,6 +1476,9 @@ export const useInventoryStore = defineStore('inventory', () => {
         mergeWaste,
         recordCount,
         useOfBatch,
+        movementsOfBatch,
+        receiptsOfBatch,
+        editBatchDates,
         liveBatchCount,
         fifoPlan,
 

@@ -266,6 +266,7 @@ export default {
         colSupplier: 'Supplier',
         colEta: 'Expected',
         colBatch: 'Batch',
+        colBatchSource: 'Source',
         colRemaining: 'Remaining',
         colExpiry: 'Expiry',
         boms: 'Bills of materials',

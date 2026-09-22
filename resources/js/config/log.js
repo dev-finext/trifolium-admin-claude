@@ -93,6 +93,8 @@ export const LOG_ACTION_IDS = [
     // inventory
     'goods_in',
     'batch_allocate',
+    // V3 — correcting a batch's expiry or production date.
+    'batch_update',
     'batch_reject',
     'stock_adjust',
     // session

@@ -3,7 +3,7 @@
 // it. This is the drawer a recall question is answered from, which is why the
 // chain lists the order, the formula, the patient and the practitioner rather
 // than only a quantity.
-import { computed } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
@@ -13,12 +13,17 @@ import ActionGate from '@/components/ui/ActionGate.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
+import AInput from '@/components/ui/AInput.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
+import AModal from '@/components/ui/AModal.vue';
 import ANum from '@/components/ui/ANum.vue';
+import ATextarea from '@/components/ui/ATextarea.vue';
 import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
+import ChangeLogPanel from '@/components/ui/ChangeLogPanel.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
+import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { BATCH_STATES } from '@/config';
+import { BATCH_STATES, STOCK_MOVE } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { ils, num } from '@/lib/money';
 import { useInventoryStore } from '@/stores/inventory';
@@ -33,6 +38,7 @@ const emit = defineEmits([
     'open-receipt',
     'open-production',
     'open-batch',
+    'open-doc',
 ]);
 
 const { t } = useI18n();
@@ -42,6 +48,77 @@ const inventory = useInventoryStore();
 const uses = computed(() =>
     props.batch ? inventory.useOfBatch(props.batch.id) : [],
 );
+
+/**
+ * Every movement this batch ever had. V3.
+ *
+ * The specification asks for a link from a batch to everything that happened to
+ * it — the receipt that opened it, the runs that drew on it, the orders it went
+ * out on. Each row names the document behind it, and the document opens.
+ */
+const moves = computed(() =>
+    props.batch ? inventory.movementsOfBatch(props.batch.id) : [],
+);
+
+const moveCols = computed(() => [
+    { k: 'when', label: t('inventory.batches.moves.when'), nowrap: true },
+    { k: 'kind', label: t('inventory.batches.moves.kind'), nowrap: true },
+    { k: 'qty', label: t('inventory.batches.moves.qty'), nowrap: true },
+    { k: 'ref', label: t('inventory.batches.moves.ref'), nowrap: true },
+    { k: 'by', label: t('inventory.batches.moves.by') },
+]);
+
+/** Which screen a movement's document belongs to, read off its own number. */
+function openRef(ref) {
+    if (!ref) {
+        return;
+    }
+
+    if (String(ref).startsWith('GR-')) {
+        emit('open-receipt', ref);
+    } else if (String(ref).startsWith('PR-')) {
+        emit('open-production', ref);
+    } else {
+        emit('open-doc', ref);
+    }
+}
+
+/**
+ * Correcting the batch's two dates. V3.
+ *
+ * Both are single fields, as the specification insists — the expiry that FEFO
+ * and the label work from, and the production date the supplier's certificate
+ * gives. Changing either is written to the change log with its old value.
+ */
+const editing = ref(false);
+const saving = ref(false);
+const form = reactive({ expiry: '', madeOn: '', reason: '' });
+
+watch(editing, (open) => {
+    if (open && props.batch) {
+        form.expiry = props.batch.expiry || '';
+        form.madeOn = props.batch.madeOn || '';
+        form.reason = '';
+    }
+});
+
+const dirty = computed(
+    () =>
+        Boolean(props.batch) &&
+        (form.expiry !== (props.batch.expiry || '') ||
+            (form.madeOn || '') !== (props.batch.madeOn || '')),
+);
+
+async function saveDates() {
+    saving.value = true;
+
+    try {
+        await inventory.editBatchDates(props.batch.id, { ...form });
+        editing.value = false;
+    } finally {
+        saving.value = false;
+    }
+}
 
 /**
  * What went into a batch the pharmacy made: the production run records which
@@ -150,6 +227,10 @@ const cols = computed(() => [
                         </div>
                     </div>
                     <div class="a-dhead-a">
+                        <AButton sm icon="edit" @click="editing = true">
+                            {{ t('inventory.batches.dates.edit') }}
+                            <V2Badge v="3" size="sm" />
+                        </AButton>
                         <AButton sm icon="x" @click="emit('close')">
                             {{ t('ui.close') }}
                         </AButton>
@@ -367,11 +448,130 @@ const cols = computed(() => [
                 </ADataTable>
             </ACard>
 
+            <ACard :title="t('inventory.batches.moves.title')" icon="list">
+                <template #right>
+                    <V2Badge v="3" size="sm" />
+                </template>
+                <p class="a-hint">{{ t('inventory.batches.moves.hint') }}</p>
+                <ADataTable
+                    v-if="moves.length"
+                    :cols="moveCols"
+                    :rows="moves"
+                    row-key="id"
+                >
+                    <template #cell-when="{ row }">
+                        <ANum>{{ row.when.stamp }}</ANum>
+                    </template>
+                    <template #cell-kind="{ row }">
+                        <AChip
+                            :tone="STOCK_MOVE[row.kind]?.tone"
+                            size="sm"
+                            :dot="false"
+                        >
+                            {{ t(`stockMove.${row.kind}`) }}
+                        </AChip>
+                    </template>
+                    <template #cell-qty="{ row }">
+                        <span :class="{ 'is-out': row.qty < 0 }">
+                            <ANum>{{ num(row.qty, 3) }}</ANum>
+                        </span>
+                        <span v-if="row.unit">
+                            &nbsp;{{ t(`inventory.unit.${row.unit}`) }}
+                        </span>
+                    </template>
+                    <template #cell-ref="{ row }">
+                        <button
+                            v-if="row.ref"
+                            type="button"
+                            class="a-linkbtn"
+                            @click="openRef(row.ref)"
+                        >
+                            <ANum>{{ row.ref }}</ANum>
+                        </button>
+                        <span v-else class="a-trace-n">—</span>
+                    </template>
+                    <template #cell-by="{ row }">
+                        <span v-if="row.by">{{ loc(row.by) }}</span>
+                        <span v-else class="a-trace-n">—</span>
+                    </template>
+                </ADataTable>
+                <p v-else class="a-trace-n">
+                    {{ t('inventory.batches.moves.none') }}
+                </p>
+            </ACard>
+
             <ACard :title="t('inventory.batches.trace.analyses')" icon="file">
                 <ActionGate id="batch_analyses">
                     <AttachmentsPanel entity="batch" :ref-id="batch.id" bare />
                 </ActionGate>
             </ACard>
+
+            <ChangeLogPanel entity="batch" :ref-id="batch.id" />
+
+            <AModal
+                v-if="editing"
+                open
+                :title="t('inventory.batches.dates.title')"
+                :width="480"
+                @close="editing = false"
+            >
+                <div class="bd-form">
+                    <div>
+                        <label class="a-lbl" for="bd-exp">{{
+                            t('inventory.batches.trace.expiry')
+                        }}</label>
+                        <AInput
+                            id="bd-exp"
+                            v-model="form.expiry"
+                            type="date"
+                            class="a-w100"
+                        />
+                        <div class="a-hint">
+                            {{ t('inventory.batches.dates.expiryHint') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" for="bd-made">{{
+                            t('inventory.batches.trace.madeOn')
+                        }}</label>
+                        <AInput
+                            id="bd-made"
+                            v-model="form.madeOn"
+                            type="date"
+                            class="a-w100"
+                        />
+                        <div class="a-hint">
+                            {{ t('inventory.batches.dates.madeOnHint') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" for="bd-why">{{
+                            t('inventory.batches.dates.reason')
+                        }}</label>
+                        <ATextarea
+                            id="bd-why"
+                            v-model="form.reason"
+                            :rows="2"
+                            class="a-w100"
+                        />
+                        <div class="a-hint">
+                            {{ t('inventory.batches.dates.reasonHint') }}
+                        </div>
+                    </div>
+                </div>
+                <template #footer>
+                    <AButton
+                        kind="p"
+                        icon="save"
+                        :disabled="!dirty || saving"
+                        @click="saveDates"
+                        >{{ t('inventory.batches.dates.save') }}</AButton
+                    >
+                    <AButton @click="editing = false">{{
+                        t('actions.cancel')
+                    }}</AButton>
+                </template>
+            </AModal>
         </template>
     </ADrawer>
 </template>
@@ -397,5 +597,14 @@ const cols = computed(() => [
 .a-trace-n {
     font-size: 13.5px;
     color: var(--a-ink-3);
+}
+
+.is-out {
+    color: var(--a-red);
+}
+
+.bd-form {
+    display: grid;
+    gap: 14px;
 }
 </style>

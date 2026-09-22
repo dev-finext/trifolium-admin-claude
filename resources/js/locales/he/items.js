@@ -263,6 +263,7 @@ export default {
         colSupplier: 'ספק',
         colEta: 'צפי אספקה',
         colBatch: 'אצווה',
+        colBatchSource: 'מקור',
         colRemaining: 'נותר',
         colExpiry: 'תוקף',
         boms: 'עצי מוצר',

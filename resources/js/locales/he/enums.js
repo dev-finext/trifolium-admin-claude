@@ -355,6 +355,7 @@ export default {
         credit_terms_approve: 'אישור מסלול הקפה',
         credit_terms_revoke: 'ביטול מסלול הקפה',
         goods_in: 'קליטת סחורה למלאי',
+        batch_update: 'עדכון תאריכי אצווה',
         batch_allocate: 'שיוך אצווה לרקיחה',
         batch_reject: 'פסילת אצווה',
         stock_adjust: 'התאמת מלאי',

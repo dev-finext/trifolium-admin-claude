@@ -279,6 +279,28 @@ export default {
             title: 'No batches match the filter',
             sub: 'Clear the filter',
         },
+        moves: {
+            title: 'Batch movements',
+            hint: 'Every movement this batch had — the receipt that opened it, the production orders that drew on it, the orders it went out on, and any count or adjustment that corrected it. Click a document number to open it.',
+            when: 'When',
+            kind: 'Movement',
+            qty: 'Quantity',
+            ref: 'Document',
+            by: 'Who',
+            none: 'No movements recorded for this batch.',
+        },
+        dates: {
+            edit: 'Edit dates',
+            title: 'Edit the batch dates',
+            expiryHint:
+                'One field for the whole batch. Changing the expiry immediately affects the picking order (FEFO) and the batch state.',
+            madeOnHint:
+                'The production date — the pharmacy’s on a batch made here, the supplier’s on one received.',
+            reason: 'Reason for the change',
+            reasonHint:
+                'Written to the change log together with the previous value.',
+            save: 'Save dates',
+        },
         trace: {
             analyses: 'Batch analyses & documents',
             title: 'Batch',

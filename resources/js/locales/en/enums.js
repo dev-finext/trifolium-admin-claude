@@ -355,6 +355,7 @@ export default {
         credit_terms_approve: 'Credit terms approved',
         credit_terms_revoke: 'Credit terms revoked',
         goods_in: 'Goods received into stock',
+        batch_update: 'Batch dates corrected',
         batch_allocate: 'Batch allocated to compounding',
         batch_reject: 'Batch rejected',
         stock_adjust: 'Stock adjusted',

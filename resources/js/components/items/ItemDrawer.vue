@@ -40,6 +40,7 @@ const emit = defineEmits([
     'edit',
     'open-bom',
     'open-item',
+    'open-batch',
     'produce',
     'count',
     'remove',
@@ -733,7 +734,11 @@ const categories = computed(() =>
                     </AButton>
                 </ACard>
 
-                <ItemStockPanel :row="row" class="span2" />
+                <ItemStockPanel
+                    :row="row"
+                    class="span2"
+                    @open-batch="emit('open-batch', $event)"
+                />
 
                 <ItemBomPanel
                     :row="row"

@@ -25,6 +25,8 @@ const props = defineProps({
     row: { type: Object, default: null },
 });
 
+const emit = defineEmits(['open-batch']);
+
 const { t } = useI18n();
 const { loc } = useLocalized();
 const store = useItemsStore();
@@ -52,10 +54,32 @@ const onOrderQty = computed(() =>
     onOrder.value.reduce((sum, line) => sum + (line.qtySales ?? line.qty), 0),
 );
 
-const batches = computed(() =>
-    props.row
-        ? inventory.openBatchesOf(props.row.sku, { allowWaste: true })
-        : [],
+/**
+ * Every batch of this item, open or spent. V3.
+ *
+ * The panel used to list only what still carries stock, which answers "what can
+ * I use" but not "where did this item come from" — and a recall question is
+ * always about a batch that has already gone out. Nearest expiry first, and the
+ * ones still holding stock ahead of the ones that do not.
+ */
+const batches = computed(() => {
+    if (!props.row) {
+        return [];
+    }
+
+    return inventory.batches
+        .filter((batch) => batch.sku === props.row.sku)
+        .slice()
+        .sort(
+            (a, b) =>
+                Number(b.remaining > 0) - Number(a.remaining > 0) ||
+                a.daysToExp - b.daysToExp,
+        );
+});
+
+/** How many of them still carry something — the figure the tile counts. */
+const liveBatches = computed(
+    () => batches.value.filter((batch) => batch.remaining > 0).length,
 );
 
 /** Waste of this item still on the shelf, and the batches it sits in. */
@@ -88,6 +112,7 @@ const onOrderCols = computed(() => [
 
 const batchCols = computed(() => [
     { k: 'id', label: t('items.card.colBatch'), nowrap: true },
+    { k: 'source', label: t('items.card.colBatchSource'), nowrap: true },
     { k: 'remaining', label: t('items.card.colRemaining'), nowrap: true },
     { k: 'expiry', label: t('items.card.colExpiry'), nowrap: true },
 ]);
@@ -193,7 +218,7 @@ const batchCols = computed(() => [
                         {{ t('items.card.batches') }}
                     </div>
                     <div class="tile-v">
-                        <ANum>{{ batches.length }}</ANum>
+                        <ANum>{{ liveBatches }}</ANum>
                     </div>
                     <div class="tile-s">
                         {{
@@ -268,15 +293,29 @@ const batchCols = computed(() => [
                 :rows="batches"
                 row-key="id"
                 :max-height="260"
+                @row="emit('open-batch', $event.id)"
             >
                 <template #empty>
                     <p class="t-sub inset">
                         {{ t('items.card.noBatches') }}
                     </p>
                 </template>
-                <template #cell-id="{ row: batch }"
-                    ><ANum>{{ batch.number || batch.id }}</ANum></template
-                >
+                <template #cell-id="{ row: batch }">
+                    <ANum>{{ batch.number || batch.id }}</ANum>
+                </template>
+                <template #cell-source="{ row: batch }">
+                    <AChip
+                        :tone="batch.waste ? 'red' : 'gray'"
+                        size="sm"
+                        :dot="false"
+                    >
+                        {{
+                            batch.waste
+                                ? t('inventory.batchSource.waste')
+                                : t(`inventory.batchSource.${batch.source}`)
+                        }}
+                    </AChip>
+                </template>
                 <template #cell-remaining="{ row: batch }">
                     <ANum>{{ num(batch.remaining) }}</ANum>
                     {{ t(`inventory.unit.${batch.unit}`) }}

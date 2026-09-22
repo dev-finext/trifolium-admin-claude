@@ -10,6 +10,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
+import BatchTraceDrawer from '@/components/inventory/BatchTraceDrawer.vue';
 import BomDrawer from '@/components/items/BomDrawer.vue';
 import BomEditor from '@/components/items/BomEditor.vue';
 import CountModal from '@/components/items/CountModal.vue';
@@ -26,6 +27,7 @@ import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
+import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 
 const { t } = useI18n();
@@ -34,8 +36,9 @@ const { push } = useToast();
 const router = useRouter();
 const dataset = useDatasetStore();
 const store = useItemsStore();
+const inventory = useInventoryStore();
 
-const view = useUrlState({ item: '', bom: '' });
+const view = useUrlState({ item: '', bom: '', batch: '' });
 
 /** Editors and dialogs are actions, not addresses. `{}` opens an empty form. */
 const editing = ref(null);
@@ -44,6 +47,11 @@ const counting = ref(null);
 const removing = ref(null);
 
 const openItem = computed(() => (view.item ? store.rowBySku(view.item) : null));
+
+/** V3 — the batch a row on the item card opened, traced without leaving here. */
+const openBatch = computed(() =>
+    view.batch ? inventory.batchById(view.batch) : null,
+);
 const openBomRecord = computed(() =>
     view.bom ? store.bomById(view.bom) : null,
 );
@@ -204,9 +212,17 @@ async function confirmRemove(reason) {
         @edit="editing = $event"
         @open-bom="openBom"
         @open-item="view.item = $event"
+        @open-batch="view.batch = $event"
         @produce="produce"
         @count="counting = $event"
         @remove="removing = $event"
+    />
+
+    <BatchTraceDrawer
+        :batch="openBatch"
+        @close="view.batch = ''"
+        @open-batch="view.batch = $event"
+        @open-item="view.item = $event"
     />
 
     <BomDrawer
