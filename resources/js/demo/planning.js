@@ -1,8 +1,8 @@
 // V3 — the history the planning report reads: what each item consumed month by
-// month, what is on order for it, and who has supplied it before.
+// month, and what is on order for it.
 //
-// None of this is fabricated. All three files come straight out of the restored
-// SAP database by `scripts/extract-sap/extract.py`:
+// None of this is fabricated. Both files come straight out of the restored SAP
+// database by `scripts/extract-sap/extract.py`:
 //
 //   consumption.json    24 months per item, on the pharmacy's own definition of
 //                       consumption (`CONSUMPTION_SKIP` there, and the same list
@@ -12,8 +12,11 @@
 //   openOrders.json     open purchase-order lines (POR1) and open production
 //                       orders (OWOR), so column 7 of the client's note can say
 //                       not just how much is coming but from whom.
-//   purchaseHistory.json  one row per item and supplier out of the receipts
-//                       (OPDN/PDN1): how much was taken, at what price, when.
+//
+// A third extract, one row per item and supplier out of the receipts, fed a
+// "who actually supplied this" panel. That panel was withdrawn on 22.9 with the
+// preferred-supplier question it answered; `purchase_history` is still in
+// scripts/extract-sap/extract.py and one run brings it back.
 //
 // The console's demo clock runs at 2026-09; the database was backed up on
 // 2026-08-05, so the history ends at 2026-07. `shiftMonths` moves the whole
@@ -22,7 +25,6 @@
 // month they are filed under.
 import REAL_CONSUMPTION from '@/demo/real/consumption.json';
 import REAL_OPEN_ORDERS from '@/demo/real/openOrders.json';
-import REAL_PURCHASE_HISTORY from '@/demo/real/purchaseHistory.json';
 import { isoDaysAgo } from '@/lib/dates';
 
 /** 'YYYY-MM' plus n months. */
@@ -107,25 +109,5 @@ export function buildOpenOrders() {
         uom: row.uom || null,
         due: row.due || null,
         placed: row.placed || null,
-    }));
-}
-
-/**
- * Who has actually supplied an item. The client's note asks the report to
- * recommend a supplier and to show "מה קורה שאין לספק למי כן היה" — which is
- * answerable only from the receipts, not from the one preferred supplier the
- * item card names.
- */
-export function buildPurchaseHistory() {
-    return REAL_PURCHASE_HISTORY.map((row, i) => ({
-        id: `ph-${row.code}-${row.supplierCode}-${i}`,
-        sku: row.code,
-        supplierCode: row.supplierCode || null,
-        supplier: row.supplier || null,
-        lines: Number(row.lines) || 0,
-        qty: Number(row.qty) || 0,
-        lastOn: row.lastOn || null,
-        lowPrice: Number(row.lowPrice) || 0,
-        highPrice: Number(row.highPrice) || 0,
     }));
 }

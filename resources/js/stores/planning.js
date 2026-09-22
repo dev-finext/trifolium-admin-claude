@@ -74,7 +74,6 @@ export const usePlanningStore = defineStore('planning', () => {
     );
 
     const openOrders = computed(() => dataset.data.openOrders || []);
-    const purchaseHistory = computed(() => dataset.data.purchaseHistory || []);
 
     /** Consumption per item, keyed by item number, for O(1) lookup per row. */
     const historyBySku = computed(
@@ -125,11 +124,6 @@ export const usePlanningStore = defineStore('planning', () => {
 
     const openOrdersOf = (sku) =>
         openOrders.value.filter((row) => row.sku === sku);
-
-    const suppliersOf = (sku) =>
-        purchaseHistory.value
-            .filter((row) => row.sku === sku)
-            .sort((a, b) => b.qty - a.qty);
 
     // ---- the report ----------------------------------------------------------
 
@@ -495,7 +489,6 @@ export const usePlanningStore = defineStore('planning', () => {
         months,
         defaultWindow,
         openOrders,
-        purchaseHistory,
         planLines,
         purchaseRequests,
         coverThresholds,
@@ -504,7 +497,6 @@ export const usePlanningStore = defineStore('planning', () => {
         report,
         planFor,
         openOrdersOf,
-        suppliersOf,
         requestById,
         producible,
 

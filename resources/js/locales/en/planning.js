@@ -66,17 +66,10 @@ export default {
         byMonth: 'Consumption month by month',
         byMonthHint:
             'The dark bar is all consumption; the amber part inside it is what was sold directly as raw material rather than going into a production run.',
-        lastYear:
-            'The same period last year consumed {then} against {now} today — a change of {pct}%.',
         coming: 'What is on its way',
         inHouse: 'Made in house',
         nothingComing:
             'No open purchase order and no open production order for this item.',
-        suppliers: 'Suppliers who actually supplied',
-        suppliersHint:
-            'From the supplier delivery notes — including suppliers other than the preferred one on the item card.',
-        preferred: 'Preferred supplier',
-        noSuppliers: 'This item has never been received from any supplier.',
         canMake: 'Can it be made',
         noRecipe:
             'The item has no bill of materials, so no production order can be opened for it.',
@@ -94,11 +87,6 @@ export default {
             party: 'From',
             qty: 'Quantity',
             due: 'Due',
-            supplier: 'Supplier',
-            taken: 'Total received',
-            times: 'Times',
-            priceRange: 'Price range',
-            lastOn: 'Last received',
             component: 'Component',
             need: 'Needed',
             have: 'Available',

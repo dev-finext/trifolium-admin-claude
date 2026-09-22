@@ -19,7 +19,7 @@ import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { COVER_STATES } from '@/config';
 import { fmtISO } from '@/lib/dates';
-import { ils, num } from '@/lib/money';
+import { num } from '@/lib/money';
 import { usePlanningStore } from '@/stores/planning';
 
 const props = defineProps({
@@ -65,30 +65,6 @@ const series = computed(() => {
     }));
 });
 
-/** The same window a year earlier, for the trend the note asks about. */
-const lastYear = computed(() => {
-    if (!props.row || props.months.length < 13) {
-        return null;
-    }
-
-    const shiftBack = (ym) => {
-        const [year, month] = ym.split('-').map(Number);
-
-        return `${year - 1}-${String(month).padStart(2, '0')}`;
-    };
-
-    const now = props.months.reduce(
-        (sum, ym) => sum + (Number(props.row.series?.[ym]) || 0),
-        0,
-    );
-    const then = props.months.reduce(
-        (sum, ym) => sum + (Number(props.row.series?.[shiftBack(ym)]) || 0),
-        0,
-    );
-
-    return { now, then, covered: then > 0 };
-});
-
 const coming = computed(() =>
     props.row ? store.openOrdersOf(props.row.sku) : [],
 );
@@ -99,18 +75,6 @@ const comingCols = computed(() => [
     { k: 'party', label: t('planning.drawer.col.party') },
     { k: 'qty', label: t('planning.drawer.col.qty'), nowrap: true },
     { k: 'due', label: t('planning.drawer.col.due'), nowrap: true },
-]);
-
-const suppliers = computed(() =>
-    props.row ? store.suppliersOf(props.row.sku) : [],
-);
-
-const supplierCols = computed(() => [
-    { k: 'supplier', label: t('planning.drawer.col.supplier') },
-    { k: 'qty', label: t('planning.drawer.col.taken'), nowrap: true },
-    { k: 'lines', label: t('planning.drawer.col.times'), nowrap: true },
-    { k: 'price', label: t('planning.drawer.col.priceRange'), nowrap: true },
-    { k: 'lastOn', label: t('planning.drawer.col.lastOn'), nowrap: true },
 ]);
 
 /** Can the planned production run actually be made, and what is short. */
@@ -224,20 +188,6 @@ const shortCols = computed(() => [
                             </span>
                         </li>
                     </ol>
-                    <p v-if="lastYear?.covered" class="a-hint">
-                        {{
-                            t('planning.drawer.lastYear', {
-                                now: num(lastYear.now, 3),
-                                then: num(lastYear.then, 3),
-                                pct: num(
-                                    ((lastYear.now - lastYear.then) /
-                                        lastYear.then) *
-                                        100,
-                                    0,
-                                ),
-                            })
-                        }}
-                    </p>
                 </section>
 
                 <section>
@@ -281,55 +231,6 @@ const shortCols = computed(() => [
                     </ADataTable>
                     <p v-else class="t-sub">
                         {{ t('planning.drawer.nothingComing') }}
-                    </p>
-                </section>
-
-                <section>
-                    <div class="a-sect-t">
-                        {{ t('planning.drawer.suppliers') }}
-                    </div>
-                    <p class="a-hint">
-                        {{ t('planning.drawer.suppliersHint') }}
-                    </p>
-                    <ADataTable
-                        v-if="suppliers.length"
-                        :cols="supplierCols"
-                        :rows="suppliers"
-                        row-key="id"
-                    >
-                        <template #cell-supplier="{ row: one }">
-                            <div class="t-strong">{{ one.supplier }}</div>
-                            <div class="t-sub ltr">{{ one.supplierCode }}</div>
-                            <AChip
-                                v-if="one.supplierCode === row.supplierCode"
-                                tone="green"
-                                size="sm"
-                                :dot="false"
-                            >
-                                {{ t('planning.drawer.preferred') }}
-                            </AChip>
-                        </template>
-                        <template #cell-qty="{ row: one }">
-                            <ANum>{{ num(one.qty, 3) }}</ANum>
-                        </template>
-                        <template #cell-price="{ row: one }">
-                            <span v-if="one.lowPrice === one.highPrice">
-                                <ANum>{{ ils(one.lowPrice, 2) }}</ANum>
-                            </span>
-                            <span v-else>
-                                <ANum>{{ ils(one.lowPrice, 2) }}</ANum> –
-                                <ANum>{{ ils(one.highPrice, 2) }}</ANum>
-                            </span>
-                        </template>
-                        <template #cell-lastOn="{ row: one }">
-                            <ANum v-if="one.lastOn">{{
-                                fmtISO(one.lastOn)
-                            }}</ANum>
-                            <span v-else class="t-sub">—</span>
-                        </template>
-                    </ADataTable>
-                    <p v-else class="t-sub">
-                        {{ t('planning.drawer.noSuppliers') }}
                     </p>
                 </section>
 

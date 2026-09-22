@@ -86,11 +86,7 @@ import {
     DEMO_PATIENTS,
     DEMO_SESSION,
 } from '@/demo/people';
-import {
-    buildConsumption,
-    buildOpenOrders,
-    buildPurchaseHistory,
-} from '@/demo/planning';
+import { buildConsumption, buildOpenOrders } from '@/demo/planning';
 import {
     buildPriceGroups,
     buildPriceImport,
@@ -298,7 +294,6 @@ export function buildDataset() {
         // planning (V3) — the pharmacy's own consumption history, out of SAP
         consumption: buildConsumption(),
         openOrders: buildOpenOrders(),
-        purchaseHistory: buildPurchaseHistory(),
         purchaseRequests: [],
         planLines: [],
         coverThresholds: {},
