@@ -258,7 +258,7 @@ function print() {
                                         class="pd-pick"
                                     >
                                         <span class="a-code a-tag">{{
-                                            pick.batch
+                                            inventory.batchNo(pick.batch)
                                         }}</span>
                                         <ANum>{{ num(pick.qty, 2) }}</ANum>
                                         {{ component.stockUnit }}

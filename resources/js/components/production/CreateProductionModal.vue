@@ -14,6 +14,7 @@ import ASelect from '@/components/ui/ASelect.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { num } from '@/lib/money';
+import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 import { useProductionStore } from '@/stores/production';
 
@@ -27,6 +28,7 @@ const emit = defineEmits(['close', 'created']);
 const { t } = useI18n();
 const { loc } = useLocalized();
 const items = useItemsStore();
+const inventory = useInventoryStore();
 const store = useProductionStore();
 
 const bomId = ref(props.bomId || '');
@@ -182,7 +184,7 @@ async function save() {
                                 class="cp-pick"
                             >
                                 <span class="a-code a-tag">{{
-                                    pick.batch
+                                    inventory.batchNo(pick.batch)
                                 }}</span>
                                 <ANum>{{ num(pick.qty, 2) }}</ANum>
                                 {{ row.stockUnit }}

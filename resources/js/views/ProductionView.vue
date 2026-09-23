@@ -44,6 +44,7 @@ import {
 import { isoDaysAgo } from '@/lib/dates';
 import { num, pct } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
+import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 import { useProductionStore } from '@/stores/production';
 
@@ -51,6 +52,7 @@ const { t } = useI18n();
 const { loc, searchHaystack } = useLocalized();
 const { push } = useToast();
 const dataset = useDatasetStore();
+const inventory = useInventoryStore();
 const items = useItemsStore();
 const store = useProductionStore();
 
@@ -364,9 +366,11 @@ async function confirmCancel(reason) {
                 </template>
                 <template #cell-output="{ row }">
                     <template v-if="row.outputBatch">
-                        <span class="a-code a-tag">{{ row.outputBatch }}</span>
+                        <span class="a-code a-tag">{{
+                            inventory.batchNo(row.outputBatch)
+                        }}</span>
                         <span v-if="row.wasteBatch" class="a-code a-tag pv-gap">
-                            {{ row.wasteBatch }}
+                            {{ inventory.batchNo(row.wasteBatch) }}
                         </span>
                     </template>
                     <span v-else class="t-sub">—</span>
