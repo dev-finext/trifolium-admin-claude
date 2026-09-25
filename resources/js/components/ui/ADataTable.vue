@@ -187,7 +187,13 @@ function activate(row) {
             <AEmpty :title="t('ui.noResults')" :sub="t('ui.noResultsHint')" />
         </slot>
     </div>
-    <div v-else v-bind="passthrough" class="a-tablewrap" :style="wrapStyle">
+    <div
+        v-else
+        v-bind="passthrough"
+        class="a-tablewrap"
+        :class="{ 'is-capped': Boolean(maxHeight) }"
+        :style="wrapStyle"
+    >
         <table class="a-table">
             <thead>
                 <tr>

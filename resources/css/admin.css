@@ -488,7 +488,11 @@ textarea {
 .a-body {
     flex: 1;
     overflow-y: auto;
-    padding: 26px 30px 60px;
+    /* The pane's own top padding, named so a sticky table header can cancel it
+       and come to rest flush with the top of the pane instead of leaving a
+       strip of scrolled rows showing above itself. */
+    --a-pane-pad: 26px;
+    padding: var(--a-pane-pad) 30px 60px;
     min-width: 0;
 }
 .a-crumbs {
@@ -917,10 +921,23 @@ textarea {
 }
 
 /* ---------- table ---------- */
+/* The wrapper must NOT be a scroll container, or the sticky header below would
+   stick to the top of a box that is itself scrolling away inside the pane —
+   which looks exactly like not sticking at all. Any overflow value other than
+   `visible` creates one: `auto` and `scroll` obviously, `hidden` because it is
+   still programmatically scrollable, and `clip` because pairing it with an
+   `auto` on the other axis makes it compute to `hidden`. So: nothing at all.
+   A table wider than the pane pushes the pane sideways, which is what the shell
+   already does — see `body { overflow-x: auto }` at the top of this file. */
 .a-tablewrap {
     background: var(--a-surface);
     border: 1px solid var(--a-line);
     border-radius: var(--a-r);
+}
+/* Unless the screen asked for a height — a short list inside a card or a
+   drawer. Then the box is the scroller and the header sticks to the top of it,
+   which is exactly what that list wants. */
+.a-tablewrap.is-capped {
     overflow: auto;
 }
 table.a-table {
@@ -929,12 +946,19 @@ table.a-table {
     border-spacing: 0;
     font-size: 15px;
 }
+/* The header rides above the rows as they pass under it. The background has
+   to be opaque, the border has to live on the cell rather than on the row —
+   `border-collapse: separate` above is what keeps it attached while stuck — and
+   the shadow is drawn with an inset so it does not need a second element. */
 .a-table thead th {
     position: sticky;
     top: 0;
-    z-index: 2;
+    z-index: 3;
     background: var(--a-thead);
-    border-bottom: 1px solid var(--a-line);
+    box-shadow:
+        inset 0 -1px 0 var(--a-line),
+        0 1px 0 rgb(31 46 29 / 6%),
+        0 4px 10px -6px rgb(31 46 29 / 18%);
     text-align: start;
     font-size: 13px;
     letter-spacing: 0.04em;
@@ -943,6 +967,29 @@ table.a-table {
     font-weight: 700;
     padding: 14px 18px;
     white-space: nowrap;
+}
+/* The rounded corners of the wrapper are drawn by the wrapper, and a sticky
+   cell paints over them; the first and last header cells give theirs back. */
+.a-table thead th:first-child {
+    border-start-start-radius: var(--a-r);
+}
+.a-table thead th:last-child {
+    border-start-end-radius: var(--a-r);
+}
+/* Where the header comes to rest. `top: 0` on a sticky cell means the top of
+   the scrollport's PADDING box, so in a pane with padding it would stop short
+   and leave a band of scrolled rows visible above it; cancelling the pane's
+   padding brings it flush. A table with a height of its own scrolls inside its
+   own box, which has no such padding, so there it is plain zero. A screen that
+   puts a sticky toolbar of its own above the table sets `--a-thead-top`. */
+.a-tablewrap {
+    --a-thead-top: 0px;
+}
+.a-tablewrap:not(.is-capped) .a-table thead th {
+    top: calc(var(--a-thead-top) - var(--a-pane-pad, 0px));
+}
+.a-tablewrap.is-capped .a-table thead th {
+    top: var(--a-thead-top);
 }
 .a-table tbody td {
     border-bottom: 1px solid var(--a-line-3);
