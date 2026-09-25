@@ -45,6 +45,7 @@ export default {
 
     afterPlan: 'אחרי התכנון: {cover}',
     noDemandShort: 'אין צריכה',
+    months: '{n} חודשים',
     noSupplier: 'ללא ספק',
     search: 'קוד · שם · שם לועזי · ספק',
     export: 'ייצוא לאקסל',

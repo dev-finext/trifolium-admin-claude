@@ -57,7 +57,7 @@ export default {
     },
 
     cell: {
-        yielded: 'יצא {qty} · פחת {waste}',
+        yielded: 'יצא {qty} {uom} · פחת {waste} {uom}',
     },
 
     empty: {

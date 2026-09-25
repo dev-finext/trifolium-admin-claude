@@ -46,6 +46,7 @@ export default {
 
     afterPlan: 'After the plan: {cover}',
     noDemandShort: 'no demand',
+    months: '{n} months',
     noSupplier: 'No supplier',
     search: 'Code · name · foreign name · supplier',
     export: 'Export to Excel',

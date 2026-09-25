@@ -226,7 +226,7 @@ export default {
         notSet: 'Not set',
         yes: 'Yes',
         no: 'No',
-        nameHe: 'Hebrew name',
+        nameHe: 'Botanical name',
         siteName: 'Consumer-site name',
         purchaseUom: 'Purchase unit',
         salesUom: 'Sales unit',
@@ -294,7 +294,7 @@ export default {
         siteComments: 'Site remarks',
         general: 'General',
         code: 'Item number',
-        nameForeign: 'Foreign name',
+        nameForeign: 'Chinese name',
         group: 'Category',
         uomGroup: 'UoM group',
         additionalId: 'Additional identifier',
@@ -343,7 +343,7 @@ export default {
         remarks: 'Production remarks',
         noRemarks: 'No remarks',
         supplierItemName: 'Vendor’s name for the item',
-        internalNotes: 'Internal note',
+        internalNotes: 'Internal description',
         notes: 'Remarks',
     },
     editor: {
@@ -364,7 +364,7 @@ export default {
         code: 'Item number',
         codeHint:
             'Assigned automatically — the next number in the category’s series',
-        nameHe: 'Description',
+        nameHe: 'Botanical name',
         siteName: 'Site name',
         siteNameHint:
             'As shown on the consumer site — may differ from the internal name',
@@ -378,9 +378,11 @@ export default {
         itemType: 'Item type',
         treeType: 'Bill of materials',
         group: 'Category',
-        nameForeign: 'Foreign name',
+        nameForeign: 'Chinese name',
         nameForeignHint:
-            'The botanical name, the pinyin or the English name — as in SAP',
+            'The pinyin, as SAP holds it. Filled on about half the items.',
+        nameHeHint:
+            'The name as SAP holds it. On items that are not plants — packaging, caps, labels, medicines — this is the Hebrew name.',
         uomGroup: 'UoM group',
         barcode: 'Barcode',
         additionalId: 'Additional identifier',

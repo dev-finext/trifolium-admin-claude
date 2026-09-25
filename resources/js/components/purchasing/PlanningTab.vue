@@ -253,6 +253,12 @@ const cols = computed(() => [
 
 const unit = (id) => t(`inventory.unit.${id}`);
 
+/** A quantity and the unit it is counted in, which never travel apart. */
+const qty = (value, row, places = 3) =>
+    value === null || value === undefined
+        ? '—'
+        : `${num(value, places)} ${unit(row.unit)}`.trim();
+
 const coverTone = (row) => COVER_STATES[row.coverState]?.tone || 'gray';
 
 /** How many rows are below their own threshold — the reason to look at all. */
@@ -465,15 +471,14 @@ function exportRows() {
                 </div>
             </template>
             <template #cell-onHand="{ row }">
-                <ANum>{{ num(row.onHand, 3) }}</ANum>
-                <div class="t-sub">{{ unit(row.unit) }}</div>
+                <ANum>{{ qty(row.onHand, row) }}</ANum>
             </template>
             <template #cell-committed="{ row }">
-                <ANum>{{ num(row.committed, 3) }}</ANum>
+                <ANum>{{ qty(row.committed, row) }}</ANum>
             </template>
             <template #cell-onOrder="{ row }">
                 <template v-if="row.onOrder || row.coming.length">
-                    <ANum>{{ num(row.onOrder, 3) }}</ANum>
+                    <ANum>{{ qty(row.onOrder, row) }}</ANum>
                     <div v-if="row.comingFrom" class="t-sub who">
                         {{ row.comingFrom }}
                     </div>
@@ -481,17 +486,17 @@ function exportRows() {
                 <span v-else class="t-sub">—</span>
             </template>
             <template #cell-total="{ row }">
-                <ANum>{{ num(row.total, 3) }}</ANum>
+                <ANum>{{ qty(row.total, row) }}</ANum>
             </template>
             <template #cell-monthly="{ row }">
-                <ANum>{{ num(row.monthly, 3) }}</ANum>
+                <ANum>{{ qty(row.monthly, row) }}</ANum>
             </template>
             <template #cell-cover="{ row }">
                 <AChip :tone="coverTone(row)" size="sm" :dot="false">
                     {{
                         row.cover === null
                             ? t('planning.noDemandShort')
-                            : num(row.cover, 1)
+                            : t('planning.months', { n: num(row.cover, 1) })
                     }}
                 </AChip>
                 <div v-if="row.planned" class="t-sub planned">
@@ -526,8 +531,11 @@ function exportRows() {
                                 setPlan(row, 'purchase', $event)
                             "
                         />
+                        <span v-if="editable(row, 'purchase')" class="planunit">
+                            {{ unit(row.unit) }}
+                        </span>
                         <AChip v-else tone="blue" size="sm" :dot="false">
-                            {{ num(row.plan.purchase.qty, 3) }}
+                            {{ qty(row.plan.purchase.qty, row) }}
                         </AChip>
                     </label>
                     <label
@@ -549,15 +557,21 @@ function exportRows() {
                                 setPlan(row, 'production', $event)
                             "
                         />
+                        <span
+                            v-if="editable(row, 'production')"
+                            class="planunit"
+                        >
+                            {{ unit(row.unit) }}
+                        </span>
                         <AChip v-else tone="blue" size="sm" :dot="false">
-                            {{ num(row.plan.production.qty, 3) }}
+                            {{ qty(row.plan.production.qty, row) }}
                         </AChip>
                     </label>
                     <span v-if="!row.targets.length" class="t-sub">—</span>
                 </div>
             </template>
             <template #cell-direct="{ row }">
-                <ANum>{{ num(row.direct, 3) }}</ANum>
+                <ANum>{{ qty(row.direct, row) }}</ANum>
             </template>
             <template #cell-supplier="{ row }">
                 <span v-if="row.supplier">{{ loc(row.supplier) }}</span>
@@ -685,7 +699,18 @@ function exportRows() {
 
 .planfield {
     display: grid;
-    gap: 2px;
+    grid-template-columns: auto auto;
+    align-items: center;
+    gap: 2px 6px;
+}
+
+.planfield .a-lbl {
+    grid-column: 1 / -1;
+}
+
+.planunit {
+    font-size: 12px;
+    color: var(--a-ink-4);
 }
 
 .planfield .a-lbl {

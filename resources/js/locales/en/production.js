@@ -57,7 +57,7 @@ export default {
     },
 
     cell: {
-        yielded: 'Yield {qty} · waste {waste}',
+        yielded: 'Yield {qty} {uom} · waste {waste} {uom}',
     },
 
     empty: {

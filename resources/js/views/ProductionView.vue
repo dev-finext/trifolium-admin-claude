@@ -352,6 +352,7 @@ async function confirmCancel(reason) {
                             t('production.cell.yielded', {
                                 qty: num(row.yieldQty),
                                 waste: num(row.wasteQty || 0),
+                                uom: row.uom,
                             })
                         }}
                     </div>

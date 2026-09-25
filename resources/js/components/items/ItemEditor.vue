@@ -601,6 +601,9 @@ const title = computed(() =>
                         <div v-if="show('he')" class="a-inv">
                             {{ show('he') }}
                         </div>
+                        <div v-else class="a-hint">
+                            {{ t('items.editor.nameHeHint') }}
+                        </div>
                     </div>
                     <div>
                         <label class="a-lbl">{{
