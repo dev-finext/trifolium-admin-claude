@@ -848,6 +848,28 @@ function exportRows() {
     color: var(--a-blue);
 }
 
+/* On a laptop this block is the difference between seeing rows and not. The
+   two pickers sit beside the chips instead of above them, and the sentence
+   counting the chosen groups goes — the chips already show which are on. */
+@media (max-height: 900px) {
+    .window {
+        align-items: center;
+    }
+
+    .window .a-lbl {
+        font-size: 12px;
+        margin-bottom: 2px;
+    }
+
+    .window .a-hint {
+        display: none;
+    }
+
+    .lede {
+        display: none;
+    }
+}
+
 .search {
     width: 300px;
     max-width: 100%;

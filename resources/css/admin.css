@@ -3537,3 +3537,163 @@ tr.cover-low:hover > td {
     margin: 0 0 4px;
     max-width: 92ch;
 }
+
+/* ============================================================================
+   Laptops.
+
+   The console was laid out on a large desktop, where a page can spend four
+   hundred pixels on its own chrome and still show twenty rows. On a 1366×768
+   laptop — which is what the pharmacy actually works on — the same page puts
+   its first row at 637px and shows one.
+
+   The fix is vertical, not horizontal: below 900px of viewport height every
+   block above the table gets tighter, and the tall chip strips stop growing
+   downwards and scroll inside themselves instead. Nothing is hidden and no
+   control moves; the same page, closer together.
+
+   Keyed to height rather than width because that is the constraint. A tall
+   narrow window is not the problem; a short one is.
+   ========================================================================== */
+@media (max-height: 900px) {
+    .a-body {
+        --a-pane-pad: 16px;
+        padding: 16px 30px 36px;
+    }
+
+    .a-h1 {
+        font-size: 22px;
+    }
+
+    .a-pagehead {
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .a-pagehead-a {
+        padding-top: 12px;
+    }
+
+    .a-crumbs {
+        margin-bottom: 6px;
+    }
+
+    /* A KPI is a number and a label. On a short screen it does not also need
+       thirty pixels of air around it. */
+    /* A KPI becomes one line: the label, then the number. Stacked, four of
+       them cost a hundred pixels of a seven-hundred-pixel screen. */
+    .a-kpi {
+        padding: 10px 14px;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .a-kpi .k-v {
+        font-size: 22px;
+        margin-top: 0;
+        margin-inline-start: auto;
+    }
+
+    .a-kpi .k-l {
+        font-size: 13px;
+    }
+
+    .a-kpi .k-d {
+        flex-basis: 100%;
+    }
+
+    .a-kpis,
+    .a-cards {
+        gap: 12px;
+    }
+
+    .a-filters {
+        padding: 10px 0;
+        gap: 8px;
+    }
+
+    .a-sect-t {
+        margin-bottom: 6px;
+    }
+
+    .a-kpi .k-d {
+        font-size: 12.5px;
+        margin-top: 3px;
+    }
+
+    /* A tab strip is a row of words. Sixteen pixels of padding above and below
+       them is a desktop's luxury. */
+    .a-tab {
+        padding: 9px 13px;
+        font-size: 14.5px;
+    }
+
+    .a-note {
+        padding: 8px 12px;
+    }
+
+    /* The chip strips — item families, item groups, saved views. They wrap to
+       four rows on a laptop and push the table off the screen. Capped, they
+       scroll inside themselves and the table keeps its place. */
+    .fam-strip,
+    .groups {
+        max-height: 68px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    /* The planning report's window picker: two selects and the group chips. */
+    .window {
+        padding: 8px 12px;
+        gap: 10px;
+    }
+
+    /* The gap between one block and the next, across every screen that lays
+       its page out as a grid. */
+    .a-grid,
+    .a-tabbody {
+        gap: 12px;
+    }
+}
+
+@media (max-height: 820px) {
+    /* The hint under a KPI explains the number the first time and is furniture
+       after that. On a screen this short the rows are worth more. */
+    .a-kpi .k-d {
+        display: none;
+    }
+
+    .a-pagehead {
+        margin-bottom: 10px;
+    }
+
+    .fam-strip,
+    .groups {
+        max-height: 54px;
+    }
+
+    .a-filters {
+        padding: 8px 0;
+    }
+}
+
+@media (max-height: 760px) {
+    .a-body {
+        --a-pane-pad: 12px;
+        padding: 12px 26px 28px;
+    }
+
+    .a-h1 {
+        font-size: 20px;
+    }
+
+    .a-kpi .k-v {
+        font-size: 21px;
+    }
+
+    .fam-strip,
+    .groups {
+        max-height: 40px;
+    }
+}
