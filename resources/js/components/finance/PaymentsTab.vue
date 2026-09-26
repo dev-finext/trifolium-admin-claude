@@ -26,6 +26,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
@@ -74,8 +75,6 @@ const searched = computed(() => {
 const filters = useListFilters(SPEC, view, searched);
 
 const rows = computed(() => filters.rows);
-
-const { paged, total } = usePaged(rows, view);
 
 const dirty = computed(() => filters.dirty || Boolean(view.tq));
 
@@ -158,6 +157,9 @@ const cols = computed(() => [
         sortValue: (row) => row.amt,
     },
 ]);
+
+const { sort, sorted } = useSorted(rows, view, () => cols.value);
+const { paged, total } = usePaged(sorted, view);
 
 function nameOf(code) {
     const practitioner = money.byCode(code);
@@ -262,6 +264,7 @@ function nameOf(code) {
         <ADataTable
             :cols="cols"
             :rows="paged"
+            v-model:sort="sort"
             row-key="id"
             :max-height="MAX_HEIGHT"
         >

@@ -32,6 +32,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -109,8 +110,6 @@ const filters = useListFilters(SPEC, view, searched);
 
 const rows = computed(() => filters.rows);
 
-const { paged, total } = usePaged(rows, view);
-
 const dirty = computed(() => filters.dirty || Boolean(view.q));
 
 const spec = computed(() => ({
@@ -186,6 +185,9 @@ const cols = computed(() => {
         },
     ];
 });
+
+const { sort, sorted } = useSorted(rows, view, () => cols.value);
+const { paged, total } = usePaged(sorted, view);
 
 const checkEffects = computed(() => [
     t('wallet.check.effect1', { n: money.practitioners.length }),
@@ -351,6 +353,7 @@ function runCheck() {
             <ADataTable
                 :cols="cols"
                 :rows="paged"
+                v-model:sort="sort"
                 row-key="code"
                 :selected="view.practitioner"
                 @row="(row) => (view.practitioner = row.code)"

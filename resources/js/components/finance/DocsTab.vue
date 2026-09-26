@@ -30,6 +30,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -83,8 +84,6 @@ const searched = computed(() => {
 const filters = useListFilters(SPEC, view, searched);
 
 const rows = computed(() => filters.rows);
-
-const { paged, total } = usePaged(rows, view);
 
 const dirty = computed(() => filters.dirty || Boolean(view.dq));
 
@@ -171,6 +170,9 @@ const cols = computed(() => [
     { k: 'terminal', label: t('finance.docs.terminal'), nowrap: true },
     { k: 'act', label: '', nowrap: true },
 ]);
+
+const { sort, sorted } = useSorted(rows, view, () => cols.value);
+const { paged, total } = usePaged(sorted, view);
 
 /** Hand the accountant the rows that are on screen, exactly as filtered. */
 function exportRows() {
@@ -317,6 +319,7 @@ function exportRows() {
         <ADataTable
             :cols="cols"
             :rows="paged"
+            v-model:sort="sort"
             row-key="id"
             :max-height="MAX_HEIGHT"
         >

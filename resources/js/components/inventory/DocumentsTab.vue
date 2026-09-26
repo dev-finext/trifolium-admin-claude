@@ -24,6 +24,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
@@ -108,7 +109,6 @@ const spec = computed(() => ({
 }));
 
 const rows = computed(() => filters.rows);
-const { paged, total } = usePaged(rows, state);
 const dirty = computed(() => filters.dirty || state.q.trim() !== '');
 
 const cols = computed(() => [
@@ -120,6 +120,9 @@ const cols = computed(() => [
     { k: 'wh', label: t('inventory.docs.col.wh'), nowrap: true },
     { k: 'remarks', label: t('inventory.docs.col.remarks') },
 ]);
+
+const { sort, sorted } = useSorted(rows, state, () => cols.value);
+const { paged, total } = usePaged(sorted, state);
 
 function clear() {
     state.q = '';
@@ -207,6 +210,7 @@ function moved(doc) {
             v-if="paged.length"
             :cols="cols"
             :rows="paged"
+            v-model:sort="sort"
             row-key="id"
             @row="emit('open', $event.id)"
         >

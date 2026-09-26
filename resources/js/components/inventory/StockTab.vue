@@ -23,6 +23,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
@@ -75,8 +76,6 @@ const searched = computed(() =>
 const filters = useListFilters(SPEC, view, searched);
 
 const rows = computed(() => filters.rows);
-
-const { paged, total } = usePaged(rows, view);
 
 const spec = computed(() => ({
     id: 'stock',
@@ -173,6 +172,9 @@ const cols = computed(() => [
     },
     { k: 'act', label: '', nowrap: true },
 ]);
+
+const { sort, sorted } = useSorted(rows, view, () => cols.value);
+const { paged, total } = usePaged(sorted, view);
 </script>
 
 <template>
@@ -278,6 +280,7 @@ const cols = computed(() => [
         <ADataTable
             :cols="cols"
             :rows="paged"
+            v-model:sort="sort"
             row-key="sku"
             :selected="selected"
             @row="emit('open', $event.sku)"

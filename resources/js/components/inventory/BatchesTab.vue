@@ -27,6 +27,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
@@ -84,8 +85,6 @@ const searched = computed(() =>
 const filters = useListFilters(SPEC, view, searched);
 
 const rows = computed(() => filters.rows);
-
-const { paged, total } = usePaged(rows, view);
 
 const dirty = computed(() => filters.dirty || Boolean(view.bq));
 
@@ -183,6 +182,9 @@ const cols = computed(() => [
         sortValue: (row) => inventory.useOfBatch(row.id).length,
     },
 ]);
+
+const { sort, sorted } = useSorted(rows, view, () => cols.value);
+const { paged, total } = usePaged(sorted, view);
 </script>
 
 <template>
@@ -278,6 +280,7 @@ const cols = computed(() => [
         <ADataTable
             :cols="cols"
             :rows="paged"
+            v-model:sort="sort"
             row-key="id"
             :selected="selected"
             @row="emit('open-batch', $event.id)"

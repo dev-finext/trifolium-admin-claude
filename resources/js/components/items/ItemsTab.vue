@@ -21,6 +21,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -57,8 +58,6 @@ const state = useUrlState({
     q: '',
     ...filterDefaults(SPEC),
     ...PAGE_DEFAULTS,
-    sort: '',
-    dir: 'asc',
 });
 
 const all = computed(() => store.rows);
@@ -160,8 +159,6 @@ const spec = computed(() => ({
 
 const rows = computed(() => filters.rows);
 
-const { paged, total } = usePaged(rows, state);
-
 const dirty = computed(() => filters.dirty || state.q.trim() !== '');
 
 const cols = computed(() => [
@@ -205,12 +202,8 @@ const cols = computed(() => [
     { k: 'site', label: t('items.col.site'), nowrap: true },
 ]);
 
-const sortModel = computed(() => ({ key: state.sort, dir: state.dir }));
-
-function onSort(next) {
-    state.sort = next.key;
-    state.dir = next.dir;
-}
+const { sort, sorted } = useSorted(rows, state, () => cols.value);
+const { paged, total } = usePaged(sorted, state);
 
 function clear() {
     state.q = '';
@@ -411,10 +404,9 @@ function exportRows() {
         <ADataTable
             :cols="cols"
             :rows="paged"
+            v-model:sort="sort"
             row-key="sku"
             :selected="selected"
-            :sort="sortModel"
-            @update:sort="onSort"
             @row="emit('open', $event.sku)"
         >
             <template #cell-code="{ row }">

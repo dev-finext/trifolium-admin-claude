@@ -13,7 +13,11 @@ import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
-import { PAGE_DEFAULTS, usePaged } from '@/composables/useListFilters';
+import {
+    PAGE_DEFAULTS,
+    usePaged,
+    useSorted,
+} from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
 import { STICKER_TEMPLATE_IDS } from '@/config';
@@ -42,8 +46,6 @@ const rows = computed(() => {
     });
 });
 
-const { paged, total } = usePaged(rows, view);
-
 const dirty = computed(() => Boolean(view.lq) || Boolean(view.ltpl));
 
 function clear() {
@@ -61,6 +63,9 @@ const cols = computed(() => [
     { k: 'count', label: t('stickers.log.col.count') },
     { k: 'by', label: t('stickers.log.col.by') },
 ]);
+
+const { sort, sorted } = useSorted(rows, view, () => cols.value);
+const { paged, total } = usePaged(sorted, view);
 </script>
 
 <template>
@@ -106,6 +111,7 @@ const cols = computed(() => [
                 v-if="rows.length"
                 :cols="cols"
                 :rows="paged"
+                v-model:sort="sort"
                 row-key="id"
             >
                 <template #cell-when="{ row }"

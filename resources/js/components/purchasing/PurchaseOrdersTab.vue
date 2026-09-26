@@ -20,6 +20,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
@@ -89,8 +90,6 @@ const searched = computed(() => {
 const filters = useListFilters(SPEC, state, searched);
 
 const rows = computed(() => filters.rows);
-
-const { paged, total } = usePaged(rows, state);
 
 const dirty = computed(() => filters.dirty || Boolean(state.pq));
 
@@ -194,6 +193,9 @@ const cols = computed(() => [
         sortValue: (row) => row.created.iso,
     },
 ]);
+
+const { sort, sorted } = useSorted(rows, state, () => cols.value);
+const { paged, total } = usePaged(sorted, state);
 </script>
 
 <template>
@@ -271,6 +273,7 @@ const cols = computed(() => [
         <ADataTable
             :cols="cols"
             :rows="paged"
+            v-model:sort="sort"
             row-key="id"
             :selected="selected"
             @row="emit('open', $event.id)"

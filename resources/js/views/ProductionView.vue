@@ -32,6 +32,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -106,7 +107,6 @@ const searched = computed(() => {
 
 const filters = useListFilters(SPEC, state, searched);
 const rows = computed(() => filters.rows);
-const { paged, total } = usePaged(rows, state);
 const dirty = computed(() => filters.dirty || Boolean(state.q));
 
 const spec = computed(() => ({
@@ -181,6 +181,9 @@ const cols = computed(() => [
     { k: 'output', label: t('production.col.output'), nowrap: true },
     { k: 'by', label: t('production.col.by'), nowrap: true },
 ]);
+
+const { sort, sorted } = useSorted(rows, state, () => cols.value);
+const { paged, total } = usePaged(sorted, state);
 
 /** The date that says where the run stands: done, cancelled, issued, planned. */
 function whenOf(order) {
@@ -329,6 +332,7 @@ async function confirmCancel(reason) {
             <ADataTable
                 :cols="cols"
                 :rows="paged"
+                v-model:sort="sort"
                 row-key="id"
                 :selected="state.order"
                 @row="state.order = $event.id"

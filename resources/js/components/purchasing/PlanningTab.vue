@@ -32,6 +32,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -134,8 +135,6 @@ const searched = computed(() => {
 const filters = useListFilters(SPEC, state, searched);
 
 const rows = computed(() => filters.rows);
-
-const { paged, total } = usePaged(rows, state);
 
 const dirty = computed(() => filters.dirty || Boolean(state.kq));
 
@@ -250,6 +249,9 @@ const cols = computed(() => [
     { k: 'price', label: t('planning.col.price'), nowrap: true },
     { k: 'remarks', label: t('planning.col.remarks') },
 ]);
+
+const { sort, sorted } = useSorted(rows, state, () => cols.value);
+const { paged, total } = usePaged(sorted, state);
 
 const unit = (id) => t(`inventory.unit.${id}`);
 
@@ -479,6 +481,7 @@ function exportRows() {
             v-if="paged.length"
             :cols="cols"
             :rows="paged"
+            v-model:sort="sort"
             row-key="id"
             :selected="selected"
             :row-class="(row) => `cover-${row.coverState}`"

@@ -31,6 +31,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -100,8 +101,6 @@ const searched = computed(() => {
 const filters = useListFilters(SPEC, view, searched);
 
 const rows = computed(() => filters.rows);
-
-const { paged, total } = usePaged(rows, view);
 
 const dirty = computed(() => filters.dirty || Boolean(view.cq));
 
@@ -186,6 +185,9 @@ const cols = computed(() => [
     { k: 'last', label: t('users.customers.col.last'), nowrap: true },
     { k: 'status', label: t('users.customers.col.status'), nowrap: true },
 ]);
+
+const { sort, sorted } = useSorted(rows, view, () => cols.value);
+const { paged, total } = usePaged(sorted, view);
 
 /** The safety flags shown on a row, as `{ tone, label }`. */
 function flagsOf(patient) {
@@ -319,6 +321,7 @@ function create() {
         <ADataTable
             :cols="cols"
             :rows="paged"
+            v-model:sort="sort"
             row-key="code"
             :selected="props.selected || null"
             @row="(row) => emit('open', row.code)"

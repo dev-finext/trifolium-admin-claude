@@ -12,6 +12,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
+import { deliveryCols } from '@/components/deliveries/columns';
 import CourierAssignModal from '@/components/deliveries/CourierAssignModal.vue';
 import CourierMap from '@/components/deliveries/CourierMap.vue';
 import DeliveryQueue from '@/components/deliveries/DeliveryQueue.vue';
@@ -37,6 +38,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
@@ -78,8 +80,6 @@ const state = useUrlState({
     to: '',
     stage: 'all',
     q: '',
-    sort: '',
-    dir: 'asc',
     poa: 'missing',
     ...filterDefaults(SPEC),
     ...PAGE_DEFAULTS,
@@ -109,7 +109,13 @@ const filters = useListFilters(SPEC, state, searched);
 
 const rows = computed(() => filters.rows);
 
-const { paged, total } = usePaged(rows, state);
+// The queue's own columns, so the whole list sorts before a page is cut out
+// of it — the header sorts the list, not the fifty rows on screen.
+const cols = computed(() => deliveryCols(t, courierName));
+
+const { sort, sorted } = useSorted(rows, state, cols);
+
+const { paged, total } = usePaged(sorted, state);
 
 const spec = computed(() => ({
     id: 'deliveries',
@@ -250,16 +256,9 @@ const sub = computed(() =>
     }),
 );
 
-const sortModel = computed(() => ({ key: state.sort, dir: state.dir }));
-
 const dirty = computed(
     () => state.stage !== 'all' || filters.dirty || Boolean(state.q),
 );
-
-function onSort(next) {
-    state.sort = next.key;
-    state.dir = next.dir;
-}
 
 function clear() {
     state.q = '';
@@ -407,8 +406,7 @@ const paneTabs = computed(() =>
 
         <DeliveryQueue
             :rows="paged"
-            :sort="sortModel"
-            @update:sort="onSort"
+            v-model:sort="sort"
             @assign="assigning = $event"
             @ship="shipping = $event"
             @notify="notifying = $event"

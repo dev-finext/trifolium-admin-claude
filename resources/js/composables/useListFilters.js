@@ -132,4 +132,78 @@ export function usePaged(rows, view) {
 }
 
 /** The page keys a screen adds to its URL state alongside the filters. */
-export const PAGE_DEFAULTS = { pg: 1, ps: 50 };
+export const PAGE_DEFAULTS = { pg: 1, ps: 50, sk: '', sd: 'asc' };
+
+/**
+ * A list sorted before it is paged.
+ *
+ * `ADataTable` can sort the rows it is handed, but a screen that pages hands it
+ * one page — so the table would only ever reorder the fifty rows in front of
+ * the reader, which is not what a column header promises. A screen that pages
+ * sorts here instead, keeps the chosen column in the URL so a sorted list can
+ * be linked, and binds the same object back to the table with `v-model:sort`.
+ *
+ * The comparison is the table's own: numbers numerically, a `{ he, en }` record
+ * by its Hebrew source text so the order does not shuffle with the language,
+ * everything else by locale.
+ *
+ * @param {import('vue').Ref<Array>} rows  The filtered rows.
+ * @param {object} view  The URL state, holding `sk` (column) and `sd` (dir).
+ * @param {Function|import('vue').Ref<Array>} cols  The column definitions, or a
+ *   getter for them — a getter is what a screen passes when its `cols` is
+ *   declared further down the file than this call.
+ */
+export function useSorted(rows, view, cols, locale = 'he') {
+    const sort = computed({
+        get: () => (view.sk ? { key: view.sk, dir: view.sd || 'asc' } : null),
+        set: (next) => {
+            view.sk = next?.key || '';
+            view.sd = next?.dir || 'asc';
+            view.pg = 1;
+        },
+    });
+
+    const sorted = computed(() => {
+        const current = sort.value;
+        const list = (typeof cols === 'function' ? cols() : cols?.value) || [];
+        const col = current && list.find((one) => one.k === current.key);
+
+        if (!col || !col.sortable) {
+            return rows.value;
+        }
+
+        const factor = current.dir === 'desc' ? -1 : 1;
+
+        return [...rows.value].sort(
+            (a, b) =>
+                factor *
+                compareCells(cellValue(col, a), cellValue(col, b), locale),
+        );
+    });
+
+    return { sort, sorted };
+}
+
+/** What a column sorts by: its accessor if it has one, else the raw field. */
+function cellValue(col, row) {
+    const raw =
+        typeof col.sortValue === 'function' ? col.sortValue(row) : row[col.k];
+
+    if (raw === null || raw === undefined) {
+        return '';
+    }
+
+    if (typeof raw === 'object') {
+        return String(raw.he ?? raw.en ?? '');
+    }
+
+    return raw;
+}
+
+function compareCells(a, b, locale) {
+    if (typeof a === 'number' && typeof b === 'number') {
+        return a - b;
+    }
+
+    return String(a).localeCompare(String(b), locale, { numeric: true });
+}

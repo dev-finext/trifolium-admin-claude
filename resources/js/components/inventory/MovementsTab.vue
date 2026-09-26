@@ -25,6 +25,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -113,8 +114,6 @@ const searched = computed(() =>
 const filters = useListFilters(SPEC, view, searched);
 
 const rows = computed(() => filters.rows);
-
-const { paged, total } = usePaged(rows, view);
 
 const dirty = computed(
     () => filters.dirty || Boolean(view.mq) || Boolean(view.from || view.to),
@@ -249,6 +248,9 @@ const cols = computed(() => [
     { k: 'by', label: t('inventory.movements.col.by') },
 ]);
 
+const { sort, sorted } = useSorted(rows, view, () => cols.value);
+const { paged, total } = usePaged(sorted, view);
+
 const isOrderRef = (move) => ORDER_REF_KINDS.includes(move.kind);
 </script>
 
@@ -304,7 +306,7 @@ const isOrderRef = (move) => ORDER_REF_KINDS.includes(move.kind);
             @clear="clear"
         />
 
-        <ADataTable :cols="cols" :rows="paged" row-key="id">
+        <ADataTable :cols="cols" :rows="paged" v-model:sort="sort" row-key="id">
             <template #empty>
                 <AEmpty
                     icon="list"

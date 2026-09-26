@@ -22,6 +22,7 @@ import {
     PAGE_DEFAULTS,
     useListFilters,
     usePaged,
+    useSorted,
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
@@ -76,8 +77,6 @@ const searched = computed(() => {
 const filters = useListFilters(SPEC, state, searched);
 
 const rows = computed(() => filters.rows);
-
-const { paged, total } = usePaged(rows, state);
 
 const dirty = computed(() => filters.dirty || Boolean(state.nq));
 
@@ -143,6 +142,9 @@ const cols = computed(() => [
     { k: 'state', label: t('purchasing.notes.col.state'), nowrap: true },
     { k: 'invoice', label: t('purchasing.notes.col.invoice'), nowrap: true },
 ]);
+
+const { sort, sorted } = useSorted(rows, state, () => cols.value);
+const { paged, total } = usePaged(sorted, state);
 
 function openReceipt(id) {
     router.push({ name: 'inventory', query: { tab: 'receipts', receipt: id } });
@@ -217,7 +219,7 @@ async function confirmClose() {
             @clear="clear"
         />
 
-        <ADataTable :cols="cols" :rows="paged" row-key="id">
+        <ADataTable :cols="cols" :rows="paged" v-model:sort="sort" row-key="id">
             <template #cell-id="{ row }"
                 ><span class="t-strong num">{{ row.id }}</span></template
             >

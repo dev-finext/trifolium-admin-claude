@@ -17,9 +17,10 @@ import OrderLink from '@/components/ui/OrderLink.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { COURIER, ORDER_STATUS_IDS, ORG } from '@/config';
+import { COURIER, ORG } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { useDeliveriesStore } from '@/stores/deliveries';
+import { deliveryCols } from './columns';
 
 defineProps({
     /** The deliveries that survived the screen's filters. */
@@ -39,63 +40,7 @@ const deliveries = useDeliveriesStore();
 const pointOf = (order) =>
     order.pickupPoint ? deliveries.pointById(order.pickupPoint) : null;
 
-const cols = computed(() => [
-    {
-        k: 'id',
-        label: t('deliveries.col.order'),
-        nowrap: true,
-        sortable: true,
-    },
-    {
-        k: 'to',
-        label: t('deliveries.col.recipient'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (order) => order.patient.name,
-    },
-    {
-        k: 'type',
-        label: t('deliveries.col.type'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (order) => t(`fulfilment.${order.deliveryType}`),
-    },
-    {
-        k: 'addr',
-        label: t('deliveries.col.address'),
-        sortable: true,
-        sortValue: (order) => order.address.city,
-    },
-    {
-        k: 'courier',
-        label: t('deliveries.col.courier'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (order) => courierName(order.courier),
-    },
-    {
-        k: 'track',
-        label: t('deliveries.col.tracking'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (order) => order.tracking || '',
-    },
-    {
-        k: 'st',
-        label: t('deliveries.col.status'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (order) => ORDER_STATUS_IDS.indexOf(order.status),
-    },
-    {
-        k: 'date',
-        label: t('deliveries.col.date'),
-        nowrap: true,
-        sortable: true,
-        sortValue: (order) => order.iso,
-    },
-    { k: 'act', label: t('deliveries.col.actions'), nowrap: true },
-]);
+const cols = computed(() => deliveryCols(t, courierName));
 
 /** The letter code the courier prints on the label and opens its numbers with. */
 const courierCode = (id) => COURIER[id]?.code || '';
