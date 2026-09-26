@@ -22,9 +22,13 @@ export const SERVICE_STATE_IDS = Object.keys(SERVICE_STATES);
 const ALLOCATION_OUTAGE_MINUTES = 167;
 
 export function buildServices() {
+    // An ISO string, not a Date. Every record the console holds goes through
+    // the database, and a jsonb column hands a Date back as the string it was
+    // serialised to — so a record that stores one works until it is reloaded,
+    // and then throws where something calls `.getTime()` on it.
     const downSince = new Date(
         now().getTime() - ALLOCATION_OUTAGE_MINUTES * 60000,
-    );
+    ).toISOString();
 
     return [
         {

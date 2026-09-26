@@ -34,7 +34,9 @@ function downFor(service) {
         return '';
     }
 
-    const parts = durationParts(now().getTime() - service.downAt.getTime());
+    const parts = durationParts(
+        now().getTime() - new Date(service.downAt).getTime(),
+    );
 
     return t('integrations.row.downFor', {
         duration: t(`duration.${parts.unit}`, { a: parts.a, b: parts.b }),

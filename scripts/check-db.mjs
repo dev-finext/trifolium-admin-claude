@@ -70,6 +70,19 @@ async function main() {
     const { buildDataset } = await import('@/demo/index.js');
     const data = buildDataset();
 
+    // A record that carries a Date works until the day it is read back: jsonb
+    // returns the string it serialised, and whatever called `.getTime()` on it
+    // throws. This found one, and it will find the next.
+    const dated = findDates(data);
+
+    if (dated.length) {
+        dated.forEach((where) => console.error(`  ✗ Date object at ${where}`));
+        console.error(
+            '\nA record must hold an ISO string, not a Date — it has to survive the database.',
+        );
+        process.exit(1);
+    }
+
     console.log('starting postgres …');
     const db = await PGlite.create();
 
@@ -200,6 +213,40 @@ async function main() {
     }
 
     console.log('\n✓ the schema holds, and every record is in it');
+}
+
+/** Every path in the dataset that holds a Date, which none of them may. */
+function findDates(value, path = '', seen = new Set(), found = []) {
+    if (value instanceof Date) {
+        found.push(path || '(root)');
+
+        return found;
+    }
+
+    if (!value || typeof value !== 'object' || seen.has(value)) {
+        return found;
+    }
+
+    seen.add(value);
+
+    if (Array.isArray(value)) {
+        // One example per collection is enough to find the record that has it.
+        value.slice(0, 50).forEach((one, i) => {
+            if (found.length < 10) {
+                findDates(one, `${path}[${i}]`, seen, found);
+            }
+        });
+
+        return found;
+    }
+
+    Object.entries(value).forEach(([key, one]) => {
+        if (found.length < 10) {
+            findDates(one, path ? `${path}.${key}` : key, seen, found);
+        }
+    });
+
+    return found;
 }
 
 main().catch((error) => {
