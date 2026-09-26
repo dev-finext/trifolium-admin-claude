@@ -5,6 +5,7 @@ export default {
 
     tab: {
         planning: 'תכנון מלאי ורכש',
+        requests: 'בקשות רכש',
         pos: 'הזמנות רכש',
         notes: 'תעודות משלוח ספק',
         invoices: 'חשבוניות ספק',
@@ -235,7 +236,7 @@ export default {
         supplier: 'ספק',
         state: 'מצב',
         lines: 'שורות',
-        linesN: '{n} שורות',
+        linesN: 'שורה אחת | {n} שורות',
         value: 'שווי',
         openValue: 'פתוח: {value}',
         eta: 'צפי אספקה',

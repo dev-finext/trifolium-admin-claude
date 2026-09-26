@@ -13,6 +13,7 @@ import { at, fraction, pickFrom, spread } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
 import { daysSince, isoDaysAgo } from '@/lib/dates';
 import { L } from '@/lib/localized';
+import { convertQty } from '@/lib/units';
 
 const FIRST_ORDER_NUMBER = 2601;
 // Production batches number in each family's own series, above the serials
@@ -39,23 +40,17 @@ const OPERATORS = [
 
 const round2 = (value) => Math.round(value * 100) / 100;
 
-/** A recipe quantity (g, ml) in the unit the stock row is counted in (kg, l). */
+/**
+ * A recipe quantity (g, ml) in the unit the stock row is counted in (kg, l).
+ *
+ * The ladder itself lives in `@/lib/units`. Units with no fixed ratio between
+ * them — a jar and a millilitre — come back unchanged here, which is what the
+ * production screens have always done with them.
+ */
 export function toStockUnits(qty, fromUom, stockUnit) {
-    if (
-        (fromUom === 'g' && stockUnit === 'kg') ||
-        (fromUom === 'ml' && stockUnit === 'l')
-    ) {
-        return qty / 1000;
-    }
+    const converted = convertQty(qty, fromUom, stockUnit);
 
-    if (
-        (fromUom === 'kg' && stockUnit === 'g') ||
-        (fromUom === 'l' && stockUnit === 'ml')
-    ) {
-        return qty * 1000;
-    }
-
-    return qty;
+    return converted === null ? qty : converted;
 }
 
 /** Shekels per stock unit of a component, from what the pharmacy last paid. */

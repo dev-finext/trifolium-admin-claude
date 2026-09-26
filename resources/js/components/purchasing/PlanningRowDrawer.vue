@@ -241,6 +241,12 @@ const shortCols = computed(() => [
                     <p v-if="canMake.reason === 'noRecipe'" class="t-sub">
                         {{ t('planning.drawer.noRecipe') }}
                     </p>
+                    <p
+                        v-else-if="canMake.reason === 'unitMismatch'"
+                        class="t-sub"
+                    >
+                        {{ t('planning.produce.unitMismatch') }}
+                    </p>
                     <p v-else-if="canMake.ok" class="ok">
                         {{
                             t('planning.drawer.canMakeOk', {

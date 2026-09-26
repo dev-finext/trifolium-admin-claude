@@ -218,7 +218,7 @@ async function onCompleted(order) {
         body: t('production.toast.completedBody', {
             batch: order.outputBatch,
             qty: num(order.yieldQty),
-            uom: order.uom,
+            uom: t(`inventory.unit.${order.uom}`),
         }),
     });
 }
@@ -346,13 +346,14 @@ async function confirmCancel(reason) {
                     </AChip>
                 </template>
                 <template #cell-qty="{ row }">
-                    <ANum>{{ num(row.plannedQty) }}</ANum> {{ row.uom }}
+                    <ANum>{{ num(row.plannedQty) }}</ANum>
+                    {{ t(`inventory.unit.${row.uom}`) }}
                     <div v-if="row.yieldQty != null" class="t-sub">
                         {{
                             t('production.cell.yielded', {
                                 qty: num(row.yieldQty),
                                 waste: num(row.wasteQty || 0),
-                                uom: row.uom,
+                                uom: t(`inventory.unit.${row.uom}`),
                             })
                         }}
                     </div>

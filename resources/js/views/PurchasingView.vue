@@ -10,9 +10,13 @@ import PageHead from '@/components/layout/PageHead.vue';
 import ConsumptionTab from '@/components/purchasing/ConsumptionTab.vue';
 import PlanningRowDrawer from '@/components/purchasing/PlanningRowDrawer.vue';
 import PlanningTab from '@/components/purchasing/PlanningTab.vue';
+import ProduceFromPlanModal from '@/components/purchasing/ProduceFromPlanModal.vue';
 import PurchaseOrderDrawer from '@/components/purchasing/PurchaseOrderDrawer.vue';
 import PurchaseOrderEditor from '@/components/purchasing/PurchaseOrderEditor.vue';
 import PurchaseOrdersTab from '@/components/purchasing/PurchaseOrdersTab.vue';
+import PurchaseRequestDrawer from '@/components/purchasing/PurchaseRequestDrawer.vue';
+import PurchaseRequestsTab from '@/components/purchasing/PurchaseRequestsTab.vue';
+import RaiseRequestModal from '@/components/purchasing/RaiseRequestModal.vue';
 import ReceiveAgainstPoModal from '@/components/purchasing/ReceiveAgainstPoModal.vue';
 import SupplierInvoicesTab from '@/components/purchasing/SupplierInvoicesTab.vue';
 import SupplierNotesTab from '@/components/purchasing/SupplierNotesTab.vue';
@@ -35,7 +39,11 @@ const store = usePurchasingStore();
 const planning = usePlanningStore();
 const router = useRouter();
 
-const view = useUrlState({ tab: 'planning', po: '', item: '' });
+const view = useUrlState({ tab: 'planning', po: '', item: '', req: '' });
+
+/** The two exits out of the planning report, each a modal while it is open. */
+const raising = ref(false);
+const producing = ref(false);
 
 const editing = ref(null);
 const receiving = ref(null);
@@ -54,6 +62,15 @@ const tabs = computed(() => [
         n: planningReport.value.rows.filter((row) =>
             ['low', 'critical'].includes(row.coverState),
         ).length,
+    },
+    {
+        id: 'requests',
+        label: t('purchasing.tab.requests'),
+        icon: 'inbox',
+        n:
+            planning.purchaseRequests.filter((row) =>
+                ['draft', 'sent'].includes(row.state),
+            ).length || undefined,
     },
     {
         id: 'pos',
@@ -101,6 +118,49 @@ const openPlanning = computed(() =>
         ? planningReport.value.rows.find((row) => row.sku === view.item) || null
         : null,
 );
+
+const openRequest = computed(() =>
+    view.req ? planning.requestById(view.req) : null,
+);
+
+/** A request was raised: show the list it landed in. */
+function onRaised(made) {
+    raising.value = false;
+
+    if (!made?.length) {
+        return;
+    }
+
+    push({
+        title: t('planning.request.raisedToast', { n: made.length }),
+        body: made.map((one) => one.number).join(' · '),
+    });
+    view.tab = 'requests';
+    view.req = made.length === 1 ? made[0].id : '';
+}
+
+/**
+ * Production orders were opened straight from the report.
+ *
+ * They do not live here — an order belongs to the production screen — so the
+ * report hands the buyer over to it, with the single order already open.
+ */
+function onProduced(made) {
+    producing.value = false;
+
+    if (!made?.length) {
+        return;
+    }
+
+    push({
+        title: t('planning.produce.openedToast', { n: made.length }),
+        body: made.map((one) => one.id).join(' · '),
+    });
+    router.push({
+        name: 'production',
+        query: made.length === 1 ? { order: made[0].id } : {},
+    });
+}
 
 function onSaved(result) {
     push({
@@ -168,7 +228,18 @@ function onCancelled(po) {
         />
         <SupplierPaymentsTab v-else-if="view.tab === 'payments'" />
         <ConsumptionTab v-else-if="view.tab === 'consumption'" />
-        <PlanningTab v-else :selected="view.item" @open="view.item = $event" />
+        <PurchaseRequestsTab
+            v-else-if="view.tab === 'requests'"
+            :selected="view.req"
+            @open="view.req = $event"
+        />
+        <PlanningTab
+            v-else
+            :selected="view.item"
+            @open="view.item = $event"
+            @request="raising = true"
+            @produce="producing = true"
+        />
     </template>
 
     <PlanningRowDrawer
@@ -176,6 +247,28 @@ function onCancelled(po) {
         :months="planningReport.months"
         @close="view.item = ''"
         @open-item="router.push({ name: 'items', query: { sku: $event } })"
+    />
+
+    <PurchaseRequestDrawer
+        :request="openRequest"
+        @close="view.req = ''"
+        @open-po="
+            view.req = '';
+            view.tab = 'pos';
+            view.po = $event;
+        "
+    />
+
+    <RaiseRequestModal
+        v-if="raising"
+        @close="raising = false"
+        @raised="onRaised"
+    />
+
+    <ProduceFromPlanModal
+        v-if="producing"
+        @close="producing = false"
+        @produced="onProduced"
     />
 
     <PurchaseOrderDrawer

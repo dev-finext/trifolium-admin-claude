@@ -5,6 +5,7 @@ export default {
 
     tab: {
         planning: 'Inventory & purchase planning',
+        requests: 'Purchase requests',
         pos: 'Purchase orders',
         notes: 'Supplier delivery notes',
         invoices: 'Supplier invoices',
@@ -237,7 +238,7 @@ export default {
         supplier: 'Supplier',
         state: 'State',
         lines: 'Lines',
-        linesN: '{n} lines',
+        linesN: 'one line | {n} lines',
         value: 'Value',
         openValue: 'open: {value}',
         eta: 'Expected',

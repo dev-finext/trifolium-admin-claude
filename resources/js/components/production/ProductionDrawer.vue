@@ -53,7 +53,7 @@ const details = computed(() => {
     const rows = [
         [
             t('production.drawer.planned'),
-            `${num(order.plannedQty)} ${order.uom}`,
+            `${num(order.plannedQty)} ${t(`inventory.unit.${order.uom}`)}`,
         ],
         [
             t('production.drawer.recipe'),
@@ -71,12 +71,14 @@ const details = computed(() => {
             [t('production.drawer.completedOn'), order.completedOn?.stamp],
             [
                 t('production.drawer.yield'),
-                `${num(order.yieldQty)} ${order.uom}`,
+                `${num(order.yieldQty)} ${t(`inventory.unit.${order.uom}`)}`,
             ],
             [
                 t('production.drawer.waste'),
                 order.wasteQty
-                    ? `${num(order.wasteQty)} ${order.uom}`
+                    ? `${num(order.wasteQty)} ${t(
+                          `inventory.unit.${order.uom}`,
+                      )}`
                     : t('production.drawer.noWaste'),
             ],
             [t('production.drawer.expiry'), fmtISO(order.expiresOn)],
@@ -86,7 +88,7 @@ const details = computed(() => {
                     ? t('production.drawer.costValue', {
                           total: ils(order.cost.components, 2),
                           unit: ils(order.cost.perUnit ?? 0, 2),
-                          uom: order.uom,
+                          uom: t(`inventory.unit.${order.uom}`),
                       })
                     : '—',
             ],
@@ -240,7 +242,7 @@ function print() {
                                 </td>
                                 <td class="nowrap">
                                     <ANum>{{ num(component.plannedQty) }}</ANum>
-                                    {{ component.uom }}
+                                    {{ t(`inventory.unit.${component.uom}`) }}
                                     <AChip
                                         v-if="component.issue === 'manual'"
                                         tone="gray"
@@ -261,7 +263,11 @@ function print() {
                                             inventory.batchNo(pick.batch)
                                         }}</span>
                                         <ANum>{{ num(pick.qty, 2) }}</ANum>
-                                        {{ component.stockUnit }}
+                                        {{
+                                            t(
+                                                `inventory.unit.${component.stockUnit}`,
+                                            )
+                                        }}
                                         <span
                                             v-if="batchExpiry(pick.batch)"
                                             class="t-sub"
@@ -285,7 +291,9 @@ function print() {
                                         {{
                                             t('production.drawer.short', {
                                                 qty: num(component.short, 2),
-                                                uom: component.stockUnit,
+                                                uom: t(
+                                                    `inventory.unit.${component.stockUnit}`,
+                                                ),
                                             })
                                         }}
                                     </div>
@@ -297,7 +305,9 @@ function print() {
                                         <ANum>{{
                                             num(component.actualQty)
                                         }}</ANum>
-                                        {{ component.uom }}
+                                        {{
+                                            t(`inventory.unit.${component.uom}`)
+                                        }}
                                     </template>
                                     <span v-else class="t-sub">—</span>
                                 </td>
@@ -315,12 +325,13 @@ function print() {
                         :rows="[
                             [
                                 t('production.drawer.outputBatch'),
-                                order.outputBatch,
+                                inventory.batchNo(order.outputBatch),
                             ],
                             [
                                 t('production.drawer.wasteBatch'),
-                                order.wasteBatch ||
-                                    t('production.drawer.noWaste'),
+                                order.wasteBatch
+                                    ? inventory.batchNo(order.wasteBatch)
+                                    : t('production.drawer.noWaste'),
                             ],
                             [
                                 t('production.drawer.expiry'),

@@ -112,7 +112,7 @@ async function save() {
                     {{
                         t('production.complete.yieldHint', {
                             qty: num(order.plannedQty),
-                            uom: order.uom,
+                            uom: t(`inventory.unit.${order.uom}`),
                         })
                     }}
                 </div>
@@ -176,7 +176,7 @@ async function save() {
                     {{
                         t('production.complete.actualHint', {
                             qty: num(component.plannedQty),
-                            uom: component.uom,
+                            uom: t(`inventory.unit.${component.uom}`),
                         })
                     }}
                 </div>

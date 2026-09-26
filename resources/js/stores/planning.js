@@ -27,8 +27,11 @@ import {
 } from '@/config';
 import { persist } from '@/data/source';
 import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
+import { convertQty } from '@/lib/units';
 import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
+import { useProductionStore } from '@/stores/production';
+import { usePurchasingStore } from '@/stores/purchasing';
 
 /** This moment, in the shape every record's `when` field carries. */
 function moment() {
@@ -68,6 +71,8 @@ function sumOver(series, months) {
 export const usePlanningStore = defineStore('planning', () => {
     const dataset = useDatasetStore();
     const items = useItemsStore();
+    const purchasing = usePurchasingStore();
+    const production = useProductionStore();
 
     const history = computed(
         () => dataset.data.consumption || { months: [], rows: [] },
@@ -295,6 +300,79 @@ export const usePlanningStore = defineStore('planning', () => {
         persist('plan-lines', {}, 'DELETE');
     }
 
+    /**
+     * Everything planned for purchase, gathered under the supplier who would
+     * fill it — which is how the pharmacy sends it: one email per supplier.
+     *
+     * An item whose card names no supplier lands in its own group with a null
+     * code; the screen makes the buyer choose one before that group can go out,
+     * because a request without a recipient cannot be sent anywhere.
+     */
+    const plannedBySupplier = computed(() => {
+        const groups = new Map();
+
+        planLines.value.forEach((line) => {
+            if (line.target !== 'purchase' || line.state !== 'planned') {
+                return;
+            }
+
+            const row = items.rowBySku(line.sku);
+            const code = row?.suppliers?.sapCode || null;
+            const key = code || '';
+
+            if (!groups.has(key)) {
+                groups.set(key, {
+                    supplierCode: code,
+                    supplier: row?.preferred?.name || null,
+                    lines: [],
+                });
+            }
+
+            groups.get(key).lines.push({
+                sku: line.sku,
+                name: row?.names || line.sku,
+                qty: line.qty,
+                unit: row?.uom?.stock || 'unit',
+                price: row?.price?.lastPurchase ?? null,
+                // No remark travels with the line yet. The standing remark the
+                // note asks for — "הערות קבועות העוברות לספק" — has nowhere to
+                // live until it is decided whether it belongs to the supplier,
+                // to the item or to both; and the item's own remarks field is
+                // full of pharmacopoeia references, which is not something to
+                // write to a supplier.
+                remark: null,
+            });
+        });
+
+        return [...groups.values()].sort(
+            (a, b) =>
+                Number(Boolean(b.supplierCode)) -
+                Number(Boolean(a.supplierCode)),
+        );
+    });
+
+    /** Everything planned for production, with the recipe each one would run. */
+    const plannedForProduction = computed(() =>
+        planLines.value
+            .filter(
+                (line) =>
+                    line.target === 'production' && line.state === 'planned',
+            )
+            .map((line) => {
+                const row = items.rowBySku(line.sku);
+                const recipe = items.bomsOfParent(line.sku)[0] || null;
+
+                return {
+                    sku: line.sku,
+                    name: row?.names || line.sku,
+                    qty: line.qty,
+                    unit: row?.uom?.stock || 'unit',
+                    bomId: recipe?.id || null,
+                    can: recipe ? producible(line.sku, line.qty) : null,
+                };
+            }),
+    );
+
     // ---- purchase requests ---------------------------------------------------
 
     /**
@@ -411,6 +489,93 @@ export const usePlanningStore = defineStore('planning', () => {
         return request;
     }
 
+    /**
+     * The supplier said yes: raise the purchase order the request stood for.
+     *
+     * The planned quantities are in stock units, because that is what the report
+     * counts in; a purchase order is written in the unit the pharmacy buys by.
+     * Where the item card knows both and how many of one go into the other, the
+     * quantity is converted; where it does not, the stock unit is used and says
+     * so rather than inventing a factor.
+     */
+    async function orderFromRequest(id) {
+        const request = requestById(id);
+
+        if (!request || request.state === 'ordered') {
+            return null;
+        }
+
+        const { po } = await purchasing.savePo({
+            supplierCode: request.supplierCode,
+            currency: 'ILS',
+            eta: null,
+            notes: request.note || '',
+            lines: request.lines.map((line) => {
+                const row = items.rowBySku(line.sku);
+                const factor = Number(row?.uom?.factor) || 0;
+                const buyUom = row?.uom?.purchase || line.unit;
+                const inBuyUnits =
+                    factor > 0 && buyUom !== line.unit
+                        ? Math.round((line.qty / factor) * 1000) / 1000
+                        : line.qty;
+
+                return {
+                    sku: line.sku,
+                    qty: inBuyUnits,
+                    uom: factor > 0 ? buyUom : line.unit,
+                    price: line.price,
+                };
+            }),
+        });
+
+        // The console carries seven supplier cards against SAP's 402, so an
+        // order raised under a SAP vendor code cannot look its name up there.
+        // The request already resolved it when it was raised; the order keeps
+        // that name rather than printing a bare number.
+        if (po && request.supplier) {
+            po.supplier = request.supplier;
+        }
+
+        confirmRequest(id, po?.id || null);
+
+        return po;
+    }
+
+    /**
+     * Open the production order a planned line stands for, straight from the
+     * report — "עם אופציה לייצור ישירות מהדוח בלחיצת כפתור".
+     */
+    async function produceFromPlan(sku) {
+        const line = planFor(sku, 'production');
+        const recipe = items.bomsOfParent(sku)[0] || null;
+
+        if (!line || !recipe || line.state !== 'planned') {
+            return null;
+        }
+
+        // A production order is stated in the recipe's own unit, not in the
+        // unit the report planned in.
+        const plannedQty = convertQty(
+            line.qty,
+            items.rowBySku(sku)?.uom?.stock || recipe.yield?.uom,
+            recipe.yield?.uom,
+        );
+
+        if (plannedQty === null) {
+            return null;
+        }
+
+        const order = await production.createOrder({
+            bomId: recipe.id,
+            plannedQty,
+        });
+
+        line.state = 'ordered';
+        line.order = order?.id || null;
+
+        return order;
+    }
+
     /** A request withdrawn: its lines go back to being plans. */
     function cancelRequest(id, reason = '') {
         const request = requestById(id);
@@ -456,23 +621,47 @@ export const usePlanningStore = defineStore('planning', () => {
         }
 
         const recipe = recipes[0];
+        const row = items.rowBySku(sku);
+
+        // The report plans in the unit the item is held in; the recipe yields
+        // in the unit it was written in. A tincture is counted in litres and
+        // made a thousand millilitres at a time, so the two have to be brought
+        // to the same unit before anything is divided by anything.
+        const wanted = convertQty(
+            qty,
+            row?.uom?.stock || recipe.yield?.uom,
+            recipe.yield?.uom,
+        );
+
+        if (wanted === null) {
+            return { ok: false, reason: 'unitMismatch', short: [], recipe };
+        }
+
         const batch = Number(recipe.yield?.qty) || 1;
-        const runs = (Number(qty) || 0) / batch;
+        const runs = wanted / batch;
         const short = [];
 
         recipe.components.forEach((component) => {
-            const row = items.rowBySku(component.sku);
-            const need = (Number(component.qty) || 0) * runs;
-            const have = row ? planningAvailable(row) : 0;
+            const part = items.rowBySku(component.sku);
+            const unit = part?.uom?.stock || component.uom || 'unit';
 
-            if (have + 1e-9 < need) {
+            // Same again on the way down: the recipe states the component in
+            // its own unit, the stock figure is in the item's.
+            const need = convertQty(
+                (Number(component.qty) || 0) * runs,
+                component.uom || unit,
+                unit,
+            );
+            const have = part ? planningAvailable(part) : 0;
+
+            if (need === null || have + 1e-9 < need) {
                 short.push({
                     sku: component.sku,
-                    name: row?.names || component.sku,
-                    unit: row?.uom?.stock || component.uom || 'unit',
+                    name: part?.names || component.sku,
+                    unit,
                     need,
                     have,
-                    gap: need - have,
+                    gap: need === null ? null : need - have,
                 });
             }
         });
@@ -499,6 +688,8 @@ export const usePlanningStore = defineStore('planning', () => {
         openOrdersOf,
         requestById,
         producible,
+        plannedBySupplier,
+        plannedForProduction,
 
         plan,
         clearPlan,
@@ -506,5 +697,7 @@ export const usePlanningStore = defineStore('planning', () => {
         sendRequest,
         confirmRequest,
         cancelRequest,
+        orderFromRequest,
+        produceFromPlan,
     };
 });

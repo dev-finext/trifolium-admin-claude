@@ -112,7 +112,9 @@ async function save() {
                     {{
                         t('production.create.recipeHint', {
                             qty: num(bom.yield?.qty || 1),
-                            uom: bom.yield?.uom || '',
+                            uom: bom.yield?.uom
+                                ? t(`inventory.unit.${bom.yield.uom}`)
+                                : '',
                             runs,
                         })
                     }}
@@ -133,7 +135,9 @@ async function save() {
                     {{
                         bom
                             ? t('production.create.qtyHint', {
-                                  uom: bom.yield?.uom || '',
+                                  uom: bom.yield?.uom
+                                      ? t(`inventory.unit.${bom.yield.uom}`)
+                                      : '',
                               })
                             : ''
                     }}
@@ -175,7 +179,8 @@ async function save() {
                             <div class="t-sub num">{{ row.sku }}</div>
                         </td>
                         <td class="nowrap">
-                            <ANum>{{ num(row.plannedQty) }}</ANum> {{ row.uom }}
+                            <ANum>{{ num(row.plannedQty) }}</ANum>
+                            {{ t(`inventory.unit.${row.uom}`) }}
                         </td>
                         <td>
                             <span
@@ -187,7 +192,7 @@ async function save() {
                                     inventory.batchNo(pick.batch)
                                 }}</span>
                                 <ANum>{{ num(pick.qty, 2) }}</ANum>
-                                {{ row.stockUnit }}
+                                {{ t(`inventory.unit.${row.stockUnit}`) }}
                             </span>
                             <AChip
                                 v-if="row.short"
@@ -198,7 +203,9 @@ async function save() {
                                 {{
                                     t('production.drawer.short', {
                                         qty: num(row.short, 2),
-                                        uom: row.stockUnit,
+                                        uom: t(
+                                            `inventory.unit.${row.stockUnit}`,
+                                        ),
                                     })
                                 }}
                             </AChip>

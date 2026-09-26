@@ -52,7 +52,7 @@ defineProps({
     selected: { type: String, default: '' },
 });
 
-const emit = defineEmits(['open', 'request']);
+const emit = defineEmits(['open', 'request', 'produce']);
 
 const { t } = useI18n();
 const { loc, searchHaystack } = useLocalized();
@@ -269,6 +269,15 @@ const kpis = computed(() => ({
     noDemand: tally((row) => row.coverState === 'noDemand'),
 }));
 
+/** How many planned lines each exit would carry — the buttons say so. */
+const waiting = computed(() => ({
+    purchase: store.plannedBySupplier.reduce(
+        (sum, group) => sum + group.lines.length,
+        0,
+    ),
+    production: store.plannedForProduction.length,
+}));
+
 const coverOnly = (id) => state.kcover.length === 1 && state.kcover[0] === id;
 
 /** What is typed into a planning cell, per row and target. */
@@ -437,10 +446,24 @@ function exportRows() {
             <AButton
                 kind="p"
                 icon="inbox"
-                :disabled="!kpis.planned"
+                :disabled="!waiting.purchase"
                 @click="emit('request')"
             >
                 {{ t('planning.toRequest') }}
+                <template v-if="waiting.purchase">
+                    · {{ waiting.purchase }}
+                </template>
+            </AButton>
+            <AButton
+                kind="p"
+                icon="play"
+                :disabled="!waiting.production"
+                @click="emit('produce')"
+            >
+                {{ t('planning.toProduction') }}
+                <template v-if="waiting.production">
+                    · {{ waiting.production }}
+                </template>
             </AButton>
         </FilterBar>
 
@@ -534,8 +557,22 @@ function exportRows() {
                         <span v-if="editable(row, 'purchase')" class="planunit">
                             {{ unit(row.unit) }}
                         </span>
-                        <AChip v-else tone="blue" size="sm" :dot="false">
-                            {{ qty(row.plan.purchase.qty, row) }}
+                        <AChip
+                            v-else
+                            :tone="
+                                row.plan.purchase.state === 'ordered'
+                                    ? 'green'
+                                    : 'blue'
+                            "
+                            size="sm"
+                            :dot="false"
+                        >
+                            {{ qty(row.plan.purchase.qty, row) }} ·
+                            {{
+                                t(
+                                    `planning.lineState.${row.plan.purchase.state}`,
+                                )
+                            }}
                         </AChip>
                     </label>
                     <label
@@ -563,8 +600,22 @@ function exportRows() {
                         >
                             {{ unit(row.unit) }}
                         </span>
-                        <AChip v-else tone="blue" size="sm" :dot="false">
-                            {{ qty(row.plan.production.qty, row) }}
+                        <AChip
+                            v-else
+                            :tone="
+                                row.plan.production.state === 'ordered'
+                                    ? 'green'
+                                    : 'blue'
+                            "
+                            size="sm"
+                            :dot="false"
+                        >
+                            {{ qty(row.plan.production.qty, row) }} ·
+                            {{
+                                t(
+                                    `planning.lineState.${row.plan.production.state}`,
+                                )
+                            }}
                         </AChip>
                     </label>
                     <span v-if="!row.targets.length" class="t-sub">—</span>

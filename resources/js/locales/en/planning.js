@@ -55,6 +55,94 @@ export default {
     priceTip: 'Last purchase price: {price} · on {on}',
     foot: 'Computed over {months} months, from {from} to {to}. Consumption excludes stock counts, warehouse transfers and general goods issues — and includes production orders and sales, exactly as the pharmacy’s own SAP query defines it.',
 
+    toProduction: 'Open production orders',
+
+    request: {
+        title: 'Move to purchase requests',
+        lede: 'Everything planned for purchase, gathered under the supplier who would fill it \u2014 one request per supplier. A request is not an order: it goes out and waits for the supplier to agree, and only then becomes a purchase order.',
+        none: 'Nothing has been planned for purchase yet.',
+        noSupplier: 'Items with no regular supplier',
+        pickSupplier: 'Choose a supplier\u2026',
+        pickSupplierLabel: 'Which supplier to send to',
+        pickSupplierHint:
+            'These items name no supplier on their card. Choose one so the request has somewhere to go.',
+        needSupplier: 'A ticked group still has no supplier',
+        lineCount: 'one line | {n} lines',
+        hasRemark: 'Has a remark',
+        note: 'Note on the request',
+        noteHint:
+            'It goes into the body of the email. Standing remarks per supplier and per item are not defined yet \u2014 see question 3 in the open-questions document.',
+        raise: 'Raise the requests',
+        raisedToast:
+            'One purchase request raised | {n} purchase requests raised',
+        tabLede:
+            'Purchase requests raised from the planning report. A request waits for the supplier to agree, and becomes a purchase order when they do.',
+        emptyTitle: 'No purchase requests',
+        emptySub:
+            'Requests are raised from the planning report, after quantities are typed into the planning column.',
+        one: 'Purchase request',
+        lines: 'Request lines',
+        raisedOn: 'Raised',
+        sentOn: 'Sent to the supplier',
+        by: 'Raised by',
+        order: 'Purchase order',
+        mailTitle: 'The letter to the supplier',
+        mailHint:
+            'Ready to copy or export. The console does not send it \u2014 you send it from your own mailbox and then mark it sent here.',
+        copy: 'Copy the text',
+        copied: 'Text copied',
+        copyFailed: 'Copying failed \u2014 select and copy by hand',
+        export: 'Export the lines',
+        exported: 'One row exported | {n} rows exported',
+        markSent: 'Mark as sent',
+        markedSent: 'The request was marked sent',
+        toOrder: 'The supplier agreed \u2014 raise the order',
+        toOrderTitle: 'Turn the request into a purchase order',
+        toOrderBody:
+            '{n} lines move onto a new purchase order, and from that moment the quantity counts as stock on its way.',
+        ordered: 'Purchase order {id} raised',
+        cancel: 'Withdraw the request',
+        cancelTitle: 'Withdraw the purchase request',
+        cancelBody:
+            'The lines go back to being a plan in the report, and can be sent again.',
+        cancelled: 'The request was withdrawn',
+        mail: {
+            greeting: 'Hello {name},',
+            greetingPlain: 'Hello,',
+            intro: 'We would be glad to have a quote and a delivery confirmation for the following (purchase request no. {number}):',
+            sign: 'Thank you,\nTrifolium Pharmacy',
+        },
+        col: {
+            number: 'Request no.',
+            supplier: 'Supplier',
+            state: 'State',
+            lines: 'Lines',
+            value: 'Estimated value',
+            raised: 'Raised',
+            sku: 'Item code',
+            item: 'Item',
+            qty: 'Quantity',
+            unit: 'Unit',
+            price: 'Last price',
+            remark: 'Item remark',
+        },
+    },
+
+    produce: {
+        title: 'Open production orders from the report',
+        lede: 'Everything planned for production, as a recommendation to accept or leave. A line that cannot be made says so first, and names what is short.',
+        none: 'Nothing has been planned for production yet.',
+        noRecipe: 'No recipe',
+        unitMismatch:
+            "The recipe's unit cannot be reconciled with the stock unit",
+        canMake: 'Can be made',
+        short: '{n} components short',
+        missing: 'short',
+        open: 'Open the orders',
+        openedToast:
+            'One production order opened | {n} production orders opened',
+    },
+
     empty: {
         title: 'Nothing to show',
         sub: 'Change the period, the groups or the filter.',
