@@ -114,6 +114,14 @@ const cols = computed(() => [
 const fileOf = (invoice) =>
     items.attachmentsOf('supplier_invoice', invoice.id)[0] || null;
 
+/**
+ * The purchase order behind an invoice.
+ *
+ * It used to be what clicking anywhere on the row did, which meant a click on
+ * a supplier invoice opened a purchase order with no warning. The jump is
+ * worth keeping — the buyer checking a bill wants the order — so it stays,
+ * on the delivery note that is the link between the two, where it reads as one.
+ */
 function openPo(invoice) {
     const note = store.noteById(invoice.notes[0]);
 
@@ -215,7 +223,7 @@ function onCaptured(invoice) {
             </AButton>
         </FilterBar>
 
-        <ADataTable :cols="cols" :rows="rows" row-key="id" @row="openPo">
+        <ADataTable :cols="cols" :rows="rows" row-key="id">
             <template #cell-id="{ row }">
                 <span class="a-code a-tag">{{ row.id }}</span>
                 <div class="t-sub num">{{ row.num }}</div>
@@ -235,9 +243,17 @@ function onCaptured(invoice) {
                 </div>
             </template>
             <template #cell-notes="{ row }">
-                <span v-if="row.notes.length" class="a-code a-tag">{{
-                    row.notes.join(' · ')
-                }}</span>
+                <button
+                    v-if="row.notes.length"
+                    type="button"
+                    class="a-linkbtn"
+                    :title="t('purchasing.invoices.openPo')"
+                    @click.stop="openPo(row)"
+                >
+                    <span class="a-code a-tag">{{
+                        row.notes.join(' · ')
+                    }}</span>
+                </button>
                 <span v-else class="t-sub">{{
                     t('purchasing.invoices.noNotes')
                 }}</span>

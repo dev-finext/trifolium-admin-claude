@@ -57,6 +57,7 @@ export default {
         search: 'Number · supplier · delivery note',
         stateAll: 'State — all',
         capture: 'Capture invoice',
+        openPo: 'Open the purchase order',
         noNotes: 'No delivery note',
         openOf: '{open} still owed',
         sent: 'Sent to accounting',

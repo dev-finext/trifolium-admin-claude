@@ -57,6 +57,7 @@ export default {
         search: 'מספר · ספק · תעודת משלוח',
         stateAll: 'מצב — הכל',
         capture: 'קליטת חשבונית',
+        openPo: 'פתיחת הזמנת הרכש',
         noNotes: 'ללא תעודת משלוח',
         openOf: 'נותר לתשלום {open}',
         sent: 'נשלחה להנה״ח',
