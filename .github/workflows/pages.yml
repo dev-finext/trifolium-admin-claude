@@ -43,14 +43,14 @@ jobs:
       # Lint, both locale catalogs, and the build itself.
       - run: npm run verify
         env:
-          VITE_DATA_SOURCE: demo
+          VITE_DATA_SOURCE: db
 
       # Pages serves from a repository sub-path, and asset URLs are baked in at
       # build time, so the base has to be set before the bundle is written.
       - name: Build the demo bundle
         run: npm run build
         env:
-          VITE_DATA_SOURCE: demo
+          VITE_DATA_SOURCE: db
           BASE_PATH: /${{ github.event.repository.name }}/
 
       # Vue Router runs in history mode and Pages has no rewrite rules, so a

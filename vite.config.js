@@ -26,7 +26,19 @@ export default defineConfig({
             '@': path.resolve(rootDir, 'resources/js'),
             '@css': path.resolve(rootDir, 'resources/css'),
             '@img': path.resolve(rootDir, 'resources/img'),
+            // The schema lives outside resources/ because it is not the
+            // console's code: it is the database's, and the seeder under Node
+            // reads the same files.
+            '@database': path.resolve(rootDir, 'database'),
         },
+    },
+    // PGlite ships PostgreSQL as a .wasm and a 6 MB filesystem image beside it.
+    // Vite's dependency pre-bundler rewrites the module and serves a stub in
+    // place of that image, and the engine then refuses to start — "Invalid FS
+    // bundle size". Excluding it leaves the package alone, which is what a wasm
+    // package with sidecar assets needs.
+    optimizeDeps: {
+        exclude: ['@electric-sql/pglite'],
     },
     build: {
         outDir: 'dist',

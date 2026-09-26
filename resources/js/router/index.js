@@ -150,6 +150,19 @@ const routes = [
         meta: { titleKey: 'nav.item.log' },
         component: () => import('@/views/LogView.vue'),
     },
+    // The database screen shows the console's own PostgreSQL: its tables, their
+    // row counts, and a box to run SQL in. It exists wherever that database
+    // does, which is anywhere but an `api` build.
+    ...(import.meta.env.VITE_DATA_SOURCE === 'api'
+        ? []
+        : [
+              {
+                  path: '/database',
+                  name: 'database',
+                  meta: { titleKey: 'nav.item.database' },
+                  component: () => import('@/views/DatabaseView.vue'),
+              },
+          ]),
     // The development progress article exists only against the demo fixture. The
     // test is written against import.meta.env directly so Vite folds it: in an
     // `api` build the route — and the lazy chunk behind it — is not emitted at all.

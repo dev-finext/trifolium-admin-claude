@@ -32,6 +32,7 @@ export default {
         admins: 'Admin users',
         systemContacts: 'Third-party system contacts',
         log: 'System log',
+        database: 'Database',
         devProgress: 'Spec progress',
     },
     inDevelopment: 'In development',

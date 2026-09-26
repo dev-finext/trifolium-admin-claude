@@ -21,8 +21,19 @@ const collapsed = defineModel('collapsed', { type: Boolean, default: false });
 const { t } = useI18n();
 const dataset = useDatasetStore();
 
-/** The groups this deployment shows — the development group only against the fixture. */
-const groups = NAV_GROUPS.filter((group) => !group.devOnly || isDemoData);
+/**
+ * The groups this deployment shows.
+ *
+ * `devOnly` marks both a whole group (the development article) and single items
+ * inside a group (the database screen, which exists only where the console
+ * carries its own database) — so the filter runs at both levels.
+ */
+const groups = NAV_GROUPS.filter((group) => !group.devOnly || isDemoData).map(
+    (group) => ({
+        ...group,
+        items: group.items.filter((item) => !item.devOnly || isDemoData),
+    }),
+);
 
 /** The value localStorage holds when the sidebar is collapsed. */
 const STORED_OFF = 'off';

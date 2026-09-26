@@ -20,7 +20,7 @@ import {
     EXCEPTION_THRESHOLDS,
     TERMINAL_STATUS_IDS,
 } from '@/config';
-import { loadDataset } from '@/data/source';
+import { loadDataset, registerRecords, resetData } from '@/data/source';
 
 /**
  * Statuses that put an order on the deliveries desk and still need someone to
@@ -38,6 +38,10 @@ export const useDatasetStore = defineStore('dataset', () => {
     const status = ref('idle');
     const error = ref(null);
     const data = ref({});
+
+    // A write mirrors the record the console now holds rather than the patch
+    // that changed it, so the data layer needs to be able to reach them.
+    registerRecords(() => data.value);
 
     const isBusy = computed(
         () => status.value === 'idle' || status.value === 'loading',
@@ -106,8 +110,37 @@ export const useDatasetStore = defineStore('dataset', () => {
         try {
             data.value = await loadDataset();
             status.value = 'ready';
+
+            // A mark rather than a log: it costs nothing, it survives in the
+            // browser's own timeline, and it is the only honest way to ask how
+            // long the console took to open.
+            performance.mark?.('trifolium:ready');
         } catch (failure) {
             data.value = {};
+            error.value = failure;
+            status.value = 'error';
+        }
+    }
+
+    /**
+     * Throw the database away and build it again.
+     *
+     * The demo's undo: every order raised, batch received and request sent goes,
+     * and what comes back is the pharmacy as the backup found it.
+     */
+    async function reset() {
+        status.value = 'loading';
+        error.value = null;
+
+        try {
+            const fresh = await resetData();
+
+            if (fresh) {
+                data.value = fresh;
+            }
+
+            status.value = 'ready';
+        } catch (failure) {
             error.value = failure;
             status.value = 'error';
         }
@@ -334,6 +367,7 @@ export const useDatasetStore = defineStore('dataset', () => {
         isReady,
         isError,
         load,
+        reset,
 
         orders,
         practitioners,

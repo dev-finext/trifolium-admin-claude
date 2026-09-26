@@ -5,9 +5,11 @@
 // language and missing in the other is a bug, not a fallback.
 import admins from '@/locales/he/admins';
 import attachments from '@/locales/he/attachments';
+import boot from '@/locales/he/boot';
 import common from '@/locales/he/common';
 import content from '@/locales/he/content';
 import crm from '@/locales/he/crm';
+import database from '@/locales/he/database';
 import deliveries from '@/locales/he/deliveries';
 import dev from '@/locales/he/dev';
 import enums from '@/locales/he/enums';
@@ -43,8 +45,10 @@ export default {
     ...enums,
     admins,
     attachments,
+    boot,
     content,
     crm,
+    database,
     deliveries,
     dev,
     filters,

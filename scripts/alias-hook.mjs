@@ -11,6 +11,7 @@ const ALIASES = {
     '@/': path.join(ROOT, 'resources/js/'),
     '@css/': path.join(ROOT, 'resources/css/'),
     '@img/': path.join(ROOT, 'resources/img/'),
+    '@database/': path.join(ROOT, 'database/'),
 };
 
 export async function resolve(specifier, context, nextResolve) {
@@ -27,7 +28,20 @@ export async function resolve(specifier, context, nextResolve) {
                     : path.join(resolved, 'index.js');
             }
 
-            return nextResolve(pathToFileURL(resolved).href, context);
+            const url = pathToFileURL(resolved).href;
+
+            // A `.json` import needs `with { type: 'json' }` under Node and
+            // nothing at all under the bundler. Rather than write the attribute
+            // into every source file for Node's sake, the hook supplies it —
+            // resolve() returning `importAttributes` is how that is done.
+            if (resolved.endsWith('.json')) {
+                return {
+                    ...(await nextResolve(url, context)),
+                    importAttributes: { type: 'json' },
+                };
+            }
+
+            return nextResolve(url, context);
         }
     }
 

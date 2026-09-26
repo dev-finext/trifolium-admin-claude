@@ -55,6 +55,7 @@ export const NAV_GROUPS = [
             { id: 'admins', icon: 'users' },
             { id: 'systemContacts', icon: 'phone' },
             { id: 'log', icon: 'list' },
+            { id: 'database', icon: 'db', devOnly: true },
         ],
     },
     // Development-only. Shown against the demo fixture and nowhere else; the

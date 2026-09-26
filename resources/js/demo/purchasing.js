@@ -315,7 +315,6 @@ const INVOICE_PLAN = [
         text: L('אבקות ותמציות', 'Powders and extracts'),
     },
     {
-        supplier: 'S-118',
         category: 'lab_supplies',
         net: 412,
         daysAgo: 39,
@@ -326,7 +325,6 @@ const INVOICE_PLAN = [
         ),
     },
     {
-        supplier: 'S-131',
         category: 'equipment',
         net: 6800,
         daysAgo: 20,
@@ -337,7 +335,6 @@ const INVOICE_PLAN = [
         ),
     },
     {
-        supplier: 'S-142',
         category: 'packaging',
         net: 1240,
         daysAgo: 24,
@@ -348,7 +345,6 @@ const INVOICE_PLAN = [
         ),
     },
     {
-        supplier: 'S-163',
         category: 'shipping',
         net: 2640,
         daysAgo: 46,
@@ -371,7 +367,6 @@ const INVOICE_PLAN = [
         text: L('משלוחים — חיוב לפי הזמנה', 'Deliveries — billed per order'),
     },
     {
-        supplier: 'S-163',
         category: 'shipping',
         net: 2910,
         daysAgo: 25,
@@ -379,7 +374,6 @@ const INVOICE_PLAN = [
         text: L('משלוחים — יולי', 'Deliveries — July'),
     },
     {
-        supplier: 'S-155',
         category: 'raw_materials',
         net: 3560,
         daysAgo: 75,
@@ -469,6 +463,31 @@ function noteNet(note, purchaseOrders) {
  *
  * @returns {Array<object>} nine invoices, `paid` still 0 until the payments run
  */
+/**
+ * Which supplier an invoice that hangs off no delivery note is from.
+ *
+ * The cards used to be seven invented ones and a plan could name a code
+ * directly. They are the pharmacy's own ledger now, so the plan names the kind
+ * of spend and the supplier is chosen from the cards of that kind — the same
+ * card every time, because `pickFrom` is seeded by the slot.
+ */
+const KIND_BY_CATEGORY = {
+    raw_materials: 'raw_materials',
+    lab_supplies: 'services',
+    equipment: 'services',
+    packaging: 'packaging',
+    shipping: 'logistics',
+};
+
+function supplierForCategory(category, slot, suppliers) {
+    const kind = KIND_BY_CATEGORY[category];
+    const pool = suppliers.filter(
+        (one) => one.kind === kind && one.status === 'active',
+    );
+
+    return pickFrom(slot, pool.length ? pool : suppliers)?.code || null;
+}
+
 export function buildSupplierInvoices(notes, purchaseOrders, suppliers) {
     return INVOICE_PLAN.map((plan, i) => {
         const id = `SI-${FIRST_INVOICE_NUMBER + i}`;
@@ -477,7 +496,9 @@ export function buildSupplierInvoices(notes, purchaseOrders, suppliers) {
         const po = note
             ? purchaseOrders.find((order) => order.id === note.po)
             : null;
-        const supplierCode = note ? note.supplierCode : plan.supplier;
+        const supplierCode = note
+            ? note.supplierCode
+            : supplierForCategory(plan.category, `${slot}:sup`, suppliers);
         const supplier = suppliers.find((row) => row.code === supplierCode);
         const net = round2(
             plan.netOverride && po

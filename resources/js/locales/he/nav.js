@@ -35,6 +35,7 @@ export default {
         admins: 'ניהול משתמשי אדמין',
         systemContacts: 'אנשי קשר למערכות צד ג׳',
         log: 'יומן מערכת',
+        database: 'מסד הנתונים',
         devProgress: 'התקדמות אפיון',
     },
     inDevelopment: 'בפיתוח',

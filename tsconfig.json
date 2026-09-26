@@ -11,7 +11,8 @@
         "paths": {
             "@/*": ["./resources/js/*"],
             "@css/*": ["./resources/css/*"],
-            "@img/*": ["./resources/img/*"]
+            "@img/*": ["./resources/img/*"],
+            "@database/*": ["./database/*"]
         },
         "types": ["vite/client"],
         "resolveJsonModule": true,
@@ -39,7 +40,8 @@
         "resources/js/**/*.js",
         "resources/js/**/*.ts",
         "resources/js/**/*.d.ts",
-        "resources/js/**/*.vue"
+        "resources/js/**/*.vue",
+        "database/**/*.mjs"
     ],
     "exclude": ["node_modules", "dist"]
 }

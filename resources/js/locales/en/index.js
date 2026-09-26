@@ -1,9 +1,11 @@
 // English catalog. Mirrors he/index.js namespace for namespace.
 import admins from '@/locales/en/admins';
 import attachments from '@/locales/en/attachments';
+import boot from '@/locales/en/boot';
 import common from '@/locales/en/common';
 import content from '@/locales/en/content';
 import crm from '@/locales/en/crm';
+import database from '@/locales/en/database';
 import deliveries from '@/locales/en/deliveries';
 import dev from '@/locales/en/dev';
 import enums from '@/locales/en/enums';
@@ -39,8 +41,10 @@ export default {
     ...enums,
     admins,
     attachments,
+    boot,
     content,
     crm,
+    database,
     deliveries,
     dev,
     filters,
