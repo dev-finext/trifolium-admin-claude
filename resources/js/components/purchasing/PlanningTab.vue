@@ -70,6 +70,7 @@ const state = useUrlState({
     kfrom: '',
     kto: '',
     kgroups: [],
+    kden: '',
     ...filterDefaults(SPEC),
     ...PAGE_DEFAULTS,
 });
@@ -110,11 +111,18 @@ function toggleGroup(code) {
     state.pg = 1;
 }
 
-const report = computed(() =>
-    store.report({ ...window.value, groups: chosenGroups.value }),
-);
+// The report is built once for every item, and the group buttons narrow it
+// here — so "מכנה משותף" can still reach a component whose own group the
+// buyer never ticked.
+const report = computed(() => store.report({ ...window.value }));
 
-const all = computed(() => report.value.rows);
+const all = computed(() =>
+    chosenGroups.value.length
+        ? report.value.rows.filter((row) =>
+              chosenGroups.value.includes(row.group),
+          )
+        : report.value.rows,
+);
 
 const tally = (predicate) => all.value.filter(predicate).length;
 
@@ -134,7 +142,34 @@ const searched = computed(() => {
 
 const filters = useListFilters(SPEC, state, searched);
 
-const rows = computed(() => filters.rows);
+const denominator = computed(() => Boolean(state.kden));
+
+/**
+ * V3 — the shared-component view.
+ *
+ * On, the table also carries the items its products are made of, and a column
+ * naming which of those products each one feeds. Off, it is the plain report.
+ */
+const shared = computed(() =>
+    denominator.value
+        ? store.commonDenominator(filters.rows, report.value.rows)
+        : { rows: filters.rows, usage: new Map(), pulled: 0 },
+);
+
+const rows = computed(() => shared.value.rows);
+
+/** Which products a row feeds, for the dynamic column. */
+const feeds = (row) => shared.value.usage.get(row.sku) || [];
+
+/** A cell stays a cell: the first few, and a count for the rest. */
+const FEEDS_SHOWN = 4;
+const feedsShown = (row) => feeds(row).slice(0, FEEDS_SHOWN);
+const feedsMore = (row) => Math.max(0, feeds(row).length - FEEDS_SHOWN);
+
+function toggleDenominator() {
+    state.kden = state.kden ? '' : '1';
+    state.pg = 1;
+}
 
 const dirty = computed(() => filters.dirty || Boolean(state.kq));
 
@@ -233,6 +268,16 @@ const cols = computed(() => [
         sortable: true,
         sortValue: (row) => (row.cover === null ? 9999 : row.cover),
     },
+    ...(denominator.value
+        ? [
+              {
+                  k: 'feeds',
+                  label: t('planning.col.feeds'),
+                  sortable: true,
+                  sortValue: (row) => feeds(row).length,
+              },
+          ]
+        : []),
     { k: 'plan', label: t('planning.col.plan'), nowrap: true },
     {
         k: 'direct',
@@ -316,6 +361,7 @@ function exportRows() {
             t('planning.col.supplier'),
             t('planning.col.price'),
             t('planning.col.remarks'),
+            ...(denominator.value ? [t('planning.col.feeds')] : []),
         ],
         rows.value.map((row) => [
             row.sku,
@@ -335,6 +381,19 @@ function exportRows() {
             row.supplier ? loc(row.supplier) : '',
             row.price ?? '',
             row.remarks || '',
+            ...(denominator.value
+                ? [
+                      feeds(row)
+                          .map(
+                              (one) =>
+                                  `${loc(one.name)} (${one.sku}) ${num(
+                                      one.per,
+                                      2,
+                                  )} ${unit(one.perUnit)}`,
+                          )
+                          .join(' · '),
+                  ]
+                : []),
         ]),
     );
 
@@ -442,6 +501,16 @@ function exportRows() {
                         : t('filters.open')
                 }}
             </AButton>
+            <AButton
+                icon="grid"
+                :class="{ 'is-on': denominator }"
+                @click="toggleDenominator"
+            >
+                {{ t('planning.denominator.button') }}
+                <template v-if="denominator && shared.pulled">
+                    · +{{ shared.pulled }}
+                </template>
+            </AButton>
             <AButton icon="download" @click="exportRows">
                 {{ t('planning.export') }}
             </AButton>
@@ -469,6 +538,10 @@ function exportRows() {
             </AButton>
         </FilterBar>
 
+        <p v-if="denominator" class="a-hint denlede">
+            {{ t('planning.denominator.lede') }}
+        </p>
+
         <FilterChips
             :spec="spec"
             :filters="state"
@@ -494,6 +567,11 @@ function exportRows() {
                 <div class="t-strong">{{ loc(row.name) }}</div>
                 <div v-if="row.foreign" class="t-sub ltr">
                     {{ row.foreign }}
+                </div>
+                <div v-if="row.viaBom" class="pulled">
+                    <AChip tone="gray" size="sm" :dot="false">
+                        {{ t('planning.denominator.pulled') }}
+                    </AChip>
                 </div>
             </template>
             <template #cell-onHand="{ row }">
@@ -535,6 +613,35 @@ function exportRows() {
                         })
                     }}
                 </div>
+            </template>
+            <template #cell-feeds="{ row }">
+                <ul v-if="feeds(row).length" class="feeds">
+                    <li v-for="one in feedsShown(row)" :key="one.sku">
+                        <span class="a-code a-tag">{{ one.sku }}</span>
+                        <span class="feedname">{{ loc(one.name) }}</span>
+                        <ANum class="feedper">
+                            {{
+                                t('planning.denominator.perRun', {
+                                    qty: num(one.per, 2),
+                                    unit: unit(one.perUnit),
+                                    batch: num(one.batch, 0),
+                                    batchUnit: unit(one.batchUnit),
+                                })
+                            }}
+                        </ANum>
+                        <ANum v-if="one.need" class="feedneed">
+                            {{ qty(one.need, row) }}
+                        </ANum>
+                    </li>
+                    <li v-if="feedsMore(row)" class="t-sub">
+                        {{
+                            t('planning.denominator.more', {
+                                n: feedsMore(row),
+                            })
+                        }}
+                    </li>
+                </ul>
+                <span v-else class="t-sub">—</span>
             </template>
             <template #cell-plan="{ row }">
                 <div class="plans">

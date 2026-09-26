@@ -3482,3 +3482,58 @@ tr.cover-critical:hover > td,
 tr.cover-low:hover > td {
     filter: brightness(0.98);
 }
+
+/* V3 — the shared-component column on the planning report. A cell holds a
+   short list, so it needs its own rhythm rather than the table's line. */
+.feeds {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 3px;
+    min-width: 320px;
+}
+
+.feeds li {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    min-width: 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.feedname {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.feedper {
+    flex: none;
+    color: var(--a-ink-4);
+}
+
+.feedneed {
+    flex: none;
+    font-weight: 600;
+}
+
+/* A toolbar button that is currently on. */
+.a-btn.is-on {
+    background: var(--a-green-bg);
+    border-color: var(--a-accent);
+    color: var(--a-accent-2);
+    font-weight: 600;
+}
+
+.pulled {
+    margin-top: 4px;
+}
+
+.denlede {
+    margin: 0 0 4px;
+    max-width: 92ch;
+}

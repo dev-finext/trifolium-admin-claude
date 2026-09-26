@@ -35,6 +35,7 @@ export default {
         monthly: 'Average per month',
         cover: 'Months of stock',
         plan: 'Stock plan',
+        feeds: 'Shared by',
         planPurchase: 'To purchase',
         planProduction: 'To production',
         plannedCover: 'Months of stock after the plan',
@@ -141,6 +142,16 @@ export default {
         open: 'Open the orders',
         openedToast:
             'One production order opened | {n} production orders opened',
+    },
+
+    denominator: {
+        button: 'Shared components',
+        lede: 'The column names, for each row, which of the listed products are made from it — straight off the recipes. A component two products share gets one row, and both products are written against it. Nothing here is stored: it is worked out on whatever is filtered right now.',
+        pulled: 'Component of a listed product',
+        perRun: '{qty} {unit} per {batch} {batchUnit}',
+        more: 'and one more product | and {n} more products',
+        need: 'per the plan',
+        col: 'Shared by',
     },
 
     empty: {

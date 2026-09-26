@@ -226,6 +226,105 @@ export const usePlanningStore = defineStore('planning', () => {
         return { from, to, months: window, rows };
     }
 
+    /**
+     * V3 — "מכנה משותף": which of the products on screen each item feeds.
+     *
+     * Natalie's own example: a winter ointment and a summer ointment share a jar
+     * and a cap, and differ in the label and the ointment itself. Buying for
+     * both means seeing the jar once, with both ointments named against it —
+     * "אם שני מוצרים מכילים את אותה הרכיב אז הרכיב לא יופיע פעמיים בטבלה, אבל יופיע פעמיים
+     * בעמודה".
+     *
+     * Nothing here is stored. The recipes already say which item feeds which
+     * product; this reads them for the rows in front of the buyer and hands back
+     * the same rows plus the components they reach, with the usage keyed by item.
+     *
+     * A component whose parent has a planned production quantity also carries
+     * what that plan will consume of it — that number is the buyer's own
+     * planning, restated, not an assumption about how much will be made.
+     *
+     * @param {Array} visible  The rows the filters left on screen.
+     * @param {Array} pool  Every row the report can offer, to draw components from.
+     */
+    function commonDenominator(visible = [], pool = []) {
+        const usage = new Map();
+        const byId = new Map(pool.map((row) => [row.sku, row]));
+        const seen = new Set(visible.map((row) => row.sku));
+
+        visible.forEach((row) => {
+            const recipe = items.bomsOfParent(row.sku)[0];
+
+            if (!recipe) {
+                return;
+            }
+
+            const batch = Number(recipe.yield?.qty) || 1;
+            const planned = row.plan?.production?.qty || 0;
+            const wanted = planned
+                ? convertQty(planned, row.unit, recipe.yield?.uom)
+                : 0;
+            const runs = wanted === null ? null : wanted / batch;
+
+            recipe.components.forEach((component) => {
+                const part = byId.get(component.sku);
+                const unit = part?.unit || component.uom || 'unit';
+                const per = Number(component.qty) || 0;
+                const need =
+                    runs === null || !runs
+                        ? null
+                        : convertQty(per * runs, component.uom || unit, unit);
+
+                if (!usage.has(component.sku)) {
+                    usage.set(component.sku, []);
+                }
+
+                usage.get(component.sku).push({
+                    sku: row.sku,
+                    name: row.name,
+                    cover: row.cover,
+                    coverState: row.coverState,
+                    onHand: row.onHand,
+                    parentUnit: row.unit,
+                    per,
+                    perUnit: component.uom || unit,
+                    batch,
+                    batchUnit: recipe.yield?.uom || unit,
+                    planned,
+                    need,
+                    unit,
+                });
+            });
+        });
+
+        // A component the filter never asked for still has to have a row, or
+        // there is nowhere to show what it feeds.
+        const pulled = [];
+
+        usage.forEach((_, sku) => {
+            if (seen.has(sku)) {
+                return;
+            }
+
+            const row = byId.get(sku);
+
+            if (row) {
+                pulled.push({ ...row, viaBom: true });
+            }
+        });
+
+        // The point of the view is the item two products share, so that is what
+        // the reader meets first: most-shared at the top, then everything else
+        // in the order the report already had it. A column header still wins —
+        // this is the order before anyone sorts.
+        const shareCount = (row) => usage.get(row.sku)?.length || 0;
+        const rows = [...visible, ...pulled]
+            .map((row, i) => ({ row, i }))
+            .sort((a, b) => shareCount(b.row) - shareCount(a.row) || a.i - b.i)
+            .map((one) => one.row);
+
+        return { rows, usage, pulled: pulled.length };
+    }
+
     // ---- writes --------------------------------------------------------------
 
     function bag(name) {
@@ -688,6 +787,7 @@ export const usePlanningStore = defineStore('planning', () => {
         openOrdersOf,
         requestById,
         producible,
+        commonDenominator,
         plannedBySupplier,
         plannedForProduction,
 
