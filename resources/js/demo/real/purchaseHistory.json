@@ -1,0 +1,3882 @@
+[
+ {
+  "code": "100032",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 15,
+  "lastOn": "2023-11-14",
+  "lowPrice": 224.46,
+  "highPrice": 224.46
+ },
+ {
+  "code": "100032",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2017-12-21",
+  "lowPrice": 169.01,
+  "highPrice": 169.01
+ },
+ {
+  "code": "100032",
+  "supplierCode": "950148",
+  "supplier": "פארמה תמר בע\"מ",
+  "lines": 1,
+  "qty": 8.8,
+  "lastOn": "2023-10-05",
+  "lowPrice": 175,
+  "highPrice": 175
+ },
+ {
+  "code": "100060",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 40,
+  "lastOn": "2023-11-14",
+  "lowPrice": 188.99,
+  "highPrice": 188.99
+ },
+ {
+  "code": "100079",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 10,
+  "lastOn": "2023-11-14",
+  "lowPrice": 260,
+  "highPrice": 260
+ },
+ {
+  "code": "100127",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 813.84,
+  "highPrice": 813.84
+ },
+ {
+  "code": "100144",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 149.15,
+  "highPrice": 149.15
+ },
+ {
+  "code": "100317",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2017-12-21",
+  "lowPrice": 361.36,
+  "highPrice": 361.36
+ },
+ {
+  "code": "100326",
+  "supplierCode": "950001",
+  "supplier": "עלעלים - מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2017-02-27",
+  "lowPrice": 88.2,
+  "highPrice": 88.2
+ },
+ {
+  "code": "100366",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 115.01,
+  "highPrice": 115.01
+ },
+ {
+  "code": "100414",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 265.5,
+  "highPrice": 265.5
+ },
+ {
+  "code": "100442",
+  "supplierCode": "950148",
+  "supplier": "פארמה תמר בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2026-07-06",
+  "lowPrice": 442,
+  "highPrice": 442
+ },
+ {
+  "code": "100497",
+  "supplierCode": "950001",
+  "supplier": "עלעלים - מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2017-02-27",
+  "lowPrice": 128,
+  "highPrice": 128
+ },
+ {
+  "code": "100497",
+  "supplierCode": "950343",
+  "supplier": "בדור חומרי גלם וכימיקלים למזון בע\"מ",
+  "lines": 1,
+  "qty": 25,
+  "lastOn": "2025-08-25",
+  "lowPrice": 99.54,
+  "highPrice": 99.54
+ },
+ {
+  "code": "110054",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 4.55,
+  "lastOn": "2017-12-21",
+  "lowPrice": 650,
+  "highPrice": 650
+ },
+ {
+  "code": "110071",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.79,
+  "lastOn": "2017-12-21",
+  "lowPrice": 544.38,
+  "highPrice": 544.38
+ },
+ {
+  "code": "110095",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 46.25,
+  "highPrice": 46.25
+ },
+ {
+  "code": "110099",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 105,
+  "highPrice": 105
+ },
+ {
+  "code": "110113",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 60.63,
+  "highPrice": 60.63
+ },
+ {
+  "code": "110119",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 464.38,
+  "highPrice": 464.38
+ },
+ {
+  "code": "110127",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.8,
+  "lastOn": "2017-12-21",
+  "lowPrice": 185.42,
+  "highPrice": 185.42
+ },
+ {
+  "code": "110139",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2017-12-21",
+  "lowPrice": 158.75,
+  "highPrice": 158.75
+ },
+ {
+  "code": "110152",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 131.17,
+  "highPrice": 131.17
+ },
+ {
+  "code": "110179",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 182.5,
+  "highPrice": 182.5
+ },
+ {
+  "code": "110194",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "110301",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 715,
+  "highPrice": 715
+ },
+ {
+  "code": "110383",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.8,
+  "lastOn": "2017-12-21",
+  "lowPrice": 164.19,
+  "highPrice": 164.19
+ },
+ {
+  "code": "110396",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.9,
+  "lastOn": "2017-12-21",
+  "lowPrice": 715,
+  "highPrice": 715
+ },
+ {
+  "code": "120020",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2020-12-09",
+  "lowPrice": 272,
+  "highPrice": 272
+ },
+ {
+  "code": "120020",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 3,
+  "qty": 25,
+  "lastOn": "2026-02-18",
+  "lowPrice": 185,
+  "highPrice": 1916.24
+ },
+ {
+  "code": "120033",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2020-12-09",
+  "lowPrice": 289.8,
+  "highPrice": 289.8
+ },
+ {
+  "code": "120033",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 22,
+  "lastOn": "2026-04-29",
+  "lowPrice": 147.55,
+  "highPrice": 1900
+ },
+ {
+  "code": "120033",
+  "supplierCode": "950343",
+  "supplier": "בדור חומרי גלם וכימיקלים למזון בע\"מ",
+  "lines": 1,
+  "qty": 10,
+  "lastOn": "2025-08-12",
+  "lowPrice": 183.37,
+  "highPrice": 183.37
+ },
+ {
+  "code": "120036",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 3,
+  "qty": 20,
+  "lastOn": "2026-06-23",
+  "lowPrice": 135,
+  "highPrice": 2950
+ },
+ {
+  "code": "120045",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 5,
+  "qty": 23,
+  "lastOn": "2026-07-20",
+  "lowPrice": 214.27,
+  "highPrice": 2420.51
+ },
+ {
+  "code": "120070",
+  "supplierCode": "950177",
+  "supplier": "ברא צמחים בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2024-05-23",
+  "lowPrice": 966,
+  "highPrice": 966
+ },
+ {
+  "code": "120072",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 10,
+  "lastOn": "2026-03-31",
+  "lowPrice": 259.48,
+  "highPrice": 2420.51
+ },
+ {
+  "code": "120077",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 4,
+  "qty": 40,
+  "lastOn": "2026-04-29",
+  "lowPrice": 339.37,
+  "highPrice": 3014.9
+ },
+ {
+  "code": "120113",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2022-04-20",
+  "lowPrice": 600,
+  "highPrice": 600
+ },
+ {
+  "code": "120113",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2024-07-07",
+  "lowPrice": 3861,
+  "highPrice": 3861
+ },
+ {
+  "code": "120149",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 8,
+  "lastOn": "2025-11-19",
+  "lowPrice": 2094.5,
+  "highPrice": 2094.5
+ },
+ {
+  "code": "120173",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 20,
+  "lastOn": "2026-02-18",
+  "lowPrice": 185,
+  "highPrice": 1900
+ },
+ {
+  "code": "120186",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2026-02-18",
+  "lowPrice": 200,
+  "highPrice": 200
+ },
+ {
+  "code": "120218",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 20,
+  "lastOn": "2026-02-18",
+  "lowPrice": 169,
+  "highPrice": 1900
+ },
+ {
+  "code": "120218",
+  "supplierCode": "950343",
+  "supplier": "בדור חומרי גלם וכימיקלים למזון בע\"מ",
+  "lines": 1,
+  "qty": 10,
+  "lastOn": "2025-08-12",
+  "lowPrice": 183.37,
+  "highPrice": 183.37
+ },
+ {
+  "code": "120219",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 33,
+  "lastOn": "2025-08-14",
+  "lowPrice": 1900,
+  "highPrice": 1916.24
+ },
+ {
+  "code": "120232",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 3,
+  "qty": 15,
+  "lastOn": "2026-07-20",
+  "lowPrice": 189.78,
+  "highPrice": 1916.24
+ },
+ {
+  "code": "120268",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2020-12-09",
+  "lowPrice": 357,
+  "highPrice": 357
+ },
+ {
+  "code": "120283",
+  "supplierCode": "950343",
+  "supplier": "בדור חומרי גלם וכימיקלים למזון בע\"מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2025-08-12",
+  "lowPrice": 183.37,
+  "highPrice": 183.37
+ },
+ {
+  "code": "120304",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 7,
+  "lastOn": "2026-03-31",
+  "lowPrice": 158.19,
+  "highPrice": 1917.5
+ },
+ {
+  "code": "130018",
+  "supplierCode": "950249",
+  "supplier": "גו פארם",
+  "lines": 1,
+  "qty": 10,
+  "lastOn": "2024-04-07",
+  "lowPrice": 400,
+  "highPrice": 400
+ },
+ {
+  "code": "130018",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 3,
+  "qty": 54,
+  "lastOn": "2026-01-06",
+  "lowPrice": 2106,
+  "highPrice": 2124
+ },
+ {
+  "code": "130025",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 5,
+  "qty": 45,
+  "lastOn": "2026-07-20",
+  "lowPrice": 229.57,
+  "highPrice": 1916.24
+ },
+ {
+  "code": "130028",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 7,
+  "lastOn": "2026-05-27",
+  "lowPrice": 3217.5,
+  "highPrice": 3245
+ },
+ {
+  "code": "130028",
+  "supplierCode": "950343",
+  "supplier": "בדור חומרי גלם וכימיקלים למזון בע\"מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2025-08-12",
+  "lowPrice": 183.37,
+  "highPrice": 183.37
+ },
+ {
+  "code": "130035",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2020-12-09",
+  "lowPrice": 441,
+  "highPrice": 441
+ },
+ {
+  "code": "130035",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 35,
+  "lastOn": "2025-01-29",
+  "lowPrice": 2400,
+  "highPrice": 2400
+ },
+ {
+  "code": "130035",
+  "supplierCode": "950343",
+  "supplier": "בדור חומרי גלם וכימיקלים למזון בע\"מ",
+  "lines": 1,
+  "qty": 25,
+  "lastOn": "2026-05-31",
+  "lowPrice": 463.02,
+  "highPrice": 463.02
+ },
+ {
+  "code": "130046",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2020-12-09",
+  "lowPrice": 336.84,
+  "highPrice": 336.84
+ },
+ {
+  "code": "130046",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 4,
+  "qty": 30,
+  "lastOn": "2026-05-27",
+  "lowPrice": 180,
+  "highPrice": 2420.51
+ },
+ {
+  "code": "130079",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 3,
+  "qty": 15,
+  "lastOn": "2026-06-23",
+  "lowPrice": 142.33,
+  "highPrice": 2400
+ },
+ {
+  "code": "130082",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 5,
+  "qty": 38,
+  "lastOn": "2026-07-20",
+  "lowPrice": 229.57,
+  "highPrice": 2420.51
+ },
+ {
+  "code": "130088",
+  "supplierCode": "950148",
+  "supplier": "פארמה תמר בע\"מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2026-07-16",
+  "lowPrice": 710,
+  "highPrice": 710
+ },
+ {
+  "code": "130099",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 3,
+  "qty": 65,
+  "lastOn": "2025-02-27",
+  "lowPrice": 2400,
+  "highPrice": 2400
+ },
+ {
+  "code": "130100",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2026-04-29",
+  "lowPrice": 177.04,
+  "highPrice": 177.04
+ },
+ {
+  "code": "130103",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 3,
+  "qty": 20,
+  "lastOn": "2026-01-06",
+  "lowPrice": 2400,
+  "highPrice": 2420.51
+ },
+ {
+  "code": "130103",
+  "supplierCode": "950343",
+  "supplier": "בדור חומרי גלם וכימיקלים למזון בע\"מ",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2025-08-25",
+  "lowPrice": 167.4,
+  "highPrice": 167.4
+ },
+ {
+  "code": "150027",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 250,
+  "lastOn": "2026-04-28",
+  "lowPrice": 0.55,
+  "highPrice": 0.55
+ },
+ {
+  "code": "150045",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 6,
+  "qty": 1100,
+  "lastOn": "2026-04-28",
+  "lowPrice": 3.14,
+  "highPrice": 3.3
+ },
+ {
+  "code": "150047",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 3,
+  "qty": 3500,
+  "lastOn": "2025-10-15",
+  "lowPrice": 0.76,
+  "highPrice": 0.79
+ },
+ {
+  "code": "150050",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 2,
+  "qty": 750,
+  "lastOn": "2026-04-28",
+  "lowPrice": 0.44,
+  "highPrice": 0.48
+ },
+ {
+  "code": "150052",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 2,
+  "qty": 1500,
+  "lastOn": "2025-10-15",
+  "lowPrice": 0.34,
+  "highPrice": 0.36
+ },
+ {
+  "code": "150053",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2024-02-07",
+  "lowPrice": 2.38,
+  "highPrice": 2.38
+ },
+ {
+  "code": "150055",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 2,
+  "qty": 350,
+  "lastOn": "2025-12-23",
+  "lowPrice": 1.19,
+  "highPrice": 1.42
+ },
+ {
+  "code": "150058",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 3,
+  "qty": 750,
+  "lastOn": "2026-07-16",
+  "lowPrice": 0.23,
+  "highPrice": 0.32
+ },
+ {
+  "code": "150068",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2022-12-04",
+  "lowPrice": 1.17,
+  "highPrice": 1.17
+ },
+ {
+  "code": "100173",
+  "supplierCode": "950177",
+  "supplier": "ברא צמחים בע\"מ",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2024-05-23",
+  "lowPrice": 258,
+  "highPrice": 258
+ },
+ {
+  "code": "100201",
+  "supplierCode": "950001",
+  "supplier": "עלעלים - מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2017-02-27",
+  "lowPrice": 129.67,
+  "highPrice": 129.67
+ },
+ {
+  "code": "100206",
+  "supplierCode": "950177",
+  "supplier": "ברא צמחים בע\"מ",
+  "lines": 1,
+  "qty": 6,
+  "lastOn": "2024-05-23",
+  "lowPrice": 246,
+  "highPrice": 246
+ },
+ {
+  "code": "100327",
+  "supplierCode": "950001",
+  "supplier": "עלעלים - מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2017-02-27",
+  "lowPrice": 307,
+  "highPrice": 307
+ },
+ {
+  "code": "100335",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2017-12-21",
+  "lowPrice": 110,
+  "highPrice": 110
+ },
+ {
+  "code": "100384",
+  "supplierCode": "950148",
+  "supplier": "פארמה תמר בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2026-01-18",
+  "lowPrice": 164.2,
+  "highPrice": 164.2
+ },
+ {
+  "code": "100390",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 179.33,
+  "highPrice": 179.33
+ },
+ {
+  "code": "100420",
+  "supplierCode": "950001",
+  "supplier": "עלעלים - מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 10,
+  "lastOn": "2017-02-27",
+  "lowPrice": 120,
+  "highPrice": 120
+ },
+ {
+  "code": "110007",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2017-12-21",
+  "lowPrice": 100,
+  "highPrice": 100
+ },
+ {
+  "code": "110025",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.8,
+  "lastOn": "2017-12-21",
+  "lowPrice": 205,
+  "highPrice": 205
+ },
+ {
+  "code": "110120",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.87,
+  "lastOn": "2017-12-21",
+  "lowPrice": 101.25,
+  "highPrice": 101.25
+ },
+ {
+  "code": "110129",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.9,
+  "lastOn": "2017-12-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "110131",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 186.44,
+  "highPrice": 186.44
+ },
+ {
+  "code": "110303",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.7,
+  "lastOn": "2017-12-21",
+  "lowPrice": 337.5,
+  "highPrice": 337.5
+ },
+ {
+  "code": "110305",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 770.63,
+  "highPrice": 770.63
+ },
+ {
+  "code": "110394",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 186.25,
+  "highPrice": 186.25
+ },
+ {
+  "code": "300002",
+  "supplierCode": "950017",
+  "supplier": "א. שיצר",
+  "lines": 71,
+  "qty": 17750,
+  "lastOn": "2026-08-02",
+  "lowPrice": 0,
+  "highPrice": 10.3
+ },
+ {
+  "code": "300010",
+  "supplierCode": "950100",
+  "supplier": "צפרוני ספקי כימיקלים בע\"מ",
+  "lines": 2,
+  "qty": 260000,
+  "lastOn": "2020-02-04",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "300010",
+  "supplierCode": "950214",
+  "supplier": "יורומר euromar",
+  "lines": 25,
+  "qty": 3400001,
+  "lastOn": "2026-08-03",
+  "lowPrice": 0.03,
+  "highPrice": 0.04
+ },
+ {
+  "code": "300010",
+  "supplierCode": "950283",
+  "supplier": "IMCD",
+  "lines": 1,
+  "qty": 65000,
+  "lastOn": "2023-08-30",
+  "lowPrice": 0.04,
+  "highPrice": 0.04
+ },
+ {
+  "code": "300036",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 0.1,
+  "lastOn": "2023-03-02",
+  "lowPrice": 290,
+  "highPrice": 290
+ },
+ {
+  "code": "410125",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 11,
+  "qty": 7830,
+  "lastOn": "2026-07-21",
+  "lowPrice": 0.86,
+  "highPrice": 1.21
+ },
+ {
+  "code": "410250",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 10,
+  "qty": 4755,
+  "lastOn": "2026-07-21",
+  "lowPrice": 0.95,
+  "highPrice": 1.2
+ },
+ {
+  "code": "422805",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 6,
+  "qty": 24000,
+  "lastOn": "2026-07-08",
+  "lowPrice": 0.26,
+  "highPrice": 0.28
+ },
+ {
+  "code": "460550",
+  "supplierCode": "950008",
+  "supplier": "הוברמן",
+  "lines": 6,
+  "qty": 1600,
+  "lastOn": "2026-04-26",
+  "lowPrice": 2.53,
+  "highPrice": 4.03
+ },
+ {
+  "code": "470150",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 8,
+  "qty": 7392,
+  "lastOn": "2026-07-21",
+  "lowPrice": 0.9,
+  "highPrice": 1.1
+ },
+ {
+  "code": "470151",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 2,
+  "qty": 4028,
+  "lastOn": "2026-05-18",
+  "lowPrice": 0.2,
+  "highPrice": 0.2
+ },
+ {
+  "code": "470210",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 14,
+  "qty": 8936,
+  "lastOn": "2026-07-21",
+  "lowPrice": 1.2,
+  "highPrice": 1.46
+ },
+ {
+  "code": "470211",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 1,
+  "qty": 2500,
+  "lastOn": "2026-01-06",
+  "lowPrice": 0.25,
+  "highPrice": 0.25
+ },
+ {
+  "code": "470252",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 10,
+  "qty": 4264,
+  "lastOn": "2026-07-21",
+  "lowPrice": 1.2,
+  "highPrice": 1.96
+ },
+ {
+  "code": "470252",
+  "supplierCode": "950092",
+  "supplier": "גיל מוצרים פלסטיים בע\"ם",
+  "lines": 1,
+  "qty": 630,
+  "lastOn": "2019-07-04",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470253",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 2,
+  "qty": 601,
+  "lastOn": "2026-04-15",
+  "lowPrice": 0,
+  "highPrice": 1.46
+ },
+ {
+  "code": "470254",
+  "supplierCode": "950008",
+  "supplier": "הוברמן",
+  "lines": 1,
+  "qty": 230,
+  "lastOn": "2026-02-17",
+  "lowPrice": 1.18,
+  "highPrice": 1.18
+ },
+ {
+  "code": "470254",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 3,
+  "qty": 361,
+  "lastOn": "2026-04-15",
+  "lowPrice": 0,
+  "highPrice": 1.27
+ },
+ {
+  "code": "470558",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2025-06-18",
+  "lowPrice": 1.09,
+  "highPrice": 1.09
+ },
+ {
+  "code": "470558",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 2,
+  "qty": 400,
+  "lastOn": "2024-01-07",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "478003",
+  "supplierCode": "950008",
+  "supplier": "הוברמן",
+  "lines": 1,
+  "qty": 3200,
+  "lastOn": "2023-07-26",
+  "lowPrice": 0.22,
+  "highPrice": 0.22
+ },
+ {
+  "code": "478003",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 8,
+  "qty": 23800,
+  "lastOn": "2026-07-08",
+  "lowPrice": 0.22,
+  "highPrice": 0.26
+ },
+ {
+  "code": "478014",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 1,
+  "qty": 3300,
+  "lastOn": "2025-04-21",
+  "lowPrice": 0.16,
+  "highPrice": 0.16
+ },
+ {
+  "code": "478015",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2026-06-04",
+  "lowPrice": 0.06,
+  "highPrice": 0.06
+ },
+ {
+  "code": "479110",
+  "supplierCode": "950046",
+  "supplier": "מפעל הפלסטיק גרופית",
+  "lines": 1,
+  "qty": 5000,
+  "lastOn": "2025-10-23",
+  "lowPrice": 0.09,
+  "highPrice": 0.09
+ },
+ {
+  "code": "479112",
+  "supplierCode": "950046",
+  "supplier": "מפעל הפלסטיק גרופית",
+  "lines": 1,
+  "qty": 6000,
+  "lastOn": "2023-10-26",
+  "lowPrice": 0.29,
+  "highPrice": 0.29
+ },
+ {
+  "code": "479113",
+  "supplierCode": "950046",
+  "supplier": "מפעל הפלסטיק גרופית",
+  "lines": 1,
+  "qty": 1500,
+  "lastOn": "2025-10-23",
+  "lowPrice": 0.39,
+  "highPrice": 0.39
+ },
+ {
+  "code": "479204",
+  "supplierCode": "950267",
+  "supplier": "דיגיפק אריזה חכמה בעמ 2021",
+  "lines": 3,
+  "qty": 4900,
+  "lastOn": "2026-01-18",
+  "lowPrice": 0,
+  "highPrice": 1.51
+ },
+ {
+  "code": "479205",
+  "supplierCode": "950267",
+  "supplier": "דיגיפק אריזה חכמה בעמ 2021",
+  "lines": 1,
+  "qty": 1100,
+  "lastOn": "2024-12-25",
+  "lowPrice": 1.2,
+  "highPrice": 1.2
+ },
+ {
+  "code": "480006",
+  "supplierCode": "950240",
+  "supplier": "תג-טק 2020 בע\"מ",
+  "lines": 1,
+  "qty": 10000,
+  "lastOn": "2025-12-31",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "480024",
+  "supplierCode": "950337",
+  "supplier": "אריזות מדף",
+  "lines": 1,
+  "qty": 200,
+  "lastOn": "2026-06-03",
+  "lowPrice": 2.95,
+  "highPrice": 2.95
+ },
+ {
+  "code": "480027",
+  "supplierCode": "950027",
+  "supplier": "גברעם מעטפות איכות",
+  "lines": 4,
+  "qty": 3100,
+  "lastOn": "2026-07-07",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "480028",
+  "supplierCode": "950027",
+  "supplier": "גברעם מעטפות איכות",
+  "lines": 2,
+  "qty": 400,
+  "lastOn": "2026-03-04",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "480031",
+  "supplierCode": "950027",
+  "supplier": "גברעם מעטפות איכות",
+  "lines": 2,
+  "qty": 200,
+  "lastOn": "2026-03-04",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "480063",
+  "supplierCode": "950337",
+  "supplier": "אריזות מדף",
+  "lines": 1,
+  "qty": 300,
+  "lastOn": "2026-06-03",
+  "lowPrice": 3.04,
+  "highPrice": 3.04
+ },
+ {
+  "code": "480065",
+  "supplierCode": "950240",
+  "supplier": "תג-טק 2020 בע\"מ",
+  "lines": 1,
+  "qty": 2500,
+  "lastOn": "2025-12-31",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "480086",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 1,
+  "qty": 3000,
+  "lastOn": "2026-05-18",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "100005",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2020-12-09",
+  "lowPrice": 192,
+  "highPrice": 192
+ },
+ {
+  "code": "100075",
+  "supplierCode": "950001",
+  "supplier": "עלעלים - מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 6,
+  "lastOn": "2017-02-27",
+  "lowPrice": 200,
+  "highPrice": 200
+ },
+ {
+  "code": "100084",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 150,
+  "highPrice": 150
+ },
+ {
+  "code": "100123",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2020-12-09",
+  "lowPrice": 212,
+  "highPrice": 212
+ },
+ {
+  "code": "110512",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.73,
+  "lastOn": "2017-12-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "110627",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.76,
+  "lastOn": "2017-12-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "120177",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2025-11-19",
+  "lowPrice": 3516.4,
+  "highPrice": 3516.4
+ },
+ {
+  "code": "120221",
+  "supplierCode": "950148",
+  "supplier": "פארמה תמר בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2023-10-05",
+  "lowPrice": 586.04,
+  "highPrice": 586.04
+ },
+ {
+  "code": "130019",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 8,
+  "lastOn": "2026-05-27",
+  "lowPrice": 2612.52,
+  "highPrice": 2612.52
+ },
+ {
+  "code": "130034",
+  "supplierCode": "950177",
+  "supplier": "ברא צמחים בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2024-05-23",
+  "lowPrice": 861,
+  "highPrice": 861
+ },
+ {
+  "code": "130034",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2026-05-27",
+  "lowPrice": 120,
+  "highPrice": 120
+ },
+ {
+  "code": "130049",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 0.5,
+  "lastOn": "2017-12-25",
+  "lowPrice": 280,
+  "highPrice": 280
+ },
+ {
+  "code": "130059",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2024-10-07",
+  "lowPrice": 3200,
+  "highPrice": 3200
+ },
+ {
+  "code": "130059",
+  "supplierCode": "950343",
+  "supplier": "בדור חומרי גלם וכימיקלים למזון בע\"מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2025-08-12",
+  "lowPrice": 183.37,
+  "highPrice": 183.37
+ },
+ {
+  "code": "130061",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 6,
+  "lastOn": "2026-05-27",
+  "lowPrice": 2420.51,
+  "highPrice": 2420.51
+ },
+ {
+  "code": "130074",
+  "supplierCode": "950343",
+  "supplier": "בדור חומרי גלם וכימיקלים למזון בע\"מ",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2025-08-25",
+  "lowPrice": 617.97,
+  "highPrice": 617.97
+ },
+ {
+  "code": "130075",
+  "supplierCode": "950148",
+  "supplier": "פארמה תמר בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2026-07-16",
+  "lowPrice": 1036,
+  "highPrice": 1036
+ },
+ {
+  "code": "130077",
+  "supplierCode": "950148",
+  "supplier": "פארמה תמר בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2026-01-18",
+  "lowPrice": 890,
+  "highPrice": 890
+ },
+ {
+  "code": "130085",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 3,
+  "qty": 20,
+  "lastOn": "2026-03-31",
+  "lowPrice": 190.01,
+  "highPrice": 2420.51
+ },
+ {
+  "code": "130092",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 7,
+  "lastOn": "2026-05-27",
+  "lowPrice": 120,
+  "highPrice": 2420.51
+ },
+ {
+  "code": "130109",
+  "supplierCode": "950148",
+  "supplier": "פארמה תמר בע\"מ",
+  "lines": 1,
+  "qty": 0.5,
+  "lastOn": "2023-10-05",
+  "lowPrice": 255,
+  "highPrice": 255
+ },
+ {
+  "code": "300004",
+  "supplierCode": "950122",
+  "supplier": "נ.ס. שמנים בע\"מ",
+  "lines": 3,
+  "qty": 12,
+  "lastOn": "2023-04-18",
+  "lowPrice": 88,
+  "highPrice": 88
+ },
+ {
+  "code": "300016",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2023-10-25",
+  "lowPrice": 107.99,
+  "highPrice": 107.99
+ },
+ {
+  "code": "300049",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 3,
+  "qty": 50.2,
+  "lastOn": "2025-12-23",
+  "lowPrice": 645.17,
+  "highPrice": 1220
+ },
+ {
+  "code": "401000",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 9,
+  "qty": 540,
+  "lastOn": "2026-07-21",
+  "lowPrice": 4.54,
+  "highPrice": 5.7
+ },
+ {
+  "code": "410300",
+  "supplierCode": "950008",
+  "supplier": "הוברמן",
+  "lines": 8,
+  "qty": 3840,
+  "lastOn": "2025-12-29",
+  "lowPrice": 1.48,
+  "highPrice": 1.94
+ },
+ {
+  "code": "410300",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 8,
+  "qty": 2166,
+  "lastOn": "2026-07-08",
+  "lowPrice": 1.48,
+  "highPrice": 1.53
+ },
+ {
+  "code": "410500",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 12,
+  "qty": 3520,
+  "lastOn": "2026-07-08",
+  "lowPrice": 1.54,
+  "highPrice": 1.72
+ },
+ {
+  "code": "411005",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 11,
+  "qty": 320,
+  "lastOn": "2026-07-08",
+  "lowPrice": 7.75,
+  "highPrice": 48
+ },
+ {
+  "code": "470251",
+  "supplierCode": "950008",
+  "supplier": "הוברמן",
+  "lines": 1,
+  "qty": 230,
+  "lastOn": "2026-02-17",
+  "lowPrice": 24.78,
+  "highPrice": 24.78
+ },
+ {
+  "code": "470251",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 9,
+  "qty": 2320,
+  "lastOn": "2026-07-21",
+  "lowPrice": 2.19,
+  "highPrice": 2.6
+ },
+ {
+  "code": "470251",
+  "supplierCode": "950092",
+  "supplier": "גיל מוצרים פלסטיים בע\"ם",
+  "lines": 1,
+  "qty": 140,
+  "lastOn": "2019-07-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470502",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 2,
+  "qty": 300,
+  "lastOn": "2024-01-07",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470519",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2023-06-11",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470524",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470525",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470549",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 3,
+  "qty": 200,
+  "lastOn": "2026-04-12",
+  "lowPrice": 0.68,
+  "highPrice": 1.25
+ },
+ {
+  "code": "470552",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 100,
+  "lastOn": "2026-06-07",
+  "lowPrice": 1.06,
+  "highPrice": 2.39
+ },
+ {
+  "code": "470552",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 2,
+  "qty": 200,
+  "lastOn": "2024-01-07",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470562",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 3,
+  "qty": 650,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 1.05
+ },
+ {
+  "code": "470562",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 200,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470563",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 3,
+  "qty": 1300,
+  "lastOn": "2026-05-03",
+  "lowPrice": 0.58,
+  "highPrice": 0.69
+ },
+ {
+  "code": "470563",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 500,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470566",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 150,
+  "lastOn": "2026-05-14",
+  "lowPrice": 0.97,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470569",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 3,
+  "qty": 400,
+  "lastOn": "2026-07-26",
+  "lowPrice": 0,
+  "highPrice": 1.13
+ },
+ {
+  "code": "470569",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-06-11",
+  "lowPrice": 1,
+  "highPrice": 1
+ },
+ {
+  "code": "470576",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470576",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-11-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470592",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 200,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 1.11
+ },
+ {
+  "code": "470598",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 150,
+  "lastOn": "2025-06-18",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470598",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 2,
+  "qty": 200,
+  "lastOn": "2023-11-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470671",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 350,
+  "lastOn": "2025-12-31",
+  "lowPrice": 0.7,
+  "highPrice": 0.79
+ },
+ {
+  "code": "470671",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 200,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470685",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 100,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 0.97
+ },
+ {
+  "code": "100070",
+  "supplierCode": "950148",
+  "supplier": "פארמה תמר בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2023-10-05",
+  "lowPrice": 808.55,
+  "highPrice": 808.55
+ },
+ {
+  "code": "100191",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2017-12-25",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "100281",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-25",
+  "lowPrice": 100,
+  "highPrice": 100
+ },
+ {
+  "code": "100294",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.75,
+  "lastOn": "2017-12-21",
+  "lowPrice": 99,
+  "highPrice": 99
+ },
+ {
+  "code": "100446",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.76,
+  "lastOn": "2017-12-21",
+  "lowPrice": 99,
+  "highPrice": 99
+ },
+ {
+  "code": "100451",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 7,
+  "lastOn": "2025-12-02",
+  "lowPrice": 218.36,
+  "highPrice": 218.36
+ },
+ {
+  "code": "100466",
+  "supplierCode": "950001",
+  "supplier": "עלעלים - מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2017-02-27",
+  "lowPrice": 12.8,
+  "highPrice": 12.8
+ },
+ {
+  "code": "100496",
+  "supplierCode": "950001",
+  "supplier": "עלעלים - מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-02-27",
+  "lowPrice": 242,
+  "highPrice": 242
+ },
+ {
+  "code": "100534",
+  "supplierCode": "950177",
+  "supplier": "ברא צמחים בע\"מ",
+  "lines": 1,
+  "qty": 0.5,
+  "lastOn": "2024-05-23",
+  "lowPrice": 390,
+  "highPrice": 390
+ },
+ {
+  "code": "100687",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2025-04-30",
+  "lowPrice": 1208.32,
+  "highPrice": 1208.32
+ },
+ {
+  "code": "110176",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2017-12-21",
+  "lowPrice": 569.85,
+  "highPrice": 569.85
+ },
+ {
+  "code": "120060",
+  "supplierCode": "950177",
+  "supplier": "ברא צמחים בע\"מ",
+  "lines": 1,
+  "qty": 0.5,
+  "lastOn": "2024-05-23",
+  "lowPrice": 1638,
+  "highPrice": 1638
+ },
+ {
+  "code": "120203",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 3,
+  "lastOn": "2025-11-19",
+  "lowPrice": 1916.24,
+  "highPrice": 1916.24
+ },
+ {
+  "code": "130015",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2026-03-01",
+  "lowPrice": 1916.24,
+  "highPrice": 1916.24
+ },
+ {
+  "code": "130081",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2026-05-27",
+  "lowPrice": 2017.09,
+  "highPrice": 2017.09
+ },
+ {
+  "code": "130095",
+  "supplierCode": "950001",
+  "supplier": "עלעלים מרכז לצמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2020-12-09",
+  "lowPrice": 315.02,
+  "highPrice": 315.02
+ },
+ {
+  "code": "130095",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2025-11-19",
+  "lowPrice": 2832,
+  "highPrice": 2832
+ },
+ {
+  "code": "150009",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2025-10-15",
+  "lowPrice": 0.61,
+  "highPrice": 0.61
+ },
+ {
+  "code": "150025",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2023-10-25",
+  "lowPrice": 9,
+  "highPrice": 9
+ },
+ {
+  "code": "150039",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 2,
+  "qty": 750,
+  "lastOn": "2025-10-15",
+  "lowPrice": 2.12,
+  "highPrice": 2.12
+ },
+ {
+  "code": "150040",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 3,
+  "qty": 250,
+  "lastOn": "2025-11-09",
+  "lowPrice": 4.09,
+  "highPrice": 5.04
+ },
+ {
+  "code": "150043",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 5,
+  "qty": 800,
+  "lastOn": "2026-02-23",
+  "lowPrice": 0.25,
+  "highPrice": 1.44
+ },
+ {
+  "code": "150044",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2022-12-04",
+  "lowPrice": 0.81,
+  "highPrice": 0.81
+ },
+ {
+  "code": "150049",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 4,
+  "qty": 600,
+  "lastOn": "2026-04-28",
+  "lowPrice": 8.5,
+  "highPrice": 11.08
+ },
+ {
+  "code": "150071",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2025-10-15",
+  "lowPrice": 0.63,
+  "highPrice": 0.63
+ },
+ {
+  "code": "150082",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 150,
+  "lastOn": "2025-11-09",
+  "lowPrice": 1.3,
+  "highPrice": 1.3
+ },
+ {
+  "code": "300012",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 11,
+  "qty": 129.75,
+  "lastOn": "2026-04-28",
+  "lowPrice": 94.98,
+  "highPrice": 111.14
+ },
+ {
+  "code": "300015",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 4,
+  "qty": 7.5,
+  "lastOn": "2025-10-15",
+  "lowPrice": 49.39,
+  "highPrice": 49.4
+ },
+ {
+  "code": "400030",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 6,
+  "qty": 2310,
+  "lastOn": "2026-07-21",
+  "lowPrice": 0.41,
+  "highPrice": 0.42
+ },
+ {
+  "code": "400100",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 13,
+  "qty": 5505,
+  "lastOn": "2026-07-21",
+  "lowPrice": 0.66,
+  "highPrice": 0.68
+ },
+ {
+  "code": "410200",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 10,
+  "qty": 4099,
+  "lastOn": "2026-06-04",
+  "lowPrice": 0.94,
+  "highPrice": 1.53
+ },
+ {
+  "code": "410550",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 7,
+  "qty": 824,
+  "lastOn": "2026-06-04",
+  "lowPrice": 2.41,
+  "highPrice": 2.5
+ },
+ {
+  "code": "411010",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 5,
+  "qty": 96,
+  "lastOn": "2026-07-08",
+  "lowPrice": 11.58,
+  "highPrice": 14
+ },
+ {
+  "code": "460300",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 5,
+  "qty": 1260,
+  "lastOn": "2026-05-18",
+  "lowPrice": 1.78,
+  "highPrice": 2
+ },
+ {
+  "code": "460302",
+  "supplierCode": "950008",
+  "supplier": "הוברמן",
+  "lines": 1,
+  "qty": 84,
+  "lastOn": "2026-02-17",
+  "lowPrice": 12.1,
+  "highPrice": 12.1
+ },
+ {
+  "code": "460302",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 2,
+  "qty": 252,
+  "lastOn": "2026-06-17",
+  "lowPrice": 2.81,
+  "highPrice": 3
+ },
+ {
+  "code": "470506",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 250,
+  "lastOn": "2025-11-19",
+  "lowPrice": 0.77,
+  "highPrice": 0.98
+ },
+ {
+  "code": "470507",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-06-11",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470508",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-03-23",
+  "lowPrice": 1.2,
+  "highPrice": 1.2
+ },
+ {
+  "code": "470508",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 200,
+  "lastOn": "2024-01-07",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470512",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-04-12",
+  "lowPrice": 1.11,
+  "highPrice": 1.11
+ },
+ {
+  "code": "470512",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 2,
+  "qty": 300,
+  "lastOn": "2023-12-10",
+  "lowPrice": 0.8,
+  "highPrice": 1
+ },
+ {
+  "code": "470518",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-04-12",
+  "lowPrice": 1.11,
+  "highPrice": 1.11
+ },
+ {
+  "code": "470526",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 200,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 0.62
+ },
+ {
+  "code": "470526",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 300,
+  "lastOn": "2024-01-07",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470534",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 2,
+  "qty": 300,
+  "lastOn": "2023-11-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470540",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2025-05-18",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470602",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 200,
+  "lastOn": "2025-11-05",
+  "lowPrice": 0.88,
+  "highPrice": 0.88
+ },
+ {
+  "code": "470603",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 500,
+  "lastOn": "2024-03-03",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470603",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 500,
+  "lastOn": "2023-11-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470629",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 200,
+  "lastOn": "2025-11-05",
+  "lowPrice": 2.39,
+  "highPrice": 2.39
+ },
+ {
+  "code": "470629",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-06-11",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470670",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 3,
+  "qty": 400,
+  "lastOn": "2025-11-05",
+  "lowPrice": 0.8,
+  "highPrice": 1.25
+ },
+ {
+  "code": "470670",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 500,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470676",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 3,
+  "qty": 150,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470676",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470677",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "480008",
+  "supplierCode": "950240",
+  "supplier": "תג-טק 2020 בע\"מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2025-12-31",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "110005",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.9,
+  "lastOn": "2017-12-21",
+  "lowPrice": 206.88,
+  "highPrice": 206.88
+ },
+ {
+  "code": "110041",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.73,
+  "lastOn": "2017-12-21",
+  "lowPrice": 162.5,
+  "highPrice": 162.5
+ },
+ {
+  "code": "110092",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.85,
+  "lastOn": "2017-12-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "110130",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 216.01,
+  "highPrice": 216.01
+ },
+ {
+  "code": "110272",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 107.5,
+  "highPrice": 107.5
+ },
+ {
+  "code": "110280",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "110295",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.87,
+  "lastOn": "2017-12-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "110323",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 447.5,
+  "highPrice": 447.5
+ },
+ {
+  "code": "110330",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.76,
+  "lastOn": "2017-12-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "110555",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 1.87,
+  "lastOn": "2017-12-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "120090",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2025-06-18",
+  "lowPrice": 1916.24,
+  "highPrice": 1916.24
+ },
+ {
+  "code": "120138",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2026-06-23",
+  "lowPrice": 1916.24,
+  "highPrice": 1916.24
+ },
+ {
+  "code": "120233",
+  "supplierCode": "950177",
+  "supplier": "ברא צמחים בע\"מ",
+  "lines": 1,
+  "qty": 0.25,
+  "lastOn": "2024-05-23",
+  "lowPrice": 966,
+  "highPrice": 966
+ },
+ {
+  "code": "130032",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 10,
+  "lastOn": "2026-02-18",
+  "lowPrice": 148,
+  "highPrice": 220.4
+ },
+ {
+  "code": "130053",
+  "supplierCode": "950148",
+  "supplier": "פארמה תמר בע\"מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2026-07-16",
+  "lowPrice": 678,
+  "highPrice": 678
+ },
+ {
+  "code": "130094",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 2,
+  "qty": 10,
+  "lastOn": "2026-02-18",
+  "lowPrice": 89,
+  "highPrice": 3540
+ },
+ {
+  "code": "130097",
+  "supplierCode": "950177",
+  "supplier": "ברא צמחים בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2024-05-23",
+  "lowPrice": 1008,
+  "highPrice": 1008
+ },
+ {
+  "code": "150012",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2026-07-16",
+  "lowPrice": 0.65,
+  "highPrice": 0.65
+ },
+ {
+  "code": "150013",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2025-11-23",
+  "lowPrice": 0.52,
+  "highPrice": 0.52
+ },
+ {
+  "code": "150051",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 3,
+  "qty": 250,
+  "lastOn": "2025-11-23",
+  "lowPrice": 0.71,
+  "highPrice": 0.89
+ },
+ {
+  "code": "150054",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 3,
+  "qty": 200,
+  "lastOn": "2025-06-08",
+  "lowPrice": 1.62,
+  "highPrice": 1.62
+ },
+ {
+  "code": "150056",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 2,
+  "qty": 300,
+  "lastOn": "2025-02-17",
+  "lowPrice": 14.2,
+  "highPrice": 15.8
+ },
+ {
+  "code": "150061",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 30,
+  "lastOn": "2026-04-28",
+  "lowPrice": 3.08,
+  "highPrice": 3.08
+ },
+ {
+  "code": "300005",
+  "supplierCode": "950122",
+  "supplier": "נ.ס. שמנים בע\"מ",
+  "lines": 6,
+  "qty": 51,
+  "lastOn": "2025-11-09",
+  "lowPrice": 0,
+  "highPrice": 39
+ },
+ {
+  "code": "300018",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 6,
+  "qty": 30,
+  "lastOn": "2025-11-23",
+  "lowPrice": 37.6,
+  "highPrice": 44.01
+ },
+ {
+  "code": "400050",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 6,
+  "qty": 1872,
+  "lastOn": "2026-07-21",
+  "lowPrice": 0.51,
+  "highPrice": 0.51
+ },
+ {
+  "code": "421802",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 3,
+  "qty": 4000,
+  "lastOn": "2025-12-16",
+  "lowPrice": 0.33,
+  "highPrice": 0.35
+ },
+ {
+  "code": "421804",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 3,
+  "qty": 2500,
+  "lastOn": "2025-12-16",
+  "lowPrice": 0.63,
+  "highPrice": 0.65
+ },
+ {
+  "code": "422809",
+  "supplierCode": "950008",
+  "supplier": "הוברמן",
+  "lines": 2,
+  "qty": 5000,
+  "lastOn": "2026-05-28",
+  "lowPrice": 0,
+  "highPrice": 1.18
+ },
+ {
+  "code": "470007",
+  "supplierCode": "950334",
+  "supplier": "גוטליב אריזה בע\"מ",
+  "lines": 2,
+  "qty": 6,
+  "lastOn": "2026-05-04",
+  "lowPrice": 0,
+  "highPrice": 180.08
+ },
+ {
+  "code": "470250",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 3,
+  "qty": 540,
+  "lastOn": "2026-07-21",
+  "lowPrice": 2.7,
+  "highPrice": 3.45
+ },
+ {
+  "code": "470250",
+  "supplierCode": "950092",
+  "supplier": "גיל מוצרים פלסטיים בע\"ם",
+  "lines": 1,
+  "qty": 106,
+  "lastOn": "2019-07-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470510",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 300,
+  "lastOn": "2025-07-29",
+  "lowPrice": 0.77,
+  "highPrice": 0.77
+ },
+ {
+  "code": "470510",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 2,
+  "qty": 400,
+  "lastOn": "2023-11-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470513",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2025-07-29",
+  "lowPrice": 0.71,
+  "highPrice": 0.71
+ },
+ {
+  "code": "470514",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-06-07",
+  "lowPrice": 1.06,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470520",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 160,
+  "lastOn": "2026-06-07",
+  "lowPrice": 0.8,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470523",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 200,
+  "lastOn": "2026-04-12",
+  "lowPrice": 0.78,
+  "highPrice": 1.11
+ },
+ {
+  "code": "470523",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 2,
+  "qty": 200,
+  "lastOn": "2024-01-07",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470532",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2024-03-03",
+  "lowPrice": 1.76,
+  "highPrice": 1.76
+ },
+ {
+  "code": "470532",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2023-06-11",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470538",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 3,
+  "qty": 450,
+  "lastOn": "2026-05-14",
+  "lowPrice": 0.66,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470538",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470543",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 40,
+  "lastOn": "2025-07-29",
+  "lowPrice": 0.5,
+  "highPrice": 0.5
+ },
+ {
+  "code": "470551",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 250,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 1
+ },
+ {
+  "code": "470551",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2023-06-11",
+  "lowPrice": 1,
+  "highPrice": 1
+ },
+ {
+  "code": "470556",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-08-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470557",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 3,
+  "qty": 500,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470557",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 2,
+  "qty": 800,
+  "lastOn": "2024-01-07",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470559",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470561",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-06-07",
+  "lowPrice": 1.06,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470561",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 200,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470571",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 3,
+  "qty": 350,
+  "lastOn": "2026-07-26",
+  "lowPrice": 0,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470573",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 150,
+  "lastOn": "2026-08-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470573",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470580",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2025-06-18",
+  "lowPrice": 0.43,
+  "highPrice": 0.43
+ },
+ {
+  "code": "470583",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2023-06-11",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470585",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 150,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 0.5
+ },
+ {
+  "code": "470587",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2023-06-11",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470601",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 200,
+  "lastOn": "2024-03-31",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470630",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 3,
+  "qty": 200,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470632",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-04-27",
+  "lowPrice": 1.18,
+  "highPrice": 1.18
+ },
+ {
+  "code": "470633",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 200,
+  "lastOn": "2026-06-07",
+  "lowPrice": 0.97,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470669",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 350,
+  "lastOn": "2025-07-29",
+  "lowPrice": 0.78,
+  "highPrice": 0.78
+ },
+ {
+  "code": "470669",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 2,
+  "qty": 300,
+  "lastOn": "2024-01-07",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470675",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470675",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470684",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-07-26",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470687",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 160,
+  "lastOn": "2025-07-29",
+  "lowPrice": 0.97,
+  "highPrice": 0.97
+ },
+ {
+  "code": "470691",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470691",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 200,
+  "lastOn": "2023-12-10",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470696",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 150,
+  "lastOn": "2026-08-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470697",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 3,
+  "qty": 300,
+  "lastOn": "2026-06-07",
+  "lowPrice": 1.06,
+  "highPrice": 1.2
+ },
+ {
+  "code": "470699",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-06-07",
+  "lowPrice": 1.06,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470700",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-06-07",
+  "lowPrice": 1.06,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470701",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-06-07",
+  "lowPrice": 1.06,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470704",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-08-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470705",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 100,
+  "lastOn": "2026-08-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "480058",
+  "supplierCode": "950353",
+  "supplier": "פרפקט שיווק מכשירי כתיבה",
+  "lines": 1,
+  "qty": 72,
+  "lastOn": "2026-05-25",
+  "lowPrice": 3.9,
+  "highPrice": 3.9
+ },
+ {
+  "code": "480089",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 3,
+  "qty": 714,
+  "lastOn": "2026-07-08",
+  "lowPrice": 0,
+  "highPrice": 0.9
+ },
+ {
+  "code": "100229",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 6.77,
+  "lastOn": "2017-12-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "110109",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 198.75,
+  "highPrice": 198.75
+ },
+ {
+  "code": "110168",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 223.75,
+  "highPrice": 223.75
+ },
+ {
+  "code": "110335",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2017-12-21",
+  "lowPrice": 426.88,
+  "highPrice": 426.88
+ },
+ {
+  "code": "110375",
+  "supplierCode": "950014",
+  "supplier": "הרבסין ישראל צמחי מרפא בע\"מ",
+  "lines": 1,
+  "qty": 0.5,
+  "lastOn": "2017-12-21",
+  "lowPrice": 89.38,
+  "highPrice": 89.38
+ },
+ {
+  "code": "150030",
+  "supplierCode": "950002",
+  "supplier": "שיפון קוסמטיקה וחומרי גלם בע\"\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2024-02-07",
+  "lowPrice": 0.7,
+  "highPrice": 0.7
+ },
+ {
+  "code": "300003",
+  "supplierCode": "950091",
+  "supplier": "מטעים גשור אגש\"ח בע\"מ",
+  "lines": 5,
+  "qty": 252,
+  "lastOn": "2026-01-29",
+  "lowPrice": 28,
+  "highPrice": 32
+ },
+ {
+  "code": "300006",
+  "supplierCode": "950122",
+  "supplier": "נ.ס. שמנים בע\"מ",
+  "lines": 2,
+  "qty": 10,
+  "lastOn": "2025-08-18",
+  "lowPrice": 75,
+  "highPrice": 75
+ },
+ {
+  "code": "300019",
+  "supplierCode": "950122",
+  "supplier": "נ.ס. שמנים בע\"מ",
+  "lines": 2,
+  "qty": 8,
+  "lastOn": "2024-06-09",
+  "lowPrice": 70,
+  "highPrice": 70
+ },
+ {
+  "code": "410050",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 1,
+  "qty": 300,
+  "lastOn": "2025-04-21",
+  "lowPrice": 4.13,
+  "highPrice": 4.13
+ },
+ {
+  "code": "410051",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 1,
+  "qty": 308,
+  "lastOn": "2026-04-15",
+  "lowPrice": 4.44,
+  "highPrice": 4.44
+ },
+ {
+  "code": "410552",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2026-05-18",
+  "lowPrice": 1.29,
+  "highPrice": 1.29
+ },
+ {
+  "code": "411011",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 2,
+  "qty": 14,
+  "lastOn": "2025-12-16",
+  "lowPrice": 85.89,
+  "highPrice": 87.97
+ },
+ {
+  "code": "421803",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 1,
+  "qty": 500,
+  "lastOn": "2025-11-06",
+  "lowPrice": 0.65,
+  "highPrice": 0.65
+ },
+ {
+  "code": "421806",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 2,
+  "qty": 2500,
+  "lastOn": "2026-05-18",
+  "lowPrice": 1.1,
+  "highPrice": 1.1
+ },
+ {
+  "code": "421807",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 2,
+  "qty": 1001,
+  "lastOn": "2026-06-04",
+  "lowPrice": 0.95,
+  "highPrice": 0.99
+ },
+ {
+  "code": "460306",
+  "supplierCode": "950008",
+  "supplier": "הוברמן",
+  "lines": 1,
+  "qty": 84,
+  "lastOn": "2026-02-17",
+  "lowPrice": 1.18,
+  "highPrice": 1.18
+ },
+ {
+  "code": "460551",
+  "supplierCode": "950008",
+  "supplier": "הוברמן",
+  "lines": 1,
+  "qty": 300,
+  "lastOn": "2026-04-27",
+  "lowPrice": 4.03,
+  "highPrice": 4.03
+ },
+ {
+  "code": "470100",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2026-04-15",
+  "lowPrice": 1.12,
+  "highPrice": 1.12
+ },
+ {
+  "code": "470509",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-03-23",
+  "lowPrice": 1.2,
+  "highPrice": 1.2
+ },
+ {
+  "code": "470511",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 200,
+  "lastOn": "2026-03-23",
+  "lowPrice": 0.8,
+  "highPrice": 1.2
+ },
+ {
+  "code": "470515",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2025-05-18",
+  "lowPrice": 0.5,
+  "highPrice": 0.5
+ },
+ {
+  "code": "470533",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-06-07",
+  "lowPrice": 1.06,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470533",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-12-10",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470537",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-05-14",
+  "lowPrice": 1.06,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470541",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-04-12",
+  "lowPrice": 1.11,
+  "highPrice": 1.11
+ },
+ {
+  "code": "470542",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-07-27",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470546",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-04-12",
+  "lowPrice": 1.11,
+  "highPrice": 1.11
+ },
+ {
+  "code": "470546",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 200,
+  "lastOn": "2023-07-17",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470547",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 300,
+  "lastOn": "2026-04-12",
+  "lowPrice": 0.8,
+  "highPrice": 1.11
+ },
+ {
+  "code": "470548",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-06-07",
+  "lowPrice": 1.06,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470565",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-04-12",
+  "lowPrice": 1.11,
+  "highPrice": 1.11
+ },
+ {
+  "code": "470565",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2024-01-07",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470567",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-04-27",
+  "lowPrice": 1.18,
+  "highPrice": 1.18
+ },
+ {
+  "code": "470567",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-06-11",
+  "lowPrice": 1,
+  "highPrice": 1
+ },
+ {
+  "code": "470570",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 200,
+  "lastOn": "2025-11-19",
+  "lowPrice": 0.76,
+  "highPrice": 0.76
+ },
+ {
+  "code": "470589",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 2,
+  "qty": 300,
+  "lastOn": "2025-05-18",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470604",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 500,
+  "lastOn": "2023-12-10",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470631",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-04-27",
+  "lowPrice": 1.18,
+  "highPrice": 1.18
+ },
+ {
+  "code": "470635",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-04-27",
+  "lowPrice": 1.18,
+  "highPrice": 1.18
+ },
+ {
+  "code": "470641",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-04-12",
+  "lowPrice": 1.11,
+  "highPrice": 1.11
+ },
+ {
+  "code": "470641",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-11-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470643",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-05-14",
+  "lowPrice": 1.06,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470643",
+  "supplierCode": "950217",
+  "supplier": "דפוס דיגיטל ביג בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2023-11-05",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "470683",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2025-05-18",
+  "lowPrice": 0.8,
+  "highPrice": 0.8
+ },
+ {
+  "code": "470688",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 50,
+  "lastOn": "2026-04-27",
+  "lowPrice": 1.18,
+  "highPrice": 1.18
+ },
+ {
+  "code": "470702",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-06-07",
+  "lowPrice": 1.06,
+  "highPrice": 1.06
+ },
+ {
+  "code": "470703",
+  "supplierCode": "950161",
+  "supplier": "קולור טאץ' בע\"מ",
+  "lines": 1,
+  "qty": 100,
+  "lastOn": "2026-06-07",
+  "lowPrice": 1.06,
+  "highPrice": 1.06
+ },
+ {
+  "code": "479202",
+  "supplierCode": "950267",
+  "supplier": "דיגיפק אריזה חכמה בעמ 2021",
+  "lines": 1,
+  "qty": 80,
+  "lastOn": "2023-03-21",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "480026",
+  "supplierCode": "950337",
+  "supplier": "אריזות מדף",
+  "lines": 1,
+  "qty": 200,
+  "lastOn": "2026-06-03",
+  "lowPrice": 4.15,
+  "highPrice": 4.15
+ },
+ {
+  "code": "480034",
+  "supplierCode": "950334",
+  "supplier": "גוטליב אריזה בע\"מ",
+  "lines": 1,
+  "qty": 2,
+  "lastOn": "2026-05-04",
+  "lowPrice": 180.09,
+  "highPrice": 180.09
+ },
+ {
+  "code": "480082",
+  "supplierCode": "950047",
+  "supplier": "צבר א.ל בע\"מ",
+  "lines": 1,
+  "qty": 308,
+  "lastOn": "2026-04-15",
+  "lowPrice": 0,
+  "highPrice": 0
+ },
+ {
+  "code": "160009",
+  "supplierCode": "950249",
+  "supplier": "גו פארם",
+  "lines": 1,
+  "qty": 25,
+  "lastOn": "2024-03-19",
+  "lowPrice": 86.54,
+  "highPrice": 86.54
+ },
+ {
+  "code": "160010",
+  "supplierCode": "950148",
+  "supplier": "פארמה תמר בע\"מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2024-11-18",
+  "lowPrice": 75,
+  "highPrice": 75
+ },
+ {
+  "code": "160011",
+  "supplierCode": "950280",
+  "supplier": "פטרוס כימיקלים וחומרים(1986) בע''מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2023-08-10",
+  "lowPrice": 309,
+  "highPrice": 309
+ },
+ {
+  "code": "160015",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 25,
+  "lastOn": "2026-03-16",
+  "lowPrice": 1416,
+  "highPrice": 1416
+ },
+ {
+  "code": "160036",
+  "supplierCode": "950280",
+  "supplier": "פטרוס כימיקלים וחומרים(1986) בע''מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2023-08-10",
+  "lowPrice": 1454,
+  "highPrice": 1454
+ },
+ {
+  "code": "160038",
+  "supplierCode": "950280",
+  "supplier": "פטרוס כימיקלים וחומרים(1986) בע''מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2023-08-10",
+  "lowPrice": 363.5,
+  "highPrice": 363.5
+ },
+ {
+  "code": "160039",
+  "supplierCode": "950280",
+  "supplier": "פטרוס כימיקלים וחומרים(1986) בע''מ",
+  "lines": 1,
+  "qty": 25,
+  "lastOn": "2023-08-10",
+  "lowPrice": 83.61,
+  "highPrice": 83.61
+ },
+ {
+  "code": "160040",
+  "supplierCode": "950280",
+  "supplier": "פטרוס כימיקלים וחומרים(1986) בע''מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2023-08-10",
+  "lowPrice": 654.3,
+  "highPrice": 654.3
+ },
+ {
+  "code": "160041",
+  "supplierCode": "950280",
+  "supplier": "פטרוס כימיקלים וחומרים(1986) בע''מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2023-08-10",
+  "lowPrice": 218.1,
+  "highPrice": 218.1
+ },
+ {
+  "code": "160042",
+  "supplierCode": "950280",
+  "supplier": "פטרוס כימיקלים וחומרים(1986) בע''מ",
+  "lines": 1,
+  "qty": 25,
+  "lastOn": "2023-08-10",
+  "lowPrice": 65.43,
+  "highPrice": 65.43
+ },
+ {
+  "code": "160043",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2026-01-04",
+  "lowPrice": 2242,
+  "highPrice": 2242
+ },
+ {
+  "code": "160043",
+  "supplierCode": "950280",
+  "supplier": "פטרוס כימיקלים וחומרים(1986) בע''מ",
+  "lines": 1,
+  "qty": 5,
+  "lastOn": "2023-08-10",
+  "lowPrice": 1.17,
+  "highPrice": 1.17
+ },
+ {
+  "code": "160049",
+  "supplierCode": "950280",
+  "supplier": "פטרוס כימיקלים וחומרים(1986) בע''מ",
+  "lines": 1,
+  "qty": 25,
+  "lastOn": "2023-08-28",
+  "lowPrice": 2340,
+  "highPrice": 2340
+ },
+ {
+  "code": "160050",
+  "supplierCode": "950280",
+  "supplier": "פטרוס",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2026-02-15",
+  "lowPrice": 690,
+  "highPrice": 690
+ },
+ {
+  "code": "160050",
+  "supplierCode": "950280",
+  "supplier": "פטרוס כימיקלים וחומרים(1986) בע''מ",
+  "lines": 1,
+  "qty": 1,
+  "lastOn": "2023-08-28",
+  "lowPrice": 2340,
+  "highPrice": 2340
+ }
+]

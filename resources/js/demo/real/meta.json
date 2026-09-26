@@ -1,7 +1,7 @@
 {
  "source": "TR_backup_2026_08_05_180002_6205496.bak (SAP Business One)",
  "database": "TR",
- "extractedOn": "2026-09-21",
+ "extractedOn": "2026-09-26",
  "rows": {
   "orderStates": 8,
   "prepTypes": 17,
@@ -15,13 +15,24 @@
   "valueLists": 1,
   "practitioners": 30,
   "patients": 60,
-  "suppliers": 40,
   "orders": 50,
-  "ingredients": 418,
-  "products": 186,
+  "suppliers": 120,
+  "purchaseRequests": 60,
+  "purchaseOrders": 160,
+  "goodsReceipts": 140,
+  "supplierInvoices": 180,
+  "productionOrders": 180,
+  "ingredients": 1153,
+  "products": 221,
   "boms": 50,
   "priceTiers": 400,
-  "batches": 120
+  "consumption": 1,
+  "openOrders": 272,
+  "purchaseHistory": 388,
+  "warehouseStock": 1302,
+  "stockCounts": 25,
+  "batches": 700,
+  "batchMovements": 4234
  },
  "pseudonymised": [
   "practitioners",
@@ -30,6 +41,9 @@
   "suppliers (contact person only)"
  ],
  "verbatim": [
+  "purchase requests, orders, goods receipts, supplier invoices",
+  "warehouse stock, stock counts, batch movements",
+  "production orders and their components",
   "items",
   "ingredients",
   "products",

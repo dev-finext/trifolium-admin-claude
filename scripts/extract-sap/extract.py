@@ -25,6 +25,7 @@ from decimal import Decimal
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import people  # noqa: E402
+import purchasing  # noqa: E402
 from db import connect, dicts  # noqa: E402
 
 OUT = os.path.join(
@@ -44,8 +45,17 @@ COUNTS = {
     'practitioners': 30,
     'patients': 60,
     'orders': 50,
-    'suppliers': 40,
-    'batches': 120,
+    'suppliers': 120,
+    'batches': 700,
+    # V3 — the purchasing paper trail, the shelf and the batches. Enough of
+    # each that a filter, a sort and a pager all have something to do, and that
+    # a document can be followed from the request through to the invoice.
+    'purchaseRequests': 60,
+    'purchaseOrders': 160,
+    'goodsReceipts': 140,
+    'supplierInvoices': 180,
+    'productionOrders': 180,
+    'stockCounts': 25,
 }
 
 # Item code prefix -> the family the console groups by. Kept in step with
@@ -897,20 +907,38 @@ def patients(conn, limit, practitioner_codes):
     return out
 
 
-def suppliers(conn, limit):
-    """Businesses, so the company data is real; the contact person is not."""
+def suppliers(conn, limit, must_have=()):
+    """Businesses, so the company data is real; the contact person is not.
+
+    The card's own fields come across verbatim — name, group, city, street,
+    payment terms, currency, balance, how many items name this supplier. What is
+    replaced is anything that identifies a person: the phone, the mailbox, the
+    contact's name, and the company registration number, which is a real number
+    on a real company and has no business in a public fixture.
+    """
     rows = dicts(
         conn,
-        f"""
-        SELECT TOP {limit} CardCode AS code, CardName AS name,
-               GroupCode AS groupCode, Balance AS balance,
-               U_City AS city, Currency AS currency,
-               validFor AS active, CreateDate AS createdOn,
-               (SELECT COUNT(*) FROM OITM i WHERE i.CardCode = OCRD.CardCode) AS items
-        FROM OCRD
-        WHERE CardType = 'S'
-        ORDER BY items DESC
-        """,
+        """
+        SELECT TOP {limit} c.CardCode AS code, c.CardName AS name,
+               c.GroupCode AS groupCode, g.GroupName AS groupName,
+               c.Balance AS balance, c.Currency AS currency,
+               c.GroupNum AS termsCode, t.PymntGroup AS terms,
+               COALESCE(NULLIF(LTRIM(RTRIM(c.U_City)), ''), c.City) AS city,
+               c.Address AS street, c.Country AS country,
+               c.validFor AS active, c.CreateDate AS createdOn,
+               (SELECT COUNT(*) FROM OITM i WHERE i.CardCode = c.CardCode)
+                   AS items
+        FROM OCRD c
+        LEFT JOIN OCRG g ON g.GroupCode = c.GroupCode AND g.GroupType = 'S'
+        LEFT JOIN OCTG t ON t.GroupNum = c.GroupNum
+        WHERE c.CardType = 'S'
+        ORDER BY CASE WHEN c.CardCode IN ({named}) THEN 0 ELSE 1 END,
+                 items DESC
+        """.format(
+            limit=limit,
+            named=','.join(f"'{c}'" for c in dict.fromkeys(must_have) if c)
+            or "''",
+        ),
     )
     out = []
 
@@ -1129,15 +1157,55 @@ def main():
     counts['patients'] = write(
         'patients', patients(conn, COUNTS['patients'], practitioner_codes)
     )
-    counts['suppliers'] = write('suppliers', suppliers(conn, COUNTS['suppliers']))
-
     print('orders')
     order_rows = orders(conn, COUNTS['orders'], practitioner_codes)
     counts['orders'] = write('orders', order_rows)
 
-    # Close the sample over itself: every item an order line or a bill of
-    # materials names gets its card too, so no stock row, no recipe component
-    # and no order line points at an item the catalogue does not hold.
+    # V3 — the purchasing paper trail, read as it stands: the request, the
+    # order raised from it, what arrived, and the invoice that billed it. It is
+    # read before the closure below, so that an item on a purchase order gets
+    # its card like an item on a customer order does.
+    print('purchasing documents')
+    request_rows = purchasing.purchase_requests(
+        conn, dicts, clean, COUNTS['purchaseRequests']
+    )
+    po_rows = purchasing.purchase_orders(
+        conn, dicts, clean, COUNTS['purchaseOrders']
+    )
+    receipt_rows = purchasing.goods_receipts(
+        conn, dicts, clean, COUNTS['goodsReceipts']
+    )
+    invoice_rows = purchasing.supplier_invoices(
+        conn, dicts, clean, COUNTS['supplierInvoices']
+    )
+    production_rows = purchasing.production_orders(
+        conn, dicts, clean, COUNTS['productionOrders']
+    )
+
+    # A supplier named on any of those documents gets a card, whether or not
+    # it supplies enough items to make the top of the list — otherwise a real
+    # order would show a bare code where its supplier's name belongs.
+    counts['suppliers'] = write(
+        'suppliers',
+        suppliers(
+            conn,
+            COUNTS['suppliers'],
+            [
+                doc.get('supplierCode')
+                for doc in po_rows + receipt_rows + invoice_rows
+            ],
+        ),
+    )
+
+    counts['purchaseRequests'] = write('purchaseRequests', request_rows)
+    counts['purchaseOrders'] = write('purchaseOrders', po_rows)
+    counts['goodsReceipts'] = write('goodsReceipts', receipt_rows)
+    counts['supplierInvoices'] = write('supplierInvoices', invoice_rows)
+    counts['productionOrders'] = write('productionOrders', production_rows)
+
+    # Close the sample over itself: every item an order line, a bill of
+    # materials, a purchase document or a production order names gets its card
+    # too, so nothing on a screen points at an item the catalogue does not hold.
     known = set(catalogue_codes)
     referenced = [
         line.get('code')
@@ -1147,7 +1215,15 @@ def main():
         component.get('component')
         for tree in bom_rows
         for component in tree.get('components') or []
-    ] + [tree.get('parent') for tree in bom_rows]
+    ] + [tree.get('parent') for tree in bom_rows] + [
+        line.get('code')
+        for doc in request_rows + po_rows + receipt_rows + invoice_rows
+        for line in doc.get('lines') or []
+    ] + [doc.get('code') for doc in production_rows] + [
+        part.get('code')
+        for doc in production_rows
+        for part in doc.get('components') or []
+    ]
     missing = [
         code
         for code in dict.fromkeys(referenced)
@@ -1160,7 +1236,7 @@ def main():
             item
         )
 
-    print(f'  closure: {len(extra)} items pulled in by orders and trees')
+    print(f'  closure: {len(extra)} items pulled in by documents and trees')
     counts['ingredients'] = write('ingredients', ingredients)
     counts['products'] = write('products', products)
     counts['boms'] = write('boms', bom_rows)
@@ -1175,7 +1251,28 @@ def main():
     counts['purchaseHistory'] = write(
         'purchaseHistory', purchase_history(conn, all_codes)
     )
-    counts['batches'] = write('batches', batches(conn, COUNTS['batches']))
+
+    print('the shelf')
+    counts['warehouseStock'] = write(
+        'warehouseStock',
+        purchasing.warehouse_stock(conn, dicts, clean, all_codes),
+    )
+    counts['stockCounts'] = write(
+        'stockCounts',
+        purchasing.stock_counts(conn, dicts, clean, COUNTS['stockCounts']),
+    )
+
+    print('batches')
+    batch_rows = purchasing.batches(
+        conn, dicts, clean, COUNTS['batches'], all_codes
+    )
+    counts['batches'] = write('batches', batch_rows)
+    counts['batchMovements'] = write(
+        'batchMovements',
+        purchasing.batch_movements(
+            conn, dicts, clean, [row['batchKey'] for row in batch_rows]
+        ),
+    )
 
     write(
         'meta',
@@ -1191,6 +1288,9 @@ def main():
                 'suppliers (contact person only)',
             ],
             'verbatim': [
+                'purchase requests, orders, goods receipts, supplier invoices',
+                'warehouse stock, stock counts, batch movements',
+                'production orders and their components',
                 'items',
                 'ingredients',
                 'products',

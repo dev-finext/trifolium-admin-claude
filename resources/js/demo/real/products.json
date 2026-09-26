@@ -35213,5 +35213,6652 @@
     "maxLevel": 0
    }
   ]
+ },
+ {
+  "code": "160005",
+  "nameHe": "MSM - Methylsulfonylmethane",
+  "nameForeign": "MSM",
+  "groupCode": 105,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "N",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ק\"ג",
+  "buyUom": "ק\"ג",
+  "numInBuy": 1,
+  "salesUom": "גרם",
+  "numInSale": 0.001,
+  "countUom": "ק\"ג",
+  "uomGroup": 3,
+  "priceUnit": 1,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 1.8723,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 0.35,
+  "maxLevel": 1.3,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "B",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 83.8,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-06-23",
+  "lastEvalPrice": 83.79,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": "chinese\rמינון מוגבל ל 10% מהמרשם",
+  "createdOn": "2016-06-21",
+  "updatedOn": "2026-01-04",
+  "family": "supplement",
+  "properties": [
+   5,
+   6
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 2360,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 97,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 1888,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 2714,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 2000,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 1.8723,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "490002",
+  "nameHe": "סוללות AAA",
+  "nameForeign": "סוללות אצבע",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "N",
+  "treeType": "N",
+  "issueMethod": "B",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": "950353",
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 2,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 5,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": null,
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 6.92,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-06-14",
+  "lastEvalPrice": 0,
+  "lastEvalOn": null,
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": 0,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "נר ריחני",
+  "siteUom": "יח'",
+  "siteQuantity": 1,
+  "siteComments": "מיוצר ע\"י עמותת פטריציו פאולטי - נערי האור .",
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2026-06-14",
+  "updatedOn": "2026-07-06",
+  "family": "shelf",
+  "properties": [
+   15,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 54.99,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 38,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 44,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 63,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 46.6,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 2,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "490004",
+  "nameHe": "אטבי נייר משרדיים",
+  "nameForeign": "סיכות משרדיות",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "N",
+  "treeType": "N",
+  "issueMethod": "B",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": "950353",
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 1,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 5,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": null,
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 4.9,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-07-02",
+  "lastEvalPrice": 0,
+  "lastEvalOn": null,
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": 0,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "נר ריחני",
+  "siteUom": "יח'",
+  "siteQuantity": 1,
+  "siteComments": "מיוצר ע\"י עמותת פטריציו פאולטי - נערי האור .",
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2026-07-02",
+  "updatedOn": "2026-07-06",
+  "family": "shelf",
+  "properties": [
+   15,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 54.99,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 38,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 44,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 63,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 46.6,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 1,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "160004",
+  "nameHe": "לציטין חמניות",
+  "nameForeign": "לציטין חמניות",
+  "groupCode": 105,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "N",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ק\"ג",
+  "buyUom": "ק\"ג",
+  "numInBuy": 1,
+  "salesUom": "גרם",
+  "numInSale": 0.001,
+  "countUom": "ק\"ג",
+  "uomGroup": 3,
+  "priceUnit": 1,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0.2351,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 0.15,
+  "maxLevel": 0.5,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "B",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 216.56,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-01-08",
+  "lastEvalPrice": 216.59,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2016-06-21",
+  "updatedOn": "2025-02-24",
+  "family": "supplement",
+  "properties": [
+   5,
+   6
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 1512.82,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 300,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 1210,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 1740,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 1282.05,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0.2351,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "160050",
+  "nameHe": "Alpha Lipoic Acid באישור רוקח",
+  "nameForeign": "Alpha Lipoic Acid",
+  "groupCode": 105,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "N",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": "950280",
+  "supplierCatalogNum": null,
+  "stockUom": "ק\"ג",
+  "buyUom": "ק\"ג",
+  "numInBuy": 1,
+  "salesUom": "גרם",
+  "numInSale": 0.001,
+  "countUom": null,
+  "uomGroup": 3,
+  "priceUnit": 1,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0.62,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 0.05,
+  "maxLevel": 0.1,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "B",
+  "productSource": null,
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 279.45,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-02-17",
+  "lastEvalPrice": 690.65,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": "chinese\rמינון יומי של עד 20% מהפורמולה",
+  "createdOn": "2023-08-31",
+  "updatedOn": "2026-02-17",
+  "family": "supplement",
+  "properties": [
+   1,
+   2,
+   4,
+   5,
+   6,
+   9
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 2360,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 448,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 1888,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 2714,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 2000,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0.62,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "160054",
+  "nameHe": "Magnesium Carbonate",
+  "nameForeign": "Magnesium Carbonate",
+  "groupCode": 105,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "N",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ק\"ג",
+  "buyUom": "ק\"ג",
+  "numInBuy": 1,
+  "salesUom": "גרם",
+  "numInSale": 0.001,
+  "countUom": "ק\"ג",
+  "uomGroup": 3,
+  "priceUnit": 1,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0.8135,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 0.25,
+  "maxLevel": 1,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "B",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 324.96,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-05-14",
+  "lastEvalPrice": 0,
+  "lastEvalOn": null,
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": "פלאפי משמש פיילר",
+  "saleText": "chinese\rמינון מומלץ עד 25%  מהמרשם למבוגר בנטילת 4 קפסולות ביום",
+  "createdOn": "2026-04-30",
+  "updatedOn": "2026-04-30",
+  "family": "supplement",
+  "properties": [],
+  "prices": [
+   {
+    "list": 1,
+    "price": 1416,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 650,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 1133,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 1628,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 1200,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0.8135,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "230001",
+  "nameHe": "ביניים פורמולה אכיניצאה",
+  "nameForeign": null,
+  "groupCode": 108,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": "230001",
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ליטר",
+  "buyUom": "ליטר",
+  "numInBuy": 1,
+  "salesUom": "מ\"ל",
+  "numInSale": 0.001,
+  "countUom": "ליטר",
+  "uomGroup": 5,
+  "priceUnit": 3,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0,
+  "committed": 0,
+  "onOrder": 20,
+  "minLevel": 0,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 92,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-06-03",
+  "lastEvalPrice": 92,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2016-06-21",
+  "updatedOn": "2026-07-06",
+  "family": "formula",
+  "properties": [],
+  "prices": [
+   {
+    "list": 1,
+    "price": 685.81,
+    "currency": null
+   },
+   {
+    "list": 2,
+    "price": 92,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 549,
+    "currency": null
+   },
+   {
+    "list": 7,
+    "price": 789,
+    "currency": null
+   },
+   {
+    "list": 8,
+    "price": 581.1966,
+    "currency": null
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 20,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "230020",
+  "nameHe": "ביניים פורמולה דקל ננסי",
+  "nameForeign": null,
+  "groupCode": 108,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": "230020",
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ליטר",
+  "buyUom": "ליטר",
+  "numInBuy": 1,
+  "salesUom": "מ\"ל",
+  "numInSale": 0.001,
+  "countUom": "ליטר",
+  "uomGroup": 5,
+  "priceUnit": 3,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0,
+  "committed": 3,
+  "onOrder": 3,
+  "minLevel": 0,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 72,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-04-28",
+  "lastEvalPrice": 72,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2016-08-30",
+  "updatedOn": "2017-10-22",
+  "family": "formula",
+  "properties": [
+   1,
+   2,
+   8
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 2,
+    "price": 72,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 7,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 8,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0,
+    "committed": 3,
+    "onOrder": 3,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "230023",
+  "nameHe": "ביניים פורמולה שיח אברהם",
+  "nameForeign": null,
+  "groupCode": 108,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": "230023",
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ליטר",
+  "buyUom": "ליטר",
+  "numInBuy": 1,
+  "salesUom": "מ\"ל",
+  "numInSale": 0.001,
+  "countUom": "ליטר",
+  "uomGroup": 5,
+  "priceUnit": 3,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 1,
+  "committed": 5,
+  "onOrder": 4,
+  "minLevel": 0,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 53.87,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-08-03",
+  "lastEvalPrice": 53.87,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2016-06-21",
+  "updatedOn": "2026-07-06",
+  "family": "formula",
+  "properties": [],
+  "prices": [
+   {
+    "list": 1,
+    "price": 625.3,
+    "currency": null
+   },
+   {
+    "list": 2,
+    "price": 53.87,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 500,
+    "currency": null
+   },
+   {
+    "list": 7,
+    "price": 719,
+    "currency": null
+   },
+   {
+    "list": 8,
+    "price": 529.9145,
+    "currency": null
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 1,
+    "committed": 5,
+    "onOrder": 4,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "230025",
+  "nameHe": "ביניים פורמולה אכיניצאה מנודף",
+  "nameForeign": null,
+  "groupCode": 108,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": "230001",
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ליטר",
+  "buyUom": "ליטר",
+  "numInBuy": 1,
+  "salesUom": "מ\"ל",
+  "numInSale": 0.001,
+  "countUom": "ליטר",
+  "uomGroup": 5,
+  "priceUnit": 3,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0.5,
+  "committed": 0,
+  "onOrder": 15,
+  "minLevel": 0,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 581.2,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-08-04",
+  "lastEvalPrice": 581.2,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": "לא לנדף את הפרופוליס בפורמולה מנודפת .\rלהוסיף את הגליצרים לפורמולה המנודפת ולערבב רק בסוף את הפרופוליס",
+  "saleText": null,
+  "createdOn": "2024-04-09",
+  "updatedOn": "2024-10-21",
+  "family": "formula",
+  "properties": [],
+  "prices": [
+   {
+    "list": 1,
+    "price": 685.82,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 92,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 549,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 789,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 581.2,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0.5,
+    "committed": 0,
+    "onOrder": 15,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "240003",
+  "nameHe": "ביניים שמן משחת צמחי מרפא",
+  "nameForeign": null,
+  "groupCode": 109,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": "240003",
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ליטר",
+  "buyUom": "ליטר",
+  "numInBuy": 1,
+  "salesUom": "מ\"ל",
+  "numInSale": 0.001,
+  "countUom": "ליטר",
+  "uomGroup": 5,
+  "priceUnit": 3,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0,
+  "committed": 0.9,
+  "onOrder": 1,
+  "minLevel": 0,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 70,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-03-12",
+  "lastEvalPrice": 70,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2016-06-21",
+  "updatedOn": "2017-10-22",
+  "family": "formula",
+  "properties": [],
+  "prices": [
+   {
+    "list": 1,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 2,
+    "price": 70,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 7,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 8,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0,
+    "committed": 0.9,
+    "onOrder": 1,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "240016",
+  "nameHe": "ביניים שמן משחת שיונקו",
+  "nameForeign": null,
+  "groupCode": 109,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": "240016",
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ליטר",
+  "buyUom": "ליטר",
+  "numInBuy": 1,
+  "salesUom": "מ\"ל",
+  "numInSale": 0.001,
+  "countUom": "ליטר",
+  "uomGroup": 5,
+  "priceUnit": 3,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0.3,
+  "committed": 0,
+  "onOrder": 3,
+  "minLevel": 0,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 96,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-08-04",
+  "lastEvalPrice": 96,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": "לקחת בחשבון שיש פחת של 15% בתכנון כמות השמן להכנה\rלהשרות את השמן במשך שבוע עם הצמחים \rאחרי ההשריה להביא לחימום למשך 24 שעות \rלסחוט ולסנן  את השמן",
+  "saleText": null,
+  "createdOn": "2017-06-25",
+  "updatedOn": "2025-11-05",
+  "family": "formula",
+  "properties": [],
+  "prices": [
+   {
+    "list": 1,
+    "price": 1357,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 96,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 1086,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 1561,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 1150,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0.3,
+    "committed": 0,
+    "onOrder": 3,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "240030",
+  "nameHe": "ביניים תרסיס ולריאןמרכז טיקלס  RLX",
+  "nameForeign": null,
+  "groupCode": 137,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ליטר",
+  "buyUom": null,
+  "numInBuy": 1,
+  "salesUom": "מ\"ל",
+  "numInSale": 0.001,
+  "countUom": null,
+  "uomGroup": 5,
+  "priceUnit": 3,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0,
+  "committed": 0,
+  "onOrder": 5,
+  "minLevel": 0,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 0,
+  "lastPurchaseCurrency": null,
+  "lastPurchaseOn": null,
+  "lastEvalPrice": 0,
+  "lastEvalOn": null,
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2025-08-13",
+  "updatedOn": "2026-08-02",
+  "family": "formula",
+  "properties": [],
+  "prices": [
+   {
+    "list": 1,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 2,
+    "price": 30,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 7,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 8,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 5,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "490001",
+  "nameHe": "נר ריחני",
+  "nameForeign": null,
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "N",
+  "treeType": "N",
+  "issueMethod": "B",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": "950374",
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 11,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 5,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": null,
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 38,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-06-24",
+  "lastEvalPrice": 0,
+  "lastEvalOn": null,
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": 0,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "נר ריחני",
+  "siteUom": "יח'",
+  "siteQuantity": 1,
+  "siteComments": "מיוצר ע\"י עמותת פטריציו פאולטי - נערי האור .",
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2026-02-10",
+  "updatedOn": "2026-07-06",
+  "family": "shelf",
+  "properties": [
+   15,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 54.99,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 38,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 44,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 63,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 46.6,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 11,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500009",
+  "nameHe": "פורמולה דקל ננסי 100 מ\"ל",
+  "nameForeign": null,
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 4,
+  "committed": 0,
+  "onOrder": 30,
+  "minLevel": 1,
+  "maxLevel": 40,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 9,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-04-28",
+  "lastEvalPrice": 9,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "פורמולה דקל ננסי",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": "2.07",
+  "category2": "1.46",
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": "תכונתו העיקרית של הדקל הננסי כטוניק למערכת המין ורבייה התגלתה במקרה, בדרום אמריקה לפני מאות שנים, כאשר עדרים שניזונו מפירותיו נצפו חזקים וחיוניים ביותר . אותם אנשים שהבחינו בכך ניסו את הפרי בעצמם וחוו בנוסף עלייה ביצר המין והפוריות. השמועה עשתה לה כנפיים…   כיום פרסומו של הצמח מגיע בעיקר מיכולתו לטפל בבלוטת ערמונית מוגדלת (פרוסטטה).\r\rרכיבים:\rמים, אלכוהול\rדקל ננסי | Serenoa serullata\rעוזרר | Crataegus spp. flos\rפשתה שרועה | Bacopa munieri\rויתניה משכרת | Withania somnifera\rכורכום | Curcuma longa\r\rאופן השימוש:\r80 עד 100 טיפות, 1 כפית 3 פעמים ביום\r\rמידע נוסף:\rדקל ננסי – או בשמו העממי סאו פאלמטו, פועל למניעה של גדילה שפירה של בלוטת הערמונית, חיזוק שריר הלב ושיפור זרימת דם, שיפור פעילות קוגניטיבית, חיזוק מערכת החיסון וחיזוק כללי, שיפור פעילות הכבד, שיפור תפקוד מיני, פעילות אנטי אוקסידנטית ואנטי דלקתית.",
+  "createdOn": "2016-06-21",
+  "updatedOn": "2026-08-02",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 9,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 4,
+    "committed": 0,
+    "onOrder": 30,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500019",
+  "nameHe": "משחת צמחי מרפא 30 מ\"ל",
+  "nameForeign": null,
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 4,
+  "committed": 0,
+  "onOrder": 30,
+  "minLevel": 2,
+  "maxLevel": 80,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 4,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-04-23",
+  "lastEvalPrice": 4,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "משחת צמחי מרפא",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 30,
+  "siteComments": "שימוש חיצוני",
+  "category1": "2.01",
+  "category2": "1.42",
+  "category3": "1.43",
+  "category4": null,
+  "remarks": null,
+  "saleText": "משחה המיועדת ל“עזרה ראשונה” בבית. מסייעת ב חיטוי וטיפול בשריטות, כוויות, חתכים, יובש ותפרחת חיתולים. מעודדת התחדשות ושיקום העור.\r\rרכיבים:\rשמן זית, שעוות דבורים\rציפורן חתול | Calendula officinalis\rסימפיטון | Symphytum officinalis fol\rכוכבית | Stellaria media\rלחך | Plantago spp\rבוצין | Verbascum thapsus\rאכילאה | Achillea millefolium\r\rשמנים אתריים:\rלבנדר.\rLavendula angustifolia\r\rאופן השימוש:\rמריחה על האזור הפגוע על פי הצורך\r\rמידע נוסף:\rקלנדולה​– צמח עדין בעל השפעה אנטי דלקתית, משפר את יכולת ההחלמה של העור, מחטא ותורם\rלריפוי של פצעים חיצוניים, שריטות וחתכים.\r\r\rקומפרי​– בשימוש חיצוני קומפרי משמש כמחטא עדין, אנטי דלקתי ותורם להתחדשות העור. לטיפול\rבפצעים, גירויים בעור, הרגעה של כוויות וטשטוש צלקות.\r\r\rכוכבית מצויה​– צמח הידוע בעיקר בשל השפעתו המרגיעה למצבי גרד בעור. לטיפול בגירויים, כוויות\rוגירודים בעור.\r\r\rלחך​– צמח עדין, מרכך ומקל על גירויים בעור, דלקות, כוויות וריפוי פצעים.\r\r\rבוצין​– מעודד ריפוי פצעים, כוויות, גירויים ויובש בעור, מלחלח את העור, אנטי דלקתי.\r\r\rאכילאה​– צמח שמעודד את התחדשות הרקמות בעור, מטפל בפציעות, עוצר דימום, אנטי דלקתי.\r\r\rשמן אתרי לבנדר​– שמן עדין, מחטא, מרגיע את העור ועוזר בהקלה על חתכים, כוויות, עקיצות וגירויים\rבעור.",
+  "createdOn": "2016-06-21",
+  "updatedOn": "2026-08-02",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 70,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 4,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 56,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 81,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 59.32,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 4,
+    "committed": 0,
+    "onOrder": 30,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500023",
+  "nameHe": "פורמולה סרפד 100 מ\"ל",
+  "nameForeign": null,
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 20,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 1,
+  "maxLevel": 100,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 17,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-08-04",
+  "lastEvalPrice": 17,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "פורמולה סרפד",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": "1.12",
+  "category2": "2.03",
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": "הסרפד הגדל באזורנו בחורף ובאביב הינו אחד מצמחי המרפא המוערכים והשימושיים. הסרפד מזין ומחזק את הריאות, מטפל באלרגיה, ממיס ומפרק ליחה . הצמח העוקצני, אשר נגיעה קלה בו גורמת לגרד, אדמומיות והתנפחות, מטפל, באופן מפתיע, בסימפטומים אלו בדיוק, האופייניים לתגובה אלרגית. בתערובת צמחים זו, למבוגרים ולילדים ,צמחים מהרפואה הסינית והמערבית, הידועים כבעלי פעילות נוגדת אלרגיה, מסלקת ליחה, והמשמשים לטיפול בקדחת השחת, נזלת, חום, הצטננות, ליחה, גירוד ועיניים דומעות.\r\rרכיבים:\rמים, אלכוהול\rסרפד | Urtica dioica\rלחך איזמלני | Plantago lanceolate\rקערורית סינית | Scutellaria baicalensis\rיופרזיה | Euphrasia officinalis\rשוש קרח | Glycyrrhiza glabra\r\rאופן השימוש:\rלמניעה ליטול פעם ביום, בשעת הצורך 5-3 פעמים ביום:\r\rמבוגרים: 50 טיפות.\r\rילדים: 30-20 טיפות.\r\rילדים מעל גיל שנתיים: 20-15 טיפות.\r\rלא לשימוש בהריון",
+  "createdOn": "2016-06-21",
+  "updatedOn": "2026-08-03",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 17,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 20,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500030",
+  "nameHe": "פורמולה שיח אברהם 100 מ\"ל",
+  "nameForeign": null,
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 15,
+  "committed": 0,
+  "onOrder": 50,
+  "minLevel": 5,
+  "maxLevel": 100,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 17,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-06-23",
+  "lastEvalPrice": 17,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "פורמולה שיח אברהם",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": "2.08",
+  "category2": "1.09",
+  "category3": "1.08",
+  "category4": "1.14",
+  "remarks": null,
+  "saleText": "לאישה חיבור עמוק עם מחזוריות החיים, איזון או חוסר איזון הורמונלי משפיע על כל רובד בחייה. הצמחים בפרומולה שבראשו שיח אברהם הינם צמחים מאזנים הורמונאליים ומתאימים למגוון מצבים של מחזוריות האישה החל מכאבי ווסת, מחזור לא סדיר, בעיות פוריות, איזון הורמנאלי לאחר לידה, וסימפטומים של גיל המעבר.\r\rרכיבים:\rמים, אלכוהול\rשיח אברהם | Vitex agnus castus\rקוהוש שחור | Cimicifuga racemosa\rבטטת בר | Dioscorea villosa\rאנג’ליקה סינית | Angelica sinensis\rויתניה משכרת | Withania somnifera\r\rאופן השימוש:\rחצי כפית – כפית עם מעט מים, 3 פעמים ביום.",
+  "createdOn": "2016-06-21",
+  "updatedOn": "2025-12-06",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 17,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 15,
+    "committed": 0,
+    "onOrder": 50,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500091",
+  "nameHe": "חליטה פיליפנדולה 100 גרם",
+  "nameForeign": "חליטה פיליפנדולה",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "N",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 10,
+  "committed": 0,
+  "onOrder": 40,
+  "minLevel": 3,
+  "maxLevel": 140,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 6.3,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-08-02",
+  "lastEvalPrice": 6.3,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "חליטה פיליפנדולה",
+  "siteUom": "גרם",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": "1.21",
+  "category2": "1.20",
+  "category3": "1.07",
+  "category4": "2.06",
+  "remarks": "באישור גלי נמחקה הגריסה קלה \r\rלבדוק את גודל הצמח ולשאול במידת הצורך\rיש לשמור את החליטה במקרר ולשים מדבקות לשמור בקירור",
+  "saleText": "לפעמים הפתרון נמצא בדברים הפשוטים, היומיומיים. חליטת תה עדינה ומיטיבה, צמחים שמרגיעים כאבי בטן הנובעים מצרבות וכיבים ומשקמים את מערכת העיכול\r\rרכיבים:\rפיליפנדולה | Filipendula ulmaria\r\rקמומיל | Matricaria recutita\r\rמנטה חריפה | Mentha piperita\r\rאופן השימוש:\rחליטה: 2 כפות גדושות בליטר מים רותחים. לאחר שהתקרר, לסנן ,לשתות בלגימות קטנות כל חצי שעה .\r\rלסיים ליטר כל יום.",
+  "createdOn": "2019-09-18",
+  "updatedOn": "2026-08-03",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 50,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 6.3,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 40,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 58,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 42.37,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 10,
+    "committed": 0,
+    "onOrder": 40,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500100",
+  "nameHe": "Cap Ginseng-Maca 100",
+  "nameForeign": null,
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 13,
+  "committed": 0,
+  "onOrder": 20,
+  "minLevel": 3,
+  "maxLevel": 40,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 22,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-05-31",
+  "lastEvalPrice": 22,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "ג'ינסינג מאקה",
+  "siteUom": "י''ח",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": "1.11",
+  "category2": "1.18",
+  "category3": "1.25",
+  "category4": "1.08",
+  "remarks": "משקל ל 100 קפסולות 45 גרם\rמשקל ל 300 קפסולות 135 גרם",
+  "saleText": "ג’ינסנג אמריקאי – צמח מחזק, מאזן, מזין, מסייע במצבי תשישות, עייפות, סטרס ומתאים במיוחד לנשים בגיל המעבר.\rמאקה – צמח ממשפחת המצליבים. השורש המזין גדל בגובה רב בהרי האנדים שבאמריקה הדרומית. המקומיים משתמשים בו למאכל, משקה ולרפואה. ברפואה המסורתית השתמשו בו לאנמיה, חולשה, חולשה חיסונית, עקרות ואף לסרטן.\r\rרכיבים:\rג’ינסנג אמריקאי תמצית יבשה | Panax quenquifolium DE\r\rג’ינסנג אמריקאי | Panax quenquifolium Rd. 1:1\r\rמאקה | Lepidium meyenni 1:1\r\rאופן השימוש:\r1-3 קפסולות ביום",
+  "createdOn": "2017-03-28",
+  "updatedOn": "2026-05-05",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 220,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 22,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 176,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 253,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 186.44,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 13,
+    "committed": 0,
+    "onOrder": 20,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500105",
+  "nameHe": "כורכומין פלוס",
+  "nameForeign": "Cap Curcuma 100",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 22,
+  "committed": 0,
+  "onOrder": 35,
+  "minLevel": 5,
+  "maxLevel": 90,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 156.78,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-07-05",
+  "lastEvalPrice": 31,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "כורכומין פלוס",
+  "siteUom": "י''ח",
+  "siteQuantity": 100,
+  "siteComments": "Cap Curcuma",
+  "category1": "1.14",
+  "category2": "2.02",
+  "category3": "2.09",
+  "category4": null,
+  "remarks": "משקל ל 100 קפסולות 45 גרם\rמשקל ל 300 קפסולות 135 גרם",
+  "saleText": "קפסולות של מיצוי שורש כורכום בתוספת פיפרין, מיצוי המופק מפלפל שחור ונועד לשפר את הספיגה של החומר הפעיל כורמכומין. שורש הכורכום ידוע כצמח בעל השפעה אנטי דלקתית, נוגדת חמצון ותומכת בפעילות הכבד.\r\rרכיבים:\rכורכום תמצית יבשה תקנית | Curcuma longa (SDE 95% curcumin)\r\rפלפל שחור תמצית יבשה תקנית | Piper nigrum (SDE 95% piperin)\r\rכורכום | Curcuma longa 1:1\r\rפלפל שחור | Piper nigrum 1:1\r\rאופן השימוש:\r1-4 קפסולות ביום\r\rמידע נוסף:\rכורכום – שורש הכורכום הוא אחד הצמחים הנחקרים ביותר והנפוצים ביותר לשימוש בכל העולם. הוא מוכר ברפואת הצמחים ובעולם תוספי התזונה במיוחד בשל היותו נוגד דלקת ונוגד חמצון חזק. הוא עשוי לסייע במצבים של טרשת עורקים בכמה מנגנונים. בטרשת עורקים, נוצר פלאק טרשתי בדופן הפנימי של העורקים, אחד מגורמי הסיכון המשמעותיים למחלות לב וכלי דם. ביצירת הפלאק הטרשתי מתרחש תהליך דלקתי בכלי הדם, אשר מעודד חמצון של כולסטרול LDL ושקיעתו בדפנות העורקים. כורכום פועל להפחתת הדלקת ובמקביל כנוגד חמצון. פעילות נוספת המיוחסת לשורש הכורכום היא בהיותו תומך בפעילות הכבד, מעודד ייצור מרה ומפחית רמות של שומנים וכולסטרול בדם. לכורכומין, החומר הפעיל שבשורש הכורכום יש השפעה קלה על דילול דם, הוא מפחית צימות טסיות ובכך מסייע במניעת היווצרות קרישי דם.\r\rפלפל שחור – פלפל שחור, אפילו בכמות קטנה משפר ספיגת כורכומין, החומר הפעיל בשורש הכורכום.",
+  "createdOn": "2017-03-28",
+  "updatedOn": "2026-07-14",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 185,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 31,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 148,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 213,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 156.78,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 22,
+    "committed": 0,
+    "onOrder": 35,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500121",
+  "nameHe": "Cap vita mix",
+  "nameForeign": "Cap vita mix",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 10,
+  "maxLevel": 55,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 12,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-06-09",
+  "lastEvalPrice": 12,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "ויטה מיקס",
+  "siteUom": "י''ח",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": "1.15",
+  "category2": "1.24",
+  "category3": "1.19",
+  "category4": "2.03",
+  "remarks": "יש לטחון את ויטמין C לפני הערבוב חומרים\rיש לפזר את התערובת בצורה אחידה על משטח הקיפסול לפני הדחיסה ותוך כדי הקפסול \rיש לדחוס בעוצמה נמוכה ככל האפשר ובצורה אחידה\rמשקל ל 100 קפסולות 46.3 גרם\rמשקל ל 300 קפסולות 138.9 גרם\r27.07.26\rכרגע יורד מהמגוון עד לשינוי פורמולציה וגרפיקה - ניר וירון",
+  "saleText": "בקפסולות אלו אנו מגישים לכם שילוב ייחודי של ויטמין C + אבץ הנדרשים לחיזוק פעילות מערכת החיסון. ייחוד הרכב זה הוא בשילוב כוחות יחד עם צמחים המוכרים כפעילים בחיזוק מערכת החיסון ובעלי פעילות קוטלת של מיקרואורגניזמים. בקפסולה אנו משלבים רכיבים ליפוזומליים למען שיפור הספיגה.\r\rרכיבים:\r\rויטמין C, אבץ גלוקונט, לציטין חמניה,\r\rורד הכלב | Rosa canina\r\rיערה יפנית | Lonicera japonia (Jin Yin Hua)\r\rפורסיטיה | Forsythia suspensa (Lian Qiao)\r\rקערורית סינית | Scutellaria baicalensis (Huang Qin)\r\rאכינצאה צרת עלים | Echinacea angustifolia\r\rאנדרוגרפיס |  Andrographis paniculate (Chuan Xin Lian)\r\rאופן השימוש:\rלמניעה 2  קפסולות ביום.\r\rבעת הצורך 6-10 קפסולות ביום.\r\rמידע נוסף:\rורד הכלב | Rosa canina\r\rקליפת הפרי של ורד הכלב מוכרת בשפת העם “פקעות ורדים” (רוז היפ). הטעם של הקליפה הוא חמוץ מתוק אשר מייצג את נוכחות ויטמין C ורכיבים חיוניים הנקראים ביו-פלבנואידים. בנוסף ראוי לציין כי ורד הכלב מטיב עם מערכת הלב וכלי הדם שלנו.\r\r \r\rיערה יפנית | Lonicera japonia (Jin Yin Hua)\r\rפרחי יערה מוכרים לנו גם מהבר הישראלי בו נמצאת יערה איטלקית. כאן מדובר במין היפני, וחשוב כי הפרחים הנמצאים בשימוש מרפא יהיו פרחים סגורים טרם הפריחה שלהם. פרחים אלו מוכרים כנושאי פעילות נוגדת נגיפים ואשר מסלקת אלמנטים “רעילים” הקיימים בגוף.\r\r \r\rפורסיטיה | Forsythia suspensa (Lian Qiao)\r\rפריפורסיטיה מגיע אלינו מן הרפואה הסינית והוא בן למשפחת הזיתיים. השימוש בפירות אלו מעצים עוד יותר את אופן פעילות פרחי היערה ומשפר את יכולת “סילוק החום” מן הגוף. פרי פורסיטיה מצטיין בפעילות נוגדת מיקרואורגניזמים ובייחוד מיני נגיפים.\r\r \r\rקערורית סינית | Scutellaria baicalensis (Huang Qin)\r\rשורש הקערורית גדל סביב ימת באיקל הנמצאת בגבול סין-רוסיה. שימוש בשורש זה מאזן פעילות חיסונית ודלקת, בעל פעילות נוגדת מיקרואורגניזמים וסילוק ליחה ממערכת הנשימה.\r\r \r\rאכינצאה צרת עלים | Echinacea angustifolia\r\rשורש אכיניצאה צרת-עלים מוכרת לעולם תודות לילידי האדמה ביבשת אמריקה אשר השתמשו בשורש זה במצב הצלת חיים כדוגמת הכשת נחש ארסי.  שורש וצמח האכיניצאה, שהיה בשימוש נרחב בקרב שבטי האינדיאנים, נחשב לאחד החומרים היעילים להמרצת מערכות ההגנה של הגוף ולהפחתת דלקת. תכונותיו העיקריות כוללות איזון והמרצה של מערכת החיסון, הפחתת דלקת, חיטוי, הורדת חום, טיהור דם ולימפה, סילוק ליחה.\r\r \r\rאנדרוגרפיס  Andrographis paniculate (Chuan Xin Lian)|\r\rעלי אנדרוגרפיס מוכרים גם מן הרפואה ההודית בכינוי “מלך המרים”. עלי אנדרוגרפיס נמצאים בשימוש בתקופת מחלות חורף ומצטיינים בחיזוק מערכת החיסון ופעילות נוגדת מיקרואורגניזמים.",
+  "createdOn": "2019-04-14",
+  "updatedOn": "2026-07-30",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 185,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 12,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 148,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 213,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 156.78,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500131",
+  "nameHe": "Ba Zhen Tincture Tang 100ml",
+  "nameForeign": "Ba Zhen Tincture Tang 100ml",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 17,
+  "committed": 0,
+  "onOrder": 7,
+  "minLevel": 10,
+  "maxLevel": 45,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 8,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-06-17",
+  "lastEvalPrice": 8,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "Ba Zhen שמונת האוצרות",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": "1.11",
+  "category2": "1.10",
+  "category3": null,
+  "category4": "3.02",
+  "remarks": "שימו לב - בקבוק פקק וכוסית שונו 03.03.26",
+  "saleText": "רכיבים\r3 אנג‘ליקה סינית |  Dang gui | Angelica sinensis \r3 רמניה | Shu di huang | Rehmannia glutinosa prep\r3 פאוניה | Bai shao | Paeonia alba\r3 ליגוסטיקום | Chuan xiong |  Ligusticum wallichii\r3 ג‘ינסינג | Ren Shen | Panax ginseng\r3 אטרקטילודיס | Bai zhu | Atractylodis macrocephala\r3 פוריה | Fu ling  | Poria cocos\r1.5 ליקוריץ zhi gan cao | Glycyrrhiza uralensis praeperatum rd |\r\rTotal\r\r22.5",
+  "createdOn": "2020-03-05",
+  "updatedOn": "2026-04-28",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 8,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 17,
+    "committed": 0,
+    "onOrder": 7,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500132",
+  "nameHe": "Ban Xia Hou Po Tincture Tang 100ml",
+  "nameForeign": "Ban Xia Hou Po Tincture Tang 100ml",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 14,
+  "committed": 2,
+  "onOrder": 10,
+  "minLevel": 3,
+  "maxLevel": 48,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 5,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-05-31",
+  "lastEvalPrice": 5,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "Ban Xia Hou Po Tincture-Tang",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": "1.04",
+  "category2": "3.03",
+  "category3": "3.02",
+  "category4": null,
+  "remarks": "שימו לב - בקבוק פקק וכוסית שונו 03.03.26",
+  "saleText": "הצמחים Ban xia, Hou po,  Sheng jiang, Zi su ye בעלי איכות ארומטית וחריפה ובעלי אפקט חימום עוצמתי במערכת העיכול. שילוב של מאפיינים אלו נודע ברפואת הצמחים המסורתית כבעל יכולת מניעה, מפזרת, ומעוררת שיכולה לסייע בבעיות עיכול רבות כגון:\rכבדות בבטן, בחילות, צרבות, כאב ברום הבטן, נפיחות בבטן ובעיות עיכול רבות.\r\rהרכב הצמחים “מרקחת פינליה ומגנוליה” הופיע לראשונה על ידי הרופא zhang zong jing\r\rבשנים 219 -150 לפני הספירה בספרו jin gui yao lou\r\rרכיבים:\rהמספרים ליד הצמחים משקפים את הערך היחסי בין הצמחים.\r\rמים, אלכוהול\r\r12 פינאליה| Ban xia | Pinellia ternate\r9 מגנוליה | Hou po | Magnoliae officinalis\r12 פוריה | Fu ling | Poria cocos\r9 ג’ינג’ר | Sheng jiang |Zingiber officinalis\r6 פרילה | Zi su ye | Perilla frutescens\r\rTotal 48\r\rאופן שימוש:\rמינון מבוגר: 5 מ”ל – 2 עד 4 פעמים ביום.\rמינון ילדים: 2.5  מ”ל – 2  עד 4 פעמים ביום.\rמינון פעוטות: (גיל 4 – 2) 1.5 מ”ל – 2 עד 4 פעמים ביום.\r\rמידע נוסף:\rהרכב זה עבר עיבוד בשיטת המיצוי המיוחדת של בית מרקחת טריפוליום הנקראת tincture-tang  . שיטת זו משלבת מיצוי מימי ובישול של כל הרכיבים יחד עם השרייה באלכוהול למשך חודש.\rעיבוד זה מתבסס על שיטות הפקה עתיקות ומסורתיות יחד עם ידע מודרני וחדשני אשר מאפשרים מיצוי אפקטיבי יותר של החומרים הפעילים בצמח, יחד עם שמירה על האיכויות הטבעיות שבו.",
+  "createdOn": "2020-03-05",
+  "updatedOn": "2026-04-28",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 8,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 14,
+    "committed": 2,
+    "onOrder": 10,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500134",
+  "nameHe": "Bei Mu Gua Lou Tincture Tang 100ml",
+  "nameForeign": "Bei Mu Gua Lou Tincture Tang 100ml",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 11,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 6,
+  "maxLevel": 33,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 7.65,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-03-03",
+  "lastEvalPrice": 7.65,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "Bei Mu Gua Lou ביי מו",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": "1.16",
+  "category2": "2.12",
+  "category3": "3.02",
+  "category4": "3.03",
+  "remarks": "שימו לב - בקבוק פקק וכוסית שונו 03.03.26",
+  "saleText": "רכיבים\r\r4.5 | פרטילריה | Fritillaria prep bulb | Zhe bei mu\r\r3 | פרי טריחוסנטס | Gua luo | Trichosanthes kirilowii\r\r2.4 | שורש טריחוסנטס | Tian hua fen | Trichosanthes kirilowii\r\r2.4 | פוריה | Fu ling | Poria cocos fungi\r\r2.4 | קליפת פומלה | Ju hong | Citrus grandis pericarpiu\r\r2.4 | פלטיקודון | Jie geng | Platycodon grandiflorus\r\rTotal 17.1",
+  "createdOn": "2020-03-05",
+  "updatedOn": "2026-04-28",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 7.65,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 11,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500141",
+  "nameHe": "Gui Zhi Tincture Tang 100ml",
+  "nameForeign": "Gui Zhi Tincture Tang 100ml",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 9,
+  "committed": 0,
+  "onOrder": 10,
+  "minLevel": 2,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 0,
+  "lastPurchaseCurrency": null,
+  "lastPurchaseOn": null,
+  "lastEvalPrice": 0,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "Gui Zhi Tincture-Tang",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": "3.02",
+  "category4": "3.03",
+  "remarks": "שימו לב - בקבוק פקק וכוסית שונו 03.03.26",
+  "saleText": "רכיבים\r9 ענפיף הקינמון | Gui zhi | Cinnamomum cassia\r9 פאוניה | Bai shao | Paeonia alba\r9 זיזיפוס | Da zao | Ziziphus jujube\r6 ליקוריץ | Gan cao | Glycyrrhiza uralensis\r9 ג’ינג’ר | Sheng jiang | Zingiber officinalis\r\rtotal 42",
+  "createdOn": "2020-03-09",
+  "updatedOn": "2026-04-28",
+  "family": "shelf",
+  "properties": [
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 8,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 9,
+    "committed": 0,
+    "onOrder": 10,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500145",
+  "nameHe": "Long Dan Xie Gan Tincture Tang mod 100ml",
+  "nameForeign": "Long Dan Xie Gan Tincture Tang mod 100ml",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 10,
+  "committed": 0,
+  "onOrder": 13,
+  "minLevel": 5,
+  "maxLevel": 21,
+  "reorderQty": 0,
+  "minOrderQty": 3,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 0,
+  "lastPurchaseCurrency": null,
+  "lastPurchaseOn": null,
+  "lastEvalPrice": 0,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "Long Dan Xie Gan לונג גאן",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": "3.02",
+  "category4": "3.03",
+  "remarks": "שימו לב - בקבוק פקק וכוסית שונו 03.03.26",
+  "saleText": "רכיבים\r3 בופלאורום | Chai hu | Bupleurum chinense\r3 ג’נטינה | Long dan cao | Gentiana scabra\r6 אליסמה | Ze xie | Alisma orientalis\r9 פלנטגו | Che qian zi |  Plantago asiatica\r3 אנג’ליקה | Dang gui | Angelica sinensis\r9 רהמניה | Sheng di huang  | Rehmannia gluetinosa\r6 גרדניה יסמיני | Zhi zi | Gardenia jasminoides\r6 סקוטלריה | Huang qin | Scutellaria baicalensis\r3 ליקוריץ | Gan cao  | Glycyrrhiza glabra\r3| fang ji | Stephania tetrandra rd\r\rTotal 51",
+  "createdOn": "2020-03-09",
+  "updatedOn": "2026-04-28",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 8,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 10,
+    "committed": 0,
+    "onOrder": 13,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500147",
+  "nameHe": "Tian Wang Bu Xin Tincture Tang mod 100ml",
+  "nameForeign": "Tian Wang Bu Xin Tincture Tang mod 100ml",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 8,
+  "committed": 0,
+  "onOrder": 10,
+  "minLevel": 3,
+  "maxLevel": 36,
+  "reorderQty": 0,
+  "minOrderQty": 5,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 8,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-06-04",
+  "lastEvalPrice": 8,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "Tian Wang Bu Xin Tincture-Tang",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": "שימו לב - בקבוק פקק וכוסית שונו 03.03.26",
+  "saleText": "רכיבים\r40 | רמניה | Sheng di huang | Rehmannia gluetinosa\r5 | ג’ינסינג | Ren shen | Panax ginseng\r10 | אספרגוס | Tian men dong | Asparagus cochichinensis\r10 | אופיאופוגון | Mai men dong | Ophiopogon japonicus\r5 | סקרופולריה | Xuan shen | Scrophularia ningpoensis\r5 | מרווה סינית | Dan shen | Salvia miltiorrhiza\r5 | פוריה | Fu ling | Poria cocos\r5 | פוליגלה | Yuan zhi |  Polygala tenuifolia\r10 | אנג’ליקה | Dang Gui | Angelica sinensis\r10 | סכיזנדרה | Wu wei zi | Schizandra chinensis\r10 | פלטיקדוס | Bai zhi ren | Platycadus orientalis\r10 | זיזיפוס | Suan Zao Ren Shu | Zizipus spinosa\r5 | פלטיקודון | jie geng | Platycodon grandifloras\r5 | קלמוס | Shi cang pu | Acorus calamus\r\rTotal 135",
+  "createdOn": "2020-03-09",
+  "updatedOn": "2026-06-03",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 8,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 8,
+    "committed": 0,
+    "onOrder": 10,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500258",
+  "nameHe": "שמן אתרי עשב לימון 10 מ\"ל Cymbopogon citratus hb EO",
+  "nameForeign": "שמן אתרי עשב לימון 10 מ\"ל Cymbopogon citratus hb EO",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 8,
+  "committed": 1,
+  "onOrder": 8,
+  "minLevel": 2,
+  "maxLevel": 32,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 0,
+  "lastPurchaseCurrency": null,
+  "lastPurchaseOn": null,
+  "lastEvalPrice": 0,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "שמן אתרי עשב לימון",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 10,
+  "siteComments": "שימוש חיצוני",
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": "שמן אתרי עשב לימון מופק מהעלים של הצמח Cymbopogon citarus/flexuosus, ונחשב לשמן מוערך מאוד.\r\rהשמן בעל ארומה חזקה, המתאפיינת בריח לימוני, עם גוונים אדמתיים ועשבוניים.\r\rבמסורת היה נהוג להשתמש בשמן האתרי לרוממות הנפש ולהרגעה, ולהקלה על מצבי מתח, דיכאון וחרדה.\r\rבנוסף, נהגו להשתמש בשמן האתרי למון גראס להקלה על כאבי שרירים ומפרקים בזכות איכותו הנוגדת דלקת.\r\rשימוש מקובל נוסף בשמן הינו למטרות חיטוי ונקיון, בזכות תכונותיו האנטי בקטריאליות ואנטי פטריתיות, כמו כן, השמן מקובל לשימוש כדוחה חרקים, במיוחד יתושים.\r\rרכיבים:\rCymbopogon citratus essential oil\r\rאופן השימוש:\rלשימוש חיצוני בלבד\r\rיש לדלל בעזרת שמן נשא ולמרוח בהתאם לצורך",
+  "createdOn": "2018-02-06",
+  "updatedOn": "2026-08-03",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 35,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 3.6,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 28,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 40,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 29.66,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 8,
+    "committed": 1,
+    "onOrder": 8,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500654",
+  "nameHe": "Cap HP",
+  "nameForeign": "Cap HP",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "N",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 9,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 3,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 292.37,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-08-05",
+  "lastEvalPrice": 0,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "אלת המסטיק",
+  "siteUom": "י''ח",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": "1.35",
+  "category2": "1.17",
+  "category3": "2.06",
+  "category4": null,
+  "remarks": "משקל ל 300 קפסולות 112 גרם",
+  "saleText": "🌿 הרכב צמחי מרפא מחטאים ומשקמים למערכת העיכול\rהצמחים:\r• 36% Pistacia lentiscus – אלת המסטיק \\ מסטיק תימני – שרף ועלים\r• 26% Matricaria – קמומיל גרמני – פרחים\r• 18% Berberis vulgaris – ברבריס – קליפת ענפים ושורש\r• 18% Calendula officinalis – קלנדולה רפואית – פרחים\r• 2% Glycyrrhiza glabra – ליקוריש – קנה שורש\r\r📌 הוראות שימוש:\rליטול עם חצי כוס מים, רצוי על בטן ריקה.\rמינון יומי למבוגר:\r• בחודש ראשון – 6 קפסולות ליום (בוקר, צהריים, ערב)\r• בחודש שני – 4 קפסולות ליום (בוקר, ערב)\r🚫 הריון: לא לשימוש\r👶 הנקה: רק כאשר התינוק מעל גיל חצי שנה",
+  "createdOn": "2025-02-26",
+  "updatedOn": "2026-05-04",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 345,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 4.5,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 276,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 397,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 292.37,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 9,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500669",
+  "nameHe": "תרסיס ולריאן",
+  "nameForeign": "מרכז טיקליס  RLX",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "N",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 0,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 0,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 0,
+  "lastPurchaseCurrency": null,
+  "lastPurchaseOn": null,
+  "lastEvalPrice": 0,
+  "lastEvalOn": null,
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2025-08-13",
+  "updatedOn": "2026-07-05",
+  "family": "shelf",
+  "properties": [
+   15
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 70,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 4.5,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 56,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 81,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 59.32,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "230021",
+  "nameHe": "ביניים פורמולה סרפד",
+  "nameForeign": null,
+  "groupCode": 108,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": "230021",
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ליטר",
+  "buyUom": "ליטר",
+  "numInBuy": 1,
+  "salesUom": "מ\"ל",
+  "numInSale": 0.001,
+  "countUom": "ליטר",
+  "uomGroup": 5,
+  "priceUnit": 3,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 2,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 0,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 55,
+  "lastPurchaseCurrency": "₪",
+  "lastPurchaseOn": "2026-08-03",
+  "lastEvalPrice": 55,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2016-06-21",
+  "updatedOn": "2017-10-22",
+  "family": "formula",
+  "properties": [
+   1,
+   2,
+   8
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 2,
+    "price": 55,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 7,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 8,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 2,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "233006",
+  "nameHe": "ביניים baby herbs",
+  "nameForeign": null,
+  "groupCode": 137,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": "233006",
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "ליטר",
+  "buyUom": null,
+  "numInBuy": 1,
+  "salesUom": "מ\"ל",
+  "numInSale": 0.001,
+  "countUom": null,
+  "uomGroup": 5,
+  "priceUnit": 3,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 2.5,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 0,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": null,
+  "planningMethod": "N",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 0,
+  "lastPurchaseCurrency": null,
+  "lastPurchaseOn": null,
+  "lastEvalPrice": 0,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": null,
+  "siteUom": null,
+  "siteQuantity": null,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": "ללקט את כל הצמחים, לבצע גריסה קלה.\rלהכניס את הצמחים לתוך צנצנת עם מכסה אטום.\rלהוסיף מים רותחים ולסגור את המכסה למשך שעתיים עד שמתקרר.\rלהוסיף את הגליצרין.\rלהעמיד למיצוי למשך 2 שבועות.\rלסחוט בתנאים נקיים מהרגיל - יש לנקות את המסחטה עם אלכוהול\rניר\r\r*לשמור אתה הביניים במקרר*",
+  "saleText": null,
+  "createdOn": "2016-09-04",
+  "updatedOn": "2025-11-11",
+  "family": "formula",
+  "properties": [],
+  "prices": [
+   {
+    "list": 1,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 2,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 7,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 8,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 2.5,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500142",
+  "nameHe": "Li Zhong Tincture Tang 100ml",
+  "nameForeign": "Li Zhong Tincture Tang 100ml",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 8,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 1,
+  "maxLevel": 20,
+  "reorderQty": 0,
+  "minOrderQty": 3,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 0,
+  "lastPurchaseCurrency": null,
+  "lastPurchaseOn": null,
+  "lastEvalPrice": 0,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "Li Zhong Tincture-Tang",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 100,
+  "siteComments": null,
+  "category1": null,
+  "category2": null,
+  "category3": "3.02",
+  "category4": "3.03",
+  "remarks": "שימו לב - בקבוק פקק וכוסית שונו 03.03.26",
+  "saleText": "רכיבים\r9 ג’ינסינג | Ren shen | Panax ginseng\r9 אטרקטילודיס | Bai zhu | Atractylodis macrocephala\r9 ליקוריץ |  Zhi gan cao | Glycyrrhiza uralensis Praeparatum rd\r9 ג’ינג’ר | Gan jiang | Zingiber officinalis\r\rTotal 36",
+  "createdOn": "2020-03-09",
+  "updatedOn": "2026-04-28",
+  "family": "shelf",
+  "properties": [
+   15,
+   19,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 150,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 8,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 120,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 173,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 127.12,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 8,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
+ },
+ {
+  "code": "500230",
+  "nameHe": "שמן אתרי כוכב אניס 10 מ\"ל  Illicium verum EO",
+  "nameForeign": "שמן אתרי כוכב אניס 10 מ\"ל  Illicium verum EO",
+  "groupCode": 118,
+  "itemType": "I",
+  "active": "Y",
+  "frozen": "N",
+  "frozenFrom": null,
+  "frozenTo": null,
+  "activeComment": null,
+  "frozenComment": null,
+  "stockTracked": "Y",
+  "purchase": "Y",
+  "sell": "Y",
+  "batchManaged": "Y",
+  "treeType": "P",
+  "issueMethod": "M",
+  "barcode": null,
+  "additionalId": null,
+  "picture": null,
+  "supplierCode": null,
+  "supplierCatalogNum": null,
+  "stockUom": "יח'",
+  "buyUom": "יח'",
+  "numInBuy": 1,
+  "salesUom": "יח'",
+  "numInSale": 1,
+  "countUom": "יח'",
+  "uomGroup": 7,
+  "priceUnit": 5,
+  "packUom": null,
+  "packQty": 1,
+  "onHand": 5,
+  "committed": 0,
+  "onOrder": 0,
+  "minLevel": 1,
+  "maxLevel": 0,
+  "reorderQty": 0,
+  "minOrderQty": 0,
+  "leadTime": 30,
+  "planningMethod": "M",
+  "procurementMethod": "M",
+  "productSource": "0",
+  "componentWarehouse": "B",
+  "lastPurchasePrice": 0,
+  "lastPurchaseCurrency": null,
+  "lastPurchaseOn": null,
+  "lastEvalPrice": 0,
+  "lastEvalOn": "2025-12-31",
+  "avgPrice": 0,
+  "valuationMethod": "C",
+  "byWarehouse": "N",
+  "noDiscount": "N",
+  "inCostRoll": "Y",
+  "alcoholPct": 0,
+  "oilPct": 0,
+  "extractionRatio": null,
+  "packageSize": null,
+  "pregnancyLimit": null,
+  "breastfeedingLimit": null,
+  "under2Limit": null,
+  "siteName": "שמן אתרי כוכב אניס",
+  "siteUom": "מ\"ל",
+  "siteQuantity": 10,
+  "siteComments": "Illicium verum EO",
+  "category1": null,
+  "category2": null,
+  "category3": null,
+  "category4": null,
+  "remarks": null,
+  "saleText": null,
+  "createdOn": "2018-02-06",
+  "updatedOn": "2026-07-08",
+  "family": "shelf",
+  "properties": [
+   15,
+   40
+  ],
+  "prices": [
+   {
+    "list": 1,
+    "price": 40,
+    "currency": "₪"
+   },
+   {
+    "list": 2,
+    "price": 9,
+    "currency": "₪"
+   },
+   {
+    "list": 3,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 4,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 5,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 6,
+    "price": 32,
+    "currency": "₪"
+   },
+   {
+    "list": 7,
+    "price": 46,
+    "currency": "₪"
+   },
+   {
+    "list": 8,
+    "price": 33.9,
+    "currency": "₪"
+   },
+   {
+    "list": 9,
+    "price": 0,
+    "currency": null
+   },
+   {
+    "list": 10,
+    "price": 0,
+    "currency": null
+   }
+  ],
+  "warehouses": [
+   {
+    "warehouse": "01",
+    "onHand": 5,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "02",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "1",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "2",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "3",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "4",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   },
+   {
+    "warehouse": "5",
+    "onHand": 0,
+    "committed": 0,
+    "onOrder": 0,
+    "minLevel": 0,
+    "maxLevel": 0
+   }
+  ]
  }
 ]
