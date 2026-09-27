@@ -67,6 +67,8 @@ export default {
     editor: {
         pick: 'Template',
         size: 'Label size',
+        widthMm: 'Width (mm)',
+        heightMm: 'Height (mm)',
         width: 'Width (mm)',
         height: 'Height (mm)',
         mm: 'mm',

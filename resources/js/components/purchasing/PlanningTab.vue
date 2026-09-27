@@ -891,9 +891,13 @@ function exportRows() {
     color: var(--a-ink-4);
 }
 
+/* The same label as every other field in the console. A caption small enough
+   to squint at is how a field stops looking like it has one. */
 .planfield .a-lbl {
     margin: 0;
-    font-size: 11px;
+    font-size: 12.5px;
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 .plan {

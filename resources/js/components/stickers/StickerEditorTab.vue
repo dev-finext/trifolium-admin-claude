@@ -235,30 +235,31 @@ async function reset() {
                     :options="templateOptions"
                 />
             </div>
-            <div class="ed-size">
-                <label class="a-lbl">{{ t('stickers.editor.size') }}</label>
-                <div class="ed-size-in">
+            <!-- Two numbers, two labels. One caption over a pair of boxes
+                 leaves the reader to work out which box is which. -->
+            <div class="ed-size a-fields">
+                <label class="a-field">
+                    <span>{{ t('stickers.editor.widthMm') }}</span>
                     <AInput
                         :model-value="draft.size.w"
                         type="number"
                         class="ed-num"
-                        :aria-label="t('stickers.editor.width')"
                         @update:model-value="
                             setNum(draft.size, 'w', $event, 20, 300)
                         "
                     />
-                    <span>×</span>
+                </label>
+                <label class="a-field">
+                    <span>{{ t('stickers.editor.heightMm') }}</span>
                     <AInput
                         :model-value="draft.size.h"
                         type="number"
                         class="ed-num"
-                        :aria-label="t('stickers.editor.height')"
                         @update:model-value="
                             setNum(draft.size, 'h', $event, 15, 300)
                         "
                     />
-                    <span class="t-sub">{{ t('stickers.editor.mm') }}</span>
-                </div>
+                </label>
             </div>
             <div class="a-push ed-state">
                 <AChip v-if="dirty" tone="amber" size="sm">{{
@@ -352,8 +353,8 @@ async function reset() {
                                 ✕
                             </button>
                         </div>
-                        <div class="el-g">
-                            <label>
+                        <div class="a-fields el-g">
+                            <label class="a-field">
                                 <span>{{ t('stickers.editor.x') }}</span>
                                 <AInput
                                     :model-value="element.x"
@@ -363,7 +364,7 @@ async function reset() {
                                     "
                                 />
                             </label>
-                            <label>
+                            <label class="a-field">
                                 <span>{{ t('stickers.editor.y') }}</span>
                                 <AInput
                                     :model-value="element.y"
@@ -373,7 +374,7 @@ async function reset() {
                                     "
                                 />
                             </label>
-                            <label>
+                            <label class="a-field">
                                 <span>{{ t('stickers.editor.w') }}</span>
                                 <AInput
                                     :model-value="element.w"
@@ -384,6 +385,7 @@ async function reset() {
                                 />
                             </label>
                             <label
+                                class="a-field"
                                 v-if="
                                     element.kind === 'barcode' ||
                                     element.kind === 'logo'
@@ -398,7 +400,10 @@ async function reset() {
                                     "
                                 />
                             </label>
-                            <label v-if="element.kind !== 'barcode'">
+                            <label
+                                class="a-field"
+                                v-if="element.kind !== 'barcode'"
+                            >
                                 <span>{{ t('stickers.editor.font') }}</span>
                                 <AInput
                                     :model-value="element.size"
@@ -419,7 +424,7 @@ async function reset() {
                                     element.kind === 'field' ||
                                     element.kind === 'text'
                                 "
-                                class="el-sel"
+                                class="a-field el-sel"
                             >
                                 <span>{{ t('stickers.editor.align') }}</span>
                                 <ASelect
@@ -433,20 +438,21 @@ async function reset() {
                                     element.kind === 'field' ||
                                     element.kind === 'text'
                                 "
-                                class="el-sw"
+                                class="a-field a-field--switch el-sw"
                             >
                                 <ASwitch
                                     v-model="element.bold"
                                     :label="t('stickers.editor.bold')"
                                 />
-                                <span>{{ t('stickers.editor.bold') }}</span>
                             </div>
-                            <div v-if="element.kind === 'field'" class="el-sw">
+                            <div
+                                v-if="element.kind === 'field'"
+                                class="a-field a-field--switch el-sw"
+                            >
                                 <ASwitch
                                     v-model="element.label"
                                     :label="t('stickers.editor.prefix')"
                                 />
-                                <span>{{ t('stickers.editor.prefix') }}</span>
                             </div>
                         </div>
                     </div>
@@ -504,14 +510,13 @@ async function reset() {
     min-width: 220px;
 }
 
-.ed-size-in {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+.ed-size {
+    --a-field-w: 112px;
+    flex: 0 0 auto;
 }
 
 .ed-num {
-    width: 76px;
+    width: 100%;
 }
 
 .ed-state {
@@ -578,35 +583,18 @@ async function reset() {
     font-size: 13px;
 }
 
+/* The element's numbers. `.a-fields` lays them out and labels them; the only
+   thing this screen adds is how narrow they may get, because they hold two
+   digits and a selection, not sentences. */
 .el-g {
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-}
-
-.el-g label {
-    display: grid;
-    gap: 3px;
-    width: 72px;
-}
-
-.el-g label.el-sel {
-    width: 110px;
-}
-
-.el-g label span,
-.el-sw span {
-    font-size: 11.5px;
-    color: var(--a-ink-4);
+    --a-field-w: 118px;
+    margin-top: 10px;
 }
 
 .el-sw {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding-bottom: 6px;
 }
 
 .ed-prev {

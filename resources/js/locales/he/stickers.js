@@ -67,6 +67,8 @@ export default {
     editor: {
         pick: 'תבנית',
         size: 'גודל המדבקה',
+        widthMm: 'רוחב (מ״מ)',
+        heightMm: 'גובה (מ״מ)',
         width: 'רוחב (מ״מ)',
         height: 'גובה (מ״מ)',
         mm: 'מ״מ',
