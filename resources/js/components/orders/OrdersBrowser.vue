@@ -29,6 +29,7 @@ import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import SavedViews from '@/components/ui/SavedViews.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { useSendToLab } from '@/composables/useSendToLab';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { COURIERS, DEFAULT_QUIET_HOURS, ORDER_STATUSES } from '@/config';
@@ -39,17 +40,20 @@ import { activeKeys, emptyFilters, toggleValue } from '@/lib/facets';
 import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import {
+    canSendToLab,
     filterOrders,
     ORDER_FILTER_FIELDS,
     ORDER_FILTER_GROUPS,
     ordersInRange,
     statusOf,
+    trackedItems,
     useOrdersStore,
 } from '@/stores/orders';
 
 /** Filter keys that count towards "the list is filtered". */
 
 const { t, locale } = useI18n();
+const { sendOne } = useSendToLab();
 const { loc } = useLocalized();
 const route = useRoute();
 const router = useRouter();
@@ -67,6 +71,8 @@ const view = useUrlState({
     q: '',
     sort: '',
     dir: 'asc',
+    // V3 — the lab queue: on, the list is only what may go down today.
+    lab: '',
 });
 
 /** The filter drawer, and the views strip's exposed "save" action. */
@@ -96,7 +102,26 @@ const sort = computed({
 
 const inRange = computed(() => ordersInRange(orders.all, range.value));
 
-const rows = computed(() => filterOrders(inRange.value, view));
+const filtered = computed(() => filterOrders(inRange.value, view));
+
+/**
+ * V3 — הזמנות מוכנות למעבדה.
+ *
+ * Not a status and not a filter field: a question asked of the list already on
+ * screen — which of these could go down to the lab right now. The answer is
+ * `canSendToLab`, the pharmacy's own rule: the money is settled (paid, or the
+ * practitioner is on credit terms), the order is still new, and there is
+ * something to compound.
+ */
+const labReadyCount = computed(() => inRange.value.filter(canSendToLab).length);
+
+const rows = computed(() =>
+    view.lab ? filtered.value.filter(canSendToLab) : filtered.value,
+);
+
+function toggleLabQueue() {
+    view.lab = view.lab ? '' : '1';
+}
 
 const shownIds = computed(() => rows.value.map((order) => order.id));
 
@@ -292,6 +317,65 @@ function confirmed(why) {
 }
 
 // ---- single-row actions ---------------------------------------------------
+
+/**
+ * V3 — send one order down to the lab.
+ *
+ * Four things at once, named in the dialog before they happen, because three
+ * of them cannot be undone by closing a window: the batches are committed, the
+ * sheet and the labels go to the printer, and the order changes hands.
+ */
+function askSendToLab(order) {
+    ask.value = {
+        title: t('orders.lab.sendTitle', { id: order.id }),
+        confirmLabel: t('orders.lab.send'),
+        reason: true,
+        body: t('orders.lab.sendBody', {
+            name: loc(order.patient.name),
+            n: trackedItems(order).filter((item) => !item.cancelled).length,
+        }),
+        effects: [
+            t('orders.lab.effect.batches'),
+            t('orders.lab.effect.sheet'),
+            t('orders.lab.effect.labels'),
+            t('orders.effect.statusTo', { status: t('status.lab') }),
+        ],
+        done: async (reason) => {
+            const result = await sendOne(order, { reason });
+
+            if (!result.ok) {
+                toast.push({ title: t('orders.lab.failed'), bad: true });
+
+                return;
+            }
+
+            toast.push({
+                title: t('orders.lab.sent', { id: order.id }),
+                body: t('orders.lab.sentBody', {
+                    batches: result.batches,
+                    labels: result.labels,
+                }),
+            });
+
+            // A browser that blocked a print window is the one thing the agent
+            // has to know about: the order moved, but a sheet did not come out.
+            if (result.blocked) {
+                toast.push({ title: t('orders.lab.printBlocked'), bad: true });
+            }
+
+            if (result.short.length) {
+                toast.push({
+                    title: t('orders.lab.short', { n: result.short.length }),
+                    body: result.short
+                        .map((one) => loc(one.name))
+                        .slice(0, 3)
+                        .join(' · '),
+                    bad: true,
+                });
+            }
+        },
+    };
+}
 
 function askRemind(order) {
     ask.value = {
@@ -532,6 +616,15 @@ function exportOrders(list, suffix = '') {
                 :placeholder="t('orders.search.placeholder')"
                 :aria-label="t('orders.search.label')"
             />
+            <AButton
+                icon="beaker"
+                :class="{ 'is-on': view.lab }"
+                :disabled="!labReadyCount && !view.lab"
+                @click="toggleLabQueue"
+            >
+                {{ t('orders.lab.queue') }}
+                <template v-if="labReadyCount"> · {{ labReadyCount }}</template>
+            </AButton>
             <AButton icon="layers" @click="drawerOpen = true">
                 {{
                     activeFilters.length
@@ -577,6 +670,7 @@ function exportOrders(list, suffix = '') {
                 @toggle-all="toggleAll"
                 @remind="askRemind"
                 @assign="assigning = $event"
+                @to-lab="askSendToLab"
                 @clear="clearFilters"
             />
         </template>

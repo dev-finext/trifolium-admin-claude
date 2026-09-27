@@ -24,7 +24,12 @@ import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { isSettled, ORDER_STATUS_IDS } from '@/config';
 import { fmtISO } from '@/lib/dates';
-import { shelfItems, statusOf, trackedItems } from '@/stores/orders';
+import {
+    canSendToLab,
+    shelfItems,
+    statusOf,
+    trackedItems,
+} from '@/stores/orders';
 
 const props = defineProps({
     rows: { type: Array, default: () => [] },
@@ -42,6 +47,7 @@ const emit = defineEmits([
     'toggle-all',
     'remind',
     'assign',
+    'to-lab',
     'update:sort',
     'clear',
 ]);
@@ -259,6 +265,17 @@ function itemSummary(order) {
 
         <template #cell-act="{ row }">
             <div class="a-rowbtns" @click.stop>
+                <!-- V3 — the one step an agent takes by hand: batches, sheet,
+                     labels and the order is in the lab. -->
+                <AButton
+                    v-if="canSendToLab(row)"
+                    sm
+                    kind="p"
+                    icon="beaker"
+                    @click="emit('to-lab', row)"
+                >
+                    {{ t('orders.lab.send') }}
+                </AButton>
                 <AButton
                     v-if="!isSettled(row)"
                     sm

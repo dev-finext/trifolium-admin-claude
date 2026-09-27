@@ -3485,6 +3485,26 @@ tr.cover-low:hover > td {
 
 /* V3 — the shared-component column on the planning report. A cell holds a
    short list, so it needs its own rhythm rather than the table's line. */
+/* The shared-component column. It is not part of the report — it appears when
+   the buyer asks for it and goes when they stop — so it is tinted, and the
+   reader can see at a glance which numbers are the report's and which are the
+   answer to the question they just asked. */
+.col-feeds {
+    background: var(--a-blue-bg);
+    box-shadow:
+        inset 1px 0 0 rgb(122 157 184 / 35%),
+        inset -1px 0 0 rgb(122 157 184 / 35%);
+}
+
+thead th.col-feeds {
+    color: var(--a-blue);
+    background: var(--a-blue-bg);
+}
+
+.a-table tbody tr:hover td.col-feeds {
+    background: var(--a-blue-bg);
+}
+
 .feeds {
     margin: 0;
     padding: 0;

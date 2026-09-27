@@ -274,6 +274,10 @@ const cols = computed(() => [
               {
                   k: 'feeds',
                   label: t('planning.col.feeds'),
+                  // The column only exists while the view is on, and it is the
+                  // reason the view is on — so it is tinted, and reads as
+                  // something added to the report rather than part of it.
+                  cls: 'col-feeds',
                   sortable: true,
                   sortValue: (row) => feeds(row).length,
               },

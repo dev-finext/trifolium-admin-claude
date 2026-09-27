@@ -27,6 +27,7 @@ import {
 import { persist } from '@/data/source';
 import { daysSince, fmtISO, hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { isLocalized } from '@/lib/localized';
+import { convertQty } from '@/lib/units';
 import { useDatasetStore } from '@/stores/dataset';
 
 /**
@@ -908,6 +909,178 @@ export const useInventoryStore = defineStore('inventory', () => {
      * the batch through the expiry states, so the record is re-aged; every
      * change is written to the log with what it was and what it became.
      */
+    /**
+     * V3 — תפיסת אצוות: commit an order's formulas to actual batches.
+     *
+     * Until this runs, `fifoPlan` is only a proposal — it says which batches
+     * *would* serve a quantity, and changes its mind the moment anything else
+     * consumes them. Sending an order to the lab is the point at which the
+     * pharmacy stops proposing: the quantity comes out of named batches, the
+     * batches carry less than they did, and the ledger says so.
+     *
+     * Idempotent. An order that already holds allocations gets them back
+     * untouched, because a second click on "send to the lab" must not take the
+     * material twice.
+     *
+     * @param {object} order
+     * @returns {Promise<{rows: Array, short: Array, already: boolean}>}
+     */
+    async function allocateToOrder(order) {
+        if (!order) {
+            return { rows: [], short: [], already: false };
+        }
+
+        const held = batchUse.value.filter((row) => row.order === order.id);
+
+        if (held.length) {
+            return { rows: held, short: [], already: true };
+        }
+
+        const rows = bag('batchUse');
+        const made = [];
+        const moves = [];
+        const short = [];
+        const touched = { batches: new Set(), rows: new Set() };
+        const when = moment();
+        const by = dataset.me?.name || null;
+
+        const formulas = (order.items || []).filter(
+            (item) => item.kind === 'formula' && !item.cancelled,
+        );
+
+        formulas.forEach((item) => {
+            (item.herbs || []).forEach((herb) => {
+                const row = stock.value.find(
+                    (one) => one.herbId === herb.id || one.sku === herb.id,
+                );
+
+                if (!row) {
+                    short.push({ name: herb.name, qty: herb.qty, sku: null });
+
+                    return;
+                }
+
+                // The formula states a quantity in the unit the prescriber
+                // wrote it in; the batches hold the unit the item is stocked
+                // in. 120 ml out of a batch counted in litres is 0.12 of it.
+                const need = convertQty(
+                    herb.qty,
+                    herb.unit || row.unit,
+                    row.unit,
+                );
+
+                if (need === null) {
+                    short.push({
+                        name: herb.name,
+                        sku: row.sku,
+                        qty: herb.qty,
+                    });
+
+                    return;
+                }
+
+                const plan = fifoPlan(row.sku, need);
+
+                plan.steps.forEach((step, k) => {
+                    const take = step.take;
+
+                    if (take <= 0) {
+                        return;
+                    }
+
+                    step.batch.remaining =
+                        Math.round((step.batch.remaining - take) * 1000) / 1000;
+                    syncBatch(step.batch);
+
+                    row.onHand =
+                        Math.round(Math.max(0, row.onHand - take) * 1000) /
+                        1000;
+                    row.alloc = Math.min(row.alloc, row.onHand);
+                    syncRow(row);
+
+                    const use = {
+                        id: `bu-${order.id}-${item.id}-${herb.id}-${k}`,
+                        batch: step.batch.id,
+                        batchName: step.batch.name,
+                        sku: step.batch.sku,
+                        order: order.id,
+                        item: item.id,
+                        itemName: item.name,
+                        patient: order.patient?.name || null,
+                        practitioner: order.practitioner?.name || null,
+                        qty: take,
+                        unit: step.batch.unit,
+                        lineQty: herb.qty,
+                        when,
+                        by,
+                    };
+
+                    rows.unshift(use);
+                    made.push(use);
+
+                    const move = {
+                        id: `mv-alloc-${order.id}-${step.batch.id}-${k}`,
+                        kind: 'allocated_to_compounding',
+                        sku: step.batch.sku,
+                        name: step.batch.name,
+                        unit: step.batch.unit,
+                        wh: step.batch.wh,
+                        qty: -take,
+                        batch: step.batch.id,
+                        ref: order.id,
+                        when,
+                        by,
+                    };
+
+                    writeMovement(move);
+                    moves.push(move);
+                    touched.batches.add(step.batch);
+                    touched.rows.add(row);
+                });
+
+                if (plan.short > 0) {
+                    short.push({
+                        name: herb.name,
+                        sku: row.sku,
+                        qty: plan.short,
+                        unit: row.unit,
+                    });
+                }
+            });
+        });
+
+        writeLog({
+            act: 'batches_allocated',
+            entType: 'order',
+            ent: order.id,
+            to: String(made.length),
+        });
+
+        // Everything this touched, written where it lives. A batch that gave
+        // up material, the stock row behind it, the allocation itself and the
+        // ledger row are four different records; persisting only the order
+        // would leave the shelf saying it still has what the lab just took.
+        await Promise.all([
+            ...made.map((one) => persist('batchUse', one)),
+            ...[...touched.batches].map((batch) =>
+                persist(`batches/${batch.id}`, batch, 'PUT'),
+            ),
+            ...[...touched.rows].map((row) =>
+                persist(`inventory/ingredients/${row.sku}`, row, 'PUT'),
+            ),
+            ...moves.map((move) => persist('movements', move)),
+            persist(`orders/${order.id}/batch-allocation`, {
+                rows: made.map((one) => ({
+                    batch: one.batch,
+                    sku: one.sku,
+                    qty: one.qty,
+                })),
+            }),
+        ]);
+
+        return { rows: made, short, already: false };
+    }
+
     async function editBatchDates(id, { expiry, madeOn, reason = '' } = {}) {
         const batch = batchById(id);
 
@@ -1462,6 +1635,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         postDoc,
         movements,
         batchUse,
+        allocateToOrder,
         ingredients,
 
         lowStock,

@@ -918,6 +918,38 @@ export function buildOrders(practitioners, patients) {
         last.tracking = null;
     }
 
+    // V3 — the lab queue is never empty.
+    //
+    // An order waiting to go down to the lab is a daily state of the pharmacy:
+    // the money is settled and nobody has started compounding yet. The backup
+    // this fixture is drawn from happened not to hold one, because `U_PayedSite`
+    // is only set by the website and the practitioners on credit terms had all
+    // been billed — so the queue came out empty and the step that works from it
+    // had nothing to work on.
+    //
+    // These are settled here rather than left to chance: the first three new
+    // orders that have something to compound, one paid outright and the rest on
+    // the practitioner's credit terms, which are the two ways the pharmacy's own
+    // rule (`canSendToLab`) counts an order as settled.
+    orders
+        .filter(
+            (order) =>
+                order.status === 'new' &&
+                (order.items || []).some(
+                    (item) => item.kind === 'formula' && !item.cancelled,
+                ),
+        )
+        .slice(0, 3)
+        .forEach((order, i) => {
+            if (i === 0) {
+                order.paid = true;
+                order.linkState = 'paid';
+            } else {
+                order.credit = true;
+                order.creditPaid = false;
+            }
+        });
+
     // One order on the lab bench is always urgent, so the queue's ordering and
     // the urgency marks are on screen whatever the rest of the fixture does.
     const bench = orders.find((order) => order.status === 'lab');

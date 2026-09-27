@@ -2,11 +2,13 @@
 // The console's one table. A screen supplies columns and rows; the table owns
 // the chrome, the empty state, the keyboard affordance and the sorting.
 //
-// Columns: `[{ k, label, w, nowrap, sortable, sortValue }]`
+// Columns: `[{ k, label, w, nowrap, cls, sortable, sortValue }]`
 //   k          field key, and the name of the cell slot: `#cell-<k>="{ row }"`
 //   w          column width, any CSS length
 //   nowrap     keep the cell on one line
 //   sortable   this header sorts; a header without it is not styled as a control
+//   cls        a class on this column's cells, header included — for a column
+//              that has to stand apart from the rest of the table
 //   sortValue  `(row) => comparable` when the raw field is not what sorts
 //
 // Sorting is real: without `v-model:sort` the table sorts the rows it was given,
@@ -201,6 +203,7 @@ function activate(row) {
                         v-for="col in cols"
                         :key="col.k"
                         scope="col"
+                        :class="col.cls"
                         :style="col.w ? { width: col.w } : null"
                         :aria-sort="ariaSort(col)"
                     >
@@ -245,7 +248,7 @@ function activate(row) {
                     <td
                         v-for="col in cols"
                         :key="col.k"
-                        :class="{ nowrap: col.nowrap }"
+                        :class="[{ nowrap: col.nowrap }, col.cls]"
                     >
                         <slot :name="`cell-${col.k}`" :row="row" :index="i">
                             {{ cellText(col, row) }}

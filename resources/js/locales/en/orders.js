@@ -658,6 +658,24 @@ export default {
     },
 
     lab: {
+        queue: 'Ready for the lab',
+        send: 'Send to the lab',
+        sendTitle: 'Send order {id} to the lab',
+        sendBody:
+            "{name}'s order — one formula — goes down to the lab. The four things below happen together, and only some of them can be undone. | {name}'s order — {n} formulas — goes down to the lab. The four things below happen together, and only some of them can be undone.",
+        reason: 'Sent to the lab from the ready list',
+        sent: 'Order {id} went down to the lab',
+        sentBody: '{batches} batches committed · {labels} labels printed',
+        failed: 'The order did not go to the lab',
+        printBlocked:
+            'The browser blocked a print window — it can be printed again from the order itself',
+        short: 'One component is short | {n} components are short',
+        effect: {
+            batches:
+                'The quantities are committed to batches by expiry (FEFO), and stock comes down',
+            sheet: 'The prep sheet goes to the printer',
+            labels: 'The prep labels go to the printer',
+        },
         title: 'Lab — roles and barcodes',
         notSet: 'Not yet marked',
         markMe: 'Mark me',
