@@ -13,6 +13,8 @@ export default {
     chips: {
         label: 'Active filters',
         remove: 'Remove the filter {name}',
+        more: 'All groups',
+        less: 'Collapse',
     },
 
     savedViews: {

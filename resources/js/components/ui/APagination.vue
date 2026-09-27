@@ -112,6 +112,16 @@ function setSize(event) {
     border-end-end-radius: var(--a-r);
 }
 
+/* On a laptop the pager sits between the reader and another row of the
+   table it describes. */
+@media (max-height: 900px) {
+    .a-pager {
+        padding: 7px 14px;
+        gap: 10px;
+        font-size: 13px;
+    }
+}
+
 .a-pager-t {
     display: inline-flex;
     align-items: center;

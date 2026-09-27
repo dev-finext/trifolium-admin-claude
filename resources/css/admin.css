@@ -3633,16 +3633,6 @@ tr.cover-low:hover > td {
         padding: 8px 12px;
     }
 
-    /* The chip strips — item families, item groups, saved views. They wrap to
-       four rows on a laptop and push the table off the screen. Capped, they
-       scroll inside themselves and the table keeps its place. */
-    .fam-strip,
-    .groups {
-        max-height: 68px;
-        overflow-y: auto;
-        overscroll-behavior: contain;
-    }
-
     /* The planning report's window picker: two selects and the group chips. */
     .window {
         padding: 8px 12px;
@@ -3655,6 +3645,27 @@ tr.cover-low:hover > td {
     .a-tabbody {
         gap: 12px;
     }
+
+    /* And the rows themselves. Sixteen pixels above and below a cell is a
+       comfortable desktop row and an expensive laptop one: with the table now
+       the only thing that scrolls, every pixel here is a row the reader can
+       see without touching the wheel. */
+    .a-table tbody td {
+        padding: 9px 14px;
+    }
+
+    .a-table thead th {
+        padding: 8px 14px;
+    }
+
+    .a-table .t-sub {
+        font-size: 12.5px;
+        margin-top: 1px;
+    }
+
+    .a-table {
+        font-size: 14px;
+    }
 }
 
 @media (max-height: 820px) {
@@ -3664,13 +3675,14 @@ tr.cover-low:hover > td {
         display: none;
     }
 
-    .a-pagehead {
-        margin-bottom: 10px;
+    /* Same for the sentence under the page title: it says what the screen is,
+       and the reader is already on it. */
+    .a-sub {
+        display: none;
     }
 
-    .fam-strip,
-    .groups {
-        max-height: 54px;
+    .a-pagehead {
+        margin-bottom: 10px;
     }
 
     .a-filters {
@@ -3696,4 +3708,52 @@ tr.cover-low:hover > td {
     .groups {
         max-height: 40px;
     }
+}
+
+/* ============================================================================
+   A list screen is a page of controls and a table, and they want opposite
+   things: the controls want to stay where they are, the table wants the rest
+   of the screen. Letting the whole pane scroll gives the table the screen only
+   after the controls have left it — which is how a laptop ends up showing two
+   rows and no filters.
+
+   So the pane stops scrolling and the table scrolls inside itself. The page
+   head, the counts, the filters and the pager stay put; the rows move under
+   their own header. `:has()` keeps this to the screens that are a single
+   table, and leaves a dashboard or a card grid alone.
+   ========================================================================== */
+.a-body:has(> .a-tablewrap),
+.a-body:has(> * > .a-tablewrap) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: 18px;
+}
+
+/* The branch that holds the table becomes the one that grows. */
+.a-body:has(> * > .a-tablewrap) > *:has(> .a-tablewrap) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.a-body:has(> .a-tablewrap) > .a-tablewrap,
+.a-body:has(> * > .a-tablewrap) > * > .a-tablewrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+/* Its header sticks to the top of that box rather than to the pane, so the
+   pane's own padding no longer has to be cancelled. */
+.a-body:has(> .a-tablewrap) > .a-tablewrap .a-table thead th,
+.a-body:has(> * > .a-tablewrap) > * > .a-tablewrap .a-table thead th {
+    top: var(--a-thead-top);
+}
+
+/* Nothing above or below the table may shrink to make room for it. */
+.a-body:has(> .a-tablewrap) > *:not(.a-tablewrap),
+.a-body:has(> * > .a-tablewrap) > * > *:not(.a-tablewrap) {
+    flex: 0 0 auto;
 }

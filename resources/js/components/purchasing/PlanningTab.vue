@@ -22,6 +22,7 @@ import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
 import APagination from '@/components/ui/APagination.vue';
 import ASelect from '@/components/ui/ASelect.vue';
+import ChipStrip from '@/components/ui/ChipStrip.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
@@ -419,7 +420,7 @@ function exportRows() {
             </div>
             <div class="grow">
                 <label class="a-lbl">{{ t('planning.window.groups') }}</label>
-                <div class="groups">
+                <ChipStrip id="planning-groups" class="groups">
                     <button
                         v-for="option in groupOptions"
                         :key="option.value"
@@ -432,7 +433,7 @@ function exportRows() {
                     >
                         {{ option.label }}
                     </button>
-                </div>
+                </ChipStrip>
                 <div class="a-hint">
                     {{
                         chosenGroups.length
@@ -823,12 +824,6 @@ function exportRows() {
 .grow {
     flex: 1 1 340px;
     min-width: 0;
-}
-
-.groups {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
 }
 
 .grp {

@@ -11,6 +11,7 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
 import APagination from '@/components/ui/APagination.vue';
+import ChipStrip from '@/components/ui/ChipStrip.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
@@ -377,7 +378,7 @@ function exportRows() {
         />
 
         <!-- the table split by family: SAP's item groups, one tab each -->
-        <div class="fam-strip">
+        <ChipStrip id="items-families" class="fam-strip">
             <button
                 type="button"
                 class="fam"
@@ -399,7 +400,7 @@ function exportRows() {
                 {{ group.name }}
                 <span class="fam-n">{{ group.n }}</span>
             </button>
-        </div>
+        </ChipStrip>
 
         <ADataTable
             :cols="cols"
@@ -544,13 +545,6 @@ function exportRows() {
 .search {
     width: 320px;
     max-width: 100%;
-}
-
-.fam-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 10px 0 12px;
 }
 
 .fam {

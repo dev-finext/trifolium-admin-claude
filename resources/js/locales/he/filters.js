@@ -12,6 +12,8 @@ export default {
     chips: {
         label: 'הסינונים הפעילים',
         remove: 'הסרת הסינון {name}',
+        more: 'כל הקבוצות',
+        less: 'צמצום',
     },
 
     savedViews: {
