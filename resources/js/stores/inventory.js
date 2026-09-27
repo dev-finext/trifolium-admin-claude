@@ -1050,7 +1050,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         });
 
         writeLog({
-            act: 'batches_allocated',
+            act: 'batch_allocate',
             entType: 'order',
             ent: order.id,
             to: String(made.length),

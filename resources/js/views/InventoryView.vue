@@ -53,6 +53,22 @@ const view = useUrlState({
     sku: '',
 });
 
+/**
+ * A drawer belongs to the tab it was opened from — see PurchasingView for why.
+ */
+const tab = computed({
+    get: () => view.tab,
+    set: (next) => {
+        Object.assign(view, {
+            tab: next,
+            batch: '',
+            receipt: '',
+            doc: '',
+            sku: '',
+        });
+    },
+});
+
 /** The receipt form and the adjustment are actions, not addresses. */
 const receiving = ref(false);
 const adjusting = ref(null);
@@ -292,7 +308,7 @@ function exportStock() {
         </template>
     </PageHead>
 
-    <ATabs v-model="view.tab" :tabs="tabs" />
+    <ATabs v-model="tab" :tabs="tabs" />
 
     <ASkeleton v-if="dataset.isBusy" />
     <AErrorState v-else-if="dataset.isError" @retry="dataset.load(true)" />

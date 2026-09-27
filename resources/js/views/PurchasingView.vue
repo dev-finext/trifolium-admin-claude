@@ -41,6 +41,21 @@ const router = useRouter();
 
 const view = useUrlState({ tab: 'planning', po: '', item: '', req: '' });
 
+/**
+ * A drawer belongs to the tab it was opened from.
+ *
+ * Every open record is an address in the query string, which is what makes a
+ * link to one work. But the address outlives the tab: open a purchase order,
+ * switch to the invoices, and the order is still there, over a list it has
+ * nothing to do with. Changing tab closes what the previous one had open.
+ */
+const tab = computed({
+    get: () => view.tab,
+    set: (next) => {
+        Object.assign(view, { tab: next, po: '', item: '', req: '' });
+    },
+});
+
 /** The two exits out of the planning report, each a modal while it is open. */
 const raising = ref(false);
 const producing = ref(false);
@@ -208,7 +223,7 @@ function onCancelled(po) {
         </template>
     </PageHead>
 
-    <ATabs v-model="view.tab" :tabs="tabs" />
+    <ATabs v-model="tab" :tabs="tabs" />
 
     <ASkeleton v-if="dataset.isBusy" />
     <AErrorState v-else-if="dataset.isError" @retry="dataset.load(true)" />
