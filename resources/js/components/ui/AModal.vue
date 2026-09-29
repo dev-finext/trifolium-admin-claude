@@ -2,11 +2,24 @@
 // A centred dialog. Modals sit above drawers: a modal opened from inside a
 // drawer takes Escape first (its listener runs in the capture phase and stops
 // there), so closing it leaves the drawer open.
+//
+// V3 — an editor that names itself can be minimised, like any other window, and
+// the control sits next to the close button because that is the window-control
+// corner of a dialog. The difference from a record window is that a form has
+// something to keep: `win.form()` is called at the moment of the click, not
+// when the modal opened, so what is parked is the typing as it stands.
+//
+// The header is tinted for a draft. A window holding unsaved work and a window
+// holding a record you were reading are not the same thing to come back to, and
+// the tray says so too.
 import { computed, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { useRoute } from 'vue-router';
 import AIcon from '@/components/ui/AIcon.vue';
 import { useScrollLock } from '@/composables/useScrollLock';
+import { useToast } from '@/composables/useToast';
+import { useWindowsStore } from '@/stores/windows';
 
 defineOptions({ inheritAttrs: false });
 
@@ -15,11 +28,48 @@ const props = defineProps({
     title: { type: String, default: '' },
     /** Card width in px (a string passes through as authored). */
     width: { type: [Number, String], default: null },
+    /**
+     * What this editor is, so it can be minimised with its typing:
+     * `{ id, title, subtitle, icon, form }`, where `form` is a function
+     * returning `{ view, data, stamp }`. Omitted, and no control appears.
+     */
+    win: { type: Object, default: null },
 });
 
 const emit = defineEmits(['close']);
 
 const { t } = useI18n();
+const route = useRoute();
+const windows = useWindowsStore();
+const { push } = useToast();
+
+const canMinimize = computed(() => Boolean(props.win?.id && props.win?.title));
+
+function minimize() {
+    if (!canMinimize.value) {
+        return;
+    }
+
+    windows.minimize({
+        id: props.win.id,
+        title: props.win.title,
+        subtitle: props.win.subtitle || '',
+        icon: props.win.icon || 'edit',
+        // Read now, not when the modal opened: what is parked is the typing as
+        // it stands at the click.
+        form: props.win.form ? props.win.form() : null,
+        path: route.fullPath,
+    });
+
+    // A form that vanishes is a form somebody thinks they have lost. It says
+    // where the typing went and how to get it back, once.
+    push({
+        title: t('shell.windows.savedToast'),
+        body: t('shell.windows.savedToastBody'),
+    });
+
+    emit('close');
+}
 
 useScrollLock(() => props.open);
 
@@ -71,8 +121,21 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown, true));
                     aria-modal="true"
                     :aria-label="title"
                 >
-                    <header class="a-card-h a-modal-h">
+                    <header
+                        class="a-card-h a-modal-h"
+                        :class="{ 'is-draft': canMinimize }"
+                    >
                         <h3>{{ title }}</h3>
+                        <button
+                            v-if="canMinimize"
+                            type="button"
+                            class="a-btn a-btn--sm a-modal-min"
+                            :title="t('shell.windows.minimizeFormHint')"
+                            @click="minimize"
+                        >
+                            <AIcon name="minimize" :size="16" />
+                            <span>{{ t('shell.windows.minimizeForm') }}</span>
+                        </button>
                         <button
                             type="button"
                             class="a-btn a-btn--ghost a-btn--sm a-modal-x"

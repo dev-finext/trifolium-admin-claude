@@ -16,11 +16,17 @@ import {
     EXTRACTION_RATIOS,
     ITEM_UOM_IDS,
 } from '@/config';
+import { applyDraft, recordMoved, snapshot, stampOf } from '@/lib/draft';
 import { useItemsStore } from '@/stores/items';
 
 const props = defineProps({
     /** The tree being edited; `{}` for a new one. */
     bom: { type: Object, required: true },
+    /**
+     * V3 — typing that was parked in the window tray and is coming back:
+     * `{ data, stamp }`. Null on an ordinary open.
+     */
+    draft: { type: Object, default: null },
 });
 
 const emit = defineEmits(['close', 'saved']);
@@ -52,6 +58,16 @@ const form = reactive({
     })),
     notes: { he: props.bom.notes?.he || '', en: props.bom.notes?.en || '' },
 });
+
+// V3 — typing that was parked comes back after the form is built, so the form's
+// own shape decides which fields exist and the draft only supplies values.
+if (props.draft?.data) {
+    applyDraft(form, props.draft.data);
+}
+
+const draftStale = computed(
+    () => Boolean(props.draft) && recordMoved(props.bom, props.draft.stamp),
+);
 
 const itemLabel = (item) =>
     `${loc({ he: item.names.he, en: item.names.en || item.names.he })} · ${item.code}`;
@@ -176,10 +192,27 @@ const title = computed(() =>
         ? t('items.bom.editor.newTitle')
         : t('items.bom.editor.editTitle', { name: loc(props.bom.name) }),
 );
+
+/** V3 — what this form is called when it waits in the tray, and what it keeps. */
+const win = computed(() => ({
+    id: `form:bom:${props.bom?.id || 'new'}`,
+    title: form.name.he || t('items.bom.editor.newTitle'),
+    subtitle: form.parentSku || '',
+    icon: 'edit',
+    form: () => ({
+        view: 'bom',
+        record: props.bom?.id || null,
+        data: snapshot(form),
+        stamp: stampOf(props.bom),
+    }),
+}));
 </script>
 
 <template>
-    <AModal open :title="title" :width="960" @close="emit('close')">
+    <AModal open :title="title" :width="960" :win="win" @close="emit('close')">
+        <p v-if="draftStale" class="a-warn">
+            {{ t('items.editor.draftStale') }}
+        </p>
         <div class="be">
             <div class="a-3col">
                 <div>

@@ -6,7 +6,7 @@
 //
 // The open item lives in the query string; the editor and the two small
 // dialogs are actions and stay local.
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
@@ -29,6 +29,7 @@ import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
+import { useWindowsStore } from '@/stores/windows';
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -36,6 +37,7 @@ const { push } = useToast();
 const router = useRouter();
 const dataset = useDatasetStore();
 const store = useItemsStore();
+const windows = useWindowsStore();
 const inventory = useInventoryStore();
 
 const view = useUrlState({ item: '', bom: '', batch: '' });
@@ -43,6 +45,41 @@ const view = useUrlState({ item: '', bom: '', batch: '' });
 /** Editors and dialogs are actions, not addresses. `{}` opens an empty form. */
 const editing = ref(null);
 const editingBom = ref(null);
+
+/**
+ * V3 — a form that was parked in the window tray, coming back.
+ *
+ * Reopening an editor cannot be a navigation, because an editor is not an
+ * address — so the tray navigates to this screen and leaves the window where
+ * the screen picks it up. Each editor claims its own by name, so the item card
+ * and the recipe do not take each other's.
+ */
+const itemDraft = ref(null);
+const bomDraft = ref(null);
+
+watch(
+    () => windows.pending,
+    () => {
+        const item = windows.claim('item');
+
+        if (item) {
+            itemDraft.value = item;
+            editing.value = item.record
+                ? store.rowBySku(item.record) || {}
+                : {};
+        }
+
+        const bom = windows.claim('bom');
+
+        if (bom) {
+            bomDraft.value = bom;
+            editingBom.value = bom.record
+                ? store.bomById(bom.record) || {}
+                : {};
+        }
+    },
+    { immediate: true },
+);
 const counting = ref(null);
 const removing = ref(null);
 
@@ -252,14 +289,16 @@ async function confirmRestore(reason) {
     <ItemEditor
         v-if="editing"
         :item="editing"
-        @close="editing = null"
+        :draft="itemDraft"
+        @close="((editing = null), (itemDraft = null))"
         @saved="onSaved"
     />
 
     <BomEditor
         v-if="editingBom"
         :bom="editingBom"
-        @close="editingBom = null"
+        :draft="bomDraft"
+        @close="((editingBom = null), (bomDraft = null))"
         @saved="onBomSaved"
     />
 

@@ -2,7 +2,7 @@
 // רכש — purchase orders, receipts against them, supplier delivery notes waiting
 // for their invoice, and the consumption report the next order is planned from.
 // Second-version material.
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
@@ -31,11 +31,13 @@ import { useUrlState } from '@/composables/useUrlState';
 import { useDatasetStore } from '@/stores/dataset';
 import { usePlanningStore } from '@/stores/planning';
 import { usePurchasingStore } from '@/stores/purchasing';
+import { useWindowsStore } from '@/stores/windows';
 
 const { t } = useI18n();
 const { push } = useToast();
 const dataset = useDatasetStore();
 const store = usePurchasingStore();
+const windows = useWindowsStore();
 const planning = usePlanningStore();
 const router = useRouter();
 
@@ -62,6 +64,30 @@ const producing = ref(false);
 
 const editing = ref(null);
 const receiving = ref(null);
+
+/**
+ * V3 — a purchase order form that was parked in the window tray, coming back.
+ *
+ * Reopening an editor cannot be a navigation, because an editor is not an
+ * address — so the tray navigates to this screen and leaves the window where
+ * the screen picks it up.
+ */
+const poDraft = ref(null);
+
+watch(
+    () => windows.pending,
+    () => {
+        const draft = windows.claim('po');
+
+        if (draft) {
+            poDraft.value = draft;
+            editing.value = draft.record
+                ? store.poById(draft.record) || {}
+                : {};
+        }
+    },
+    { immediate: true },
+);
 
 const counts = computed(() => ({
     open: store.purchaseOrders.filter((po) => po.state === 'open').length,
@@ -310,7 +336,8 @@ function onCancelled(po) {
     <PurchaseOrderEditor
         v-if="editing"
         :po="editing"
-        @close="editing = null"
+        :draft="poDraft"
+        @close="((editing = null), (poDraft = null))"
         @saved="onSaved"
     />
     <ReceiveAgainstPoModal

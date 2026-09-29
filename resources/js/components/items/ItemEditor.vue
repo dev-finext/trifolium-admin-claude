@@ -34,6 +34,7 @@ import {
     UOM_GROUP_IDS,
     VALUATION_METHOD_IDS,
 } from '@/config';
+import { applyDraft, recordMoved, snapshot, stampOf } from '@/lib/draft';
 import { ladderTable } from '@/lib/ladder';
 import { ils, num } from '@/lib/money';
 import { useCatalogStore } from '@/stores/catalog';
@@ -43,6 +44,11 @@ import { useItemsStore } from '@/stores/items';
 const props = defineProps({
     /** The item (or joined row) being edited; `{}` for a new one. */
     item: { type: Object, required: true },
+    /**
+     * V3 — typing that was parked in the window tray and is coming back:
+     * `{ data, stamp }`. Null on an ordinary open.
+     */
+    draft: { type: Object, default: null },
 });
 
 const emit = defineEmits(['close', 'saved']);
@@ -169,6 +175,23 @@ const form = reactive({
     saleText: source.saleText || '',
     priceGroup: source.priceGroup || '',
 });
+
+// V3 — typing that was parked comes back here, after the form has been built
+// from the record: the form's own shape decides which fields exist, and the
+// draft only supplies values for them.
+if (props.draft?.data) {
+    applyDraft(form, props.draft.data);
+}
+
+/**
+ * The record moved while the draft sat in the tray.
+ *
+ * Not blocked — the typing is the reader's and they may well still want it —
+ * but said, above the form, before anything is saved over somebody else's work.
+ */
+const draftStale = computed(
+    () => Boolean(props.draft) && recordMoved(props.item, props.draft.stamp),
+);
 
 // SAP's own rule: a batch-managed item is an inventory item.
 watch(
@@ -577,11 +600,30 @@ const title = computed(() =>
         ? t('items.editor.newTitle')
         : t('items.editor.editTitle', { name: props.item.names.he }),
 );
+
+/** V3 — what this form is called when it waits in the tray, and what it keeps. */
+const win = computed(() => ({
+    id: `form:item:${props.item?.sku || 'new'}`,
+    title: isNew.value
+        ? t('items.editor.newTitle')
+        : form.names.he || form.code,
+    subtitle: form.code || '',
+    icon: 'edit',
+    form: () => ({
+        view: 'item',
+        record: props.item?.sku || null,
+        data: snapshot(form),
+        stamp: stampOf(props.item),
+    }),
+}));
 </script>
 
 <template>
-    <AModal open :title="title" :width="1040" @close="emit('close')">
+    <AModal open :title="title" :width="1040" :win="win" @close="emit('close')">
         <div class="ie">
+            <p v-if="draftStale" class="a-warn ie-stale">
+                {{ t('items.editor.draftStale') }}
+            </p>
             <!-- general: SAP's header and General tab -->
             <section>
                 <div class="a-sect-t">{{ t('items.editor.general') }}</div>

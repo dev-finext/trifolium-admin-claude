@@ -12,6 +12,7 @@ import ASelect from '@/components/ui/ASelect.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { CURRENCY_IDS, ITEM_UOM_IDS, PO_RULES } from '@/config';
 import { isoDaysAgo } from '@/lib/dates';
+import { applyDraft, recordMoved, snapshot, stampOf } from '@/lib/draft';
 import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
 import { usePurchasingStore } from '@/stores/purchasing';
@@ -19,6 +20,11 @@ import { usePurchasingStore } from '@/stores/purchasing';
 const props = defineProps({
     /** The order being edited; `{}` for a new one. */
     po: { type: Object, required: true },
+    /**
+     * V3 — typing that was parked in the window tray and is coming back:
+     * `{ data, stamp }`. Null on an ordinary open.
+     */
+    draft: { type: Object, default: null },
 });
 
 const emit = defineEmits(['close', 'saved']);
@@ -46,6 +52,16 @@ const form = reactive({
         received: line.received || 0,
     })),
 });
+
+// V3 — typing that was parked comes back after the form is built, so the form's
+// own shape decides which fields exist and the draft only supplies values.
+if (props.draft?.data) {
+    applyDraft(form, props.draft.data);
+}
+
+const draftStale = computed(
+    () => Boolean(props.draft) && recordMoved(props.po, props.draft.stamp),
+);
 
 const supplierOptions = computed(() => [
     { value: '', label: t('purchasing.editor.pickSupplier') },
@@ -157,11 +173,28 @@ const title = computed(() =>
         ? t('purchasing.editor.newTitle')
         : t('purchasing.editor.editTitle', { id: props.po.id }),
 );
+
+/** V3 — what this form is called when it waits in the tray, and what it keeps. */
+const win = computed(() => ({
+    id: `form:po:${props.po?.id || 'new'}`,
+    title: props.po?.id || t('purchasing.editor.newTitle'),
+    subtitle: loc(store.supplierByCode(form.supplierCode)?.name) || '',
+    icon: 'edit',
+    form: () => ({
+        view: 'po',
+        record: props.po?.id || null,
+        data: snapshot(form),
+        stamp: stampOf(props.po),
+    }),
+}));
 </script>
 
 <template>
-    <AModal open :title="title" :width="960" @close="emit('close')">
+    <AModal open :title="title" :width="960" :win="win" @close="emit('close')">
         <div class="pe">
+            <p v-if="draftStale" class="a-warn">
+                {{ t('items.editor.draftStale') }}
+            </p>
             <div class="a-3col">
                 <div>
                     <label class="a-lbl" :for="`${uid}-sup`"

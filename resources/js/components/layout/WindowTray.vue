@@ -32,7 +32,9 @@ const chips = computed(() => windows.chips);
 const overflow = computed(() => windows.overflow);
 
 function restore(id) {
-    const row = windows.take(id);
+    // `resume` takes the window off the tray and, when it is a form, leaves it
+    // where the screen that owns the editor will pick it up.
+    const row = windows.resume(id);
 
     open.value = false;
 
@@ -89,6 +91,7 @@ onBeforeUnmount(() => {
             :key="win.id"
             type="button"
             class="a-tray-chip"
+            :class="{ 'is-draft': Boolean(win.form) }"
             :title="
                 win.subtitle
                     ? `${win.title} · ${win.subtitle}`
@@ -134,6 +137,7 @@ onBeforeUnmount(() => {
                     <button
                         type="button"
                         class="a-tray-row"
+                        :class="{ 'is-draft': Boolean(win.form) }"
                         @click="restore(win.id)"
                     >
                         <AIcon :name="win.icon" :size="16" />
@@ -143,6 +147,9 @@ onBeforeUnmount(() => {
                                 win.subtitle
                             }}</span>
                         </span>
+                        <span v-if="win.form" class="a-tray-draft">{{
+                            t('shell.windows.draft')
+                        }}</span>
                     </button>
                     <button
                         type="button"

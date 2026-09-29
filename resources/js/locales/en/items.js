@@ -399,6 +399,8 @@ export default {
         priceGroupFixed: 'Fixed price — no list',
         priceGroupHint:
             'The list sets only the discount ladder; the unit price is the item’s own',
+        draftStale:
+            'The record changed after this draft was parked. Saving will overwrite that change — check before you do.',
         newTitle: 'New item',
         editTitle: 'Edit item · {name}',
         createConfirm: 'Create item',

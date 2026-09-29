@@ -535,6 +535,34 @@ textarea {
     color: var(--a-accent-2);
 }
 
+/* A parked form carries unsaved typing, and the tray is where you choose
+   between windows — so that is where the difference has to be readable. */
+.a-tray-chip.is-draft {
+    border-color: var(--a-amber-line);
+    background: var(--a-amber-bg);
+    color: var(--a-amber);
+}
+
+.a-tray-chip.is-draft:hover {
+    border-color: var(--a-amber);
+    color: var(--a-amber);
+}
+
+.a-tray-row.is-draft .a-tray-row-t {
+    color: var(--a-amber);
+}
+
+.a-tray-draft {
+    flex: none;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--a-amber-bg);
+    border: 1px solid var(--a-amber-line);
+    color: var(--a-amber);
+    font-size: 11px;
+    font-weight: 700;
+}
+
 .a-tray-chip:focus-visible {
     outline: 2px solid var(--a-accent);
     outline-offset: 1px;
@@ -1552,6 +1580,50 @@ table.a-table {
 }
 .a-modal-x {
     margin-inline-start: auto;
+}
+
+/* ---- V3 — a form is a different kind of window --------------------------
+   A record you were reading and a form with unsaved typing in it are not the
+   same thing to come back to, so they do not look the same. Records keep the
+   console's own grey-green; a draft is warm. The tint is the same one the
+   console already uses for "needs attention, nothing is broken", which is
+   exactly what an unfinished form is. */
+.a-modal-h.is-draft {
+    background: var(--a-amber-bg);
+    border-bottom: 1px solid var(--a-amber-line);
+}
+
+/* A draft that came back to a record which has moved on since. It warns and
+   does not block: the typing belongs to the reader, and only they can say
+   whether it still applies. */
+.a-warn {
+    margin: 0 0 18px;
+    padding: 10px 14px;
+    border: 1px solid var(--a-amber-line);
+    border-radius: 8px;
+    background: var(--a-amber-bg);
+    color: var(--a-amber);
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.a-modal-min {
+    margin-inline-start: auto;
+    gap: 6px;
+    border-color: var(--a-amber-line);
+    background: var(--a-surface);
+    color: var(--a-amber);
+}
+
+.a-modal-min:hover {
+    border-color: var(--a-amber);
+    background: var(--a-surface);
+}
+
+/* The close button gives up the auto margin to the control before it, so the
+   two sit together as one cluster rather than at opposite ends. */
+.a-modal-min ~ .a-modal-x {
+    margin-inline-start: 0;
 }
 .a-modal-b {
     padding: 22px;

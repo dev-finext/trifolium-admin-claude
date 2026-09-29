@@ -396,6 +396,8 @@ export default {
         priceGroupFixed: 'מחיר קבוע — ללא מחירון',
         priceGroupHint:
             'המחירון קובע רק את סולם ההנחה; המחיר ליחידה הוא של הפריט',
+        draftStale:
+            'הרשומה עודכנה מאז ששמרתם את הטיוטה. שמירה תדרוס את מה שהשתנה — בדקו לפני.',
         newTitle: 'פריט חדש',
         editTitle: 'עריכת פריט · {name}',
         createConfirm: 'הקם פריט',

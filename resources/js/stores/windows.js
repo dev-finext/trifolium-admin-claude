@@ -17,12 +17,21 @@
 // modelled on does not: the list is in localStorage, so the windows left open
 // on Thursday are still there on Sunday.
 //
-// What is *not* here: a half-typed form. Editors in this console are modals,
-// and `ItemsView` says why — "Editors and dialogs are actions, not addresses".
-// An address can be restored; a form in the middle of being typed cannot, not
-// without saving the typing itself and risking putting a stale draft back over
-// a record somebody else has since changed. Minimising is offered on records,
-// and only on records.
+// A form is the other kind of window, and it needs more than an address.
+// Editors here are modals, and `ItemsView` says why — "Editors and dialogs are
+// actions, not addresses" — so reopening one cannot be a navigation. A parked
+// form therefore carries three things: the address of the screen it was opened
+// from, the typing itself, and the stamp the record carried when it was parked.
+//
+// The stamp is the part that keeps this honest. A draft put back over a record
+// somebody has since changed would silently undo their work, so the stamp
+// travels with the draft and the editor compares it on the way back in. It does
+// not block — the typing is the reader's and they may still want it — it says
+// so, above the form, before anything is saved.
+//
+// Drafts are marked apart from records everywhere they appear, because "a
+// window I was reading" and "a window with unsaved work in it" are not the same
+// thing to come back to.
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -67,6 +76,16 @@ function save(rows) {
 export const useWindowsStore = defineStore('windows', () => {
     const rows = ref(read());
 
+    /**
+     * A form on its way back in.
+     *
+     * The tray navigates to the screen the editor was opened from and leaves
+     * the window here; the screen picks it up and opens the editor with the
+     * draft. It is a handover and not an address, which is what keeps a pasted
+     * link from opening somebody else's half-typed form.
+     */
+    const pending = ref(null);
+
     /** Newest first, because the thing you parked last is the thing you want. */
     const list = computed(() => rows.value);
 
@@ -90,13 +109,32 @@ export const useWindowsStore = defineStore('windows', () => {
      *
      * The same record parked twice is one window, moved back to the front —
      * two chips for one item would be two ways to reach the same place.
+     *
+     * `form` is what makes it a draft rather than a record: `{ view, data,
+     * stamp }` — which editor to reopen, the typing, and what the record's own
+     * last-changed stamp was at the moment it was parked.
      */
-    function minimize({ id, path, title, subtitle = '', icon = 'file_text' }) {
+    function minimize({
+        id,
+        path,
+        title,
+        subtitle = '',
+        icon = 'file_text',
+        form = null,
+    }) {
         if (!id || !path) {
             return null;
         }
 
-        const row = { id, path, title, subtitle, icon, at: Date.now() };
+        const row = {
+            id,
+            path,
+            title,
+            subtitle,
+            icon,
+            form: form || null,
+            at: Date.now(),
+        };
         const rest = rows.value.filter((one) => one.id !== id);
 
         commit([row, ...rest].slice(0, WINDOW_LIMIT));
@@ -119,7 +157,54 @@ export const useWindowsStore = defineStore('windows', () => {
 
     function clear() {
         commit([]);
+        pending.value = null;
     }
 
-    return { list, count, chips, overflow, has, minimize, take, drop, clear };
+    /**
+     * Hand a parked form to the screen that can reopen it.
+     *
+     * The window comes off the tray here rather than when the editor opens: it
+     * is no longer waiting, it is on its way, and a chip that outlived the
+     * click would be a second copy of the same draft.
+     */
+    function resume(id) {
+        const row = take(id);
+
+        pending.value = row?.form ? row : null;
+
+        return row;
+    }
+
+    /**
+     * A screen takes the form that belongs to it, if one is waiting.
+     *
+     * Named rather than positional, so a screen with two editors on it — the
+     * item card and the recipe — each take their own and leave the other.
+     */
+    function claim(view) {
+        const row = pending.value;
+
+        if (!row || row.form?.view !== view) {
+            return null;
+        }
+
+        pending.value = null;
+
+        return row.form;
+    }
+
+    return {
+        list,
+        count,
+        chips,
+        overflow,
+        pending,
+        has,
+        minimize,
+        take,
+        drop,
+        clear,
+        resume,
+        claim,
+    };
 });
