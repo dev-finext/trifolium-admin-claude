@@ -1599,20 +1599,18 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
 
     /** Remove an ingredient that nothing depends on (see `ingredientBlock`). */
+    /**
+     * Archive a stock row. Its batches and its movements stay exactly as they
+     * are — they are the history of material that really moved.
+     */
     async function removeIngredient(sku, reason = '') {
-        const rows = bag('stock');
-        const index = rows.findIndex((row) => row.sku === sku);
+        const row = bag('stock').find((one) => one.sku === sku);
 
-        if (index < 0) {
+        if (!row) {
             return false;
         }
 
-        const [row] = rows.splice(index, 1);
-        const herbs = dataset.data.herbsById;
-
-        if (row.herbId && herbs) {
-            delete herbs[row.herbId];
-        }
+        row.archived = { on: moment(), by: dataset.me?.name || null, reason };
 
         writeLog({
             act: 'ingredient_delete',
@@ -1621,7 +1619,29 @@ export const useInventoryStore = defineStore('inventory', () => {
             from: optionKey(row.name),
             to: reason,
         });
-        await persist(`inventory/ingredients/${sku}`, { reason }, 'DELETE');
+        await persist(`inventory/ingredients/${sku}`, row, 'PUT');
+
+        return true;
+    }
+
+    /** Take a stock row back out of the archive. */
+    async function restoreIngredient(sku, reason = '') {
+        const row = bag('stock').find((one) => one.sku === sku);
+
+        if (!row?.archived) {
+            return false;
+        }
+
+        row.archived = null;
+
+        writeLog({
+            act: 'ingredient_restore',
+            entType: 'catalog_item',
+            ent: sku,
+            from: optionKey(row.name),
+            to: reason,
+        });
+        await persist(`inventory/ingredients/${sku}`, row, 'PUT');
 
         return true;
     }
@@ -1679,5 +1699,6 @@ export const useInventoryStore = defineStore('inventory', () => {
         ingredientBlock,
         saveIngredient,
         removeIngredient,
+        restoreIngredient,
     };
 });

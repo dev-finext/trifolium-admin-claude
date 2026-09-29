@@ -14,6 +14,7 @@ import ANum from '@/components/ui/ANum.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { num } from '@/lib/money';
+import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
 
 const props = defineProps({
@@ -25,6 +26,7 @@ const emit = defineEmits(['close', 'edit', 'open-item', 'produce', 'removed']);
 const { t } = useI18n();
 const { loc } = useLocalized();
 const store = useItemsStore();
+const dataset = useDatasetStore();
 
 const removing = ref(false);
 
@@ -228,6 +230,7 @@ async function confirmRemove(reason) {
                     t('items.bom.remove.effectLog'),
                 ]"
                 :confirm-label="t('items.bom.remove.confirm')"
+                :pin="dataset.session?.pin || true"
                 @close="removing = false"
                 @confirm="confirmRemove"
             />

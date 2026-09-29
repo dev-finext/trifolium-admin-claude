@@ -27,7 +27,12 @@ import {
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { CURRENCY_SYMBOL, ITEM_FLAG_IDS } from '@/config';
+import {
+    archivedOnly,
+    CURRENCY_SYMBOL,
+    ITEM_FLAG_IDS,
+    pickArchiveView,
+} from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
 import { ils, num } from '@/lib/money';
@@ -56,12 +61,29 @@ const drawerOpen = ref(false);
 const savedViews = ref(null);
 
 const state = useUrlState({
+    arch: '',
     q: '',
     ...filterDefaults(SPEC),
     ...PAGE_DEFAULTS,
 });
 
-const all = computed(() => store.rows);
+/**
+ * Live cards, or the archive.
+ *
+ * Nothing in the console is deleted — an item that is removed stops appearing
+ * here and stays in the database. This is the door to it, and it opens both
+ * ways: an archived card can be put back.
+ */
+const archiveView = computed(() => (state.arch ? 'archived' : 'live'));
+
+const all = computed(() => pickArchiveView(store.rows, archiveView.value));
+
+const archivedCount = computed(() => archivedOnly(store.rows).length);
+
+function toggleArchive() {
+    state.arch = state.arch ? '' : '1';
+    state.pg = 1;
+}
 
 function tally(predicate) {
     return all.value.filter(predicate).length;
@@ -358,6 +380,20 @@ function exportRows() {
                         ? t('filters.openWith', { n: filters.active.length })
                         : t('filters.open')
                 }}
+            </AButton>
+            <AButton
+                icon="db"
+                :class="{ 'is-on': state.arch }"
+                @click="toggleArchive"
+            >
+                {{
+                    state.arch
+                        ? t('items.archive.back')
+                        : t('items.archive.open')
+                }}
+                <template v-if="!state.arch && archivedCount">
+                    · {{ archivedCount }}
+                </template>
             </AButton>
             <AButton
                 sm

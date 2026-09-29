@@ -300,6 +300,7 @@ const cell = (value) => {
             :title="t('database.rebuildTitle')"
             :body="t('database.rebuildBody')"
             :confirm-label="t('database.rebuild')"
+            :pin="dataset.session?.pin || true"
             @confirm="rebuild"
             @close="asking = false"
         />

@@ -109,6 +109,20 @@ export default {
         site: 'Consumer site',
         quality: 'Card completeness',
     },
+    archive: {
+        open: 'View the archive',
+        back: 'Back to the live items',
+        badge: 'Archived',
+        note: 'This item is archived — it does not appear in the lists and it was not deleted. Every batch, movement and document that names it stays exactly as it is.',
+        restore: 'Restore from the archive',
+        restoreTitle: 'Restore {name} from the archive',
+        restoreBody: 'The item goes back into the live list.',
+        restored: 'The item was restored',
+        col: 'Archived on',
+        empty: 'The archive is empty',
+        emptySub: 'An item moved to the archive appears here.',
+    },
+
     filter: {
         allFamilies: 'All categories',
         batchState: {

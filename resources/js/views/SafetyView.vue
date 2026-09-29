@@ -27,6 +27,7 @@ import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { saveCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
+import { useDatasetStore } from '@/stores/dataset';
 import {
     CSV_COLUMNS,
     interactionsToCsv,
@@ -41,6 +42,7 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
 const store = useSafetyStore();
+const dataset = useDatasetStore();
 
 const view = useUrlState({ tab: 'list', edit: '' });
 
@@ -262,6 +264,7 @@ function onApproved({ order, by }) {
             t('safety.remove.effect.orders'),
             t('safety.remove.effect.log'),
         ]"
+        :pin="dataset.session?.pin || true"
         @close="removing = null"
         @confirm="remove"
     />

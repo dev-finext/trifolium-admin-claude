@@ -182,6 +182,20 @@ async function confirmRemove(reason) {
         bad: true,
     });
 }
+
+/** Back out of the archive — and behind the same code that put it there. */
+const restoring = ref(null);
+
+async function confirmRestore(reason) {
+    const row = restoring.value;
+
+    restoring.value = null;
+    await store.restoreItem(row.sku, reason);
+    push({
+        title: t('items.archive.restored'),
+        body: itemName(row),
+    });
+}
 </script>
 
 <template>
@@ -216,6 +230,7 @@ async function confirmRemove(reason) {
         @produce="produce"
         @count="counting = $event"
         @remove="removing = $event"
+        @restore="restoring = $event"
     />
 
     <BatchTraceDrawer
@@ -256,6 +271,21 @@ async function confirmRemove(reason) {
     />
 
     <ConfirmDialog
+        :open="Boolean(restoring)"
+        :title="
+            restoring
+                ? t('items.archive.restoreTitle', { name: itemName(restoring) })
+                : ''
+        "
+        :body="t('items.archive.restoreBody')"
+        :confirm-label="t('items.archive.restore')"
+        reason
+        :pin="dataset.session?.pin || true"
+        @close="restoring = null"
+        @confirm="confirmRestore"
+    />
+
+    <ConfirmDialog
         :open="Boolean(removing)"
         :title="t('items.card.removeTitle')"
         :body="
@@ -271,6 +301,7 @@ async function confirmRemove(reason) {
         :confirm-label="t('items.card.removeConfirm')"
         danger
         reason
+        :pin="dataset.session?.pin || true"
         @close="removing = null"
         @confirm="removeBlock ? (removing = null) : confirmRemove($event)"
     />

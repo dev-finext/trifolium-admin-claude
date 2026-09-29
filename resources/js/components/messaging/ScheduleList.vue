@@ -19,6 +19,7 @@ import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { num } from '@/lib/money';
+import { useDatasetStore } from '@/stores/dataset';
 import { useMessagingStore } from '@/stores/messaging';
 
 const emit = defineEmits(['compose']);
@@ -27,6 +28,7 @@ const { t } = useI18n();
 const { loc, searchHaystack } = useLocalized();
 const { push } = useToast();
 const messaging = useMessagingStore();
+const dataset = useDatasetStore();
 
 const view = useUrlState({ sq: '', sch: '', ssrc: '' });
 
@@ -320,6 +322,7 @@ function confirm(reason) {
             :confirm-label="dialog?.confirmLabel || ''"
             :danger="dialog?.danger || false"
             :reason="dialog?.reason || false"
+            :pin="dataset.session?.pin || true"
             @confirm="confirm"
             @close="ask = null"
         />

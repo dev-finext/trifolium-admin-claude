@@ -18,8 +18,9 @@
 import { defineStore } from 'pinia';
 import { computed, ref, watch } from 'vue';
 
+import { liveOnly } from '@/config';
 import { persist } from '@/data/source';
-import { stamp } from '@/lib/dates';
+import { isoDaysAgo, stamp } from '@/lib/dates';
 import { searchHaystack } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
 import { useOrdersStore } from '@/stores/orders';
@@ -101,7 +102,9 @@ export const useSafetyStore = defineStore('safety', () => {
     const dataset = useDatasetStore();
     const orders = useOrdersStore();
 
-    const interactions = computed(() => dataset.data.interactions || []);
+    const interactions = computed(() =>
+        liveOnly(dataset.data.interactions || []),
+    );
     const herbs = computed(() => dataset.data.herbs || []);
     const herbsById = computed(() => dataset.data.herbsById || {});
     const herbWarnings = computed(() => dataset.data.herbWarnings || {});
@@ -333,9 +336,21 @@ export const useSafetyStore = defineStore('safety', () => {
             return null;
         }
 
-        const [removed] = rows.splice(at, 1);
+        // Archived, not removed: a documented interaction is a clinical
+        // record, and an order approved against it points here.
+        const removed = rows[at];
 
-        await persist(`safety/interactions/${id}`, { why }, 'DELETE');
+        removed.archived = {
+            on: {
+                daysAgo: 0,
+                iso: isoDaysAgo(0),
+                stamp: stamp(0),
+            },
+            by: dataset.me?.name || null,
+            reason: why,
+        };
+
+        await persist(`safety/interactions/${id}`, removed, 'PUT');
 
         return removed;
     }

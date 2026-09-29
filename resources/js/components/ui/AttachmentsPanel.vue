@@ -22,6 +22,7 @@ import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { ATTACHMENT_RULES } from '@/config';
+import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
 
 const props = defineProps({
@@ -39,6 +40,7 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
 const store = useItemsStore();
+const dataset = useDatasetStore();
 
 const input = ref(null);
 const removing = ref(null);
@@ -256,6 +258,7 @@ async function confirmRemove(reason) {
                 })
             "
             :confirm-label="t('attachments.removeConfirm')"
+            :pin="dataset.session?.pin || true"
             @close="removing = null"
             @confirm="confirmRemove"
         />

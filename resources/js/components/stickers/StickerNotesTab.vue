@@ -16,6 +16,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
+import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
 import { useStickersStore } from '@/stores/stickers';
 
@@ -23,6 +24,7 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
 const stickers = useStickersStore();
+const dataset = useDatasetStore();
 const items = useItemsStore();
 
 const prepTypes = computed(() => items.prepTypes);
@@ -271,6 +273,7 @@ const typeCount = (draft) =>
                     })
                 "
                 :confirm-label="t('stickers.notes.remove')"
+                :pin="dataset.session?.pin || true"
                 @close="removing = null"
                 @confirm="confirmRemove"
             />

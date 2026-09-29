@@ -13,8 +13,9 @@ import { computed } from 'vue';
 import {
     DEFAULT_WAREHOUSE,
     familyOfCode,
-    ITEM_UOMS,
     ITEM_FLAG_IDS,
+    ITEM_UOMS,
+    liveOnly,
     TERMINAL_STATUS_IDS,
 } from '@/config';
 import { persist } from '@/data/source';
@@ -240,8 +241,8 @@ export const useItemsStore = defineStore('items', () => {
 
     const items = computed(() => list('items'));
     const prepTypes = computed(() => list('prepTypes'));
-    const boms = computed(() => list('boms'));
-    const attachments = computed(() => list('attachments'));
+    const boms = computed(() => liveOnly(list('boms')));
+    const attachments = computed(() => liveOnly(list('attachments')));
     const siteCategories = computed(() => list('siteCategories'));
 
     // ---- lookups -------------------------------------------------------------
@@ -365,6 +366,10 @@ export const useItemsStore = defineStore('items', () => {
     /**
      * Every item with its stock figures and its resolved suppliers — the row
      * the screen lists and the card opens.
+     */
+    /**
+     * Every item card, archived ones included, joined to its stock, product and
+     * counts. A screen picks which it shows; nothing here decides for it.
      */
     const rows = computed(() =>
         items.value.map((item) => {
@@ -842,19 +847,26 @@ export const useItemsStore = defineStore('items', () => {
      * Delete an item and its stock row together. Refused while anything still
      * depends on it — the caller shows `itemBlock()` and never gets here.
      */
+    /**
+     * Archive an item card.
+     *
+     * Not a delete: the card stops appearing in the lists and stays where it
+     * is. An item code is written on batches, on purchase orders and on ten
+     * years of movements, and a row that vanishes turns all of those into
+     * dangling references.
+     */
     async function removeItem(sku, reason = '') {
         if (itemBlock(sku)) {
             throw new Error(`Item ${sku} is still in use`);
         }
 
-        const rows = bag('items');
-        const index = rows.findIndex((row) => row.sku === sku);
+        const item = bag('items').find((row) => row.sku === sku);
 
-        if (index < 0) {
+        if (!item) {
             return false;
         }
 
-        const [item] = rows.splice(index, 1);
+        item.archived = { on: moment(), by: dataset.me?.name || null, reason };
 
         if (inventory.itemBySku(sku)) {
             await inventory.removeIngredient(sku, reason);
@@ -867,7 +879,33 @@ export const useItemsStore = defineStore('items', () => {
             from: item.names.he,
             to: reason,
         });
-        await persist(`items/${sku}`, { reason }, 'DELETE');
+        await persist(`items/${sku}`, item, 'PUT');
+
+        return true;
+    }
+
+    /** Take an item card back out of the archive. */
+    async function restoreItem(sku, reason = '') {
+        const item = bag('items').find((row) => row.sku === sku);
+
+        if (!item?.archived) {
+            return false;
+        }
+
+        item.archived = null;
+
+        if (inventory.restoreIngredient) {
+            await inventory.restoreIngredient(sku, reason);
+        }
+
+        writeLog({
+            act: 'item_restore',
+            entType: 'catalog_item',
+            ent: sku,
+            from: item.names.he,
+            to: reason,
+        });
+        await persist(`items/${sku}`, item, 'PUT');
 
         return true;
     }
@@ -992,14 +1030,15 @@ export const useItemsStore = defineStore('items', () => {
     }
 
     async function removeBom(id, reason = '') {
-        const rows = bag('boms');
-        const index = rows.findIndex((row) => row.id === id);
+        const bom = bag('boms').find((row) => row.id === id);
 
-        if (index < 0) {
+        if (!bom) {
             return false;
         }
 
-        const [bom] = rows.splice(index, 1);
+        // Archived, not deleted: a production order made months ago names this
+        // recipe, and the run it describes really happened.
+        bom.archived = { on: moment(), by: dataset.me?.name || null, reason };
 
         writeLog({
             act: 'bom_delete',
@@ -1008,7 +1047,7 @@ export const useItemsStore = defineStore('items', () => {
             from: nameText(bom.name),
             to: reason,
         });
-        await persist(`boms/${id}`, { reason }, 'DELETE');
+        await persist(`boms/${id}`, bom, 'PUT');
 
         return true;
     }
@@ -1056,14 +1095,13 @@ export const useItemsStore = defineStore('items', () => {
     }
 
     async function removeAttachment(id, reason = '') {
-        const rows = bag('attachments');
-        const index = rows.findIndex((row) => row.id === id);
+        const file = bag('attachments').find((row) => row.id === id);
 
-        if (index < 0) {
+        if (!file) {
             return false;
         }
 
-        const [file] = rows.splice(index, 1);
+        file.archived = { on: moment(), by: dataset.me?.name || null, reason };
 
         if (sessionUrls.has(id)) {
             URL.revokeObjectURL(sessionUrls.get(id));
@@ -1077,7 +1115,7 @@ export const useItemsStore = defineStore('items', () => {
             from: file.name,
             to: reason,
         });
-        await persist(`attachments/${id}`, { reason }, 'DELETE');
+        await persist(`attachments/${id}`, file, 'PUT');
 
         return true;
     }
@@ -1117,6 +1155,7 @@ export const useItemsStore = defineStore('items', () => {
         recordCount,
         itemBlock,
         removeItem,
+        restoreItem,
         savePrepType,
         saveBom,
         removeBom,

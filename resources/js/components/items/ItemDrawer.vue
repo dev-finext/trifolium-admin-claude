@@ -44,6 +44,7 @@ const emit = defineEmits([
     'produce',
     'count',
     'remove',
+    'restore',
 ]);
 
 const { t } = useI18n();
@@ -160,6 +161,9 @@ const categories = computed(() =>
                             <AChip v-if="row.groupName" :dot="false">{{
                                 row.groupName
                             }}</AChip>
+                            <AChip v-if="row.archived" tone="red" size="sm">
+                                {{ t('items.archive.badge') }}
+                            </AChip>
                             <AChip v-if="row.frozen" tone="blue" size="sm">
                                 {{ t('items.card.frozenYes') }}
                             </AChip>
@@ -189,6 +193,7 @@ const categories = computed(() =>
                     </div>
                     <div class="a-dhead-a">
                         <AButton
+                            v-if="!row.archived"
                             kind="p"
                             sm
                             icon="edit"
@@ -197,6 +202,16 @@ const categories = computed(() =>
                             {{ t('items.action.edit') }}
                         </AButton>
                         <AButton
+                            v-else
+                            kind="p"
+                            sm
+                            icon="refresh"
+                            @click="emit('restore', row)"
+                        >
+                            {{ t('items.archive.restore') }}
+                        </AButton>
+                        <AButton
+                            v-if="!row.archived"
                             sm
                             kind="ghost"
                             icon="trash"
@@ -210,6 +225,10 @@ const categories = computed(() =>
                     </div>
                 </div>
             </div>
+
+            <p v-if="row.archived" class="a-note a-note--warn arch-note">
+                {{ t('items.archive.note') }}
+            </p>
 
             <div class="card-grid">
                 <!-- general: SAP's header and General tab -->
@@ -759,6 +778,10 @@ const categories = computed(() =>
 </template>
 
 <style scoped>
+.arch-note {
+    margin: 0 0 14px;
+}
+
 .a-dhead-h {
     margin: 0;
     font-size: 24px;

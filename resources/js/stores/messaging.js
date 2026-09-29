@@ -12,7 +12,7 @@
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
-import { DEFAULT_QUIET_HOURS, TEMPLATE_VARS } from '@/config';
+import { DEFAULT_QUIET_HOURS, liveOnly, TEMPLATE_VARS } from '@/config';
 import { persist } from '@/data/source';
 import i18n from '@/i18n';
 import { hm, isoDaysAgo, shift, stamp } from '@/lib/dates';
@@ -213,7 +213,7 @@ export const useMessagingStore = defineStore('messaging', () => {
 
     const templates = computed(() => collection('messageTemplates'));
     const triggers = computed(() => collection('messageTriggers'));
-    const scheduled = computed(() => collection('scheduledMessages'));
+    const scheduled = computed(() => liveOnly(collection('scheduledMessages')));
     const messages = computed(() => dataset.messages);
     const failedMessages = computed(() => dataset.failedMessages);
 
@@ -535,13 +535,20 @@ export const useMessagingStore = defineStore('messaging', () => {
 
     /** Cancel a queued batch. The reason travels with the change. */
     function cancelScheduled(id, reason) {
-        const row = dequeue(id);
+        const rows = dataset.data.scheduledMessages;
+        const row = Array.isArray(rows)
+            ? rows.find((one) => one.id === id)
+            : null;
 
         if (!row) {
             return null;
         }
 
-        persist(`messaging/scheduled/${id}`, { reason }, 'DELETE');
+        // A cancelled batch is archived rather than dropped — somebody asked
+        // for it and somebody stopped it, and both are worth being able to see.
+        row.archived = { on: isoDaysAgo(0), by: null, reason };
+
+        persist(`messaging/scheduled/${id}`, row, 'PUT');
 
         return row;
     }
