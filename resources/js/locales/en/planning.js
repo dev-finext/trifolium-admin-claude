@@ -205,11 +205,11 @@ export default {
         noun: 'items',
         count: 'items · of {total}',
         field: {
-            kcover: 'Months of stock',
+            kcover: 'Cover state',
             kplan: 'Plan state',
             kgroup: 'Item group',
             ksup: 'Supplier',
-            kmonths: 'Months of stock',
+            kmonths: 'Months of stock (range)',
             kmonthly: 'Consumption per month',
             konhand: 'In stock',
         },

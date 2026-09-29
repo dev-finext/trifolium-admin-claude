@@ -230,10 +230,15 @@ export const PLANNING_FILTER_FIELDS = [
         values: (row) => [row.planState || 'none'],
     },
     {
+        // SAP's item group. As a string, because the URL brings every filter
+        // value back as one — a number here matched nothing at all.
         key: 'kgroup',
         group: 'what',
         kind: 'set',
-        values: (row) => [row.group],
+        values: (row) =>
+            row.group === null || row.group === undefined
+                ? []
+                : [String(row.group)],
     },
     {
         key: 'ksup',

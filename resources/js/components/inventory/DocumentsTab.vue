@@ -267,12 +267,18 @@ function moved(doc) {
 
         <APagination v-model:page="state.pg" :size="state.ps" :total="total" />
 
+        <!-- `@patch` is what makes a tick land: the drawer reports the new
+             filter values and the screen writes them into its state. Without
+             it every option counted correctly and nothing ever filtered. -->
         <FilterDrawer
             :open="drawerOpen"
             :spec="spec"
             :filters="state"
             :rows="searched"
+            :result-count="rows.length"
             @close="drawerOpen = false"
+            @clear="clear"
+            @patch="filters.patch"
         />
     </div>
 </template>

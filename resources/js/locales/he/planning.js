@@ -199,11 +199,11 @@ export default {
         noun: 'פריטים',
         count: 'פריטים · מתוך {total}',
         field: {
-            kcover: 'חודשי מלאי',
+            kcover: 'מצב חודשי המלאי',
             kplan: 'מצב התכנון',
             kgroup: 'קבוצת פריט',
             ksup: 'ספק',
-            kmonths: 'חודשי מלאי',
+            kmonths: 'חודשי מלאי (טווח)',
             kmonthly: 'צריכה לחודש',
             konhand: 'כמות במלאי',
         },

@@ -523,6 +523,13 @@ export default {
         purchase_order: 'הזמנת רכש',
     },
     docs: {
+        filter: {
+            field: {
+                type: 'סוג המסמך',
+                base: 'מקור',
+                wh: 'מחסן',
+            },
+        },
         noun: 'מסמכים',
         count: 'מסמכים · מתוך {total}',
         search: 'מספר מסמך · הוראת ייצור · ספק · פריט · הערה',

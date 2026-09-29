@@ -151,7 +151,11 @@ export const ITEM_FILTER_FIELDS = [
     {
         // The ladder an item is priced by: a group it names, the one its code
         // prefix resolves to, or none — a fixed price. Labelled by the screen.
-        key: 'pg',
+        //
+        // Named `ladder` and not `pg`: every paging screen keeps its page
+        // number in `pg`, so a filter by that name wrote its value into the
+        // pager. The facet counted correctly and the list never moved.
+        key: 'ladder',
         group: 'supply',
         kind: 'set',
         values: (row) => [

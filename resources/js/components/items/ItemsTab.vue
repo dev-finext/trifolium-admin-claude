@@ -150,7 +150,7 @@ const spec = computed(() => ({
             return { ...field, optionLabel: supplierLabel };
         }
 
-        if (field.key === 'pg') {
+        if (field.key === 'ladder') {
             return { ...field, optionLabel: priceGroupLabel };
         }
 

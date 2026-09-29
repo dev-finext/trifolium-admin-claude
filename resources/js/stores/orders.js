@@ -160,9 +160,12 @@ export function payLink(order) {
  */
 export const ORDER_FILTER_FIELDS = [
     {
+        // Without a prefix the drawer had nothing to translate the value with
+        // and listed the status ids themselves — `closed`, `on_hold`.
         key: 'status',
         group: 'state',
         kind: 'set',
+        prefix: 'status',
         values: (o) => [statusOf(o)],
     },
     {

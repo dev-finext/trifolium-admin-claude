@@ -526,6 +526,13 @@ export default {
         purchase_order: 'Purchase order',
     },
     docs: {
+        filter: {
+            field: {
+                type: 'Document type',
+                base: 'Source',
+                wh: 'Warehouse',
+            },
+        },
         noun: 'documents',
         count: 'documents · of {total}',
         search: 'Document number · production order · supplier · item · remark',
