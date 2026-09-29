@@ -22,6 +22,21 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'edit', 'open-item', 'produce', 'removed']);
+/**
+ * V3 — what this window is called when it is parked in the tray.
+ *
+ * Null while the drawer is closed, which is what keeps the window bar off an
+ * empty drawer.
+ */ const win = computed(() =>
+    props.bom
+        ? {
+              id: `bom:${props.bom.id}`,
+              title: loc(props.bom.name),
+              subtitle: props.bom.parentSku || '',
+              icon: 'beaker',
+          }
+        : null,
+);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -60,7 +75,7 @@ async function confirmRemove(reason) {
 </script>
 
 <template>
-    <ADrawer :open="Boolean(bom)" @close="emit('close')">
+    <ADrawer :open="Boolean(bom)" :win="win" @close="emit('close')">
         <template v-if="bom">
             <div class="a-dhead a-dhead--line">
                 <div class="a-dhead-top">

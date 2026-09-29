@@ -25,6 +25,21 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'issue', 'complete', 'cancel']);
+/**
+ * V3 — what this window is called when it is parked in the tray.
+ *
+ * Null while the drawer is closed, which is what keeps the window bar off an
+ * empty drawer.
+ */ const win = computed(() =>
+    props.order
+        ? {
+              id: `production:${props.order.id}`,
+              title: props.order.id,
+              subtitle: loc(props.order.name),
+              icon: 'beaker',
+          }
+        : null,
+);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -111,7 +126,7 @@ function print() {
 </script>
 
 <template>
-    <ADrawer :open="Boolean(order)" @close="emit('close')">
+    <ADrawer :open="Boolean(order)" :win="win" @close="emit('close')">
         <template v-if="order">
             <div class="a-dhead a-dhead--line">
                 <div class="a-dhead-top">

@@ -22,6 +22,21 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'open-batch', 'open-item']);
+/**
+ * V3 — what this window is called when it is parked in the tray.
+ *
+ * Null while the drawer is closed, which is what keeps the window bar off an
+ * empty drawer.
+ */ const win = computed(() =>
+    props.doc
+        ? {
+              id: `doc:${props.doc.id}`,
+              title: `${t(`inventory.docType.${props.doc.type}`)} ${props.doc.id}`,
+              subtitle: loc(props.doc.supplier) || '',
+              icon: 'file_text',
+          }
+        : null,
+);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -57,7 +72,7 @@ const unit = (line) => (line.unit ? t(`items.uom.${line.unit}`) : '');
 </script>
 
 <template>
-    <ADrawer :open="Boolean(doc)" @close="emit('close')">
+    <ADrawer :open="Boolean(doc)" :win="win" @close="emit('close')">
         <template v-if="doc">
             <div class="a-dhead a-dhead--line">
                 <div class="a-dhead-top">

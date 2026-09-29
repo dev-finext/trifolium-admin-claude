@@ -44,6 +44,21 @@ const emit = defineEmits([
 
 const { t } = useI18n();
 const { loc } = useLocalized();
+/**
+ * V3 — what this window is called when it is parked in the tray.
+ *
+ * Null while the drawer is closed, which is what keeps the window bar off an
+ * empty drawer.
+ */ const win = computed(() =>
+    props.batch
+        ? {
+              id: `batch:${props.batch.id}`,
+              title: `${t('inventory.batches.trace.title')} ${inventory.batchNo(props.batch)}`,
+              subtitle: loc(props.batch.name),
+              icon: 'layers',
+          }
+        : null,
+);
 const inventory = useInventoryStore();
 
 const uses = computed(() =>
@@ -189,7 +204,7 @@ const cols = computed(() => [
 </script>
 
 <template>
-    <ADrawer :open="Boolean(batch)" @close="emit('close')">
+    <ADrawer :open="Boolean(batch)" :win="win" @close="emit('close')">
         <template v-if="batch">
             <div class="a-dhead a-dhead--line">
                 <div class="a-dhead-top a-dhead-flush">

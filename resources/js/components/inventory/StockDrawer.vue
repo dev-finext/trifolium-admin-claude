@@ -37,6 +37,21 @@ const emit = defineEmits([
 
 const { t } = useI18n();
 const { loc } = useLocalized();
+/**
+ * V3 — what this window is called when it is parked in the tray.
+ *
+ * Null while the drawer is closed, which is what keeps the window bar off an
+ * empty drawer.
+ */ const win = computed(() =>
+    props.row
+        ? {
+              id: `stock:${props.row.sku}`,
+              title: loc(props.row.name),
+              subtitle: props.row.sku,
+              icon: 'layers',
+          }
+        : null,
+);
 const inventory = useInventoryStore();
 const items = useItemsStore();
 
@@ -107,7 +122,7 @@ const movementCols = computed(() => [
 </script>
 
 <template>
-    <ADrawer :open="Boolean(row)" @close="emit('close')">
+    <ADrawer :open="Boolean(row)" :win="win" @close="emit('close')">
         <template v-if="row">
             <div class="a-dhead a-dhead--line">
                 <div class="a-dhead-top">

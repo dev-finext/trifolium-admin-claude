@@ -388,6 +388,7 @@ export default {
 
     // The drawer behind the "items priced" count — stores/catalog.js itemsOfGroup().
     itemsDrawer: {
+        window: 'Price group',
         title: 'Items priced by “{name}”',
         sub: '{n} items · assigned by hand or by SKU prefix',
         close: 'Close',

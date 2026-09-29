@@ -23,6 +23,21 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'open-batch']);
+/**
+ * V3 — what this window is called when it is parked in the tray.
+ *
+ * Null while the drawer is closed, which is what keeps the window bar off an
+ * empty drawer.
+ */ const win = computed(() =>
+    props.receipt
+        ? {
+              id: `receipt:${props.receipt.id}`,
+              title: `${t('inventory.receipts.drawer.title')} ${props.receipt.id}`,
+              subtitle: loc(props.receipt.supplier) || '',
+              icon: 'truck',
+          }
+        : null,
+);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -64,7 +79,7 @@ const lines = computed(() => props.receipt?.lines || []);
 </script>
 
 <template>
-    <ADrawer :open="Boolean(receipt)" @close="emit('close')">
+    <ADrawer :open="Boolean(receipt)" :win="win" @close="emit('close')">
         <template v-if="receipt">
             <div class="a-dhead a-dhead--line">
                 <div class="a-dhead-top a-dhead-flush">

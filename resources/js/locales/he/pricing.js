@@ -380,6 +380,8 @@ export default {
     // The drawer behind the "items priced" count — stores/catalog.js itemsOfGroup().
     itemsDrawer: {
         title: 'פריטים המתומחרים ע״י ״{name}״',
+        // שם קצר לצ'יפ במגש החלונות, בלי שם הקבוצה שכבר מופיע לידו.
+        window: 'קבוצת מחירון',
         sub: '{n} פריטים · לפי שיוך ידני או לפי קידומת מק״ט',
         close: 'סגירה',
         open: 'פתיחת כרטיס הפריט',

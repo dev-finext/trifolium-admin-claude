@@ -431,6 +431,288 @@ textarea {
     border-inline-start: 1px solid var(--a-line);
     white-space: nowrap;
 }
+
+/* ============================================================================
+   V3 — חלונות: סרגל החלון והמגש.
+
+   A drawer that names itself carries a window bar, and minimising it parks a
+   chip in the tray beside the signed-in agent. The two are styled together
+   here because they are one control seen from two ends: the bar is where a
+   window goes in, the tray is where it waits.
+   ========================================================================== */
+.a-winbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding: 0 14px 0 14px;
+    height: 34px;
+    background: var(--a-thead);
+    border-bottom: 1px solid var(--a-line);
+    font-size: 12.5px;
+    color: var(--a-ink-3);
+}
+
+.a-winbar-i {
+    flex: none;
+    color: var(--a-ink-4);
+}
+
+.a-winbar-t {
+    font-weight: 700;
+    color: var(--a-ink-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 42ch;
+}
+
+.a-winbar-s {
+    color: var(--a-ink-4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 34ch;
+}
+
+/* The control sits at the inline end, which is where a window's own controls
+   sit — mirrored with the writing direction, like the rest of the console. */
+.a-winbar-b {
+    margin-inline-start: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 9px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: none;
+    color: var(--a-ink-3);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.a-winbar-b:hover {
+    background: var(--a-surface);
+    border-color: var(--a-line-2);
+    color: var(--a-ink);
+}
+
+.a-winbar-b:focus-visible {
+    outline: 2px solid var(--a-accent);
+    outline-offset: 1px;
+}
+
+/* ---- the tray ------------------------------------------------------------ */
+.a-tray {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.a-tray-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 200px;
+    height: 30px;
+    padding: 0 6px 0 9px;
+    padding-inline: 9px 6px;
+    border: 1px solid var(--a-line-2);
+    border-radius: 8px;
+    background: var(--a-surface);
+    color: var(--a-ink-2);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.a-tray-chip:hover {
+    border-color: var(--a-accent);
+    color: var(--a-accent-2);
+}
+
+.a-tray-chip:focus-visible {
+    outline: 2px solid var(--a-accent);
+    outline-offset: 1px;
+}
+
+.a-tray-chip-t {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.a-tray-x {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    color: var(--a-ink-4);
+}
+
+.a-tray-x:hover {
+    background: var(--a-red-bg);
+    color: var(--a-red);
+}
+
+.a-tray-more {
+    /* "+2" is arithmetic, not prose: the sign belongs before the number in both
+       writing directions. */
+    direction: ltr;
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--a-line-2);
+    border-radius: 8px;
+    background: var(--a-tint);
+    color: var(--a-ink-2);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.a-tray-more:hover {
+    border-color: var(--a-accent);
+    color: var(--a-accent-2);
+}
+
+.a-tray-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    inset-inline-end: 0;
+    z-index: 70;
+    width: 320px;
+    max-height: 60vh;
+    overflow-y: auto;
+    background: var(--a-surface);
+    border: 1px solid var(--a-line);
+    border-radius: 10px;
+    box-shadow: 0 16px 40px rgba(24, 32, 22, 0.18);
+}
+
+.a-tray-panel-h {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--a-line-3);
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--a-ink-3);
+}
+
+.a-tray-clear {
+    margin-inline-start: auto;
+    border: 0;
+    background: none;
+    color: var(--a-ink-4);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.a-tray-clear:hover {
+    color: var(--a-red);
+}
+
+.a-tray-list {
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    display: grid;
+    gap: 2px;
+}
+
+.a-tray-list li {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.a-tray-row {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 9px;
+    border: 0;
+    border-radius: 7px;
+    background: none;
+    color: var(--a-ink-2);
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+.a-tray-row:hover {
+    background: var(--a-hover);
+}
+
+.a-tray-row-c {
+    min-width: 0;
+    display: grid;
+}
+
+.a-tray-row-t {
+    font-weight: 700;
+    font-size: 13.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.a-tray-row-s {
+    font-size: 12px;
+    color: var(--a-ink-4);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.a-tray-rowx {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--a-ink-4);
+    cursor: pointer;
+}
+
+.a-tray-rowx:hover {
+    background: var(--a-red-bg);
+    color: var(--a-red);
+}
+
+/* On a laptop the top bar is already carrying a search field, so the chips get
+   narrower — but they keep their text. Three identical icons are three windows
+   you cannot tell apart, which is the one thing a tray must never be; a
+   truncated name still says which record it is, and the tooltip says the rest. */
+@media (max-width: 1400px) {
+    .a-tray-chip {
+        max-width: 160px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .a-tray-chip {
+        max-width: 120px;
+        font-size: 12.5px;
+    }
+}
 .a-me-n {
     font-weight: 700;
 }

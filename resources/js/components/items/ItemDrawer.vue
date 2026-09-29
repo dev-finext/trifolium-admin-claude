@@ -60,6 +60,21 @@ const dataset = useDatasetStore();
 const production = useProductionStore();
 
 const name = computed(() => props.row?.names?.he || '');
+/**
+ * V3 — what this window is called when it is parked in the tray.
+ *
+ * Null while the drawer is closed, which is what keeps the window bar off an
+ * empty drawer.
+ */ const win = computed(() =>
+    props.row
+        ? {
+              id: `item:${props.row.sku}`,
+              title: name.value || props.row.code,
+              subtitle: props.row.code,
+              icon: 'package',
+          }
+        : null,
+);
 
 /**
  * Which picture the console itself shows.
@@ -204,7 +219,7 @@ const categories = computed(() =>
 </script>
 
 <template>
-    <ADrawer :open="Boolean(row)" @close="emit('close')">
+    <ADrawer :open="Boolean(row)" :win="win" @close="emit('close')">
         <template v-if="row">
             <div class="a-dhead a-dhead--line">
                 <div class="a-dhead-top">

@@ -92,6 +92,16 @@ export default {
         integrations: '{n} external services are down',
     },
 
+    windows: {
+        minimize: 'Minimise',
+        minimizeHint:
+            'Park this window in the tray beside your name; one click brings it back',
+        title: 'Minimised windows',
+        all: 'All minimised windows',
+        drop: 'Remove from the tray',
+        clear: 'Clear all',
+    },
+
     me: {
         role: 'Pharmacy team',
     },

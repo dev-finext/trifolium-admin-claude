@@ -1,6 +1,9 @@
 <script setup>
 // The top bar: the sidebar toggle, global search, and the right-hand cluster —
-// language switch, open exceptions, signed-in agent.
+// language switch, open exceptions, minimised windows, signed-in agent.
+//
+// V3 — the window tray sits directly beside the agent, because a parked record
+// belongs to the person and not to the screen they happen to be on.
 //
 // The language switch comes first in that cluster, next to the search: it is a
 // primary control of this console, not a setting buried in a menu.
@@ -10,6 +13,7 @@ import { useI18n } from 'vue-i18n';
 import GlobalSearch from '@/components/layout/GlobalSearch.vue';
 import LocaleToggle from '@/components/layout/LocaleToggle.vue';
 import NotificationBell from '@/components/layout/NotificationBell.vue';
+import WindowTray from '@/components/layout/WindowTray.vue';
 import AIcon from '@/components/ui/AIcon.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useDatasetStore } from '@/stores/dataset';
@@ -90,6 +94,7 @@ const initials = computed(() =>
                 </span>
             </button>
             <NotificationBell />
+            <WindowTray />
 
             <div v-if="dataset.me" class="a-me">
                 <div class="a-avatar" aria-hidden="true">{{ initials }}</div>

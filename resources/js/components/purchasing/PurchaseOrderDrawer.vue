@@ -25,6 +25,21 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'edit', 'receive', 'cancelled']);
+/**
+ * V3 — what this window is called when it is parked in the tray.
+ *
+ * Null while the drawer is closed, which is what keeps the window bar off an
+ * empty drawer.
+ */ const win = computed(() =>
+    props.po
+        ? {
+              id: `po:${props.po.id}`,
+              title: `${t('purchasing.drawer.title')} ${props.po.id}`,
+              subtitle: loc(props.po.supplier) || '',
+              icon: 'inbox',
+          }
+        : null,
+);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -66,7 +81,7 @@ async function confirmCancel(reason) {
 </script>
 
 <template>
-    <ADrawer :open="Boolean(po)" @close="emit('close')">
+    <ADrawer :open="Boolean(po)" :win="win" @close="emit('close')">
         <template v-if="po">
             <div class="a-dhead a-dhead--line">
                 <div class="a-dhead-top">

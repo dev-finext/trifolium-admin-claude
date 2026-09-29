@@ -23,6 +23,21 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'open-item']);
+/**
+ * V3 — what this window is called when it is parked in the tray.
+ *
+ * Null while the drawer is closed, which is what keeps the window bar off an
+ * empty drawer.
+ */ const win = computed(() =>
+    props.group
+        ? {
+              id: `pricegroup:${props.group.id}`,
+              title: loc(props.group.name),
+              subtitle: t('pricing.itemsDrawer.window'),
+              icon: 'tag',
+          }
+        : null,
+);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -76,7 +91,7 @@ function priceAtTop(item) {
 </script>
 
 <template>
-    <ADrawer :open="Boolean(group)" @close="emit('close')">
+    <ADrawer :open="Boolean(group)" :win="win" @close="emit('close')">
         <template #header>
             <div class="a-dhead-top">
                 <div>

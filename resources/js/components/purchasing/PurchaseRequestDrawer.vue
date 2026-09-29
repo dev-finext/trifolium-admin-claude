@@ -33,6 +33,21 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'open-po']);
+/**
+ * V3 — what this window is called when it is parked in the tray.
+ *
+ * Null while the drawer is closed, which is what keeps the window bar off an
+ * empty drawer.
+ */ const win = computed(() =>
+    props.request
+        ? {
+              id: `req:${props.request.id}`,
+              title: `${t('planning.request.one')} ${props.request.number}`,
+              subtitle: loc(props.request.supplier) || '',
+              icon: 'inbox',
+          }
+        : null,
+);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -151,7 +166,7 @@ function cancel() {
 </script>
 
 <template>
-    <ADrawer :open="Boolean(request)" @close="emit('close')">
+    <ADrawer :open="Boolean(request)" :win="win" @close="emit('close')">
         <template v-if="request">
             <div class="a-dhead a-dhead--line">
                 <div class="a-dhead-top">
