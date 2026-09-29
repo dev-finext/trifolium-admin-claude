@@ -411,6 +411,87 @@ export const usePlanningStore = defineStore('planning', () => {
     }
 
     /**
+     * Could this planned purchase be made here instead, and if not, why?
+     *
+     * Three things have to hold. The pharmacy needs a recipe for the item —
+     * without one there is nothing to produce it from. The report must not
+     * already carry a production quantity for it, because that is a second
+     * decision about the same item and adding the two together would open a run
+     * for a quantity nobody asked for; that case is sent back to the report,
+     * where both numbers are visible at once. And the item's stock unit has to
+     * reach the recipe's yield unit, or the quantity cannot be restated as a
+     * run.
+     */
+    function produceInstead(sku) {
+        const recipe = items.bomsOfParent(sku)[0] || null;
+
+        if (!recipe) {
+            return { can: false, why: 'noRecipe', bomId: null };
+        }
+
+        if (planFor(sku, 'production')) {
+            return { can: false, why: 'alreadyPlanned', bomId: recipe.id };
+        }
+
+        const row = items.rowBySku(sku);
+        const from = row?.uom?.stock || recipe.yield?.uom;
+
+        if (convertQty(1, from, recipe.yield?.uom) === null) {
+            return { can: false, why: 'unitMismatch', bomId: recipe.id };
+        }
+
+        return { can: true, why: null, bomId: recipe.id };
+    }
+
+    /**
+     * Part of a planned purchase is made here instead of being bought.
+     *
+     * The quantity moves between the report's two columns rather than appearing
+     * out of nowhere: what is still being bought stays on the purchase line and
+     * goes out on the request, and what is being made leaves as a production
+     * order straight away. The total the report shows as planned does not
+     * change — only where it is coming from.
+     */
+    async function moveToProduction(sku, qty) {
+        const held = planFor(sku, 'purchase');
+        const check = produceInstead(sku);
+        const amount = Math.min(Number(qty) || 0, held?.qty || 0);
+
+        if (!held || held.state !== 'planned' || !check.can || amount <= 0) {
+            return null;
+        }
+
+        const recipe = items.bomById(check.bomId);
+        const plannedQty = convertQty(
+            amount,
+            items.rowBySku(sku)?.uom?.stock || recipe.yield?.uom,
+            recipe.yield?.uom,
+        );
+
+        if (plannedQty === null) {
+            return null;
+        }
+
+        const order = await production.createOrder({
+            bomId: recipe.id,
+            plannedQty,
+        });
+
+        // A zero clears the purchase line: nothing of this item is being bought.
+        plan(sku, 'purchase', held.qty - amount);
+
+        const made = plan(sku, 'production', amount);
+
+        if (made) {
+            made.state = 'ordered';
+            made.order = order?.id || null;
+            persist(`plan-lines/${made.id}`, made, 'PUT');
+        }
+
+        return order;
+    }
+
+    /**
      * Everything planned for purchase, gathered under the supplier who would
      * fill it — which is how the pharmacy sends it: one email per supplier.
      *
@@ -451,6 +532,9 @@ export const usePlanningStore = defineStore('planning', () => {
                 // full of pharmacopoeia references, which is not something to
                 // write to a supplier.
                 remark: null,
+                // Whether this quantity could be made here instead, which is
+                // what the request window offers to split.
+                produce: produceInstead(line.sku),
             });
         });
 
@@ -810,5 +894,7 @@ export const usePlanningStore = defineStore('planning', () => {
         cancelRequest,
         orderFromRequest,
         produceFromPlan,
+        produceInstead,
+        moveToProduction,
     };
 });

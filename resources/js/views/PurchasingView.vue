@@ -138,9 +138,22 @@ const openRequest = computed(() =>
     view.req ? planning.requestById(view.req) : null,
 );
 
-/** A request was raised: show the list it landed in. */
-function onRaised(made) {
+/**
+ * A request was raised: show the list it landed in.
+ *
+ * The window may also have split quantities off to the lab, and those are said
+ * out loud in their own message — a production order that appeared without a
+ * word would be a quantity nobody knows is being made.
+ */
+function onRaised(made, opened = []) {
     raising.value = false;
+
+    if (opened.length) {
+        push({
+            title: t('planning.request.producedToast', { n: opened.length }),
+            body: opened.map((one) => one.id).join(' · '),
+        });
+    }
 
     if (!made?.length) {
         return;

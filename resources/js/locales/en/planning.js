@@ -75,6 +75,23 @@ export default {
         noteHint:
             'It goes into the body of the email. Standing remarks per supplier and per item are not defined yet \u2014 see question 3 in the open-questions document.',
         raise: 'Raise the requests',
+        raiseAndMake: 'Raise requests and production orders',
+        nothingBought: 'All made here',
+        madeCount: 'one line made here | {n} lines made here',
+        split: 'Split',
+        splitOff: 'Undo split',
+        buyQty: 'Left for the supplier ({unit})',
+        overSplit:
+            'More than the planned quantity — {qty} {unit}. Correct it to carry on.',
+        makeQty: 'Made here ({unit})',
+        splitHint:
+            'What is made here does not go on the supplier request — it opens as a production order on the production screen, and the rest goes to the supplier.',
+        why: {
+            alreadyPlanned: 'already planned for production in the report',
+            unitMismatch: 'the stock unit and the recipe unit do not meet',
+        },
+        producedToast:
+            'one production order opened from the split | {n} production orders opened from the split',
         raisedToast:
             'One purchase request raised | {n} purchase requests raised',
         tabLede:
