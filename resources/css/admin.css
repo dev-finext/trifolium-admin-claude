@@ -4013,52 +4013,24 @@ thead th.col-feeds {
 }
 
 /* ============================================================================
-   A list screen is a page of controls and a table, and they want opposite
-   things: the controls want to stay where they are, the table wants the rest
-   of the screen. Letting the whole pane scroll gives the table the screen only
-   after the controls have left it — which is how a laptop ends up showing two
-   rows and no filters.
+   A list screen scrolls as one page.
 
-   So the pane stops scrolling and the table scrolls inside itself. The page
-   head, the counts, the filters and the pager stay put; the rows move under
-   their own header. `:has()` keeps this to the screens that are a single
-   table, and leaves a dashboard or a card grid alone.
+   An earlier attempt pinned the controls and let the table scroll inside its
+   own box, so that a laptop would not have to scroll past the filters to reach
+   the rows. It was the wrong medicine: what the table gained in position it
+   lost in height, and a box holding eight rows on a screen that could show
+   twenty is worse than a filter strip you scroll past once.
+
+   So the page scrolls, the way a page does. What the pinning was really for —
+   never losing track of which column you are reading — is what the sticky
+   header row already does, and it does it without taking the table's height
+   away: `.a-tablewrap:not(.is-capped) .a-table thead th` above cancels the
+   pane's own padding so the header comes to rest flush against the top of the
+   pane rather than leaving a band of scrolled rows above itself.
+
+   Nothing is needed here. The rule is written down so the same idea is not
+   tried a third time.
    ========================================================================== */
-.a-body:has(> .a-tablewrap),
-.a-body:has(> * > .a-tablewrap) {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    padding-bottom: 18px;
-}
-
-/* The branch that holds the table becomes the one that grows. */
-.a-body:has(> * > .a-tablewrap) > *:has(> .a-tablewrap) {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
-}
-
-.a-body:has(> .a-tablewrap) > .a-tablewrap,
-.a-body:has(> * > .a-tablewrap) > * > .a-tablewrap {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: auto;
-}
-
-/* Its header sticks to the top of that box rather than to the pane, so the
-   pane's own padding no longer has to be cancelled. */
-.a-body:has(> .a-tablewrap) > .a-tablewrap .a-table thead th,
-.a-body:has(> * > .a-tablewrap) > * > .a-tablewrap .a-table thead th {
-    top: var(--a-thead-top);
-}
-
-/* Nothing above or below the table may shrink to make room for it. */
-.a-body:has(> .a-tablewrap) > *:not(.a-tablewrap),
-.a-body:has(> * > .a-tablewrap) > * > *:not(.a-tablewrap) {
-    flex: 0 0 auto;
-}
 
 /* ============================================================================
    A field is a label and the control under it.

@@ -73,6 +73,24 @@ const loading = computed(() => dataset.isBusy && !order.value);
 
 const status = computed(() => (order.value ? statusOf(order.value) : ''));
 
+/**
+ * V3 — what this window is called when it is parked in the tray.
+ *
+ * An order is a route of its own rather than a query parameter, and it makes no
+ * difference: what is stored is the full address either way, tab included, so a
+ * restored order opens on the tab it was left on.
+ */
+const win = computed(() =>
+    order.value
+        ? {
+              id: `order:${order.value.id}`,
+              title: order.value.id,
+              subtitle: loc(order.value.practitioner?.name) || '',
+              icon: 'inbox',
+          }
+        : null,
+);
+
 const creditUnpaid = computed(
     () => Boolean(order.value?.credit) && !order.value?.creditPaid,
 );
@@ -153,7 +171,7 @@ function close() {
 <template>
     <OrdersBrowser />
 
-    <ADrawer :open="true" :full="view.full" @close="close">
+    <ADrawer :open="true" :full="view.full" :win="win" @close="close">
         <ASkeleton v-if="loading" :rows="10" />
 
         <template v-else-if="!order">
