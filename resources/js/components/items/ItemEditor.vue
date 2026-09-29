@@ -204,6 +204,15 @@ const off = computed(() => ({
     inventory: !form.flags.inventory,
 }));
 
+/**
+ * The unit a quantity field is counted in.
+ *
+ * A minimum of 20 is twenty of something, and on this card it is twenty
+ * kilograms for one item and twenty millilitres for the next. The unit is the
+ * item's own and is not chosen here — it is shown so the number can be read.
+ */
+const unitLabel = (id) => (id ? t(`inventory.unit.${id}`) : '');
+
 const nonNegative = (value) => value === '' || Number(value) >= 0;
 
 const errors = computed(() => {
@@ -963,14 +972,19 @@ const title = computed(() =>
                         <label class="a-lbl">{{
                             t('items.card.minLevel')
                         }}</label>
-                        <AInput
-                            v-model="form.levels.min"
-                            :disabled="off.inventory"
-                            type="number"
-                            ltr
-                            class="a-w100"
-                            @blur="mark('levels')"
-                        />
+                        <div class="qty-with-unit">
+                            <AInput
+                                v-model="form.levels.min"
+                                :disabled="off.inventory"
+                                type="number"
+                                ltr
+                                class="a-w100"
+                                @blur="mark('levels')"
+                            />
+                            <span class="qty-unit">{{
+                                unitLabel(form.uom.stock)
+                            }}</span>
+                        </div>
                         <div v-if="show('levels')" class="a-inv">
                             {{ show('levels') }}
                         </div>
@@ -979,27 +993,37 @@ const title = computed(() =>
                         <label class="a-lbl">{{
                             t('items.card.maxLevel')
                         }}</label>
-                        <AInput
-                            v-model="form.levels.max"
-                            :disabled="off.inventory"
-                            type="number"
-                            ltr
-                            class="a-w100"
-                            @blur="mark('levels')"
-                        />
+                        <div class="qty-with-unit">
+                            <AInput
+                                v-model="form.levels.max"
+                                :disabled="off.inventory"
+                                type="number"
+                                ltr
+                                class="a-w100"
+                                @blur="mark('levels')"
+                            />
+                            <span class="qty-unit">{{
+                                unitLabel(form.uom.stock)
+                            }}</span>
+                        </div>
                     </div>
                     <div>
                         <label class="a-lbl">{{
                             t('items.card.reorderQty')
                         }}</label>
-                        <AInput
-                            v-model="form.levels.reorder"
-                            :disabled="off.inventory"
-                            type="number"
-                            ltr
-                            class="a-w100"
-                            @blur="mark('levels')"
-                        />
+                        <div class="qty-with-unit">
+                            <AInput
+                                v-model="form.levels.reorder"
+                                :disabled="off.inventory"
+                                type="number"
+                                ltr
+                                class="a-w100"
+                                @blur="mark('levels')"
+                            />
+                            <span class="qty-unit">{{
+                                unitLabel(form.uom.stock)
+                            }}</span>
+                        </div>
                     </div>
                 </div>
                 <div class="flags">
@@ -1058,13 +1082,18 @@ const title = computed(() =>
                         <label class="a-lbl">{{
                             t('items.card.minOrderQty')
                         }}</label>
-                        <AInput
-                            v-model="form.levels.minOrder"
-                            type="number"
-                            ltr
-                            class="a-w100"
-                            @blur="mark('levels')"
-                        />
+                        <div class="qty-with-unit">
+                            <AInput
+                                v-model="form.levels.minOrder"
+                                type="number"
+                                ltr
+                                class="a-w100"
+                                @blur="mark('levels')"
+                            />
+                            <span class="qty-unit">{{
+                                unitLabel(form.uom.purchase)
+                            }}</span>
+                        </div>
                     </div>
                     <div>
                         <label class="a-lbl">{{
@@ -1305,6 +1334,25 @@ const title = computed(() =>
 </template>
 
 <style scoped>
+/* A quantity and the unit it is counted in, which never travel apart. */
+.qty-with-unit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qty-with-unit :deep(.a-input) {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.qty-unit {
+    flex: none;
+    font-size: 13px;
+    color: var(--a-ink-3);
+    white-space: nowrap;
+}
+
 .ie {
     display: grid;
     gap: 22px;

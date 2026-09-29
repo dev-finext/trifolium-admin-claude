@@ -3832,3 +3832,22 @@ thead th.col-feeds {
         gap: 10px 12px;
     }
 }
+
+/* ============================================================================
+   Number fields carry no stepper.
+
+   The browser's own up/down arrows sit inside the field, overlap the value in
+   a narrow one, and step by one — which is wrong for a quantity in kilograms,
+   a price, or a millimetre on a label. Every number in this console is typed.
+   ========================================================================== */
+input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
