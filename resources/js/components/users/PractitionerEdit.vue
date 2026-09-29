@@ -17,6 +17,7 @@ import ASelect from '@/components/ui/ASelect.vue';
 import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { isDemoData } from '@/data/source';
+import { applyDraft, recordMoved, snapshot, stampOf } from '@/lib/draft';
 import { isLocalized } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
 
@@ -35,6 +36,17 @@ const props = defineProps({
     entity: { type: Object, default: null },
     /** The practitioner card also keeps documents; the patient card does not. */
     showDocuments: { type: Boolean, default: false },
+    /**
+     * V3 — which card this is, so a parked form goes back to the card it came
+     * from: `'practitioner'` or `'patient'`. Omitted, and the form cannot be
+     * minimised at all.
+     */
+    kind: { type: String, default: '' },
+    /**
+     * V3 — typing that was parked in the window tray and is coming back:
+     * `{ data, stamp }`. Null on an ordinary open.
+     */
+    draft: { type: Object, default: null },
 });
 
 const emit = defineEmits(['close', 'save', 'upload', 'reset']);
@@ -73,10 +85,36 @@ function reset() {
 watch(
     () => props.open,
     (open) => {
-        if (open) {
-            reset();
+        if (!open) {
+            return;
+        }
+
+        reset();
+
+        // V3 — typing that was parked comes back after the fields have been
+        // filled from the record, so the current field list decides what exists
+        // and the draft only supplies values for it. A field that has since
+        // been removed from the list cannot come back with it.
+        if (props.draft?.data) {
+            applyDraft(values, props.draft.data);
         }
     },
+    // Immediate, because a form coming back from the tray is mounted already
+    // open: the card claims its draft during setup and renders the editor with
+    // `open` true from the first frame, so there is no false-to-true edge to
+    // wait for and the fields would never be filled at all.
+    { immediate: true },
+);
+
+/**
+ * The record moved while the draft sat in the tray.
+ *
+ * Said and not blocked: the typing is the reader's. Where the record carries no
+ * last-changed stamp of its own there is nothing to compare, and nothing is
+ * claimed.
+ */
+const draftStale = computed(
+    () => Boolean(props.draft) && recordMoved(props.entity, props.draft.stamp),
 );
 
 /** Replace the reader's-language half of a `{ he, en }` value, keep the other. */
@@ -141,6 +179,31 @@ const demoHint = computed(() =>
         : '',
 );
 
+/**
+ * V3 — what this form is called when it waits in the tray, and what it keeps.
+ *
+ * The admin password is not in it, and cannot be: it lives in its own ref
+ * beside the field values, so what is parked is the typing and never the
+ * credential that authorises it. A restored form asks for the password again,
+ * which is the right way round — the approval belongs to the moment of saving.
+ */
+const win = computed(() =>
+    props.kind && props.entity
+        ? {
+              id: `form:${props.kind}:${props.entity.code}`,
+              title: loc(props.entity.name) || String(props.entity.code),
+              subtitle: String(props.entity.code || ''),
+              icon: 'edit',
+              form: () => ({
+                  view: props.kind,
+                  record: props.entity.code,
+                  data: snapshot(values),
+                  stamp: stampOf(props.entity),
+              }),
+          }
+        : null,
+);
+
 function onInput(field, value) {
     values[field.k] =
         field.digits || field.numeric ? value.replace(/\D/g, '') : value;
@@ -178,7 +241,17 @@ function save() {
 </script>
 
 <template>
-    <AModal :open="open" :title="title" :width="WIDTH" @close="emit('close')">
+    <AModal
+        :open="open"
+        :title="title"
+        :width="WIDTH"
+        :win="win"
+        @close="emit('close')"
+    >
+        <p v-if="draftStale" class="a-warn">
+            {{ t('items.editor.draftStale') }}
+        </p>
+
         <div v-if="note" class="a-note a-note--info u-note">{{ note }}</div>
 
         <div class="u-grid">

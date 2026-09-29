@@ -5,7 +5,7 @@
 // the credit-terms toggle, his signed safety declarations, his order history,
 // his points wallet and his documentation trail. Credit terms and points both
 // move money, so both are gated behind the approval code.
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
@@ -45,6 +45,7 @@ import { useCrmStore } from '@/stores/crm';
 import { useDatasetStore } from '@/stores/dataset';
 import { shelfItems, statusOf, trackedItems } from '@/stores/orders';
 import { usePeopleStore } from '@/stores/people';
+import { useWindowsStore } from '@/stores/windows';
 
 /** How tall a signature scan renders inside its cell. */
 const SIG_HEIGHT = 46;
@@ -56,6 +57,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'open-order']);
 
 const { t } = useI18n();
+const windows = useWindowsStore();
 const { loc, searchHaystack } = useLocalized();
 const { push } = useToast();
 const people = usePeopleStore();
@@ -64,6 +66,29 @@ const dataset = useDatasetStore();
 const view = useUrlState({ ctab: 'profile' });
 
 const editing = ref(false);
+
+/**
+ * V3 — a card form that was parked in the window tray, coming back.
+ *
+ * The address reopened this card; what is left is to reopen the editor over it
+ * with the typing. The claim is by name, so the practitioner card and the
+ * patient card do not take each other's.
+ */
+const draft = ref(null);
+
+watch(
+    () => windows.pending,
+    () => {
+        const held = windows.claim('practitioner');
+
+        if (held && held.record === props.practitioner?.code) {
+            draft.value = held;
+            editing.value = true;
+        }
+    },
+    { immediate: true },
+);
+
 const askActive = ref(false);
 
 /** A card is active unless it says otherwise — that is the default everywhere. */
@@ -1075,8 +1100,10 @@ function onReset() {
         :note="t('users.edit.practitionerNote', { code: practitioner.code })"
         :fields="editFields"
         :entity="practitioner"
+        kind="practitioner"
+        :draft="draft"
         show-documents
-        @close="editing = false"
+        @close="((editing = false), (draft = null))"
         @save="onSave"
         @upload="onUpload"
         @reset="onReset"

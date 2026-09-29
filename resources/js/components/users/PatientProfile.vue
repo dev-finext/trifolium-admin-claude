@@ -40,6 +40,7 @@ import { useCrmStore } from '@/stores/crm';
 import { useDatasetStore } from '@/stores/dataset';
 import { shelfItems, statusOf, trackedItems } from '@/stores/orders';
 import { usePeopleStore } from '@/stores/people';
+import { useWindowsStore } from '@/stores/windows';
 
 /** How tall a declaration signature scan renders inside its cell. */
 const SIG_HEIGHT = 44;
@@ -51,6 +52,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'open-practitioner']);
 
 const { t } = useI18n();
+const windows = useWindowsStore();
 const { loc } = useLocalized();
 const { push } = useToast();
 const people = usePeopleStore();
@@ -59,6 +61,29 @@ const dataset = useDatasetStore();
 const view = useUrlState({ ptab: 'profile' });
 
 const editing = ref(false);
+
+/**
+ * V3 — a card form that was parked in the window tray, coming back.
+ *
+ * The address reopened this card; what is left is to reopen the editor over it
+ * with the typing. The claim is by name, so the practitioner card and the
+ * patient card do not take each other's.
+ */
+const draft = ref(null);
+
+watch(
+    () => windows.pending,
+    () => {
+        const held = windows.claim('patient');
+
+        if (held && held.record === props.patient?.code) {
+            draft.value = held;
+            editing.value = true;
+        }
+    },
+    { immediate: true },
+);
+
 const moving = ref(false);
 const askActive = ref(false);
 
@@ -674,7 +699,9 @@ function applyTransfer() {
         :note="t('users.edit.customerNote', { code: patient.code })"
         :fields="editFields"
         :entity="patient"
-        @close="editing = false"
+        kind="patient"
+        :draft="draft"
+        @close="((editing = false), (draft = null))"
         @save="onSave"
     />
 
