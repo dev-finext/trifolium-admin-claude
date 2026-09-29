@@ -390,6 +390,11 @@ export default {
     },
     editor: {
         priceGroup: 'Tiered list',
+        ladderResult: 'Price ladder · the result',
+        ladderFrom: 'From {qty} {unit}',
+        ladderResultHint:
+            'The ladder is set on the price-ladders screen, per group of item codes. The price itself is set here, and this is what the group’s ladder makes of it.',
+        ladderNone: 'This item belongs to no ladder group — its price is flat.',
         priceGroupInherit: 'By code prefix (default)',
         priceGroupFixed: 'Fixed price — no list',
         priceGroupHint:

@@ -362,6 +362,7 @@ export default {
         uomMismatch: 'יחידת המחירון שונה מיחידת המכירה של הפריט',
         uomMismatchSub:
             'המחירון נכתב ל{groupUom}, הפריט נמכר ב{itemUom} — הכמויות מחושבות ביחידת הפריט, ללא המרה',
+        groupByPrefix: 'שייך לפי קידומת המק״ט: {prefix}',
         groupDefault: 'ברירת מחדל לפי קידומת: {name}',
         groupExplicit: 'שיוך ידני: {name}',
         groupNone: 'קבוע — ללא מחירון',

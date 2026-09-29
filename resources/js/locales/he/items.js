@@ -387,6 +387,11 @@ export default {
     },
     editor: {
         priceGroup: 'מחירון מדורג',
+        ladderResult: 'מחירון מדורג · התוצאה',
+        ladderFrom: 'מ-{qty} {unit}',
+        ladderResultHint:
+            'המדרגות נקבעות בעמוד המחירונים המדורגים, לפי קבוצת מק״טים. כאן נקבע המחיר עצמו, וזאת התוצאה שלו לפי הסולם של הקבוצה.',
+        ladderNone: 'הפריט אינו שייך לקבוצת מחירון — המחיר קבוע.',
         priceGroupInherit: 'לפי קידומת המק״ט (ברירת מחדל)',
         priceGroupFixed: 'מחיר קבוע — ללא מחירון',
         priceGroupHint:

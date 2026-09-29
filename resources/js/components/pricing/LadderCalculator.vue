@@ -43,24 +43,14 @@ const uomName = computed(() =>
     props.item?.uom?.sales ? t(`items.uom.${props.item.uom.sales}`) : '',
 );
 
-/** How the item came to this group — by its own choice or by its code. */
-const assignment = computed(() => {
-    if (!props.item) {
-        return '';
-    }
-
-    if (props.item.priceGroup === 'none') {
-        return t('pricing.calculator.groupNone');
-    }
-
-    if (props.item.priceGroup) {
-        return t('pricing.calculator.groupExplicit');
-    }
-
-    return group.value
-        ? t('pricing.calculator.groupDefault')
-        : t('pricing.calculator.groupInheritNone');
-});
+/** How the item came to this group: by the codes the group covers. */
+const assignment = computed(() =>
+    group.value
+        ? t('pricing.calculator.groupByPrefix', {
+              prefix: (group.value.prefixes || []).join(', '),
+          })
+        : '',
+);
 </script>
 
 <template>

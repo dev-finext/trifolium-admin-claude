@@ -371,6 +371,7 @@ export default {
         uomMismatch: 'The price list’s unit differs from the item’s sales unit',
         uomMismatchSub:
             'The ladder was written per {groupUom}, the item sells per {itemUom} — quantities are computed in the item’s unit, without conversion',
+        groupByPrefix: 'Grouped by item-code prefix: {prefix}',
         groupDefault: 'Default by prefix: {name}',
         groupExplicit: 'Assigned by hand: {name}',
         groupNone: 'Fixed — no price list',

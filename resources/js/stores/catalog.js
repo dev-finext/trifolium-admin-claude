@@ -346,15 +346,16 @@ export const useCatalogStore = defineStore('catalog', () => {
         priceGroups.value.find((group) => group.id === groupId) || null;
 
     /**
-     * The group that prices an item: `'none'` is a fixed price, an id is an
-     * explicit assignment, `null` inherits the longest-prefix rule on the SKU.
+     * The group that prices an item.
+     *
+     * The group decides, and it decides by the item codes it covers — that is
+     * what a price group *is*. An item card used to be able to pin itself to a
+     * group or opt out of laddering entirely, which meant the same question was
+     * answered in two places and the ladder screen was not the authority over
+     * its own subject. An item that should not be laddered belongs to a group
+     * without a ladder; there is no second mechanism.
      */
-    const groupForItem = (item) =>
-        item?.priceGroup === 'none'
-            ? null
-            : item?.priceGroup
-              ? groupById(item.priceGroup)
-              : (resolveSku(item?.sku)?.group ?? null);
+    const groupForItem = (item) => resolveSku(item?.sku)?.group ?? null;
 
     /** The item's own unit price, before VAT, per its sales unit. */
     const unitPriceOf = (item) => item?.price?.sale ?? null;
