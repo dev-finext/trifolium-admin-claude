@@ -465,6 +465,8 @@ function itemOf(real, supplierByCode) {
         barcode: real.barcode || null,
         additionalId: real.additionalId || null,
         picture: real.picture || null,
+        // V3 — the picture the team sees, which never leaves the console.
+        pictureInternal: null,
         suppliers: {
             preferred: real.supplierCode
                 ? supplierByCode.get(real.supplierCode) || null

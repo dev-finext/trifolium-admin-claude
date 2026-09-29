@@ -54,6 +54,17 @@ const production = useProductionStore();
 
 const name = computed(() => props.row?.names?.he || '');
 
+/**
+ * Which picture the console itself shows.
+ *
+ * The internal one when there is one — this is the pharmacy's own system, and
+ * the internal photo is the shelf as it really looks. The shop's picture is the
+ * fallback, because a picture is better than a grey box.
+ */
+const shownPicture = computed(
+    () => props.row?.pictureInternal || props.row?.picture || '',
+);
+
 const notSet = () => t('items.card.notSet');
 const uomLabel = (id) => (id ? t(`items.uom.${id}`) : notSet());
 const orNotSet = (value) =>
@@ -235,8 +246,8 @@ const categories = computed(() =>
                 <ACard :title="t('items.card.general')" icon="tag">
                     <div class="general">
                         <div class="pic">
-                            <div v-if="row.picture" class="pic-box">
-                                <img :src="row.picture" :alt="name" />
+                            <div v-if="shownPicture" class="pic-box">
+                                <img :src="shownPicture" :alt="name" />
                             </div>
                             <div v-else class="pic-box is-empty">
                                 {{ t('items.card.noPicture') }}

@@ -94,7 +94,10 @@ const form = reactive({
     },
     barcode: source.barcode || '',
     additionalId: source.additionalId || '',
+    // SAP's own picture is the one that syncs to the shop, so it is the
+    // external one. The internal picture is the console's and goes nowhere.
     picture: source.picture || '',
+    pictureInternal: source.pictureInternal || '',
     suppliers: {
         preferred: source.suppliers?.preferred || '',
         sapCode: source.suppliers?.sapCode || '',
@@ -305,6 +308,7 @@ const draft = computed(() => ({
     barcode: form.barcode.trim() || null,
     additionalId: form.additionalId.trim() || null,
     picture: form.picture || null,
+    pictureInternal: form.pictureInternal || null,
     suppliers: {
         preferred: form.suppliers.preferred || null,
         sapCode: form.suppliers.sapCode || null,
@@ -364,7 +368,7 @@ const draft = computed(() => ({
         quantity: numberOrNull(form.site.quantity),
         comments: form.site.comments.trim() || null,
         categories: form.site.categories.filter(Boolean),
-        sync: form.properties.includes(40),
+        sync: onSite.value,
         promo: form.properties.includes(20),
         therapistDiscount: form.properties.includes(19),
     },
@@ -380,14 +384,38 @@ const draft = computed(() => ({
     priceGroup: form.priceGroup || null,
 }));
 
+/**
+ * Whether this item goes to the consumer site.
+ *
+ * SAP says so with property 40, "סנכרון לאתר" — which the console read and
+ * never let anyone set, so the shop block was locked by the *sales* flag
+ * instead. They are different questions: plenty of items are sold over the
+ * counter and never published.
+ */
+const SITE_SYNC_PROPERTY = 40;
+
+const onSite = computed(() => form.properties.includes(SITE_SYNC_PROPERTY));
+
+function toggleSite(on) {
+    form.properties = on
+        ? [...new Set([...form.properties, SITE_SYNC_PROPERTY])]
+        : form.properties.filter((code) => code !== SITE_SYNC_PROPERTY);
+}
+
 function toggleProperty(code) {
     form.properties = form.properties.includes(code)
         ? form.properties.filter((one) => one !== code)
         : [...form.properties, code];
 }
 
-/** A picture the creator picks is held as a data URL — the demo stores no files. */
-function onPicture(event) {
+/**
+ * A picture the creator picks is held as a data URL — the demo stores no files.
+ *
+ * Two of them: the external picture is what the shop shows, and the internal
+ * one is for the people working here — a photo of the actual jar on the actual
+ * shelf, which is the useful thing when picking and never the thing to publish.
+ */
+function onPicture(event, field = 'picture') {
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -397,7 +425,7 @@ function onPicture(event) {
     const reader = new FileReader();
 
     reader.onload = () => {
-        form.picture = String(reader.result);
+        form[field] = String(reader.result);
     };
     reader.readAsDataURL(file);
 }
@@ -703,7 +731,51 @@ const title = computed(() =>
                 <div class="a-3col top">
                     <div>
                         <label class="a-lbl">{{
-                            t('items.editor.picture')
+                            t('items.editor.pictureInternal')
+                        }}</label>
+                        <div class="pic-row">
+                            <div v-if="form.pictureInternal" class="pic-box">
+                                <img
+                                    :src="form.pictureInternal"
+                                    :alt="form.names.he"
+                                />
+                            </div>
+                            <div v-else class="pic-box is-empty">
+                                {{ t('items.card.noPicture') }}
+                            </div>
+                            <div class="pic-acts">
+                                <input
+                                    id="item-picture-internal"
+                                    type="file"
+                                    accept="image/*"
+                                    class="file"
+                                    @change="
+                                        onPicture($event, 'pictureInternal')
+                                    "
+                                />
+                                <label
+                                    class="a-btn a-btn--sm"
+                                    for="item-picture-internal"
+                                >
+                                    {{ t('items.editor.picturePick') }}
+                                </label>
+                                <AButton
+                                    v-if="form.pictureInternal"
+                                    sm
+                                    kind="ghost"
+                                    @click="form.pictureInternal = ''"
+                                >
+                                    {{ t('items.editor.pictureClear') }}
+                                </AButton>
+                            </div>
+                        </div>
+                        <div class="a-hint">
+                            {{ t('items.editor.pictureInternalHint') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl">{{
+                            t('items.editor.pictureExternal')
                         }}</label>
                         <div class="pic-row">
                             <div v-if="form.picture" class="pic-box">
@@ -718,10 +790,12 @@ const title = computed(() =>
                                     type="file"
                                     accept="image/*"
                                     class="file"
-                                    @change="onPicture"
+                                    :disabled="!onSite"
+                                    @change="onPicture($event, 'picture')"
                                 />
                                 <label
                                     class="a-btn a-btn--sm"
+                                    :class="{ 'is-off': !onSite }"
                                     for="item-picture"
                                 >
                                     {{ t('items.editor.picturePick') }}
@@ -730,6 +804,7 @@ const title = computed(() =>
                                     v-if="form.picture"
                                     sm
                                     kind="ghost"
+                                    :disabled="!onSite"
                                     @click="form.picture = ''"
                                 >
                                     {{ t('items.editor.pictureClear') }}
@@ -858,7 +933,7 @@ const title = computed(() =>
                             }}</label>
                             <ASelect
                                 v-model="form.uom.sales"
-                                :disabled="off.sales"
+                                :disabled="!onSite"
                                 :options="uomOptions"
                                 class="a-w100"
                             />
@@ -869,7 +944,7 @@ const title = computed(() =>
                             }}</label>
                             <AInput
                                 v-model="form.uom.numInSale"
-                                :disabled="off.sales"
+                                :disabled="!onSite"
                                 type="number"
                                 step="0.001"
                                 ltr
@@ -886,7 +961,7 @@ const title = computed(() =>
                             }}</label>
                             <ASelect
                                 v-model="form.uom.price"
-                                :disabled="off.sales"
+                                :disabled="!onSite"
                                 :options="uomOptions"
                                 class="a-w100"
                             />
@@ -900,7 +975,7 @@ const title = computed(() =>
                             }}</label>
                             <AInput
                                 v-model="form.price.sale"
-                                :disabled="off.sales"
+                                :disabled="!onSite"
                                 type="number"
                                 ltr
                                 class="a-w100"
@@ -919,7 +994,7 @@ const title = computed(() =>
                             }}</label>
                             <ASelect
                                 v-model="form.priceGroup"
-                                :disabled="off.sales"
+                                :disabled="!onSite"
                                 :options="priceGroupOptions"
                                 class="a-w100"
                             />
@@ -1220,6 +1295,18 @@ const title = computed(() =>
             <!-- the consumer site's own fields -->
             <section>
                 <div class="a-sect-t">{{ t('items.editor.site') }}</div>
+                <ASwitch
+                    :model-value="onSite"
+                    :label="t('items.card.siteSync')"
+                    @update:model-value="toggleSite"
+                />
+                <p class="a-hint site-hint">
+                    {{
+                        onSite
+                            ? t('items.editor.siteOnHint')
+                            : t('items.editor.siteOffHint')
+                    }}
+                </p>
                 <div class="a-3col">
                     <div>
                         <label class="a-lbl">{{
@@ -1227,7 +1314,7 @@ const title = computed(() =>
                         }}</label>
                         <AInput
                             v-model="form.site.name"
-                            :disabled="off.sales"
+                            :disabled="!onSite"
                             class="a-w100"
                         />
                         <div class="a-hint">
@@ -1241,13 +1328,13 @@ const title = computed(() =>
                         <div class="pair">
                             <AInput
                                 v-model="form.site.quantity"
-                                :disabled="off.sales"
+                                :disabled="!onSite"
                                 type="number"
                                 ltr
                             />
                             <ASelect
                                 v-model="form.site.uom"
-                                :disabled="off.sales"
+                                :disabled="!onSite"
                                 :options="uomOptionsBlank"
                             />
                         </div>
@@ -1258,7 +1345,7 @@ const title = computed(() =>
                         }}</label>
                         <AInput
                             v-model="form.site.comments"
-                            :disabled="off.sales"
+                            :disabled="!onSite"
                             class="a-w100"
                             :maxlength="150"
                         />
@@ -1270,6 +1357,7 @@ const title = computed(() =>
                         v-for="(cat, i) in form.site.categories"
                         :key="i"
                         v-model="form.site.categories[i]"
+                        :disabled="!onSite"
                         :options="categoryOptions"
                         class="a-w100"
                     />
@@ -1278,7 +1366,7 @@ const title = computed(() =>
                     <label class="a-lbl">{{ t('items.card.saleText') }}</label>
                     <ATextarea
                         v-model="form.saleText"
-                        :disabled="off.sales"
+                        :disabled="!onSite"
                         :rows="3"
                         class="a-w100"
                     />

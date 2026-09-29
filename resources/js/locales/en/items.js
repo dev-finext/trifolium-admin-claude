@@ -405,6 +405,14 @@ export default {
         frozen: 'Frozen',
         frozenComment: 'Reason for freezing',
         picture: 'Item picture',
+        pictureInternal: 'Internal picture',
+        pictureInternalHint:
+            'For the team only — it does not go to the shop or anywhere else. A photo of the jar as it sits on the shelf, say.',
+        pictureExternal: 'Picture for the shop',
+        siteOnHint:
+            'This item is synced to the shop — the fields below are what it shows.',
+        siteOffHint:
+            'This item is not synced to the shop, so the fields below are locked. Tick “Site sync” to edit them.',
         picturePick: 'Choose a picture',
         pictureClear: 'Remove',
         pictureHint:

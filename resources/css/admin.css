@@ -3851,3 +3851,10 @@ input[type='number']::-webkit-inner-spin-button {
     appearance: none;
     margin: 0;
 }
+
+/* A file-picker label standing in for a disabled button: a <label> takes no
+   `disabled`, so the look and the dead pointer have to be said here. */
+.a-btn.is-off {
+    opacity: 0.5;
+    pointer-events: none;
+}
