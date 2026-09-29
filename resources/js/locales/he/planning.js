@@ -39,6 +39,7 @@ export default {
         planProduction: 'לייצור',
         plannedCover: 'חודשי מלאי אחרי התכנון',
         direct: 'מכירה ישירה בלבד',
+        lead: 'זמן אספקה',
         supplier: 'ספק',
         price: 'מחיר קניה',
         remarks: 'הערות כרטיס הפריט',

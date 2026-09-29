@@ -122,6 +122,31 @@ export default {
         emptySub: 'פריט שמועבר לארכיון יופיע כאן.',
     },
 
+    lead: {
+        unitName: {
+            day: 'ימים',
+            week: 'שבועות',
+            month: 'חודשים',
+        },
+        unit: {
+            day: 'יום אחד | {n} ימים',
+            week: 'שבוע אחד | שבועיים | {n} שבועות',
+            month: 'חודש אחד | חודשיים | {n} חודשים',
+        },
+        source: {
+            item: 'נקבע ידנית בכרטיס',
+            supplier: 'לפי הספק',
+            prep: 'לפי סוג ההכנה',
+            none: 'לא נקבע',
+        },
+        title: 'זמן אספקה לפי סוג הכנה',
+        hint: 'כמה זמן לוקח לייצר כאן. פריט בהכנה אישית לוקח את זמן האספקה מסוג ההכנה שלו, אלא אם נקבע לו זמן משלו בכרטיס.',
+        amount: 'כמות',
+        unitLabel: 'יחידה',
+        saved: 'זמן האספקה עודכן',
+        usedBy: 'פריט אחד מיוצר כך | {n} פריטים מיוצרים כך',
+    },
+
     filter: {
         allFamilies: 'כל הקטגוריות',
         batchState: {
@@ -344,6 +369,7 @@ export default {
         procurementMethod: 'שיטת רכש',
         minOrderQty: 'כמות הזמנה מינימלית',
         leadTime: 'זמן אספקה',
+        leadFrom: 'מקור זמן האספקה',
         leadTimeDays: '{n} ימים',
         issueMethod: 'שיטת הוצאה',
         componentWarehouse: 'מחסן רכיבים',

@@ -19,9 +19,10 @@ import { computed, ref } from 'vue';
 import {
     coverState,
     coverThreshold,
+    leadTimeOf,
     monthsOfCover,
-    planningAvailable,
     PLANNING_DEFAULT_MONTHS,
+    planningAvailable,
     planTargetsFor,
     PURCHASE_REQUEST_SERIES,
 } from '@/config';
@@ -216,6 +217,16 @@ export const usePlanningStore = defineStore('planning', () => {
                     price: item.price?.lastPurchase ?? null,
                     priceOn: item.price?.lastPurchaseOn || null,
                     leadTime: item.levels?.leadTime ?? null,
+                    // V3 — how long this quantity takes to be there, and where
+                    // that figure comes from: the supplier's card, the
+                    // preparation type, or the item master.
+                    lead: leadTimeOf(item, {
+                        supplier: dataset.suppliers.find(
+                            (one) => one.code === item.suppliers?.sapCode,
+                        ),
+                        prepType: items.prepTypeById((item.prepTypes || [])[0]),
+                        madeHere: items.bomsOfParent(item.sku).length > 0,
+                    }),
                     remarks: item.remarks || null,
                     internalNotes: item.internalNotes || null,
                     series: series?.months || {},

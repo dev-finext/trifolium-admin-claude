@@ -11,7 +11,6 @@ import AEmpty from '@/components/ui/AEmpty.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { num } from '@/lib/money';
 import { supplierDocsOk } from '@/stores/system';
 
 defineProps({
@@ -121,13 +120,14 @@ const docsOk = (supplier) => supplierDocsOk(supplier);
         </template>
 
         <template #cell-lead="{ row }">
-            <ANum>{{
+            <ANum v-if="row.lead">{{
                 t(
-                    'systemContacts.suppliers.leadDays',
-                    { n: num(row.lead) },
+                    `items.lead.unit.${row.leadUnit || 'day'}`,
+                    { n: row.lead },
                     row.lead,
                 )
             }}</ANum>
+            <span v-else class="t-sub">—</span>
         </template>
 
         <template #cell-docs="{ row }">

@@ -291,6 +291,13 @@ const cols = computed(() => [
         sortable: true,
     },
     {
+        k: 'lead',
+        label: t('planning.col.lead'),
+        nowrap: true,
+        sortable: true,
+        sortValue: (row) => row.lead?.days ?? 99999,
+    },
+    {
         k: 'supplier',
         label: t('planning.col.supplier'),
         sortable: true,
@@ -738,6 +745,21 @@ function exportRows() {
             </template>
             <template #cell-direct="{ row }">
                 <ANum>{{ qty(row.direct, row) }}</ANum>
+            </template>
+            <template #cell-lead="{ row }">
+                <template v-if="row.lead">
+                    <div>
+                        {{
+                            t(`items.lead.unit.${row.lead.unit}`, {
+                                n: row.lead.amount,
+                            })
+                        }}
+                    </div>
+                    <div class="t-sub">
+                        {{ t(`items.lead.source.${row.lead.source}`) }}
+                    </div>
+                </template>
+                <span v-else class="t-sub">—</span>
             </template>
             <template #cell-supplier="{ row }">
                 <span v-if="row.supplier">{{ loc(row.supplier) }}</span>

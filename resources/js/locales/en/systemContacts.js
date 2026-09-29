@@ -145,6 +145,7 @@ export default {
             kind: 'Kind',
             contact: 'Contact',
             terms: 'Payment terms',
+            leadUnit: 'Lead time unit',
             lead: 'Lead time',
             docs: 'Certificates',
             spend: '12-month spend',

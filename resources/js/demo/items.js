@@ -63,6 +63,8 @@ export const SITE_CATEGORIES = REAL_CATEGORIES.filter((category) =>
 export const PREP_TYPES = [
     {
         id: 'tincture',
+        // V3 — how long producing this takes: בקבוק מטינקטורה שכבר במלאי.
+        lead: { amount: 3, unit: 'day' },
         sap: 1,
         legacy: true,
         name: L('טינקטורה', 'Tincture'),
@@ -76,6 +78,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'evap_tincture',
+        // V3 — how long producing this takes: נידוף.
+        lead: { amount: 1, unit: 'week' },
         sap: 2,
         legacy: false,
         name: L('טינקטורה בנידוף', 'Evaporated tincture'),
@@ -94,6 +98,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'capsule',
+        // V3 — how long producing this takes: מילוי קפסולות.
+        lead: { amount: 1, unit: 'week' },
         sap: 5,
         legacy: true,
         name: L('קפסולות', 'Capsules'),
@@ -107,6 +113,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'powder',
+        // V3 — how long producing this takes: טחינה וייבוש.
+        lead: { amount: 2, unit: 'week' },
         sap: 6,
         legacy: true,
         name: L('אבקה', 'Powder'),
@@ -120,6 +128,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'tea',
+        // V3 — how long producing this takes: ערבוב.
+        lead: { amount: 3, unit: 'day' },
         sap: 7,
         legacy: true,
         name: L('חליטה Raw', 'Raw infusion'),
@@ -133,6 +143,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'decoction',
+        // V3 — how long producing this takes: בישול.
+        lead: { amount: 3, unit: 'day' },
         sap: 4,
         legacy: true,
         name: L('TANG — בישול אישי', 'TANG — personal decoction'),
@@ -149,6 +161,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'classic_tincture',
+        // V3 — how long producing this takes: השריה.
+        lead: { amount: 1, unit: 'month' },
         sap: 8,
         legacy: false,
         name: L(
@@ -165,6 +179,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'classic_powder',
+        // V3 — how long producing this takes: טחינה.
+        lead: { amount: 2, unit: 'week' },
         sap: 9,
         legacy: false,
         name: L('הרכב סיני קלאסי — אבקה', 'Classic Chinese formula — powder'),
@@ -178,6 +194,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'cream',
+        // V3 — how long producing this takes: רקיחה.
+        lead: { amount: 1, unit: 'week' },
         sap: 11,
         legacy: true,
         name: L('קרם', 'Cream'),
@@ -191,6 +209,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'gel',
+        // V3 — how long producing this takes: רקיחה.
+        lead: { amount: 1, unit: 'week' },
         sap: 12,
         legacy: true,
         name: L('ג׳ל', 'Gel'),
@@ -204,6 +224,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'infused_oil',
+        // V3 — how long producing this takes: השריה בשמן.
+        lead: { amount: 1, unit: 'month' },
         sap: 3,
         legacy: true,
         name: L('שמן מושרה', 'Infused oil'),
@@ -217,6 +239,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'essential_oil',
+        // V3 — how long producing this takes: זיקוק.
+        lead: { amount: 2, unit: 'week' },
         sap: 13,
         legacy: true,
         name: L('שמן אתרי', 'Essential oil'),
@@ -233,6 +257,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'hydrosol',
+        // V3 — how long producing this takes: זיקוק.
+        lead: { amount: 2, unit: 'week' },
         sap: 14,
         legacy: false,
         name: L('הידרוסול', 'Hydrosol'),
@@ -246,6 +272,8 @@ export const PREP_TYPES = [
     },
     {
         id: 'suppository',
+        // V3 — how long producing this takes: יציקה.
+        lead: { amount: 1, unit: 'week' },
         sap: 17,
         legacy: false,
         name: L('נרות', 'Suppositories'),

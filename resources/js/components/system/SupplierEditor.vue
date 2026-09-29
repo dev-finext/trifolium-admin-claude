@@ -17,6 +17,7 @@ import ASelect from '@/components/ui/ASelect.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { LEAD_UNIT_IDS } from '@/config';
 import { L } from '@/lib/localized';
 import { useSystemStore } from '@/stores/system';
 
@@ -39,6 +40,7 @@ const FIELDS = [
     { k: 'pay', label: 'field.pay', opts: 'pay' },
     { k: 'cur', label: 'field.cur', opts: 'cur' },
     { k: 'lead', label: 'field.lead', num: true },
+    { k: 'leadUnit', label: 'field.leadUnit', opts: 'leadUnit' },
     { k: 'tradeDisc', label: 'field.tradeDisc', num: true },
     { k: 'minOrder', label: 'field.minOrder', num: true },
     { k: 'bank', label: 'field.bank', loc: true },
@@ -108,6 +110,12 @@ const options = computed(() => ({
         label: t(`systemContacts.payMethod.${id}`),
     })),
     cur: system.supplierCurrencies.map((cur) => ({ value: cur, label: cur })),
+    // V3 — "two weeks" is how the pharmacy states a lead time, so the card
+    // takes the unit alongside the number rather than converting to days.
+    leadUnit: LEAD_UNIT_IDS.map((id) => ({
+        value: id,
+        label: t(`items.lead.unitName.${id}`),
+    })),
 }));
 
 const missing = computed(() =>

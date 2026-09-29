@@ -144,6 +144,7 @@ export default {
             kind: 'סוג',
             contact: 'איש קשר',
             terms: 'תנאי תשלום',
+            leadUnit: 'יחידת זמן האספקה',
             lead: 'אספקה',
             docs: 'אישורים',
             spend: 'רכש 12 חודשים',

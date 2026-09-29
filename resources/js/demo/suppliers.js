@@ -124,7 +124,11 @@ export const DEMO_SUPPLIERS = REAL_SUPPLIERS.map((row) => {
         payee: named(row.name),
         tradeDisc: trades ? spread(`${slot}:disc`, 0, 15) : 0,
         minOrder: trades ? spread(`${slot}:min`, 0, 12) * 250 : 0,
-        lead: trades ? spread(`${slot}:lead`, 3, 21) : null,
+        // V3 — stated in the unit the pharmacy says it in, not only in days.
+        lead: trades ? spread(`${slot}:lead`, 1, 6) : null,
+        leadUnit: trades
+            ? pickFrom(`${slot}:leadUnit`, ['day', 'week', 'week', 'month'])
+            : null,
         coa: kind === 'raw_materials',
         books: { valid: '2026-12-31', ok: true },
         tax: {

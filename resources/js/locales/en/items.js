@@ -123,6 +123,31 @@ export default {
         emptySub: 'An item moved to the archive appears here.',
     },
 
+    lead: {
+        unitName: {
+            day: 'Days',
+            week: 'Weeks',
+            month: 'Months',
+        },
+        unit: {
+            day: 'One day | {n} days',
+            week: 'One week | {n} weeks',
+            month: 'One month | {n} months',
+        },
+        source: {
+            item: 'Set on the card',
+            supplier: 'From the supplier',
+            prep: 'From the preparation type',
+            none: 'Not set',
+        },
+        title: 'Lead time by preparation type',
+        hint: 'How long producing it here takes. A compounded item takes the lead time of its preparation type, unless the card sets one of its own.',
+        amount: 'Amount',
+        unitLabel: 'Unit',
+        saved: 'The lead time was updated',
+        usedBy: 'One item is made this way | {n} items are made this way',
+    },
+
     filter: {
         allFamilies: 'All categories',
         batchState: {
@@ -347,6 +372,7 @@ export default {
         procurementMethod: 'Procurement method',
         minOrderQty: 'Minimum order quantity',
         leadTime: 'Lead time',
+        leadFrom: 'Lead time source',
         leadTimeDays: '{n} days',
         issueMethod: 'Issue method',
         componentWarehouse: 'Component warehouse',

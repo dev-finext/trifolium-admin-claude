@@ -40,6 +40,7 @@ export default {
         planProduction: 'To production',
         plannedCover: 'Months of stock after the plan',
         direct: 'Direct sales only',
+        lead: 'Lead time',
         supplier: 'Supplier',
         price: 'Purchase price',
         remarks: 'Item-card remarks',

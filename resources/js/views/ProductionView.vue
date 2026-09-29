@@ -11,6 +11,7 @@ import { useI18n } from 'vue-i18n';
 import PageHead from '@/components/layout/PageHead.vue';
 import CompleteProductionModal from '@/components/production/CompleteProductionModal.vue';
 import CreateProductionModal from '@/components/production/CreateProductionModal.vue';
+import PrepLeadCard from '@/components/production/PrepLeadCard.vue';
 import ProductionDrawer from '@/components/production/ProductionDrawer.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
@@ -396,6 +397,9 @@ async function confirmCancel(reason) {
                 v-model:size="state.ps"
                 :total="total"
             />
+
+            <!-- V3 — how long each preparation takes, set once per type. -->
+            <PrepLeadCard />
 
             <FilterDrawer
                 :open="drawerOpen"

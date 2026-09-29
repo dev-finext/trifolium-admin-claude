@@ -24,9 +24,15 @@ import AKeyValue from '@/components/ui/AKeyValue.vue';
 import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import ChangeLogPanel from '@/components/ui/ChangeLogPanel.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { ITEM_FLAG_IDS, SAFETY_CONTEXT_IDS, SAFETY_LEVEL } from '@/config';
+import {
+    ITEM_FLAG_IDS,
+    leadTimeOf,
+    SAFETY_CONTEXT_IDS,
+    SAFETY_LEVEL,
+} from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { ils, num } from '@/lib/money';
+import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
 import { useProductionStore } from '@/stores/production';
 
@@ -50,6 +56,7 @@ const emit = defineEmits([
 const { t } = useI18n();
 const { loc } = useLocalized();
 const store = useItemsStore();
+const dataset = useDatasetStore();
 const production = useProductionStore();
 
 const name = computed(() => props.row?.names?.he || '');
@@ -64,6 +71,42 @@ const name = computed(() => props.row?.names?.he || '');
 const shownPicture = computed(
     () => props.row?.pictureInternal || props.row?.picture || '',
 );
+
+/**
+ * V3 — how long this item takes to arrive, and where that figure came from.
+ *
+ * Bought, it is the supplier's; made here, it is the preparation type's; and a
+ * number typed on the card itself beats both. Saying which is not decoration:
+ * "two weeks, because that is what grinding a powder takes" is actionable and
+ * "two weeks" is not.
+ */
+const lead = computed(() => {
+    const row = props.row;
+
+    if (!row) {
+        return null;
+    }
+
+    return leadTimeOf(row, {
+        supplier: dataset.suppliers.find(
+            (one) => one.code === row.suppliers?.sapCode,
+        ),
+        prepType: store.prepTypeById((row.prepTypes || [])[0]),
+        madeHere: (row.bomCount || 0) > 0,
+    });
+});
+
+const leadText = computed(() => {
+    const value = lead.value;
+
+    if (!value) {
+        return notSet();
+    }
+
+    return `${t(`items.lead.unit.${value.unit}`, { n: value.amount })} · ${t(
+        `items.lead.source.${value.source}`,
+    )}`;
+});
 
 const notSet = () => t('items.card.notSet');
 const uomLabel = (id) => (id ? t(`items.uom.${id}`) : notSet());
@@ -531,14 +574,7 @@ const categories = computed(() =>
                                 t('items.card.minOrderQty'),
                                 qty(row.levels?.minOrder, row.uom?.purchase),
                             ],
-                            [
-                                t('items.card.leadTime'),
-                                row.levels?.leadTime
-                                    ? t('items.card.leadTimeDays', {
-                                          n: row.levels.leadTime,
-                                      })
-                                    : notSet(),
-                            ],
+                            [t('items.card.leadTime'), leadText],
                             [
                                 t('items.card.treeType'),
                                 t(`items.treeType.${row.treeType || 'N'}`),

@@ -5,6 +5,7 @@
 // directory — all fabricated content lives in resources/js/demo/ and is reached
 // through resources/js/data/source.js.
 export * from '@/config/archive';
+export * from '@/config/leadTime';
 export * from '@/config/batches';
 export * from '@/config/catalog';
 export * from '@/config/customers';

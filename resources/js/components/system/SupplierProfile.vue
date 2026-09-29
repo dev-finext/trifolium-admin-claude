@@ -236,7 +236,13 @@ const tradeRows = computed(() => {
         ],
         [
             t('systemContacts.suppliers.field.lead'),
-            t('systemContacts.suppliers.leadDays', { n: num(s.lead) }, s.lead),
+            s.lead
+                ? t(
+                      `items.lead.unit.${s.leadUnit || 'day'}`,
+                      { n: s.lead },
+                      s.lead,
+                  )
+                : '—',
         ],
     ];
 });
