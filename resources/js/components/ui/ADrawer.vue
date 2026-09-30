@@ -58,20 +58,6 @@ function minimize() {
     emit('close');
 }
 
-// A window that is open is not a window that is minimised. Reaching a record
-// any other way — clicking its row, following a link from another drawer —
-// takes its chip off the tray, so the tray never offers to restore something
-// that is already on screen.
-watch(
-    () => [props.open, props.win?.id],
-    ([open, id]) => {
-        if (open && id && windows.has(id)) {
-            windows.drop(id);
-        }
-    },
-    { immediate: true },
-);
-
 useScrollLock(() => props.open);
 
 // Escape closes the drawer — unless a modal is open on top of it. The modal owns

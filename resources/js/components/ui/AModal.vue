@@ -12,7 +12,7 @@
 // The header is tinted for a draft. A window holding unsaved work and a window
 // holding a record you were reading are not the same thing to come back to, and
 // the tray says so too.
-import { computed, onUnmounted, watch } from 'vue';
+import { computed, onBeforeUnmount, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { useRoute } from 'vue-router';
@@ -70,6 +70,17 @@ function minimize() {
 
     emit('close');
 }
+
+// A form that is already on the tray keeps its place when it closes — by the ×,
+// by the scrim, by Escape, or because it saved. What must not survive is an
+// older copy of the typing, so the tray's copy is brought up to date on the way
+// out. A form that was never parked is not added here: parking is an act of its
+// own, and closing a window is not parking it.
+onBeforeUnmount(() => {
+    if (canMinimize.value && props.win.form && windows.has(props.win.id)) {
+        windows.refresh(props.win.id, props.win.form());
+    }
+});
 
 useScrollLock(() => props.open);
 

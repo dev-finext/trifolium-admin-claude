@@ -32,6 +32,17 @@
 // Drafts are marked apart from records everywhere they appear, because "a
 // window I was reading" and "a window with unsaved work in it" are not the same
 // thing to come back to.
+//
+// **A window leaves the tray one way: somebody closes it.** Opening it does not
+// remove it, and neither does closing what was opened — a taskbar you have to
+// re-fill every time you glance at something is not a taskbar. So the list is
+// the set of windows the reader is working through, and it shrinks only when
+// they say so, with the × on the chip.
+//
+// That has a consequence worth naming: a form can be opened from the tray,
+// typed into further, and closed by clicking outside it. The tray's copy is
+// brought up to date when the window closes, so what waits there is always the
+// last state of the typing and never an older one.
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -40,11 +51,12 @@ const KEY = 'trifolium:windows';
 /**
  * How many windows the tray holds.
  *
- * Not a technical limit — a tray with forty things parked in it is a place
- * records get lost, which is the opposite of what it is for. The oldest is
- * dropped when the limit is reached, and the screen says so.
+ * A backstop on what is written to browser storage, and nothing more — it is
+ * not a rule about the reader's work. Windows leave the tray because somebody
+ * closes them; this only stops an unbounded list from growing into the storage
+ * quota and taking the whole tray down with it.
  */
-export const WINDOW_LIMIT = 12;
+export const WINDOW_LIMIT = 24;
 
 /** How many chips stand in the top bar before the rest go behind "+N". */
 export const WINDOW_CHIPS = 3;
@@ -161,18 +173,46 @@ export const useWindowsStore = defineStore('windows', () => {
     }
 
     /**
-     * Hand a parked form to the screen that can reopen it.
+     * Open a parked window again.
      *
-     * The window comes off the tray here rather than when the editor opens: it
-     * is no longer waiting, it is on its way, and a chip that outlived the
-     * click would be a second copy of the same draft.
+     * It stays on the tray. A record is reopened by its address alone; a form
+     * cannot be, because an editor is not an address, so it is left in
+     * `pending` for the screen that owns that editor to pick up.
+     *
+     * `pending` is set even when the address is the one already on screen —
+     * that is exactly the case of a form whose editor was closed by clicking
+     * outside it, where nothing navigates and the handover is the only thing
+     * that reopens it.
      */
     function resume(id) {
-        const row = take(id);
+        const row = rows.value.find((one) => one.id === id) || null;
 
         pending.value = row?.form ? row : null;
 
         return row;
+    }
+
+    /**
+     * Bring a parked form's typing up to date.
+     *
+     * Called when an open window closes: the tray keeps what the window last
+     * held, so reopening it never puts back an older version of the same work.
+     * A window that is not on the tray is not added by this — parking is an act
+     * of its own, and closing a window is not parking it.
+     */
+    function refresh(id, form) {
+        const at = rows.value.findIndex((one) => one.id === id);
+
+        if (at < 0 || !form) {
+            return null;
+        }
+
+        const next = [...rows.value];
+
+        next[at] = { ...next[at], form, at: Date.now() };
+        commit(next);
+
+        return next[at];
     }
 
     /**
@@ -201,7 +241,7 @@ export const useWindowsStore = defineStore('windows', () => {
         pending,
         has,
         minimize,
-        take,
+        refresh,
         drop,
         clear,
         resume,
