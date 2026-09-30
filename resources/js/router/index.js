@@ -25,6 +25,12 @@ const routes = [
         component: () => import('@/views/OrderDetailView.vue'),
     },
     {
+        path: '/stock-analysis',
+        name: 'stockAnalysis',
+        meta: { titleKey: 'nav.item.stockAnalysis' },
+        component: () => import('@/views/StockAnalysisView.vue'),
+    },
+    {
         path: '/deliveries',
         name: 'deliveries',
         meta: { titleKey: 'nav.item.deliveries' },

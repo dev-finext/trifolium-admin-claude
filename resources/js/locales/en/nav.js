@@ -24,6 +24,7 @@ export default {
         stickers: 'Stickers',
         inventory: 'Stock & batches',
         purchasing: 'Purchasing',
+        stockAnalysis: 'Stock analysis',
         safety: 'Drug interactions',
         libraries: 'Formula libraries',
         content: 'Content — articles & lectures',

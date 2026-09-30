@@ -24,13 +24,20 @@
  * The extract (`scripts/extract-sap/extract.py`, `CONSUMPTION_SKIP`) applies the
  * same list to the ten years of `OINM` behind the fixture, so what the report
  * adds up here and what SAP would add up there are the same number.
+ *
+ * Warehouse transfers (67) were on this list until 30.9.2026. The client's note
+ * asks for them to be excluded, the saved query does not exclude them, and only
+ * 32 transfer rows exist in ten years — so the difference was judged to be
+ * nothing and the note was followed. Checked against the export ירון actually
+ * runs, those 32 rows were the whole of the disagreement: six item-months, one
+ * of them off by 500 units. The query is what the pharmacy runs and accepts, so
+ * the query is what this follows, and the note's extra exclusion is not applied.
  */
 export const CONSUMPTION_EXCLUDED_SAP_TYPES = [
     { sap: 10000071, id: 'count' },
     { sap: 19, id: 'creditMemo' },
     { sap: 21, id: 'goodsReturn' },
     { sap: 60, id: 'goodsIssue' },
-    { sap: 67, id: 'transfer' },
 ];
 
 /**

@@ -141,6 +141,7 @@ function itemTitle(groupId, itemId) {
                     <AIcon :name="item.icon" :size="19" />
                     <span>{{ t(`nav.item.${item.id}`) }}</span>
                     <V2Badge v-if="item.v2" :id="item.v2" size="sm" />
+                    <V2Badge v-else-if="item.v3" v="3" size="sm" />
                     <span v-if="item.inDevelopment" class="a-soon">
                         {{ t('nav.inDevelopment') }}
                     </span>

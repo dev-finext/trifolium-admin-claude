@@ -100,7 +100,8 @@ export default {
         minimizeFormHint:
             'Park this form in the tray — what you typed is kept, and you carry on from here',
         savedToast: 'The form is in the tray',
-        savedToastBody: 'What you typed is kept. Click the window to bring it back.',
+        savedToastBody:
+            'What you typed is kept. Click the window to bring it back.',
         draft: 'Draft',
         title: 'Minimised windows',
         all: 'All minimised windows',

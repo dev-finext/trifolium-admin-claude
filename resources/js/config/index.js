@@ -24,5 +24,6 @@ export * from '@/config/nav';
 export * from '@/config/org';
 export * from '@/config/settings';
 export * from '@/config/statuses';
+export * from '@/config/stockAnalysis';
 export * from '@/config/stickers';
 export * from '@/config/suppliers';

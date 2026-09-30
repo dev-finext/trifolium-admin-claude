@@ -502,12 +502,17 @@ CONSUMPTION_MONTHS = 24
 #       19        A/P credit memo
 #       21        goods return
 #       60        goods issue - the general issue used to tidy stock
-#       67        warehouse transfer - the note asks for this one too; the saved
-#                 query does not exclude it, but the intent is explicit and only
-#                 32 transfer rows exist in ten years, so the difference is nil
 #   * plus the goods-issue lines a production order raised (IGE1.BaseType = 202),
 #     which is the real consumption the blanket exclusion of 60 above removed.
-CONSUMPTION_SKIP = (10000071, 19, 21, 60, 67)
+#
+# Warehouse transfers (67) were excluded here too for a while: the client's note
+# asks for it, the saved query does not do it, and only 32 transfer rows exist in
+# ten years, so the difference looked like nothing. It is not nothing. Compared
+# against the export ירון sent on 30.9.2026, those 32 rows are the whole of the
+# gap - six item-months out of fourteen thousand, but one of them off by 500
+# units. The report has to be the pharmacy's report, so the list is the query's
+# list, and the note's extra exclusion is not applied.
+CONSUMPTION_SKIP = (10000071, 19, 21, 60)
 
 # The production order's own object type, as SAP writes it into IGE1.BaseType.
 PRODUCTION_ORDER_TYPE = 202
@@ -523,7 +528,9 @@ def consumption(conn, codes, months=CONSUMPTION_MONTHS):
 
     Returns one row per item that moved at all: `months` maps 'YYYY-MM' to the
     quantity consumed, `direct` the part of it that was sold as raw material.
-    Months with nothing in them are left out rather than written as zero.
+    A month with no movement at all is left out; a month whose movements come to
+    zero is written as zero, because in SAP's own report the difference between
+    those two is the difference between a row and no row.
     """
     wanted = [c for c in dict.fromkeys(codes) if c]
 
@@ -570,7 +577,6 @@ def consumption(conn, codes, months=CONSUMPTION_MONTHS):
             FROM OINM
             WHERE ItemCode IN ({codes_sql}) AND {window}
               AND ISNULL(TransType, 0) NOT IN ({skip_sql})
-              AND OutQty > 0
             GROUP BY ItemCode, FORMAT(DocDate, 'yyyy-MM')
             """,
         )

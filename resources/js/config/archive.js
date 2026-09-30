@@ -21,7 +21,8 @@ export const ARCHIVE_FIELD = 'archived';
 export const isArchived = (record) => Boolean(record?.[ARCHIVE_FIELD]);
 
 /** The live rows of a collection. */
-export const liveOnly = (rows) => (rows || []).filter((row) => !isArchived(row));
+export const liveOnly = (rows) =>
+    (rows || []).filter((row) => !isArchived(row));
 
 /** The archived rows of a collection, newest first. */
 export const archivedOnly = (rows) =>
