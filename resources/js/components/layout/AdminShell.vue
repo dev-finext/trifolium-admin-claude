@@ -1,6 +1,7 @@
 <script setup>
 // The two-column frame: navigation beside a column holding the top bar and the
-// scrolling body.
+// scrolling body — under a strip that says this console is a demo, which spans
+// both columns and is the grid's first row.
 //
 // The collapse preference belongs to SideNav (it is the sidebar's own width, and
 // the sidebar is what persists it); the shell holds the value because the grid
@@ -10,6 +11,7 @@ import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
+import DemoBanner from '@/components/layout/DemoBanner.vue';
 import SideNav from '@/components/layout/SideNav.vue';
 import TopBar from '@/components/layout/TopBar.vue';
 
@@ -35,6 +37,8 @@ watch(
 
 <template>
     <div class="a-app" :class="{ 'is-nav-off': navCollapsed }">
+        <DemoBanner />
+
         <SideNav v-model:collapsed="navCollapsed" />
 
         <div class="a-main">

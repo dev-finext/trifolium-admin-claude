@@ -109,6 +109,8 @@ export default {
         clear: 'Clear all',
     },
 
+    demoBanner: 'Demo · admin console',
+
     me: {
         role: 'Pharmacy team',
     },
