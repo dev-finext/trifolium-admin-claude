@@ -16,7 +16,6 @@ import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import ANum from '@/components/ui/ANum.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { ORG } from '@/config';
@@ -135,9 +134,7 @@ function askDelivered() {
             :title="t('orders.delivery.pickupCard')"
             icon="map_pin"
         >
-            <template v-if="point" #right>
-                <V2Badge id="pickup-points" size="sm" />
-            </template>
+            <template v-if="point" #right> </template>
             <AKeyValue
                 :rows="[
                     [t('orders.delivery.method'), null],

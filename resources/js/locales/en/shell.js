@@ -1,15 +1,9 @@
 // English mirror of he/shell.js — same keys, real translations.
 export default {
     // The V2 review markers — demo only. `badge` is the literal on the red pill.
-    // The demo switch that refuses every write, to show the failure state
-    v2: {
-        badge: 'V2',
-        tip: 'New in version {v} — click for the explanation in “Spec progress”',
-        tipPlain: 'New in version {v}',
-        show: 'Show V2 markers',
-        hide: 'Hide V2 markers',
-        on: 'shown',
-        off: 'hidden',
+    ready: {
+        badge: 'R',
+        tip: 'Ready in production — this screen is already live in the real system',
     },
 
     landmark: {

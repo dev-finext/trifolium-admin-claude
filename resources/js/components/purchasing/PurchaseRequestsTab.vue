@@ -12,7 +12,6 @@ import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import ANum from '@/components/ui/ANum.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { PURCHASE_REQUEST_STATE } from '@/config';
 import { ils } from '@/lib/money';
@@ -53,7 +52,6 @@ const cols = computed(() => [
     <div class="pr-wrap">
         <p class="pr-lede">
             {{ t('planning.request.tabLede') }}
-            <V2Badge v="3" size="sm" />
         </p>
 
         <ADataTable

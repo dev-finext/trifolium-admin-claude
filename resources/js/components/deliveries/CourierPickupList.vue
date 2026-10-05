@@ -13,7 +13,6 @@ import AModal from '@/components/ui/AModal.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { ACTIVE_COURIERS, ORG } from '@/config';
@@ -124,7 +123,6 @@ function print() {
     >
         <div class="a-grid">
             <div class="top">
-                <V2Badge id="pickup-points" size="sm" />
                 <span class="t-sub">{{ t('deliveries.pickupList.note') }}</span>
             </div>
             <div class="pick">

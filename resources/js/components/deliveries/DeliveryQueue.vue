@@ -15,7 +15,6 @@ import AIcon from '@/components/ui/AIcon.vue';
 import ANum from '@/components/ui/ANum.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { COURIER, ORG } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -94,7 +93,6 @@ function addressDetail(order) {
                 <AChip tone="red" size="sm" :dot="false">
                     {{ t('deliveries.row.urgent') }}
                 </AChip>
-                <V2Badge id="order-flags" size="sm" />
             </div>
             <div v-if="row.credit && !row.creditPaid" class="mark">
                 <AChip tone="purple" size="sm" :dot="false">
@@ -136,7 +134,6 @@ function addressDetail(order) {
                             name: loc(pointOf(row).name),
                         })
                     }}
-                    <V2Badge id="pickup-points" size="sm" />
                 </div>
                 <div v-else class="muted">{{ loc(ORG.address) }}</div>
                 <div v-if="row.pickupNotifiedAt" class="t-sub">

@@ -12,7 +12,6 @@ import AButton from '@/components/ui/AButton.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ASelect from '@/components/ui/ASelect.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { CURRENCY_SYMBOL, DEFAULT_WAREHOUSE } from '@/config';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
@@ -273,7 +272,6 @@ async function save() {
                             <span v-if="!line.existingBatch" class="req"
                                 >*</span
                             >
-                            <V2Badge v="3" size="sm" />
                         </label>
                         <AInput
                             v-if="!line.existingBatch"
@@ -291,7 +289,6 @@ async function save() {
                     <div>
                         <label class="a-lbl" :for="`${uid}-md${i}`">
                             {{ t('inventory.receipt.col.madeOn') }}
-                            <V2Badge v="3" size="sm" />
                         </label>
                         <AInput
                             :id="`${uid}-md${i}`"

@@ -11,7 +11,6 @@ import ACard from '@/components/ui/ACard.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ASelect from '@/components/ui/ASelect.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useStickerData } from '@/composables/useStickerData';
 import { useToast } from '@/composables/useToast';
@@ -183,10 +182,6 @@ async function print() {
 <template>
     <div class="pr">
         <ACard :title="t('stickers.tab.print')" icon="printer">
-            <template #right>
-                <V2Badge id="labels" size="sm" />
-            </template>
-
             <div class="pr-form">
                 <div>
                     <label class="a-lbl" for="stk-src">{{

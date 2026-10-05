@@ -24,7 +24,6 @@ import AEmpty from '@/components/ui/AEmpty.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ASkeleton from '@/components/ui/ASkeleton.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import {
@@ -170,7 +169,6 @@ function exportSheet() {
 
     <div class="a-pane sa-lede">
         <p class="a-hint">{{ t('stockAnalysis.lede') }}</p>
-        <V2Badge v="3" size="sm" />
     </div>
 
     <div class="a-pane sa-controls">

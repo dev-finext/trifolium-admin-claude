@@ -12,7 +12,6 @@ import ACard from '@/components/ui/ACard.vue';
 import ActionGate from '@/components/ui/ActionGate.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useOrdersStore } from '@/stores/orders';
@@ -70,7 +69,6 @@ async function save() {
 <template>
     <ACard :title="t('stickers.texts.title')" icon="edit">
         <template #right>
-            <V2Badge id="labels" size="sm" />
             <span v-if="texts?.updated" class="t-sub">
                 {{
                     t('stickers.texts.updated', {

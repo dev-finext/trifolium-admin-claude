@@ -13,7 +13,6 @@ import AEmpty from '@/components/ui/AEmpty.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ASwitch from '@/components/ui/ASwitch.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useDatasetStore } from '@/stores/dataset';
@@ -125,7 +124,6 @@ const typeCount = (draft) =>
 
         <ACard :title="t('stickers.notes.title')" icon="edit" :pad="false">
             <template #right>
-                <V2Badge id="labels" size="sm" />
                 <AButton sm kind="p" icon="plus" @click="adding = !adding">
                     {{ t('stickers.notes.add') }}
                 </AButton>

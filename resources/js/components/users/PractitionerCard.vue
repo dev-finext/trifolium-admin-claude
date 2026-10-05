@@ -28,7 +28,6 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { formatAddress } from '@/components/users/address';
 import { practitionerFields } from '@/components/users/personFields';
 import PointsLedger from '@/components/users/PointsLedger.vue';
@@ -712,9 +711,6 @@ function onReset() {
             <ChangeLogPanel entity="practitioner" :ref-id="practitioner.code" />
 
             <ACard :title="t('users.card.accounting')" icon="card">
-                <template #right>
-                    <V2Badge id="practitioner-card" size="sm" />
-                </template>
                 <AKeyValue>
                     <dt>{{ t('users.field.accountingEmail') }}</dt>
                     <dd dir="ltr">

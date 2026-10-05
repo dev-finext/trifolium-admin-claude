@@ -18,7 +18,6 @@ import AIcon from '@/components/ui/AIcon.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FileViewerModal from '@/components/ui/FileViewerModal.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { ATTACHMENT_RULES } from '@/config';
@@ -148,7 +147,6 @@ async function confirmRemove(reason) {
         :pad="false"
     >
         <template v-if="!bare" #right>
-            <V2Badge id="attachments" size="sm" />
             <span class="att-n">{{
                 t('attachments.sub', { n: files.length })
             }}</span>
@@ -158,7 +156,6 @@ async function confirmRemove(reason) {
         </template>
 
         <div v-if="bare" class="att-barehead">
-            <V2Badge id="attachments" size="sm" />
             <span class="att-n">{{
                 t('attachments.sub', { n: files.length })
             }}</span>

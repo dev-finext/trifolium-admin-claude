@@ -18,7 +18,6 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AMoney from '@/components/ui/AMoney.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { usePrepSheet } from '@/composables/usePrepSheet';
 import { useToast } from '@/composables/useToast';
@@ -131,7 +130,6 @@ async function confirmCancel(reason) {
             :pad="false"
         >
             <template #right>
-                <V2Badge id="prep-sheet" size="sm" />
                 <AButton sm kind="p" icon="printer" @click="print">
                     {{ t('orders.itemsTab.print') }}
                 </AButton>
@@ -188,7 +186,6 @@ async function confirmCancel(reason) {
             v-if="formulas.length && orders.printTexts"
             class="a-note a-note--info"
         >
-            <V2Badge id="order-fields" size="sm" />
             <strong>{{ t('orders.itemsTab.regulatoryTitle') }}</strong>
             {{ loc(orders.printTexts.regulatoryText) }}
             <span class="t-sub">

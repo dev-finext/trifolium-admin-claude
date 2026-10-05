@@ -7,7 +7,6 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import ACard from '@/components/ui/ACard.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { BATCH_KIND_IDS, ITEM_FAMILY_IDS, PICK_MODE_IDS } from '@/config';
@@ -70,7 +69,6 @@ async function setExpiry(family, value) {
         icon="settings"
     >
         <template #right>
-            <V2Badge id="batches" size="sm" />
             <span class="t-sub">
                 {{
                     t('inventory.settings.updated', {
@@ -102,7 +100,6 @@ async function setExpiry(family, value) {
 
                 <div class="a-sect-t series-t">
                     {{ t('inventory.settings.seriesTitle') }}
-                    <V2Badge v="3" size="sm" />
                 </div>
                 <dl class="series">
                     <template v-for="kind in BATCH_KIND_IDS" :key="kind">

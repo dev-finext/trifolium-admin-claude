@@ -32,7 +32,6 @@ import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import SavedViews from '@/components/ui/SavedViews.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import {
     filterDefaults,
     PAGE_DEFAULTS,
@@ -351,7 +350,6 @@ const paneTabs = computed(() =>
             @click="state.view = 'points'"
             @keydown.enter.prevent="state.view = 'points'"
         >
-            <V2Badge id="pickup-points" size="sm" />
             <strong>{{
                 t('deliveries.alert.title', deliveries.todayAlert)
             }}</strong>

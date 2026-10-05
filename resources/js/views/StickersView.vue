@@ -15,7 +15,6 @@ import StickerPrintTab from '@/components/stickers/StickerPrintTab.vue';
 import AErrorState from '@/components/ui/AErrorState.vue';
 import ASkeleton from '@/components/ui/ASkeleton.vue';
 import ATabs from '@/components/ui/ATabs.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useUrlState } from '@/composables/useUrlState';
 import { useDatasetStore } from '@/stores/dataset';
 import { useStickersStore } from '@/stores/stickers';
@@ -56,9 +55,6 @@ const tabs = computed(() => [
             })
         "
     >
-        <template #badge>
-            <V2Badge id="labels" />
-        </template>
     </PageHead>
 
     <ATabs v-model="view.tab" :tabs="tabs" />

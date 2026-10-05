@@ -25,7 +25,6 @@ import ANum from '@/components/ui/ANum.vue';
 import ATabs from '@/components/ui/ATabs.vue';
 import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { CURRENCY_SYMBOL, PO_STATES } from '@/config';
@@ -664,9 +663,6 @@ function onSaved(changed) {
                 icon="tag"
                 :pad="false"
             >
-                <template #right>
-                    <V2Badge id="supplier-card" size="sm" />
-                </template>
                 <p class="a-hint sp-pad">
                     {{ t('systemContacts.suppliers.items.note') }}
                 </p>
@@ -714,7 +710,6 @@ function onSaved(changed) {
                 :pad="false"
             >
                 <template #right>
-                    <V2Badge id="supplier-card" size="sm" />
                     <span class="t-sub">{{ group.rows.length }}</span>
                 </template>
                 <ADataTable

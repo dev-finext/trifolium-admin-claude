@@ -7,7 +7,7 @@ export const NAV_GROUPS = [
     {
         id: 'daily_ops',
         items: [
-            { id: 'orders', icon: 'clipboard_list' },
+            { id: 'orders', icon: 'clipboard_list', ready: true },
             { id: 'deliveries', icon: 'truck' },
             { id: 'messaging', icon: 'whatsapp' },
         ],
@@ -15,7 +15,7 @@ export const NAV_GROUPS = [
     {
         id: 'customers',
         items: [
-            { id: 'users', icon: 'users' },
+            { id: 'users', icon: 'users', ready: true },
             { id: 'finance', icon: 'card' },
             { id: 'wallet', icon: 'coin' },
         ],
@@ -29,7 +29,7 @@ export const NAV_GROUPS = [
             // products and bills of materials are sections of the card.
             { id: 'items', icon: 'tag' },
             { id: 'pricing', icon: 'layers' },
-            { id: 'suppliers', icon: 'truck' },
+            { id: 'suppliers', icon: 'truck', ready: true },
             // V2 — the stickers module: template editor, print run, notes pool, log
             { id: 'stickers', icon: 'printer', v2: 'labels' },
             { id: 'inventory', icon: 'grid' },
@@ -43,29 +43,21 @@ export const NAV_GROUPS = [
     {
         id: 'knowledge',
         items: [
-            { id: 'safety', icon: 'shield' },
-            { id: 'libraries', icon: 'beaker' },
+            { id: 'safety', icon: 'shield', ready: true },
+            { id: 'libraries', icon: 'beaker', ready: true },
             { id: 'content', icon: 'book' },
-            { id: 'videos', icon: 'play' },
+            { id: 'videos', icon: 'play', ready: true },
         ],
     },
     {
         id: 'system',
         items: [
             { id: 'integrations', icon: 'db' },
-            { id: 'admins', icon: 'users' },
-            { id: 'systemContacts', icon: 'phone' },
+            { id: 'admins', icon: 'users', ready: true },
+            { id: 'systemContacts', icon: 'phone', ready: true },
             { id: 'log', icon: 'list' },
             { id: 'database', icon: 'db', devOnly: true },
         ],
-    },
-    // Development-only. Shown against the demo fixture and nowhere else; the
-    // route behind it is folded out of a production build (see router/index.js).
-    {
-        id: 'dev',
-        separated: true,
-        devOnly: true,
-        items: [{ id: 'devProgress', icon: 'file_text' }],
     },
 ];
 

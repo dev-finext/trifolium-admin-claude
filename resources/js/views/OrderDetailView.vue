@@ -40,7 +40,6 @@ import ExceptionChip from '@/components/ui/ExceptionChip.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
 import PaymentChip from '@/components/ui/PaymentChip.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
 import { ils } from '@/lib/money';
@@ -202,7 +201,6 @@ function close() {
                                 <AChip tone="red" :dot="false">
                                     {{ t('orders.detail.urgent') }}
                                 </AChip>
-                                <V2Badge id="order-flags" size="sm" />
                             </template>
                             <template v-if="order.practitioner.specialTerms">
                                 <AChip
@@ -214,7 +212,6 @@ function close() {
                                 >
                                     {{ t('orders.detail.specialTerms') }}
                                 </AChip>
-                                <V2Badge id="order-flags" size="sm" />
                             </template>
                             <template v-if="order.cancelCause">
                                 <AChip tone="red" :dot="false">
@@ -226,7 +223,6 @@ function close() {
                                         })
                                     }}
                                 </AChip>
-                                <V2Badge id="crm" size="sm" />
                             </template>
                             <PaymentChip :order="order" />
                             <ExceptionChip

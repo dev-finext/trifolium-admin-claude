@@ -20,7 +20,6 @@ import OrderLink from '@/components/ui/OrderLink.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
 import PaymentChip from '@/components/ui/PaymentChip.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { isSettled, ORDER_STATUS_IDS } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -187,7 +186,6 @@ function itemSummary(order) {
                 <AChip tone="red" size="sm" :dot="false">
                     {{ t('orders.detail.urgent') }}
                 </AChip>
-                <V2Badge id="order-flags" size="sm" />
             </div>
             <div v-if="row.flags?.length" class="a-chipwrap a-orderflags">
                 <ExceptionChip

@@ -169,19 +169,6 @@ const routes = [
                   component: () => import('@/views/DatabaseView.vue'),
               },
           ]),
-    // The development progress article exists only against the demo fixture. The
-    // test is written against import.meta.env directly so Vite folds it: in an
-    // `api` build the route — and the lazy chunk behind it — is not emitted at all.
-    ...(import.meta.env.VITE_DATA_SOURCE === 'api'
-        ? []
-        : [
-              {
-                  path: '/dev/progress',
-                  name: 'devProgress',
-                  meta: { titleKey: 'nav.item.devProgress' },
-                  component: () => import('@/views/dev/ProgressView.vue'),
-              },
-          ]),
     {
         path: '/:pathMatch(.*)*',
         name: 'not_found',

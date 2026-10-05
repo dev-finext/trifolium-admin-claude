@@ -15,7 +15,6 @@ import { useI18n } from 'vue-i18n';
 import ACard from '@/components/ui/ACard.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ASelect from '@/components/ui/ASelect.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { LEAD_UNIT_IDS } from '@/config';
@@ -60,10 +59,6 @@ function setLead(type, patch) {
 
 <template>
     <ACard :title="t('items.lead.title')" icon="clock">
-        <template #right>
-            <V2Badge v="3" size="sm" />
-        </template>
-
         <p class="a-hint pl-lede">{{ t('items.lead.hint') }}</p>
 
         <ul class="pl-list">

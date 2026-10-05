@@ -13,7 +13,6 @@ import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import ANum from '@/components/ui/ANum.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { WEEKDAY_IDS } from '@/config';
@@ -84,7 +83,6 @@ function onSaved(result) {
 <template>
     <div class="a-grid a-tabbody">
         <div class="head">
-            <V2Badge id="pickup-points" />
             <span class="t-sub">{{ t('deliveries.points.note') }}</span>
             <div class="a-push actions">
                 <AButton sm icon="printer" @click="listing = true">

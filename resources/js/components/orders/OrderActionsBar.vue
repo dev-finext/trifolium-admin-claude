@@ -19,7 +19,6 @@ import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useSaveGuard } from '@/composables/useSaveGuard';
 import { useToast } from '@/composables/useToast';
@@ -183,7 +182,6 @@ async function confirmCancel(reason, code, cause) {
                     : t('orders.actions.urgentOn')
             }}
         </AButton>
-        <V2Badge v-if="urgentToggle" id="order-flags" size="sm" />
 
         <AButton
             v-if="cancellable"
@@ -231,7 +229,6 @@ async function confirmCancel(reason, code, cause) {
             @close="ask = ''"
             @confirm="confirmCancel"
         >
-            <template #choice-badge><V2Badge id="crm" size="sm" /></template>
         </ConfirmDialog>
     </div>
 </template>

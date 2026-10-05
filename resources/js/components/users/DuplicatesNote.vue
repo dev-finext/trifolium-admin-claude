@@ -9,7 +9,6 @@ import { useI18n } from 'vue-i18n';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ANum from '@/components/ui/ANum.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { usePeopleStore } from '@/stores/people';
 
@@ -39,10 +38,6 @@ const matches = computed(() =>
 
 <template>
     <ACard :title="t('users.duplicates.title')" icon="shield">
-        <template #right>
-            <V2Badge id="duplicates" size="sm" />
-        </template>
-
         <p v-if="!probing" class="a-hint">{{ t('users.duplicates.idle') }}</p>
 
         <div v-else-if="matches.length" class="a-note a-note--warn">

@@ -27,7 +27,6 @@ import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import {
     filterDefaults,
     PAGE_DEFAULTS,
@@ -417,7 +416,6 @@ function exportRows() {
     <div class="wrap">
         <p class="lede">
             {{ t('planning.lede') }}
-            <V2Badge id="planning" v="3" size="sm" />
         </p>
 
         <div class="window">

@@ -11,7 +11,6 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AIcon from '@/components/ui/AIcon.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import ANum from '@/components/ui/ANum.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { statusOf, useOrdersStore } from '@/stores/orders';
 
@@ -168,11 +167,6 @@ function barWidth(share) {
                 >
                     {{ t('orders.itemsTab.editFields') }}
                 </AButton>
-                <V2Badge
-                    v-if="!cancelled && !done"
-                    id="order-fields"
-                    size="sm"
-                />
                 <AButton
                     v-if="!cancelled && !done"
                     sm

@@ -14,7 +14,6 @@ import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import ASwitch from '@/components/ui/ASwitch.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useStickerData } from '@/composables/useStickerData';
 import { useToast } from '@/composables/useToast';
@@ -289,7 +288,6 @@ async function reset() {
                 :pad="false"
             >
                 <template #right>
-                    <V2Badge id="labels" size="sm" />
                     <span class="t-sub">{{
                         t('stickers.editor.count', { n: draft.elements.length })
                     }}</span>

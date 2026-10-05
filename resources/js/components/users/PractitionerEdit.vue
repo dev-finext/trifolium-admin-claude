@@ -14,7 +14,6 @@ import AButton from '@/components/ui/AButton.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ASelect from '@/components/ui/ASelect.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { isDemoData } from '@/data/source';
 import { applyDraft, recordMoved, snapshot, stampOf } from '@/lib/draft';
@@ -263,7 +262,6 @@ function save() {
                 <label class="a-lbl" :for="`pe-${field.k}`">
                     {{ field.label }}
                     <span v-if="field.req" class="u-req">*</span>
-                    <V2Badge v-if="field.v2" :id="field.v2" size="sm" />
                 </label>
                 <ASelect
                     v-if="field.options"

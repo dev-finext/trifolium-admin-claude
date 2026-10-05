@@ -19,7 +19,6 @@ import AButton from '@/components/ui/AButton.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ASelect from '@/components/ui/ASelect.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { CURRENCY_SYMBOL, WAREHOUSES } from '@/config';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
@@ -286,7 +285,6 @@ async function save() {
                 <label class="a-lbl" :for="`${uid}-supsel`">
                     {{ t('inventory.receipt.supplier') }}
                     <span class="a-req">{{ t('labels.required') }}</span>
-                    <V2Badge id="receiving" size="sm" />
                 </label>
                 <ASelect
                     :id="`${uid}-supsel`"
@@ -409,7 +407,6 @@ async function save() {
                     <div>
                         <label class="a-lbl" :for="`${uid}-e${i}`">
                             {{ t('inventory.receipt.col.existing') }}
-                            <V2Badge id="receiving" size="sm" />
                         </label>
                         <ASelect
                             :id="`${uid}-e${i}`"
@@ -429,7 +426,6 @@ async function save() {
                             <span v-if="!line.existingBatch" class="a-req">{{
                                 t('labels.required')
                             }}</span>
-                            <V2Badge v="3" size="sm" />
                         </label>
                         <AInput
                             v-if="!line.existingBatch"
@@ -455,7 +451,6 @@ async function save() {
                     <div>
                         <label class="a-lbl" :for="`${uid}-ws${i}`">
                             {{ t('inventory.receipt.col.waste') }}
-                            <V2Badge v="3" size="sm" />
                         </label>
                         <label class="a-checkrow waste">
                             <input
@@ -473,7 +468,6 @@ async function save() {
                     <div>
                         <label class="a-lbl" :for="`${uid}-md${i}`">
                             {{ t('inventory.receipt.col.madeOn') }}
-                            <V2Badge v="3" size="sm" />
                         </label>
                         <AInput
                             :id="`${uid}-md${i}`"
@@ -532,7 +526,6 @@ async function save() {
                     <div>
                         <label class="a-lbl" :for="`${uid}-p${i}`">
                             {{ t('inventory.receipt.col.price') }}
-                            <V2Badge id="receiving" size="sm" />
                         </label>
                         <AInput
                             :id="`${uid}-p${i}`"
@@ -548,7 +541,6 @@ async function save() {
                     <div>
                         <label class="a-lbl" :for="`${uid}-l${i}`">
                             {{ t('inventory.receipt.col.labels') }}
-                            <V2Badge id="receiving" size="sm" />
                         </label>
                         <AInput
                             :id="`${uid}-l${i}`"

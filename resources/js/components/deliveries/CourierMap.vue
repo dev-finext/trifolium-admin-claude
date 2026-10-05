@@ -19,7 +19,6 @@ import ADataTable from '@/components/ui/ADataTable.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useToast } from '@/composables/useToast';
 import { COURIERS } from '@/config';
 import { useDeliveriesStore } from '@/stores/deliveries';
@@ -133,7 +132,6 @@ async function save() {
         <ADataTable :cols="cols" :rows="rows" row-key="id">
             <template #cell-code="{ row }">
                 <span class="a-code a-tag code">{{ row.code }}</span>
-                <V2Badge v-if="row.v2" id="couriers" size="sm" />
                 <div v-if="row.historical" class="t-sub">
                     {{ t('deliveries.codes.historical') }}
                 </div>

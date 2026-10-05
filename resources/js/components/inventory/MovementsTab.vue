@@ -19,7 +19,6 @@ import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
 import SavedViews from '@/components/ui/SavedViews.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import {
     filterDefaults,
     PAGE_DEFAULTS,
@@ -294,7 +293,6 @@ const isOrderRef = (move) => ORDER_REF_KINDS.includes(move.kind);
                 @click="exportRows"
             >
                 {{ t('inventory.movements.export') }}
-                <V2Badge v="3" size="sm" />
             </AButton>
         </FilterBar>
 

@@ -9,7 +9,6 @@ import { useI18n } from 'vue-i18n';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import ANum from '@/components/ui/ANum.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { LAB_ROLE_IDS } from '@/config';
@@ -54,10 +53,6 @@ async function mark(role, on) {
 
 <template>
     <ACard :title="t('orders.lab.title')" icon="beaker">
-        <template #right>
-            <V2Badge id="lab-roles" size="sm" />
-        </template>
-
         <div class="roles">
             <div v-for="role in roles" :key="role.id" class="role">
                 <div class="role-l">{{ t(`orders.labRole.${role.id}`) }}</div>

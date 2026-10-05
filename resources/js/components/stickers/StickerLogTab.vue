@@ -12,7 +12,6 @@ import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import {
     PAGE_DEFAULTS,
     usePaged,
@@ -88,9 +87,6 @@ const { paged, total } = usePaged(sorted, view);
         </div>
 
         <ACard :title="t('stickers.log.title')" icon="list" :pad="false">
-            <template #right>
-                <V2Badge id="labels" size="sm" />
-            </template>
             <p class="a-hint lg-intro">{{ t('stickers.log.note') }}</p>
 
             <FilterBar

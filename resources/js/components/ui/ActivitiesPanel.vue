@@ -14,7 +14,6 @@ import ANum from '@/components/ui/ANum.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { ACTIVITY_SUBJECT_IDS, ACTIVITY_TYPE_IDS } from '@/config';
@@ -105,7 +104,6 @@ async function save() {
 <template>
     <ACard :title="t('crm.title')" icon="phone" :pad="false">
         <template #right>
-            <V2Badge id="crm" size="sm" />
             <span class="t-sub">{{ t('crm.sub', { n: rows.length }) }}</span>
             <AButton sm kind="p" icon="plus" @click="adding = !adding">
                 {{ t('crm.add') }}

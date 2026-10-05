@@ -10,7 +10,6 @@ import { useI18n } from 'vue-i18n';
 import AButton from '@/components/ui/AButton.vue';
 import AIcon from '@/components/ui/AIcon.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useToast } from '@/composables/useToast';
 import { useGatesStore } from '@/stores/gates';
 
@@ -45,7 +44,6 @@ async function confirm(reason, code) {
 <template>
     <div v-if="open" class="gate is-open">
         <div class="gate-bar">
-            <V2Badge id="gated-actions" size="sm" />
             <AIcon name="lock" :size="14" />
             <span class="t-sub">{{
                 t('gate.unlocked', { action: title })
@@ -68,7 +66,6 @@ async function confirm(reason, code) {
         <div class="gate-body">
             <div class="gate-t">
                 {{ title }}
-                <V2Badge id="gated-actions" size="sm" />
             </div>
             <div class="gate-why">{{ t(`gate.action.${id}.why`) }}</div>
         </div>

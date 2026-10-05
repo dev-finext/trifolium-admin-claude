@@ -20,7 +20,6 @@ import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useToast } from '@/composables/useToast';
 import { isDatabase } from '@/data/source';
 import { num } from '@/lib/money';
@@ -176,7 +175,6 @@ const cell = (value) => {
         <div class="a-body db-body">
             <p class="db-lede">
                 {{ t('database.lede') }}
-                <V2Badge v="3" size="sm" />
             </p>
 
             <div v-if="!isDatabase" class="db-off">

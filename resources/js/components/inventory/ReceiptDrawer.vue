@@ -10,7 +10,6 @@ import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import ANum from '@/components/ui/ANum.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { CURRENCY_SYMBOL } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -117,7 +116,6 @@ const lines = computed(() => props.receipt?.lines || []);
                                 }}
                             </span>
                             <span v-if="receipt.po">
-                                <V2Badge id="purchase-orders" size="sm" />
                                 <RouterLink
                                     class="a-linkbtn"
                                     :to="{
@@ -185,7 +183,6 @@ const lines = computed(() => props.receipt?.lines || []);
                     </template>
                     <template #head-price="{ col }">
                         {{ col.label }}
-                        <V2Badge id="receiving" size="sm" />
                     </template>
                     <template #cell-price="{ row }">
                         <ANum v-if="row.price != null">
@@ -196,7 +193,6 @@ const lines = computed(() => props.receipt?.lines || []);
                     </template>
                     <template #head-labels="{ col }">
                         {{ col.label }}
-                        <V2Badge id="receiving" size="sm" />
                     </template>
                     <template #cell-labels="{ row }">
                         <ANum v-if="row.labels">{{ row.labels }}</ANum>

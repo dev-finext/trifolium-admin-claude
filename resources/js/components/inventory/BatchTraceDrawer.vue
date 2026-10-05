@@ -21,7 +21,6 @@ import ATextarea from '@/components/ui/ATextarea.vue';
 import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import ChangeLogPanel from '@/components/ui/ChangeLogPanel.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { BATCH_STATES, STOCK_MOVE } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -271,7 +270,6 @@ const cols = computed(() => [
                     <div class="a-dhead-a">
                         <AButton sm icon="edit" @click="editing = true">
                             {{ t('inventory.batches.dates.edit') }}
-                            <V2Badge v="3" size="sm" />
                         </AButton>
                         <AButton sm icon="x" @click="emit('close')">
                             {{ t('ui.close') }}
@@ -495,9 +493,6 @@ const cols = computed(() => [
                 :title="t('inventory.batches.receipts.title')"
                 icon="inbox"
             >
-                <template #right>
-                    <V2Badge v="3" size="sm" />
-                </template>
                 <p class="a-hint">
                     {{ t('inventory.batches.receipts.hint') }}
                 </p>
@@ -528,9 +523,6 @@ const cols = computed(() => [
             </ACard>
 
             <ACard :title="t('inventory.batches.moves.title')" icon="list">
-                <template #right>
-                    <V2Badge v="3" size="sm" />
-                </template>
                 <p class="a-hint">{{ t('inventory.batches.moves.hint') }}</p>
                 <p v-if="moves.length" class="a-trace-report">
                     <button

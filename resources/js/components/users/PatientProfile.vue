@@ -27,7 +27,6 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
 import PayerChip from '@/components/ui/PayerChip.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
 import { formatAddress } from '@/components/users/address';
 import { patientFields } from '@/components/users/personFields';
 import PractitionerEdit from '@/components/users/PractitionerEdit.vue';
@@ -443,9 +442,6 @@ function applyTransfer() {
             <ChangeLogPanel entity="patient" :ref-id="patient.code" />
 
             <ACard :title="t('users.customer.site')" icon="external">
-                <template #right>
-                    <V2Badge id="site-fields" size="sm" />
-                </template>
                 <AKeyValue>
                     <dt>{{ t('users.customer.siteAccount') }}</dt>
                     <dd>

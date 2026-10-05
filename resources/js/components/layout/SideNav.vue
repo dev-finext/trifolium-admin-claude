@@ -11,7 +11,7 @@ import { onBeforeUnmount, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AIcon from '@/components/ui/AIcon.vue';
-import V2Badge from '@/components/ui/V2Badge.vue';
+import RBadge from '@/components/ui/RBadge.vue';
 import { NAV_GROUPS, NAV_STORAGE_KEY, NAV_TOGGLE_KEY } from '@/config';
 import { isDemoData } from '@/data/source';
 import { useDatasetStore } from '@/stores/dataset';
@@ -119,7 +119,6 @@ function itemTitle(groupId, itemId) {
             >
                 <div class="a-navgroup-t">
                     {{ t(`nav.group.${group.id}`) }}
-                    <V2Badge v-if="group.devOnly" id="v2-intro" size="sm" />
                 </div>
 
                 <!-- A screen still being built keeps its place in the nav so the
@@ -140,8 +139,7 @@ function itemTitle(groupId, itemId) {
                 >
                     <AIcon :name="item.icon" :size="19" />
                     <span>{{ t(`nav.item.${item.id}`) }}</span>
-                    <V2Badge v-if="item.v2" :id="item.v2" size="sm" />
-                    <V2Badge v-else-if="item.v3" v="3" size="sm" />
+                    <RBadge v-if="item.ready" size="sm" />
                     <span v-if="item.inDevelopment" class="a-soon">
                         {{ t('nav.inDevelopment') }}
                     </span>
