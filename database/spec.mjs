@@ -371,6 +371,32 @@ export const TABLES = [
         },
     },
     {
+        // V3 — the buyer's own sheets: a request is a shopping list, an order is
+        // one with a supplier on it. One table, because they differ in three
+        // fields and in nothing else.
+        name: 'buying_lists',
+        source: 'buyingLists',
+        key: 'id',
+        columns: [
+            col('number', 'text', 'number'),
+            col('kind', 'text', 'kind'),
+            col('supplier_code', 'text', 'supplierCode'),
+            locCol('supplier', 'supplier'),
+            col('state', 'text', 'state'),
+            col('created_on', 'date', 'created.iso'),
+        ],
+        lines: {
+            field: 'lines',
+            name: 'buying_list_lines',
+            columns: [
+                col('sku', 'text', 'sku'),
+                col('qty', 'numeric', 'qty'),
+                col('uom', 'text', 'uom'),
+                col('done', 'boolean', 'done'),
+            ],
+        },
+    },
+    {
         name: 'plan_lines',
         source: 'planLines',
         key: 'id',
@@ -397,10 +423,7 @@ export const TABLES = [
         lines: {
             field: 'lines',
             name: 'supplier_note_lines',
-            columns: [
-                col('sku', 'text', 'sku'),
-                col('qty', 'numeric', 'qty'),
-            ],
+            columns: [col('sku', 'text', 'sku'), col('qty', 'numeric', 'qty')],
         },
     },
     {

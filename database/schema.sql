@@ -410,6 +410,30 @@ CREATE TABLE purchase_request_lines (
 );
 CREATE INDEX ON purchase_request_lines (parent_id);
 
+CREATE TABLE buying_lists (
+    id           text PRIMARY KEY,
+    number       text,
+    kind         text,
+    supplier_code text,
+    supplier     text,
+    state        text,
+    created_on   date,
+    doc          jsonb NOT NULL,
+    updated_at   timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE buying_list_lines (
+    id           bigserial PRIMARY KEY,
+    parent_id    text NOT NULL REFERENCES buying_lists(id) ON DELETE CASCADE,
+    line_no      integer NOT NULL,
+    sku          text,
+    qty          numeric,
+    uom          text,
+    done         boolean,
+    doc          jsonb NOT NULL,
+    UNIQUE (parent_id, line_no)
+);
+CREATE INDEX ON buying_list_lines (parent_id);
+
 CREATE TABLE plan_lines (
     id           text PRIMARY KEY,
     sku          text,

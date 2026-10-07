@@ -6,6 +6,7 @@
 import admins from '@/locales/he/admins';
 import attachments from '@/locales/he/attachments';
 import boot from '@/locales/he/boot';
+import buying from '@/locales/he/buying';
 import common from '@/locales/he/common';
 import content from '@/locales/he/content';
 import crm from '@/locales/he/crm';
@@ -47,6 +48,7 @@ export default {
     admins,
     attachments,
     boot,
+    buying,
     content,
     crm,
     database,

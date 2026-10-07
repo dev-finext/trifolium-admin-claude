@@ -27,6 +27,12 @@ const BASE_CSS = `
     .box { border: 1px solid #cdd4c5; border-radius: 6px; padding: 8px 10px; margin: 6px 0; }
     .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     .sig { height: 44px; border-bottom: 1px solid #1f2e1d; margin-top: 18px; }
+    /* A production sheet is written on at the bench: a box to tick, and a rule
+       to write a batch number or a weight along. */
+    .tick { width: 22px; }
+    .tick::before { content: ''; display: block; width: 14px; height: 14px; border: 1px solid #1f2e1d; border-radius: 3px; }
+    .write { border-bottom: 1px solid #9aa39a; min-width: 90px; height: 18px; }
+    .write.tall { height: 30px; margin-top: 6px; }
     .small { font-size: 11px; color: #5d6a58; }
     .warn { border: 1px solid #ead9b4; background: #fbf1de; padding: 8px 10px; border-radius: 6px; }
     .barcode { font-family: ui-monospace, Consolas, monospace; font-size: 15px; letter-spacing: .08em; direction: ltr; unicode-bidi: isolate; }

@@ -7,6 +7,7 @@
 export * from '@/config/archive';
 export * from '@/config/leadTime';
 export * from '@/config/batches';
+export * from '@/config/buying';
 export * from '@/config/catalog';
 export * from '@/config/customers';
 export * from '@/config/crm';

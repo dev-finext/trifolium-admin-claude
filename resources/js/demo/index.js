@@ -317,6 +317,8 @@ export function buildDataset() {
         openOrders: buildOpenOrders(),
         purchaseRequests: [],
         planLines: [],
+        // V3 — the buyer's own sheets, written on the screen and nowhere else.
+        buyingLists: [],
         coverThresholds: {},
         ingredientPricePrefix: INGREDIENT_PRICE_PREFIX,
 
