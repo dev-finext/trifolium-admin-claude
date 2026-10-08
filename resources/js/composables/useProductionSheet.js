@@ -27,14 +27,20 @@ export function useProductionSheet() {
     const text = (value) => esc(loc(value));
     const unit = (uom) => esc(t(`inventory.unit.${uom || 'unit'}`));
 
-    /** One component: what to take, how much, and room to tick it off. */
+    /**
+     * One component: what to take, how much, and room to tick it off.
+     *
+     * `plannedQty` and not `qty`: `qty` is what the recipe asks for one batch,
+     * and the planner has already multiplied it by the number of batches in
+     * this run. The bench needs the run's figure.
+     */
     function componentRow(component) {
         const card = items.rowBySku(component.sku);
 
         return `<tr>
             <td class="num">${esc(component.sku)}</td>
             <td>${esc(card?.names?.he || component.sku)}</td>
-            <td class="num">${esc(num(component.qty, 3))} ${unit(component.uom)}</td>
+            <td class="num">${esc(num(component.plannedQty, 3))} ${unit(component.uom)}</td>
             <td class="tick"></td>
             <td class="write"></td>
         </tr>`;

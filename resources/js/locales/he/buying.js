@@ -34,6 +34,17 @@ export default {
     needSupplier: 'צריך לבחור ספק לפני הייצוא',
     needQty: 'חסרה כמות בשורה אחת | חסרה כמות ב-{n} שורות',
 
+    state: {
+        open: 'פתוחה',
+        closed: 'סגורה',
+    },
+    close: 'סגירה',
+    reopen: 'פתיחה מחדש',
+
+    note: 'הערת עבודה',
+    notePlaceholder: 'בהכנה · נשלח מייל 5.8 · ממתינים למחיר…',
+    openedBy: 'נפתחה על ידי {who} · {when}',
+
     paste: 'הדבקת מק״טים',
     pastePlaceholder: '100002 110005 200011',
     pasteHint:
@@ -54,16 +65,47 @@ export default {
     export: 'ייצוא לאקסל',
     exported: 'יוצאה שורה אחת | יוצאו {n} שורות',
 
+    days: '{n} ימים',
+
+    // מצב הפריט עצמו, לא מצב הרשימה
+    itemState: {
+        active: 'פעיל',
+        frozen: 'מוקפא',
+        inactive: 'לא פעיל',
+    },
+
+    // כל מה שיש על כרטיס הפריט ונוגע לרכש, בסדר שבו הכרטיס מציג אותו
     col: {
         sku: 'מק״ט',
         name: 'שם הפריט',
-        uom: 'יחידה',
+        foreignName: 'שם לועזי',
+        group: 'קבוצת פריט',
+        state: 'מצב',
+
+        supplier: 'ספק מועדף',
+        supplierCode: 'קוד ספק',
+        catalogNum: 'מק״ט אצל הספק',
+        purchaseUom: 'יחידת רכש',
+        numInBuy: 'יח׳ מלאי ביח׳ רכש',
+        packUom: 'יחידת אריזה',
+        packQty: 'כמות באריזה',
+        lastPrice: 'מחיר אחרון',
+        lastPriceOn: 'נרכש לאחרונה',
+        evalPrice: 'מחיר הערכה',
+
+        uom: 'יחידת מלאי',
+        onHand: 'במלאי',
+        committed: 'מוקצה',
         available: 'זמין',
         onOrder: 'בהזמנה',
-        min: 'מינימום',
-        supplier: 'ספק',
-        catalogNum: 'מק״ט ספק',
-        lastPrice: 'מחיר אחרון',
+        min: 'מלאי מינימום',
+        max: 'מלאי מקסימום',
+        reorder: 'כמות לחידוש',
+
+        minOrder: 'הזמנה מינימלית',
+        leadDays: 'זמן אספקה',
+        procurement: 'שיטת רכש',
+
         qty: 'כמות',
         done: 'בוצע',
     },

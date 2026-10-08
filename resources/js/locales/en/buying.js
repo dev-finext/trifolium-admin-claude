@@ -37,6 +37,18 @@ export default {
     needSupplier: 'Choose a supplier before exporting',
     needQty: 'one line has no quantity | {n} lines have no quantity',
 
+    state: {
+        open: 'Open',
+        closed: 'Closed',
+    },
+    close: 'Close',
+    reopen: 'Reopen',
+
+    note: 'Working note',
+    notePlaceholder:
+        'Being prepared · emailed on the 5th · waiting on a price…',
+    openedBy: 'Opened by {who} · {when}',
+
     paste: 'Paste item codes',
     pastePlaceholder: '100002 110005 200011',
     pasteHint:
@@ -57,16 +69,47 @@ export default {
     export: 'Export to Excel',
     exported: 'one row exported | {n} rows exported',
 
+    days: '{n} days',
+
+    // The item's own state, not the sheet's
+    itemState: {
+        active: 'Active',
+        frozen: 'Frozen',
+        inactive: 'Inactive',
+    },
+
+    // Everything the item card holds about buying this item, in the card's order
     col: {
         sku: 'Code',
         name: 'Item',
-        uom: 'Unit',
+        foreignName: 'Foreign name',
+        group: 'Item group',
+        state: 'State',
+
+        supplier: 'Preferred supplier',
+        supplierCode: 'Supplier code',
+        catalogNum: 'Supplier catalogue no.',
+        purchaseUom: 'Purchase unit',
+        numInBuy: 'Stock units per purchase unit',
+        packUom: 'Packaging unit',
+        packQty: 'Quantity per package',
+        lastPrice: 'Last price',
+        lastPriceOn: 'Last bought',
+        evalPrice: 'Valuation price',
+
+        uom: 'Stock unit',
+        onHand: 'On hand',
+        committed: 'Committed',
         available: 'Available',
         onOrder: 'On order',
-        min: 'Minimum',
-        supplier: 'Supplier',
-        catalogNum: 'Supplier code',
-        lastPrice: 'Last price',
+        min: 'Minimum level',
+        max: 'Maximum level',
+        reorder: 'Reorder quantity',
+
+        minOrder: 'Minimum order',
+        leadDays: 'Lead time',
+        procurement: 'Procurement',
+
         qty: 'Quantity',
         done: 'Done',
     },

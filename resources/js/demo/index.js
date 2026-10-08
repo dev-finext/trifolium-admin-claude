@@ -11,6 +11,7 @@
 // about it: orders need practitioner cards, messages need orders, exception
 // flags need messages, and balances need the orders they are derived from.
 import { SETTINGS } from '@/config';
+import { buildBuyingLists } from '@/demo/buying';
 import {
     DEMO_HERBS,
     DEMO_HERB_BY_ID,
@@ -194,6 +195,16 @@ export function buildDataset() {
     const batchUse = buildBatchUse(orders, batches, stock);
     const priceGroups = buildPriceGroups();
     const items = buildItems(DEMO_SUPPLIERS);
+    // V3 — the buyer's own sheets: the pharmacy's real purchase requests and
+    // supplier orders, each line carrying the item card as it stood.
+    const buyingLists = buildBuyingLists({
+        items,
+        suppliers: DEMO_SUPPLIERS,
+        itemGroups: REAL_ITEM_GROUPS,
+        prepTypes: PREP_TYPES,
+        stock,
+        boms,
+    });
     const purchaseOrders = buildPurchaseOrders(items, DEMO_SUPPLIERS);
     const supplierNotes = buildSupplierNotes(purchaseOrders, receipts);
     // The runs that made the in-house items: they consume component batches,
@@ -317,8 +328,8 @@ export function buildDataset() {
         openOrders: buildOpenOrders(),
         purchaseRequests: [],
         planLines: [],
-        // V3 — the buyer's own sheets, written on the screen and nowhere else.
-        buyingLists: [],
+        // V3 — the buyer's own sheets.
+        buyingLists,
         coverThresholds: {},
         ingredientPricePrefix: INGREDIENT_PRICE_PREFIX,
 

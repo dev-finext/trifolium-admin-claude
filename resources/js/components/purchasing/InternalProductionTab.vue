@@ -16,6 +16,8 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
+import ACard from '@/components/ui/ACard.vue';
+import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AInput from '@/components/ui/AInput.vue';
@@ -23,6 +25,7 @@ import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useProductionSheet } from '@/composables/useProductionSheet';
 import { useToast } from '@/composables/useToast';
+import { PRODUCTION_STATE } from '@/config';
 import { num } from '@/lib/money';
 import { convertQty } from '@/lib/units';
 import { useItemsStore } from '@/stores/items';
@@ -31,6 +34,9 @@ import { useProductionStore } from '@/stores/production';
 
 /** How many matches the type-ahead offers before it asks for more letters. */
 const MATCHES = 8;
+
+/** How many of the last runs the tab keeps in view. */
+const RECENT = 8;
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -83,6 +89,44 @@ const check = computed(() =>
         ? planning.producible(chosen.value.sku, amount.value)
         : null,
 );
+
+/** The date that says where a run stands, the way the production page reads it. */
+const whenOf = (order) =>
+    order.completedOn || order.cancelledOn || order.issuedOn || order.createdOn;
+
+/**
+ * What was sent down from here lately.
+ *
+ * Not a second production screen — that exists, and this links to it. It is
+ * the answer to "did my run go through", which is the question anybody asks
+ * straight after pressing the button, and it is what makes an empty tab look
+ * like a desk somebody works at.
+ */
+const recent = computed(() =>
+    [...production.orders]
+        .sort((a, b) =>
+            String(whenOf(b)?.iso ?? '').localeCompare(
+                String(whenOf(a)?.iso ?? ''),
+            ),
+        )
+        .slice(0, RECENT),
+);
+
+const recentCols = computed(() => [
+    { k: 'id', label: t('production.make.runId'), nowrap: true },
+    { k: 'item', label: t('production.make.runItem') },
+    { k: 'qty', label: t('production.make.runQty'), align: 'end' },
+    { k: 'state', label: t('production.make.runState'), nowrap: true },
+    { k: 'when', label: t('production.make.runWhen'), nowrap: true },
+    { k: 'by', label: t('production.make.runBy'), nowrap: true },
+    { k: 'print', label: '', nowrap: true },
+]);
+
+function reprint(order) {
+    if (!printProductionSheet(order)) {
+        push({ title: t('production.make.printFailed'), bad: true });
+    }
+}
 
 const shortCols = computed(() => [
     { k: 'sku', label: t('production.make.shortSku'), nowrap: true },
@@ -291,6 +335,67 @@ async function sendToLab() {
                 </AButton>
             </div>
         </template>
+
+        <!-- What went down to the bench lately -->
+        <ACard :title="t('production.make.recent')" icon="beaker" :pad="false">
+            <template #right>
+                <RouterLink :to="{ name: 'production' }">
+                    <AButton sm icon="chevron_right">
+                        {{ t('production.make.allRuns') }}
+                    </AButton>
+                </RouterLink>
+            </template>
+            <ADataTable
+                v-if="recent.length"
+                :cols="recentCols"
+                :rows="recent"
+                row-key="id"
+            >
+                <template #cell-id="{ row }">
+                    <ANum class="a-code">{{ row.id }}</ANum>
+                </template>
+                <template #cell-item="{ row }">
+                    <div class="t-strong">
+                        {{
+                            items.rowBySku(row.parentSku)?.names?.he ||
+                            loc(row.name)
+                        }}
+                    </div>
+                    <ANum class="t-sub">{{ row.parentSku }}</ANum>
+                </template>
+                <template #cell-qty="{ row }">
+                    <ANum
+                        >{{ num(row.plannedQty, 3) }}
+                        {{ t(`inventory.unit.${row.uom}`) }}</ANum
+                    >
+                </template>
+                <template #cell-state="{ row }">
+                    <AChip :tone="PRODUCTION_STATE[row.state]?.tone || 'gray'">
+                        {{ t(`production.state.${row.state}`) }}
+                    </AChip>
+                </template>
+                <template #cell-when="{ row }">
+                    <ANum>{{ whenOf(row)?.stamp }}</ANum>
+                </template>
+                <template #cell-by="{ row }">{{ loc(row.by) }}</template>
+                <template #cell-print="{ row }">
+                    <AButton
+                        sm
+                        kind="ghost"
+                        icon="printer"
+                        :title="t('production.make.reprint')"
+                        :aria-label="t('production.make.reprint')"
+                        @click="reprint(row)"
+                    />
+                </template>
+            </ADataTable>
+            <AEmpty
+                v-else
+                icon="beaker"
+                :title="t('production.make.noRuns')"
+                :sub="t('production.make.noRunsSub')"
+            />
+        </ACard>
     </div>
 </template>
 

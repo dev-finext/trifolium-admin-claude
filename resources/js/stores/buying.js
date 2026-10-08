@@ -14,6 +14,7 @@ import {
     ARCHIVE_FIELD,
     BUYING_KIND,
     BUYING_SERIES,
+    leadTimeOf,
     liveOnly,
     lineFromItem,
     parseSkus,
@@ -35,7 +36,17 @@ export const useBuyingStore = defineStore('buying', () => {
     const all = computed(() => dataset.data.buyingLists || []);
     const lists = computed(() => liveOnly(all.value));
 
-    const listsOf = (kind) => lists.value.filter((row) => row.kind === kind);
+    /**
+     * One kind's sheets, newest first.
+     *
+     * Ordered here rather than where they are written, because the records
+     * make a round trip through the database and come back in whatever order
+     * it hands them over; the screen opens on the newest sheet either way.
+     */
+    const listsOf = (kind) =>
+        lists.value
+            .filter((row) => row.kind === kind)
+            .sort((a, b) => Number(b.number) - Number(a.number));
 
     const listById = (id) => all.value.find((row) => row.id === id) || null;
 
@@ -45,6 +56,33 @@ export const useBuyingStore = defineStore('buying', () => {
         }
 
         return dataset.data.buyingLists;
+    }
+
+    /**
+     * The item card, as a line.
+     *
+     * Three of the card's figures are not on the item record itself: the
+     * supplier's name sits behind its SAP code, the group's name behind its
+     * number, and the lead time is the supplier's or the preparation type's
+     * before it is the item's. They are resolved here, where the stores that
+     * hold them are, and written onto the line with everything else.
+     */
+    function snapshot(row) {
+        const lead = leadTimeOf(row, {
+            supplier: dataset.suppliers.find(
+                (one) => one.code === row.suppliers?.sapCode,
+            ),
+            prepType: items.prepTypeById((row.prepTypes || [])[0]),
+            madeHere: (row.bomCount || 0) > 0,
+        });
+
+        return lineFromItem(row, {
+            supplier: row.preferred?.name ?? null,
+            groupName: row.groupName,
+            onHand: row.onHand,
+            committed: row.alloc,
+            leadDays: lead?.days ?? null,
+        });
     }
 
     const nextNumber = (kind) => {
@@ -115,7 +153,7 @@ export const useBuyingStore = defineStore('buying', () => {
                 continue;
             }
 
-            list.lines.push(lineFromItem(row));
+            list.lines.push(snapshot(row));
             result.added.push(code);
         }
 
@@ -135,7 +173,7 @@ export const useBuyingStore = defineStore('buying', () => {
             return null;
         }
 
-        const line = lineFromItem(row);
+        const line = snapshot(row);
 
         list.lines.push(line);
         save(list);
