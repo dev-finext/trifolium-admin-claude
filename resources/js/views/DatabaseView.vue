@@ -212,20 +212,14 @@ const cell = (value) => {
                         class="db-filter"
                         :placeholder="t('database.filter')"
                     />
-                    <div class="a-tablewrap">
-                        <ADataTable
-                            :cols="cols"
-                            :rows="rows"
-                            row-key="table_name"
-                        >
-                            <template #cell-table_name="{ row }">
-                                <span class="a-code">{{ row.table_name }}</span>
-                            </template>
-                            <template #cell-rows="{ row }">
-                                <ANum>{{ num(row.rows, 0) }}</ANum>
-                            </template>
-                        </ADataTable>
-                    </div>
+                    <ADataTable :cols="cols" :rows="rows" row-key="table_name">
+                        <template #cell-table_name="{ row }">
+                            <span class="a-code">{{ row.table_name }}</span>
+                        </template>
+                        <template #cell-rows="{ row }">
+                            <ANum>{{ num(row.rows, 0) }}</ANum>
+                        </template>
+                    </ADataTable>
                 </section>
 
                 <section class="db-sect">
@@ -268,26 +262,22 @@ const cell = (value) => {
 
                     <p v-if="failure" class="db-error">{{ failure }}</p>
 
-                    <div
+                    <ADataTable
                         v-if="result && resultCols.length"
-                        class="a-tablewrap db-result"
+                        class="db-result"
+                        :max-height="420"
+                        :cols="resultCols"
+                        :rows="resultRows"
+                        row-key="__i"
                     >
-                        <ADataTable
-                            :cols="resultCols"
-                            :rows="resultRows"
-                            row-key="__i"
+                        <template
+                            v-for="col in resultCols"
+                            :key="col.k"
+                            #[`cell-${col.k}`]="{ row }"
                         >
-                            <template
-                                v-for="col in resultCols"
-                                :key="col.k"
-                                #[`cell-${col.k}`]="{ row }"
-                            >
-                                <span class="db-cell">{{
-                                    cell(row[col.k])
-                                }}</span>
-                            </template>
-                        </ADataTable>
-                    </div>
+                            <span class="db-cell">{{ cell(row[col.k]) }}</span>
+                        </template>
+                    </ADataTable>
                 </section>
             </template>
         </div>

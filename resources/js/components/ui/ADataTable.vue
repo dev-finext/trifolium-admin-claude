@@ -14,7 +14,15 @@
 // Sorting is real: without `v-model:sort` the table sorts the rows it was given,
 // and it emits `sort` either way so a screen that fetches sorted pages can take
 // over. A header that cannot sort is plain text — no cursor, no arrow.
-import { computed, ref, useAttrs } from 'vue';
+import {
+    computed,
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    useAttrs,
+    watch,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AEmpty from '@/components/ui/AEmpty.vue';
@@ -70,6 +78,126 @@ const wrapStyle = computed(() => {
                 : props.maxHeight,
     };
 });
+
+// ---- the scroll bar above the table ----------------------------------------
+//
+// A table wider than the pane scrolls sideways, and the bar that does it sits
+// at the far bottom of whatever is scrolling — which on a long table is a
+// screen and a half below the columns it moves. So the table carries its own
+// bar, directly above the header row, mirroring the real scroller: dragging it
+// scrolls that element, and scrolling that element moves it back.
+//
+// Mirrored rather than moved, because the alternative is to make the table's
+// own box the scroller, and that is what takes the sticky header away — the
+// header would then stick to the top of a box that is itself scrolling past.
+// See the note at the foot of admin.css.
+
+const wrapEl = ref(null);
+const tableEl = ref(null);
+const stripEl = ref(null);
+
+/** The width the bar scrolls through; 0 means the table fits and there is no bar. */
+const scrollSpan = ref(0);
+
+let scroller = null;
+let observer = null;
+
+/** The element that actually scrolls this table: its own box, or the page. */
+function findScroller() {
+    let node = wrapEl.value;
+
+    while (node && node !== document.body) {
+        const style = getComputedStyle(node);
+
+        if (/(auto|scroll)/.test(`${style.overflowX} ${style.overflowY}`)) {
+            return node;
+        }
+
+        node = node.parentElement;
+    }
+
+    return null;
+}
+
+function measure() {
+    const table = tableEl.value;
+
+    if (!table || !scroller) {
+        scrollSpan.value = 0;
+
+        return;
+    }
+
+    // The table's own width decides whether this table needs a bar; the
+    // scroller's decides how far the bar travels, so the two stay in step.
+    scrollSpan.value =
+        table.scrollWidth > scroller.clientWidth + 1 ? scroller.scrollWidth : 0;
+}
+
+/**
+ * Copy one scroll position to the other.
+ *
+ * Each assignment makes the other element fire its own scroll event, so the
+ * two would bounce forever — except that by then they already agree, and a
+ * mirror that is already in place does nothing. The echo stops itself.
+ *
+ * A flag would be the obvious alternative and is the wrong one: it has to be
+ * cleared on a later tick, and a tab that stops being painted stops running
+ * those, which leaves the flag raised and the bar dead for the rest of the
+ * session.
+ */
+function mirror(from, to) {
+    if (!from || !to || Math.abs(to.scrollLeft - from.scrollLeft) < 1) {
+        return;
+    }
+
+    to.scrollLeft = from.scrollLeft;
+}
+
+const onStrip = () => mirror(stripEl.value, scroller);
+const onScroller = () => mirror(scroller, stripEl.value);
+
+onMounted(() => {
+    scroller = findScroller();
+
+    if (!scroller) {
+        return;
+    }
+
+    scroller.addEventListener('scroll', onScroller, { passive: true });
+
+    if (typeof ResizeObserver === 'function') {
+        observer = new ResizeObserver(measure);
+        observer.observe(scroller);
+
+        if (tableEl.value) {
+            observer.observe(tableEl.value);
+        }
+    }
+
+    measure();
+});
+
+onBeforeUnmount(() => {
+    scroller?.removeEventListener('scroll', onScroller);
+    observer?.disconnect();
+    observer = null;
+    scroller = null;
+});
+
+// Columns come and go, and rows change the widest cell; both change the span.
+watch(
+    () => [props.cols.length, props.rows.length],
+    async () => {
+        await nextTick();
+
+        if (observer && tableEl.value) {
+            observer.observe(tableEl.value);
+        }
+
+        measure();
+    },
+);
 
 function keyOf(row, index) {
     if (typeof props.rowKey === 'function') {
@@ -184,83 +312,154 @@ function activate(row) {
 </script>
 
 <template>
-    <div v-if="!rows.length" v-bind="passthrough" class="a-tablewrap">
-        <slot name="empty">
-            <AEmpty :title="t('ui.noResults')" :sub="t('ui.noResultsHint')" />
-        </slot>
+    <div v-if="!rows.length" v-bind="passthrough" class="a-tbl">
+        <div class="a-tablewrap">
+            <slot name="empty">
+                <AEmpty
+                    :title="t('ui.noResults')"
+                    :sub="t('ui.noResultsHint')"
+                />
+            </slot>
+        </div>
     </div>
-    <div
-        v-else
-        v-bind="passthrough"
-        class="a-tablewrap"
-        :class="{ 'is-capped': Boolean(maxHeight) }"
-        :style="wrapStyle"
-    >
-        <table class="a-table">
-            <thead>
-                <tr>
-                    <th
-                        v-for="col in cols"
-                        :key="col.k"
-                        scope="col"
-                        :class="col.cls"
-                        :style="col.w ? { width: col.w } : null"
-                        :aria-sort="ariaSort(col)"
-                    >
-                        <button
-                            v-if="col.sortable"
-                            type="button"
-                            class="a-th-sort"
-                            :class="{
-                                'is-on': isSorted(col),
-                                'is-asc': sortDir(col) === 'asc',
-                            }"
-                            :title="sortTitle(col)"
-                            @click="toggleSort(col)"
+    <div v-else v-bind="passthrough" class="a-tbl">
+        <div
+            v-show="scrollSpan"
+            ref="stripEl"
+            class="a-tscroll"
+            aria-hidden="true"
+            @scroll="onStrip"
+        >
+            <div :style="{ width: `${scrollSpan}px` }" />
+        </div>
+        <div
+            ref="wrapEl"
+            class="a-tablewrap"
+            :class="{ 'is-capped': Boolean(maxHeight) }"
+            :style="wrapStyle"
+        >
+            <table ref="tableEl" class="a-table">
+                <thead>
+                    <tr>
+                        <th
+                            v-for="col in cols"
+                            :key="col.k"
+                            scope="col"
+                            :class="col.cls"
+                            :style="col.w ? { width: col.w } : null"
+                            :aria-sort="ariaSort(col)"
                         >
-                            {{ col.label }}
-                            <AIcon name="chevron_down" :size="14" />
-                        </button>
-                        <!-- `head-<k>` lets a column put a control in its own
+                            <button
+                                v-if="col.sortable"
+                                type="button"
+                                class="a-th-sort"
+                                :class="{
+                                    'is-on': isSorted(col),
+                                    'is-asc': sortDir(col) === 'asc',
+                                }"
+                                :title="sortTitle(col)"
+                                @click="toggleSort(col)"
+                            >
+                                {{ col.label }}
+                                <AIcon name="chevron_down" :size="14" />
+                            </button>
+                            <!-- `head-<k>` lets a column put a control in its own
                              header cell — a select-all checkbox, say — while
                              `col.label` stays the accessible name. -->
-                        <slot v-else :name="`head-${col.k}`" :col="col">
-                            {{ col.label }}
-                        </slot>
-                    </th>
-                </tr>
-            </thead>
-            <tbody :class="{ 'is-click': rowHandler }">
-                <tr
-                    v-for="(row, i) in sortedRows"
-                    :key="keyOf(row, i)"
-                    :class="[
-                        {
-                            'is-sel':
-                                selected !== null && selected === keyOf(row, i),
-                        },
-                        rowClass ? rowClass(row) : null,
-                    ]"
-                    :tabindex="rowHandler ? 0 : undefined"
-                    @click="activate(row)"
-                    @keydown.enter.prevent="activate(row)"
-                >
-                    <td
-                        v-for="col in cols"
-                        :key="col.k"
-                        :class="[{ nowrap: col.nowrap }, col.cls]"
+                            <slot v-else :name="`head-${col.k}`" :col="col">
+                                {{ col.label }}
+                            </slot>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody :class="{ 'is-click': rowHandler }">
+                    <tr
+                        v-for="(row, i) in sortedRows"
+                        :key="keyOf(row, i)"
+                        :class="[
+                            {
+                                'is-sel':
+                                    selected !== null &&
+                                    selected === keyOf(row, i),
+                            },
+                            rowClass ? rowClass(row) : null,
+                        ]"
+                        :tabindex="rowHandler ? 0 : undefined"
+                        @click="activate(row)"
+                        @keydown.enter.prevent="activate(row)"
                     >
-                        <slot :name="`cell-${col.k}`" :row="row" :index="i">
-                            {{ cellText(col, row) }}
-                        </slot>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                        <td
+                            v-for="col in cols"
+                            :key="col.k"
+                            :class="[{ nowrap: col.nowrap }, col.cls]"
+                        >
+                            <slot :name="`cell-${col.k}`" :row="row" :index="i">
+                                {{ cellText(col, row) }}
+                            </slot>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>
 
 <style scoped>
+/* The bar that scrolls the table, above the header row rather than at the foot
+   of whatever is scrolling. It is a scrollport holding nothing but a strip as
+   wide as the scroll takes; `v-show` keeps it away when the table fits.
+ *
+ * It sticks, for the same reason the header row does: on a thousand-row table a
+ * control that exists only at the top of the table is a control you have to
+ * scroll back up to reach, which is the complaint it was built to answer. The
+ * header comes to rest `--a-strip-h` lower so the two sit one above the other
+ * instead of on top of each other — `--a-thead-top` in admin.css is the hook
+ * that was already there for exactly this.
+ *
+ * One root, not two: a component with a fragment root does not carry its
+ * caller's style scope, and three screens style this table through `:deep()`.
+ */
+.a-tbl {
+    --a-strip-h: 12px;
+    --a-thead-top: var(--a-strip-h);
+}
+
+.a-tscroll {
+    position: sticky;
+    top: calc(0px - var(--a-pane-pad, 0px));
+    z-index: 4;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: var(--a-strip-h);
+    background: var(--a-bg);
+    scrollbar-width: thin;
+    scrollbar-color: var(--a-line) transparent;
+}
+
+.a-tscroll > div {
+    height: 1px;
+}
+
+/* Drawn rather than left to the platform: an overlay scrollbar that only
+   appears while something is scrolling is not a control anybody will find. */
+.a-tscroll::-webkit-scrollbar {
+    height: 10px;
+}
+
+.a-tscroll::-webkit-scrollbar-track {
+    background: var(--a-bg);
+    border-radius: 999px;
+}
+
+.a-tscroll::-webkit-scrollbar-thumb {
+    background: var(--a-line);
+    border-radius: 999px;
+}
+
+.a-tscroll::-webkit-scrollbar-thumb:hover {
+    background: var(--a-ink-4);
+}
+
 /* The header button inherits the header's typography so a sortable column and a
    plain one read as the same header, not as a button dropped into a table. */
 .a-th-sort {

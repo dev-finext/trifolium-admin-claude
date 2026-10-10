@@ -382,167 +382,171 @@ function exportSheet() {
                 :sub="t('buying.noLinesSub')"
             />
 
-            <div v-else class="a-tablewrap by-sheet">
-                <ADataTable :cols="cols" :rows="sheet.lines" row-key="sku">
-                    <template #cell-sku="{ row }">
-                        <ANum class="a-code">{{ row.sku }}</ANum>
-                    </template>
-                    <template #cell-foreignName="{ row }">
-                        <span
-                            class="by-lat"
-                            :class="{ 'by-nil': !row.foreignName }"
-                            >{{ row.foreignName || '—' }}</span
-                        >
-                    </template>
-                    <template #cell-group="{ row }">
-                        <span :class="{ 'by-nil': !row.group }">{{
-                            row.group || '—'
-                        }}</span>
-                    </template>
-                    <template #cell-state="{ row }">
-                        <AChip
-                            size="sm"
-                            :dot="false"
-                            :tone="row.state === 'active' ? 'green' : 'red'"
-                        >
-                            {{ t(`buying.itemState.${row.state}`) }}
-                        </AChip>
-                    </template>
-                    <template #cell-supplier="{ row }">
-                        <span :class="{ 'by-nil': !row.supplier }">{{
-                            row.supplier || '—'
-                        }}</span>
-                    </template>
-                    <template #cell-supplierCode="{ row }">
-                        <ANum :class="{ 'by-nil': !row.supplierCode }">{{
-                            row.supplierCode || '—'
-                        }}</ANum>
-                    </template>
-                    <template #cell-catalogNum="{ row }">
-                        <ANum :class="{ 'by-nil': !row.catalogNum }">{{
-                            row.catalogNum || '—'
-                        }}</ANum>
-                    </template>
-                    <template #cell-purchaseUom="{ row }">
-                        {{ fmt.unit(row.purchaseUom || row.uom) }}
-                    </template>
-                    <template #cell-numInBuy="{ row }">
-                        <ANum>{{ num(row.numInBuy, 3) }}</ANum>
-                    </template>
-                    <template #cell-packUom="{ row }">
-                        <span :class="{ 'by-nil': !row.packUom }">{{
-                            row.packUom || '—'
-                        }}</span>
-                    </template>
-                    <template #cell-packQty="{ row }">
-                        <ANum :class="{ 'by-nil': row.packQty === null }">{{
-                            row.packQty === null ? '—' : num(row.packQty, 3)
-                        }}</ANum>
-                    </template>
-                    <template #cell-lastPrice="{ row }">
-                        <ANum :class="{ 'by-nil': row.lastPrice === null }">{{
-                            row.lastPrice === null ? '—' : ils(row.lastPrice, 2)
-                        }}</ANum>
-                    </template>
-                    <template #cell-lastPriceOn="{ row }">
-                        <ANum :class="{ 'by-nil': !row.lastPriceOn }">{{
-                            row.lastPriceOn ? fmtISO(row.lastPriceOn) : '—'
-                        }}</ANum>
-                    </template>
-                    <template #cell-evalPrice="{ row }">
-                        <ANum :class="{ 'by-nil': row.evalPrice === null }">{{
-                            row.evalPrice === null ? '—' : ils(row.evalPrice, 2)
-                        }}</ANum>
-                    </template>
-                    <template #cell-uom="{ row }">
-                        {{ fmt.unit(row.uom) }}
-                    </template>
-                    <template #cell-onHand="{ row }">
-                        <ANum>{{ num(row.onHand, 3) }}</ANum>
-                    </template>
-                    <template #cell-committed="{ row }">
-                        <ANum :class="{ 'by-nil': !row.committed }">{{
-                            num(row.committed, 3)
-                        }}</ANum>
-                    </template>
-                    <template #cell-available="{ row }">
-                        <ANum :class="{ 'by-low': row.available <= 0 }">{{
-                            num(row.available, 3)
-                        }}</ANum>
-                    </template>
-                    <template #cell-onOrder="{ row }">
-                        <ANum :class="{ 'by-nil': !row.onOrder }">{{
-                            num(row.onOrder, 3)
-                        }}</ANum>
-                    </template>
-                    <template #cell-min="{ row }">
-                        <ANum :class="{ 'by-nil': row.min === null }">{{
-                            row.min === null ? '—' : num(row.min, 3)
-                        }}</ANum>
-                    </template>
-                    <template #cell-max="{ row }">
-                        <ANum :class="{ 'by-nil': row.max === null }">{{
-                            row.max === null ? '—' : num(row.max, 3)
-                        }}</ANum>
-                    </template>
-                    <template #cell-reorder="{ row }">
-                        <ANum :class="{ 'by-nil': row.reorder === null }">{{
-                            row.reorder === null ? '—' : num(row.reorder, 3)
-                        }}</ANum>
-                    </template>
-                    <template #cell-minOrder="{ row }">
-                        <ANum :class="{ 'by-nil': row.minOrder === null }">{{
-                            row.minOrder === null ? '—' : num(row.minOrder, 3)
-                        }}</ANum>
-                    </template>
-                    <template #cell-leadDays="{ row }">
-                        <ANum :class="{ 'by-nil': row.leadDays === null }">{{
-                            row.leadDays === null
-                                ? '—'
-                                : t('buying.days', { n: row.leadDays })
-                        }}</ANum>
-                    </template>
-                    <template #cell-procurement="{ row }">
-                        {{ fmt.procurement(row.procurement) }}
-                    </template>
-                    <template #cell-qty="{ row }">
-                        <AInput
-                            :model-value="row.qty ?? ''"
-                            type="number"
-                            min="0"
-                            ltr
-                            class="by-qty"
-                            :class="{
-                                'is-short': rules.qtyRequired && !row.qty,
-                            }"
-                            :aria-label="t('buying.col.qty')"
-                            @update:model-value="
-                                store.setQty(sheet.id, row.sku, $event)
-                            "
+            <ADataTable
+                v-else
+                class="by-sheet"
+                :cols="cols"
+                :rows="sheet.lines"
+                row-key="sku"
+            >
+                <template #cell-sku="{ row }">
+                    <ANum class="a-code">{{ row.sku }}</ANum>
+                </template>
+                <template #cell-foreignName="{ row }">
+                    <span
+                        class="by-lat"
+                        :class="{ 'by-nil': !row.foreignName }"
+                        >{{ row.foreignName || '—' }}</span
+                    >
+                </template>
+                <template #cell-group="{ row }">
+                    <span :class="{ 'by-nil': !row.group }">{{
+                        row.group || '—'
+                    }}</span>
+                </template>
+                <template #cell-state="{ row }">
+                    <AChip
+                        size="sm"
+                        :dot="false"
+                        :tone="row.state === 'active' ? 'green' : 'red'"
+                    >
+                        {{ t(`buying.itemState.${row.state}`) }}
+                    </AChip>
+                </template>
+                <template #cell-supplier="{ row }">
+                    <span :class="{ 'by-nil': !row.supplier }">{{
+                        row.supplier || '—'
+                    }}</span>
+                </template>
+                <template #cell-supplierCode="{ row }">
+                    <ANum :class="{ 'by-nil': !row.supplierCode }">{{
+                        row.supplierCode || '—'
+                    }}</ANum>
+                </template>
+                <template #cell-catalogNum="{ row }">
+                    <ANum :class="{ 'by-nil': !row.catalogNum }">{{
+                        row.catalogNum || '—'
+                    }}</ANum>
+                </template>
+                <template #cell-purchaseUom="{ row }">
+                    {{ fmt.unit(row.purchaseUom || row.uom) }}
+                </template>
+                <template #cell-numInBuy="{ row }">
+                    <ANum>{{ num(row.numInBuy, 3) }}</ANum>
+                </template>
+                <template #cell-packUom="{ row }">
+                    <span :class="{ 'by-nil': !row.packUom }">{{
+                        row.packUom || '—'
+                    }}</span>
+                </template>
+                <template #cell-packQty="{ row }">
+                    <ANum :class="{ 'by-nil': row.packQty === null }">{{
+                        row.packQty === null ? '—' : num(row.packQty, 3)
+                    }}</ANum>
+                </template>
+                <template #cell-lastPrice="{ row }">
+                    <ANum :class="{ 'by-nil': row.lastPrice === null }">{{
+                        row.lastPrice === null ? '—' : ils(row.lastPrice, 2)
+                    }}</ANum>
+                </template>
+                <template #cell-lastPriceOn="{ row }">
+                    <ANum :class="{ 'by-nil': !row.lastPriceOn }">{{
+                        row.lastPriceOn ? fmtISO(row.lastPriceOn) : '—'
+                    }}</ANum>
+                </template>
+                <template #cell-evalPrice="{ row }">
+                    <ANum :class="{ 'by-nil': row.evalPrice === null }">{{
+                        row.evalPrice === null ? '—' : ils(row.evalPrice, 2)
+                    }}</ANum>
+                </template>
+                <template #cell-uom="{ row }">
+                    {{ fmt.unit(row.uom) }}
+                </template>
+                <template #cell-onHand="{ row }">
+                    <ANum>{{ num(row.onHand, 3) }}</ANum>
+                </template>
+                <template #cell-committed="{ row }">
+                    <ANum :class="{ 'by-nil': !row.committed }">{{
+                        num(row.committed, 3)
+                    }}</ANum>
+                </template>
+                <template #cell-available="{ row }">
+                    <ANum :class="{ 'by-low': row.available <= 0 }">{{
+                        num(row.available, 3)
+                    }}</ANum>
+                </template>
+                <template #cell-onOrder="{ row }">
+                    <ANum :class="{ 'by-nil': !row.onOrder }">{{
+                        num(row.onOrder, 3)
+                    }}</ANum>
+                </template>
+                <template #cell-min="{ row }">
+                    <ANum :class="{ 'by-nil': row.min === null }">{{
+                        row.min === null ? '—' : num(row.min, 3)
+                    }}</ANum>
+                </template>
+                <template #cell-max="{ row }">
+                    <ANum :class="{ 'by-nil': row.max === null }">{{
+                        row.max === null ? '—' : num(row.max, 3)
+                    }}</ANum>
+                </template>
+                <template #cell-reorder="{ row }">
+                    <ANum :class="{ 'by-nil': row.reorder === null }">{{
+                        row.reorder === null ? '—' : num(row.reorder, 3)
+                    }}</ANum>
+                </template>
+                <template #cell-minOrder="{ row }">
+                    <ANum :class="{ 'by-nil': row.minOrder === null }">{{
+                        row.minOrder === null ? '—' : num(row.minOrder, 3)
+                    }}</ANum>
+                </template>
+                <template #cell-leadDays="{ row }">
+                    <ANum :class="{ 'by-nil': row.leadDays === null }">{{
+                        row.leadDays === null
+                            ? '—'
+                            : t('buying.days', { n: row.leadDays })
+                    }}</ANum>
+                </template>
+                <template #cell-procurement="{ row }">
+                    {{ fmt.procurement(row.procurement) }}
+                </template>
+                <template #cell-qty="{ row }">
+                    <AInput
+                        :model-value="row.qty ?? ''"
+                        type="number"
+                        min="0"
+                        ltr
+                        class="by-qty"
+                        :class="{
+                            'is-short': rules.qtyRequired && !row.qty,
+                        }"
+                        :aria-label="t('buying.col.qty')"
+                        @update:model-value="
+                            store.setQty(sheet.id, row.sku, $event)
+                        "
+                    />
+                </template>
+                <template #cell-done="{ row }">
+                    <label class="a-checkrow by-done">
+                        <input
+                            type="checkbox"
+                            :checked="row.done"
+                            :aria-label="t('buying.col.done')"
+                            @change="store.toggleDone(sheet.id, row.sku)"
                         />
-                    </template>
-                    <template #cell-done="{ row }">
-                        <label class="a-checkrow by-done">
-                            <input
-                                type="checkbox"
-                                :checked="row.done"
-                                :aria-label="t('buying.col.done')"
-                                @change="store.toggleDone(sheet.id, row.sku)"
-                            />
-                        </label>
-                    </template>
-                    <template #cell-drop="{ row }">
-                        <AButton
-                            sm
-                            kind="ghost"
-                            icon="x"
-                            :title="t('buying.dropLine')"
-                            :aria-label="t('buying.dropLine')"
-                            @click="store.removeLine(sheet.id, row.sku)"
-                        />
-                    </template>
-                </ADataTable>
-            </div>
+                    </label>
+                </template>
+                <template #cell-drop="{ row }">
+                    <AButton
+                        sm
+                        kind="ghost"
+                        icon="x"
+                        :title="t('buying.dropLine')"
+                        :aria-label="t('buying.dropLine')"
+                        @click="store.removeLine(sheet.id, row.sku)"
+                    />
+                </template>
+            </ADataTable>
 
             <!-- Out -->
             <div v-if="sheet.lines.length" class="a-pane by-foot">
@@ -731,14 +735,6 @@ function exportSheet() {
 /* A name long enough to push the table out on its own wraps instead. */
 .by-sheet :deep(tbody td) {
     max-width: 280px;
-}
-
-/* `.a-code` breaks a long code so it cannot widen a cell. In a row this wide
-   the cell is already narrow, so the break lands between every pair of digits
-   and the code comes out stacked. A code on a no-wrap cell stays on its line. */
-.by-sheet :deep(td.nowrap .a-code) {
-    white-space: nowrap;
-    word-break: normal;
 }
 
 /* A cell with nothing in it should not read as loudly as one with a number. */

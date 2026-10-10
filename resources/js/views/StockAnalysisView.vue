@@ -227,30 +227,28 @@ function exportSheet() {
         :sub="t('stockAnalysis.emptySub')"
     />
 
-    <div v-else class="a-tablewrap sa-table">
-        <ADataTable :cols="cols" :rows="rows" row-key="id">
-            <template #cell-code="{ row }">
-                <ANum class="a-code">{{ row.code }}</ANum>
-            </template>
-            <template #cell-onHand="{ row }">
-                <ANum>{{ num(row.onHand, 3) }}</ANum>
-            </template>
-            <template #cell-onOrder="{ row }">
-                <ANum>{{ num(row.onOrder, 3) }}</ANum>
-            </template>
-            <template #cell-committed="{ row }">
-                <ANum>{{ num(row.committed, 3) }}</ANum>
-            </template>
-            <template v-for="ym in months" #[`cell-${ym}`]="{ row }" :key="ym">
-                <ANum :class="{ 'sa-zero': !row.months[ym] }">
-                    {{ num(row.months[ym] ?? 0, 3) }}
-                </ANum>
-            </template>
-            <template #cell-total="{ row }">
-                <ANum class="t-strong">{{ num(row.total, 3) }}</ANum>
-            </template>
-        </ADataTable>
-    </div>
+    <ADataTable v-else class="sa-table" :cols="cols" :rows="rows" row-key="id">
+        <template #cell-code="{ row }">
+            <ANum class="a-code">{{ row.code }}</ANum>
+        </template>
+        <template #cell-onHand="{ row }">
+            <ANum>{{ num(row.onHand, 3) }}</ANum>
+        </template>
+        <template #cell-onOrder="{ row }">
+            <ANum>{{ num(row.onOrder, 3) }}</ANum>
+        </template>
+        <template #cell-committed="{ row }">
+            <ANum>{{ num(row.committed, 3) }}</ANum>
+        </template>
+        <template v-for="ym in months" #[`cell-${ym}`]="{ row }" :key="ym">
+            <ANum :class="{ 'sa-zero': !row.months[ym] }">
+                {{ num(row.months[ym] ?? 0, 3) }}
+            </ANum>
+        </template>
+        <template #cell-total="{ row }">
+            <ANum class="t-strong">{{ num(row.total, 3) }}</ANum>
+        </template>
+    </ADataTable>
 </template>
 
 <style scoped>
@@ -288,11 +286,6 @@ function exportSheet() {
 .sa-count {
     font-size: 13px;
     color: var(--a-ink-4);
-}
-
-/* The month columns run wide; the table takes the scroll rather than the page. */
-.sa-table {
-    overflow-x: auto;
 }
 
 /* The console sets table headings in capitals. Here the headings are SAP's own

@@ -1088,6 +1088,16 @@ textarea {
     background: #4d554a;
 }
 
+/* An item code inside a table row is an identifier, not prose: it stays on one
+   line. `.a-code` above breaks a long code so it cannot widen the panel it sits
+   in, and in a table cell — which is already as narrow as the columns beside it
+   allow — that break lands between every pair of digits and 470519 comes out
+   stacked six rows deep. */
+.a-table .a-code {
+    white-space: nowrap;
+    word-break: normal;
+}
+
 /* ---------- tabs ---------- */
 .a-tabs {
     display: flex;
@@ -1327,9 +1337,12 @@ table.a-table {
    and leave a band of scrolled rows visible above it; cancelling the pane's
    padding brings it flush. A table with a height of its own scrolls inside its
    own box, which has no such padding, so there it is plain zero. A screen that
-   puts a sticky toolbar of its own above the table sets `--a-thead-top`. */
+   puts a sticky toolbar of its own above the table sets `--a-thead-top`. The
+   table's own horizontal scroll bar is one — ADataTable sets it from `.a-tbl`,
+   which is why there is no default of 0 here to override it. */
+.a-tbl,
 .a-tablewrap {
-    --a-thead-top: 0px;
+    --a-thead-top: var(--a-strip-h, 0px);
 }
 .a-tablewrap:not(.is-capped) .a-table thead th {
     top: calc(var(--a-thead-top) - var(--a-pane-pad, 0px));
