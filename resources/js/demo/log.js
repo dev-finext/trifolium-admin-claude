@@ -34,6 +34,7 @@ export const LOG_ENTITY_TYPE_IDS = [
     'system',
     'catalog_item',
     'purchase_order',
+    'buying_list',
     'price_group',
     'supplier_invoice',
     'supplier_payment',

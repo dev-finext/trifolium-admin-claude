@@ -429,6 +429,7 @@ CREATE TABLE buying_list_lines (
     qty          numeric,
     uom          text,
     done         boolean,
+    received     numeric,
     doc          jsonb NOT NULL,
     UNIQUE (parent_id, line_no)
 );

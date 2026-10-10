@@ -14,6 +14,8 @@ import {
     ARCHIVE_FIELD,
     BUYING_KIND,
     BUYING_SERIES,
+    buyingFirstState,
+    DEFAULT_WAREHOUSE,
     leadTimeOf,
     liveOnly,
     lineFromItem,
@@ -22,6 +24,7 @@ import {
 import { persist } from '@/data/source';
 import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { useDatasetStore } from '@/stores/dataset';
+import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 
 /** This moment, in the shape every record's `when` field carries. */
@@ -32,6 +35,36 @@ function moment() {
 export const useBuyingStore = defineStore('buying', () => {
     const dataset = useDatasetStore();
     const items = useItemsStore();
+    const inventory = useInventoryStore();
+
+    /**
+     * One row in the system log.
+     *
+     * The sheet's own history is the system log filtered to it, not a second
+     * log kept on the record — so what the drawer shows and what the log screen
+     * shows are the same row, written once.
+     */
+    function writeLog(row) {
+        const log = Array.isArray(dataset.data.log) ? dataset.data.log : [];
+
+        if (!Array.isArray(dataset.data.log)) {
+            dataset.data.log = log;
+        }
+
+        log.unshift({
+            id: `lg-${row.act}-${row.ent}-${log.length}`,
+            when: moment(),
+            actorType: 'agent',
+            actor: dataset.me?.name || null,
+            valueType: 'plain',
+            entType: 'buying_list',
+            from: null,
+            to: null,
+            src: 'manual',
+            ip: null,
+            ...row,
+        });
+    }
 
     const all = computed(() => dataset.data.buyingLists || []);
     const lists = computed(() => liveOnly(all.value));
@@ -106,13 +139,17 @@ export const useBuyingStore = defineStore('buying', () => {
             supplier: supplier || null,
             note: '',
             lines: [],
-            state: 'open',
+            state: buyingFirstState(kind),
             created: moment(),
+            sent: null,
+            received: null,
+            receipts: [],
             by: dataset.me?.name || null,
             [ARCHIVE_FIELD]: null,
         };
 
         rows.unshift(list);
+        writeLog({ act: 'buying_create', ent: list.id, to: list.number });
         persist('buying-lists', list);
 
         return list;
@@ -158,6 +195,11 @@ export const useBuyingStore = defineStore('buying', () => {
         }
 
         if (result.added.length) {
+            writeLog({
+                act: 'buying_lines_add',
+                ent: list.id,
+                to: String(result.added.length),
+            });
             save(list);
         }
 
@@ -276,31 +318,134 @@ export const useBuyingStore = defineStore('buying', () => {
         return save(list);
     }
 
-    /** Sent to the supplier, or worked through to the end. */
-    function closeList(id) {
+    /**
+     * Move a sheet to another state.
+     *
+     * The states are in `config/buying.js`, one set per kind, and nothing here
+     * judges the order they are reached in: an order that failed and was sent
+     * again goes back to `sent`, and a receipt booked in error is undone by
+     * moving the sheet back. What is recorded is that it moved, from what, and
+     * by whom.
+     */
+    function setState(id, state, { by } = {}) {
         const list = listById(id);
 
-        if (!list || list.state === 'closed') {
+        if (!list || list.state === state) {
             return list;
         }
 
-        list.state = 'closed';
-        list.closed = moment();
+        const from = list.state;
+
+        list.state = state;
+
+        if (state === 'sent' && !list.sent) {
+            list.sent = moment();
+        }
+
+        writeLog({
+            act: 'buying_state',
+            ent: list.id,
+            valueType: 'key',
+            from: `buying.state.${from}`,
+            to: `buying.state.${state}`,
+            actor: by || dataset.me?.name || null,
+        });
 
         return save(list);
     }
 
-    function reopenList(id) {
+    /**
+     * The file went out, so the order went out.
+     *
+     * Exporting an order *is* sending it — the spreadsheet is what the supplier
+     * receives — so a draft becomes sent the moment it is exported, and an
+     * order already further along stays where it is.
+     */
+    function markExported(id) {
         const list = listById(id);
 
-        if (!list || list.state !== 'closed') {
-            return list;
+        if (!list) {
+            return null;
         }
 
-        list.state = 'open';
-        list.closed = null;
+        writeLog({ act: 'buying_export', ent: list.id, to: list.number });
+
+        if (list.kind === 'order' && list.state === 'draft') {
+            return setState(id, 'sent');
+        }
 
         return save(list);
+    }
+
+    /**
+     * The goods arrived: book in what actually turned up.
+     *
+     * The quantities are the receiver's and not the order's — a supplier who
+     * sent eight of ten is recorded as eight, and the line keeps both figures.
+     * The shelf is raised by `inventory.receiveGoods`, the one place that opens
+     * batches and posts the goods-receipt document, so what lands here lands
+     * exactly as a receipt entered by hand does.
+     *
+     * @param {string} id
+     * @param {{docNum?: string, date: string, note?: string,
+     *          lines: Array<{sku: string, qty: number, supplierBatch?: string,
+     *                        expiry?: string, price?: number}>}} form
+     */
+    async function receiveList(id, form) {
+        const list = listById(id);
+
+        if (!list || list.kind !== 'order') {
+            throw new Error(`${id} is not a purchase order`);
+        }
+
+        const arrived = (form.lines || []).filter(
+            (line) => Number(line.qty) > 0,
+        );
+
+        if (!arrived.length) {
+            throw new Error('A goods receipt needs at least one quantity');
+        }
+
+        const receipt = await inventory.receiveGoods({
+            supplier: list.supplier,
+            supplierCode: list.supplierCode,
+            po: list.id,
+            docNum: form.docNum || list.number,
+            date: form.date,
+            note: form.note || '',
+            // The sheet counts in the purchase unit and the shelf counts in the
+            // stock unit; `numInBuy` off the item card is what sits between.
+            lines: arrived.map((line) => {
+                const row = list.lines.find((one) => one.sku === line.sku);
+                const perBuy = Number(row?.numInBuy) || 1;
+
+                return {
+                    sku: line.sku,
+                    qty: Number(line.qty) * perBuy,
+                    wh: line.wh || DEFAULT_WAREHOUSE,
+                    supplierBatch: line.supplierBatch || '',
+                    expiry: line.expiry || null,
+                    price: line.price ?? row?.lastPrice ?? null,
+                    labels: 0,
+                };
+            }),
+        });
+
+        arrived.forEach((line) => {
+            const row = list.lines.find((one) => one.sku === line.sku);
+
+            if (row) {
+                row.received = Number(line.qty);
+            }
+        });
+
+        list.receipts = [...(list.receipts || []), receipt.id];
+        list.received = moment();
+
+        writeLog({ act: 'buying_receive', ent: list.id, to: receipt.id });
+        setState(id, 'received');
+
+        return receipt;
     }
 
     return {
@@ -316,7 +461,8 @@ export const useBuyingStore = defineStore('buying', () => {
         setSupplier,
         setNote,
         removeList,
-        closeList,
-        reopenList,
+        setState,
+        markExported,
+        receiveList,
     };
 });

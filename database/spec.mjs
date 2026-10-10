@@ -393,6 +393,7 @@ export const TABLES = [
                 col('qty', 'numeric', 'qty'),
                 col('uom', 'text', 'uom'),
                 col('done', 'boolean', 'done'),
+                col('received', 'numeric', 'received'),
             ],
         },
     },

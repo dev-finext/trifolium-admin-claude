@@ -12,13 +12,26 @@
 // work. Numbering continues the same SAP series, so a sheet written on the
 // screen takes the next number rather than starting a second series beside it.
 //
-// Two things here are the fixture's and not SAP's, and both for the same
-// reason. The working notes are rewritten — the real ones name the staff and
-// the suppliers' contacts by first name, and this build is published — and they
-// are kept in the register the real ones are written in, because that register
-// is the point: "emailed on the 5th", "waiting on a quote". And which lines
-// carry a quantity, and which are ticked off, is set here, so that one request
-// is visibly half-done rather than every sheet looking finished.
+// Three things here are the fixture's and not SAP's.
+//
+// The working notes are rewritten: the real ones name the staff and the
+// suppliers' contacts by first name, and this build is published. They are kept
+// in the register the real ones use, because that register is the point —
+// "emailed on the 5th", "waiting on a quote".
+//
+// Which lines carry a quantity and which are ticked off is set here, so that
+// one request is visibly half-done rather than every sheet looking finished.
+//
+// And the state each order sits in. SAP holds two — open and closed — where the
+// console holds four, and the two it does not hold are exactly the ones that
+// matter on screen: an order still being drafted, and one that fell through. So
+// each order is placed by hand, and the placement is in `ORDER_PLAN` where it
+// can be read.
+//
+// An order that arrives here already received was received in SAP, not in this
+// console: its lines carry what came in, and `receipts` is empty because no
+// goods-receipt document was ever posted here. That is what a migrated document
+// looks like, and the drawer says so.
 import { ARCHIVE_FIELD, leadTimeOf, lineFromItem } from '@/config';
 import { at } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
@@ -67,39 +80,58 @@ const REQUEST_PLAN = [
 
 const ORDER_PLAN = [
     {
-        docNum: 2600163,
-        by: DEMO_ACTORS.orit,
-        hour: 10,
-        note: 'נשלח מייל לספק 5.8',
-    },
-    {
-        docNum: 2600161,
-        by: DEMO_ACTORS.orit,
-        hour: 12,
-        note: 'נשלח מייל 5.8 — אישרו אספקה לשבוע הבא',
-    },
-    {
         docNum: 2600160,
         by: DEMO_ACTORS.ella,
         hour: 9,
-        note: 'ממתינים לאישור כמויות',
+        state: 'draft',
+        note: 'ממתינים לאישור כמויות מהמחסן לפני השליחה',
+    },
+    {
+        docNum: 2600163,
+        by: DEMO_ACTORS.orit,
+        hour: 10,
+        state: 'sent',
+        note: 'נשלח מייל לספק 5.8',
     },
     {
         docNum: 2600157,
         by: DEMO_ACTORS.ella,
         hour: 8,
+        state: 'sent',
         note: 'הזמנת צמחים רבעונית — נשלח 30.7',
+    },
+    {
+        docNum: 2600158,
+        by: DEMO_ACTORS.orit,
+        hour: 13,
+        state: 'failed',
+        note: 'הספק הודיע שאינו יכול לספק — מחפשים חלופה',
+    },
+    {
+        docNum: 2600161,
+        by: DEMO_ACTORS.orit,
+        hour: 12,
+        state: 'received',
+        // Not everything the order asked for turned up, which is the case the
+        // receipt screen exists for; the last line came in short.
+        shortLast: 0.75,
+        note: 'נשלח מייל 5.8 — הגיע, שורה אחת בכמות חלקית',
     },
     {
         docNum: 2600155,
         by: DEMO_ACTORS.orit,
         hour: 15,
+        state: 'received',
         note: 'נשלח מייל 30.7 — סופק במלואו',
     },
 ];
 
-/** SAP's document status: open, or closed. */
-const stateOf = (doc) => (doc.status === 'C' ? 'closed' : 'open');
+/** A request has SAP's own two states; an order's is placed in the plan. */
+const stateOf = (doc, plan, kind) =>
+    kind === 'order' ? plan.state : doc.status === 'C' ? 'closed' : 'open';
+
+/** Round to three places, the way every quantity in the console is held. */
+const qty3 = (value) => Math.round(Number(value) * 1000) / 1000;
 
 /**
  * Every sheet carries the item card of every line it names.
@@ -150,7 +182,17 @@ function sheetOf(doc, plan, kind, context) {
     });
 
     const when = at(daysSince(doc.docDate), plan.hour, 0);
-    const state = stateOf(doc);
+    const state = stateOf(doc, plan, kind);
+
+    // What came in. Everything the order asked for, unless the plan says one
+    // line arrived short.
+    if (state === 'received') {
+        lines.forEach((row, index) => {
+            const short = plan.shortLast && index === lines.length - 1;
+
+            row.received = qty3((row.qty || 0) * (short ? plan.shortLast : 1));
+        });
+    }
 
     return {
         id: `${kind}-${doc.docNum}`,
@@ -165,7 +207,11 @@ function sheetOf(doc, plan, kind, context) {
         lines,
         state,
         created: when,
-        closed: state === 'closed' ? when : null,
+        sent: ['sent', 'received'].includes(state) ? when : null,
+        received: state === 'received' ? when : null,
+        // Received in SAP, before this console existed: there is no
+        // goods-receipt document of its own to point at.
+        receipts: [],
         by: plan.by,
         [ARCHIVE_FIELD]: null,
     };

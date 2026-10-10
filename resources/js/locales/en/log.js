@@ -39,6 +39,7 @@ export default {
         supplier_invoice: 'Supplier invoice',
         supplier_payment: 'Supplier payment',
         production_order: 'Production order',
+        buying_list: 'Buying sheet',
         practitioner: 'Practitioner',
         message: 'Message',
         message_template: 'Message template',

@@ -45,6 +45,15 @@ const { push } = useToast();
 
 const canMinimize = computed(() => Boolean(props.win?.id && props.win?.title));
 
+/**
+ * Whether the header is tinted.
+ *
+ * Only a window with typing to keep — `win.form` — is a draft. A modal that
+ * holds a saved record and is merely minimisable is not one, and tinting it
+ * would say the opposite of what the tray says about the same window.
+ */
+const isDraft = computed(() => Boolean(canMinimize.value && props.win?.form));
+
 function minimize() {
     if (!canMinimize.value) {
         return;
@@ -134,7 +143,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown, true));
                 >
                     <header
                         class="a-card-h a-modal-h"
-                        :class="{ 'is-draft': canMinimize }"
+                        :class="{ 'is-draft': isDraft }"
                     >
                         <h3>{{ title }}</h3>
                         <button

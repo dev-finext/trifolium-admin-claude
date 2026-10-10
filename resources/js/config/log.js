@@ -48,6 +48,12 @@ export const LOG_ACTION_IDS = [
     'po_update',
     'po_cancel',
     'po_receive',
+    // V3 — the buyer's own sheets: a request or an order, and what happened to it
+    'buying_create',
+    'buying_lines_add',
+    'buying_export',
+    'buying_state',
+    'buying_receive',
     'production_create',
     'production_issue',
     'production_complete',

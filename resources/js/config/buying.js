@@ -14,6 +14,52 @@
 // that end in a spreadsheet. The pharmacy's real purchase documents live in
 // SAP; these are the tools used to decide what goes into them.
 
+/**
+ * What each kind goes through.
+ *
+ * A request is a list that is either still being worked or finished with. An
+ * order has a life: it is drafted, it is sent to the supplier, and then either
+ * the goods arrive or they do not. Nothing here advances on its own except
+ * `sent`, which the export sets, because exporting the file *is* sending it.
+ *
+ * `failed` is set by hand and by nothing else — the supplier declined, or could
+ * not supply, or the order was dropped. The console has no way to learn that.
+ */
+export const BUYING_STATES = {
+    request: [
+        { id: 'open', tone: 'blue' },
+        { id: 'closed', tone: 'slate' },
+    ],
+    order: [
+        { id: 'draft', tone: 'slate' },
+        { id: 'sent', tone: 'amber' },
+        { id: 'received', tone: 'green' },
+        { id: 'failed', tone: 'red' },
+    ],
+};
+
+export const BUYING_STATE_IDS = [
+    ...new Set(
+        Object.values(BUYING_STATES).flatMap((states) =>
+            states.map((state) => state.id),
+        ),
+    ),
+];
+
+/** One state's chip tone, whichever kind it belongs to. */
+export const buyingStateTone = (id) =>
+    Object.values(BUYING_STATES)
+        .flat()
+        .find((state) => state.id === id)?.tone || 'gray';
+
+/** Where a sheet of this kind starts. */
+export const buyingFirstState = (kind) =>
+    (BUYING_STATES[kind] || BUYING_STATES.request)[0].id;
+
+/** Can goods be booked in against this sheet? */
+export const canReceive = (list) =>
+    list?.kind === 'order' && ['sent', 'draft'].includes(list.state);
+
 /** The two kinds, and what each one requires. */
 export const BUYING_KINDS = [
     { id: 'request', supplier: false, qtyRequired: false, checklist: true },
@@ -134,6 +180,8 @@ export function lineFromItem(item, extra = {}) {
         // what the buyer writes on the sheet
         qty: null,
         done: false,
+        // what actually turned up, once the goods are booked in
+        received: null,
     };
 }
 

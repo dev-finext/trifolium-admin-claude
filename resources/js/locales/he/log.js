@@ -39,6 +39,7 @@ export default {
         supplier_invoice: 'חשבונית ספק',
         supplier_payment: 'תשלום לספק',
         production_order: 'הוראת ייצור',
+        buying_list: 'גיליון רכש',
         practitioner: 'מטפל',
         message: 'הודעה',
         message_template: 'תבנית הודעה',

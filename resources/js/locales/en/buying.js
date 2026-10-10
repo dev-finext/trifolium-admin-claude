@@ -16,6 +16,7 @@ export default {
         pick: 'Request',
         new: 'New request',
         file: 'purchase-request',
+        ticked: '{done} of {total} done',
         emptyTitle: 'No purchase requests yet',
         emptySub:
             'A purchase request is a shopping list: what is wanted, before anybody has been asked for a price.',
@@ -26,6 +27,17 @@ export default {
         pick: 'Order',
         new: 'New order',
         file: 'purchase-order',
+        number: 'Order number',
+        supplierCode: 'Supplier code',
+        details: 'Order details',
+        openedOn: 'Opened',
+        openedBy: 'Opened by',
+        sentOn: 'Sent',
+        receivedOn: 'Received',
+        receipts: 'Goods receipts',
+        inSap: 'Booked in through SAP, before this console',
+        moveTo: 'Move to:',
+        arrived: '{done} of {total} arrived',
         emptyTitle: 'No purchase orders yet',
         emptySub:
             'A purchase order is one supplier, quantities, and a file to send them.',
@@ -36,12 +48,47 @@ export default {
     needSupplier: 'Choose a supplier before exporting',
     needQty: 'one line has no quantity | {n} lines have no quantity',
 
+    // config/buying.js BUYING_STATES — two states for a request, four for an order
     state: {
         open: 'Open',
         closed: 'Closed',
+        draft: 'Draft',
+        sent: 'Sent',
+        received: 'Received',
+        failed: 'Failed',
     },
-    close: 'Close',
+    close: 'Finish the request',
     reopen: 'Reopen',
+    sheetCount: 'no sheets | one sheet | {n} sheets',
+
+    receive: {
+        open: 'Receive goods',
+        title: 'Goods receipt · order {number} · {supplier}',
+        docNum: 'Delivery note number',
+        date: 'Receipt date',
+        ordered: 'Ordered',
+        arrived: 'Arrived',
+        batch: 'Supplier batch',
+        batchHint: 'From the label',
+        expiry: 'Expiry',
+        price: 'Unit price',
+        note: 'Receipt note',
+        takeAll: 'All arrived',
+        none: 'Clear',
+        counting:
+            'one line of {total} will be booked in | {n} lines of {total} will be booked in',
+        sign: 'Confirm and sign',
+        confirmTitle: 'Book in these goods?',
+        confirmBody:
+            'One line will be booked into stock. | {n} lines will be booked into stock.',
+        effectStock: 'Stock rises by the quantities recorded',
+        effectBatches:
+            'A batch is opened per line, with the supplier number and expiry',
+        effectState: 'The order moves to Received',
+        effectDiffer:
+            'One line differs from what was ordered | {n} lines differ from what was ordered',
+        done: 'one line booked in | {n} lines booked in',
+    },
 
     note: 'Working note',
     notePlaceholder:
@@ -79,6 +126,13 @@ export default {
 
     // Everything the item card holds about buying this item, in the card's order
     col: {
+        number: 'Number',
+        opened: 'Opened',
+        by: 'Opened by',
+        lines: 'Lines',
+        sheetState: 'State',
+        received: 'Received',
+
         sku: 'Code',
         name: 'Item',
         foreignName: 'Foreign name',
