@@ -1,13 +1,12 @@
-// Purchasing — the three tabs. The sheet's own column headers live in
+// Purchasing — the two tabs. The sheet's own column headers live in
 // config/buying.js: they are what is written to the Excel file, not what is
 // shown on screen.
 export default {
     crumb: 'Daily operations',
     title: 'Purchasing',
-    sub: 'Internal production, purchase requests and supplier orders',
+    sub: 'Purchase requests and supplier orders',
 
     tab: {
-        production: 'Internal production',
         request: 'Purchase request',
         order: 'Purchase order',
     },

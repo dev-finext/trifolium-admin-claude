@@ -1,12 +1,21 @@
 <script setup>
-// Opening a production order: pick the recipe, say how much, and see before
-// saving which batches each component would be drawn from — and where the
-// stock falls short.
+// Opening a production order: pick the product, say how much, choose whether it
+// is planned or goes down to the lab now, and see before saving which batches
+// each component would be drawn from.
+//
+// The product, not the recipe. SAP's production order names an item and loads
+// that item's bill of materials — `OITT` has one row per item code, 2,121 of
+// them, so a recipe and the thing it makes are the same choice.
+//
+// Nothing here refuses a run whose components are short. SAP does not either:
+// 149 of its released orders have 146 component lines not yet drawn, because
+// the shelf is answered for when the goods issue is posted and not when the
+// order is written. What the preview shows is what would be drawn — a
+// statement, not a verdict.
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
-import AChip from '@/components/ui/AChip.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ANum from '@/components/ui/ANum.vue';
@@ -36,17 +45,32 @@ const qty = ref('');
 const notes = ref('');
 const saving = ref(false);
 
+/**
+ * Where the order starts its life — SAP's own two opening statuses.
+ *
+ * Planned is a run that is written down and holds nothing; released takes the
+ * components and sends the paper to the bench. The pharmacy's own history is
+ * almost entirely released (149 against 2 planned), but both exist and the
+ * screen should not decide for the person opening it.
+ */
+const startState = ref('planned');
+
+const startOptions = computed(() => [
+    { value: 'planned', label: t('production.state.planned') },
+    { value: 'issued', label: t('production.state.issued') },
+]);
+
 const bom = computed(() => (bomId.value ? items.bomById(bomId.value) : null));
 
-/** Every recipe, the ones sized as a production run first. */
-const bomOptions = computed(() => [
-    { value: '', label: t('production.create.bomChoose') },
+/** Every product the pharmacy has a recipe for, by name. */
+const productOptions = computed(() => [
+    { value: '', label: t('production.create.productChoose') },
     ...[...items.boms]
-        .sort((a, b) => (b.yield?.qty || 1) - (a.yield?.qty || 1))
         .map((row) => ({
             value: row.id,
             label: `${loc(row.name)} · ${row.parentSku}`,
-        })),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'he')),
 ]);
 
 watch(bom, (next) => {
@@ -68,8 +92,6 @@ const plan = computed(() =>
         : [],
 );
 
-const shortages = computed(() => plan.value.filter((row) => row.short > 0));
-
 const ok = computed(() => Boolean(bom.value) && qtyNumber.value > 0);
 
 async function save() {
@@ -84,6 +106,12 @@ async function save() {
         plannedQty: qtyNumber.value,
         notes: notes.value,
     });
+
+    // Released means the components are taken and the run is at the bench; the
+    // order is written first either way, so the two states share one path.
+    if (startState.value === 'issued') {
+        await store.issueOrder(order.id);
+    }
 
     saving.value = false;
     emit('created', order);
@@ -100,12 +128,12 @@ async function save() {
         <div class="cp-grid">
             <div class="cp-wide">
                 <label class="a-lbl" for="cp-bom">{{
-                    t('production.create.bom')
+                    t('production.create.product')
                 }}</label>
                 <ASelect
                     id="cp-bom"
                     v-model="bomId"
-                    :options="bomOptions"
+                    :options="productOptions"
                     class="a-w100"
                 />
                 <div v-if="bom" class="a-hint">
@@ -141,6 +169,20 @@ async function save() {
                               })
                             : ''
                     }}
+                </div>
+            </div>
+            <div>
+                <label class="a-lbl" for="cp-start">{{
+                    t('production.create.start')
+                }}</label>
+                <ASelect
+                    id="cp-start"
+                    v-model="startState"
+                    :options="startOptions"
+                    class="a-w100"
+                />
+                <div class="a-hint">
+                    {{ t(`production.create.startHint.${startState}`) }}
                 </div>
             </div>
             <div class="cp-wide">
@@ -194,12 +236,7 @@ async function save() {
                                 <ANum>{{ num(pick.qty, 2) }}</ANum>
                                 {{ t(`inventory.unit.${row.stockUnit}`) }}
                             </span>
-                            <AChip
-                                v-if="row.short"
-                                tone="red"
-                                size="sm"
-                                class="cp-short"
-                            >
+                            <span v-if="row.short" class="cp-uncovered">
                                 {{
                                     t('production.drawer.short', {
                                         qty: num(row.short, 2),
@@ -208,7 +245,7 @@ async function save() {
                                         ),
                                     })
                                 }}
-                            </AChip>
+                            </span>
                             <span v-else-if="!row.picks.length" class="t-sub">
                                 {{ t('production.drawer.noBatch') }}
                             </span>
@@ -216,9 +253,6 @@ async function save() {
                     </tr>
                 </tbody>
             </table>
-            <div v-if="shortages.length" class="a-note a-note--warn cp-note">
-                {{ t('production.create.shortage', { n: shortages.length }) }}
-            </div>
         </div>
 
         <template #footer>
@@ -257,12 +291,10 @@ async function save() {
     margin-inline-end: 12px;
 }
 
-.cp-short {
+/* What an open batch does not cover. Said plainly: it does not stop the run. */
+.cp-uncovered {
     margin-inline-start: 4px;
-}
-
-.cp-note {
-    margin-top: 10px;
+    color: var(--a-ink-4);
 }
 
 .t-sub {

@@ -23,42 +23,6 @@ export default {
         madeBy: 'Made by',
         checkedBy: 'Checked by',
     },
-    make: {
-        what: 'What to make',
-        whatPlaceholder: 'Code or name…',
-        whatHint: 'Only items that have a recipe. Two letters or more.',
-        qty: 'Quantity to make ({unit})',
-        emptyTitle: 'Choose what to make',
-        emptySub: 'Search for an item that has a recipe, and say how much.',
-        clear: 'Choose another',
-        batch: 'Batch: {qty} {unit}',
-        canMake: 'Can be made — every component is in stock',
-        cannotMake: 'one component is short | {n} components are short',
-        noRecipe: 'This item has no recipe',
-        unitMismatch: 'The stock unit and the recipe unit do not meet',
-        needQty: 'Enter a quantity',
-        send: 'Send to the lab',
-        sent: 'Production order {id} sent to the lab',
-        sentBody:
-            'The preparation sheet went to the printer and the components are reserved. {qty} {unit}.',
-        printFailed: 'The print failed — the order went to the lab anyway',
-        recent: 'Latest runs',
-        allRuns: 'All production orders',
-        reprint: 'Print the work sheet again',
-        noRuns: 'Nothing has been sent to the lab yet',
-        noRunsSub: 'Whatever is sent from here will be listed below.',
-        runId: 'Order',
-        runItem: 'Item',
-        runQty: 'Quantity',
-        runState: 'State',
-        runWhen: 'Date',
-        runBy: 'Operator',
-        shortSku: 'Code',
-        shortName: 'Component',
-        shortNeed: 'Needed',
-        shortHave: 'In stock',
-        shortGap: 'Short',
-    },
     title: 'Production orders',
     sub: '{open} open · {completed} completed in the last 30 days',
     countLabel: 'of {total} orders',
@@ -129,7 +93,8 @@ export default {
         issue: 'Issue to production',
         complete: 'Complete the run',
         cancel: 'Cancel the order',
-        print: 'Print',
+        print: 'Print the work sheet',
+        printFailed: 'The browser blocked the print window',
     },
 
     drawer: {
@@ -155,7 +120,7 @@ export default {
         compPicks: 'Drawn from batches',
         compActual: 'Actual',
         noBatch: 'No batch — recorded on stock only',
-        short: '{qty} {uom} short in open batches',
+        short: '{qty} {uom} not covered by an open batch',
         output: 'What was opened',
         outputBatch: 'Output batch',
         wasteBatch: 'Waste batch',
@@ -163,16 +128,23 @@ export default {
 
     create: {
         title: 'New production order',
-        bom: 'Bill of materials',
-        bomChoose: 'Choose a recipe…',
+        // SAP names a product and loads that item's bill of materials; OITT
+        // holds one row per item code, so the recipe and the product are one
+        // and the same choice.
+        product: 'Product',
+        productChoose: 'Choose a product…',
         recipeHint:
             'The recipe yields {qty} {uom} per run · stock allows {runs} runs',
         qty: 'Quantity to make',
         qtyHint: 'In {uom}, the recipe’s yield unit',
+        start: 'Opening status',
+        startHint: {
+            planned:
+                'Written down and holds no stock. It can be released later.',
+            issued: 'Goes to the bench now, and takes its components.',
+        },
         notes: 'Production notes',
         preview: 'What leaves stock',
-        shortage:
-            '{n} components are short in open batches — the order can be opened and completed once goods arrive',
         save: 'Open the order',
     },
 

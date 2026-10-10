@@ -13,6 +13,8 @@ import ADrawer from '@/components/ui/ADrawer.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { useProductionSheet } from '@/composables/useProductionSheet';
+import { useToast } from '@/composables/useToast';
 import { PRODUCTION_STATE } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { ils, num } from '@/lib/money';
@@ -43,6 +45,8 @@ const emit = defineEmits(['close', 'issue', 'complete', 'cancel']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
+const { push } = useToast();
+const { printProductionSheet } = useProductionSheet();
 const items = useItemsStore();
 const inventory = useInventoryStore();
 
@@ -120,8 +124,19 @@ const details = computed(() => {
     return rows;
 });
 
+/**
+ * The bench paper for this run.
+ *
+ * Not `window.print()` of the drawer: the lab works off a sheet with the
+ * components and their quantities, a tick box and a batch line against each,
+ * and empty boxes for the yield, the waste, the batch number, the expiry and
+ * two signatures. That document is `useProductionSheet`, and this is the screen
+ * that issues it.
+ */
 function print() {
-    window.print();
+    if (!printProductionSheet(props.order)) {
+        push({ title: t('production.action.printFailed'), bad: true });
+    }
 }
 </script>
 
@@ -301,7 +316,7 @@ function print() {
                                     </div>
                                     <div
                                         v-if="component.short"
-                                        class="pd-short"
+                                        class="pd-uncovered"
                                     >
                                         {{
                                             t('production.drawer.short', {
@@ -425,10 +440,14 @@ function print() {
     margin-top: 4px;
 }
 
-.pd-short {
+/* How much of a component has no open batch to draw from. A statement, not a
+   verdict: SAP does not stop a production order over component stock either —
+   the shelf is answered for when the goods issue is posted, not when the order
+   is written. */
+.pd-uncovered {
     margin-top: 4px;
     font-size: 12.5px;
-    color: var(--a-red);
+    color: var(--a-ink-4);
 }
 
 .pd-gap {
