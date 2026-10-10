@@ -24,6 +24,9 @@ export default {
         madeBy: 'ביצע/ה',
         checkedBy: 'בדק/ה',
     },
+    tab: {
+        orders: 'הוראות ייצור',
+    },
     title: 'הוראות ייצור',
     sub: '{open} פתוחות · {completed} הושלמו ב־30 הימים האחרונים',
     countLabel: 'מתוך {total} הוראות',

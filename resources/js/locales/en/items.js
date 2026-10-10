@@ -142,10 +142,13 @@ export default {
         },
         title: 'Lead time by preparation type',
         hint: 'How long producing it here takes. A compounded item takes the lead time of its preparation type, unless the card sets one of its own.',
-        amount: 'Amount',
+        colType: 'Preparation type',
+        colUsed: 'Items',
+        colDays: 'In days',
+        amount: 'Lead time',
         unitLabel: 'Unit',
+        days: 'one day | {n} days',
         saved: 'The lead time was updated',
-        usedBy: 'One item is made this way | {n} items are made this way',
     },
 
     filter: {

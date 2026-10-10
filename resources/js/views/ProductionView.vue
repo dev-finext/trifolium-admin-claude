@@ -5,6 +5,10 @@
 // The list follows the shared filter system; the open order lives in the
 // query string (`order`), and `order=new` opens the create form — a recipe
 // page can send someone straight to "make more of this" with `bom=<id>`.
+//
+// The second tab is the lead time per preparation type: a settings table that
+// belongs to production but has nothing to do with any one run, which is why it
+// is a tab and not a card at the bottom of the list.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -22,6 +26,7 @@ import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
 import APagination from '@/components/ui/APagination.vue';
 import ASkeleton from '@/components/ui/ASkeleton.vue';
+import ATabs from '@/components/ui/ATabs.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
@@ -64,12 +69,18 @@ const drawerOpen = ref(false);
 const savedViews = ref(null);
 
 const state = useUrlState({
+    tab: 'orders',
     q: '',
     ...filterDefaults(SPEC),
     ...PAGE_DEFAULTS,
     order: '',
     bom: '',
 });
+
+const tabs = computed(() => [
+    { id: 'orders', label: t('production.tab.orders'), icon: 'clipboard_list' },
+    { id: 'lead', label: t('items.lead.title'), icon: 'clock' },
+]);
 
 /** The order whose completion form is open, and the one being cancelled. */
 const completing = ref(null);
@@ -249,14 +260,22 @@ async function confirmCancel(reason) {
             "
         >
             <template #actions>
-                <AButton kind="p" icon="plus" @click="state.order = 'new'">
+                <AButton
+                    v-if="state.tab === 'orders'"
+                    kind="p"
+                    icon="plus"
+                    @click="state.order = 'new'"
+                >
                     {{ t('production.action.create') }}
                 </AButton>
             </template>
         </PageHead>
 
+        <ATabs v-model="state.tab" :tabs="tabs" />
+
         <ASkeleton v-if="dataset.isBusy" />
         <AErrorState v-else-if="dataset.isError" @retry="dataset.load(true)" />
+        <PrepLeadCard v-else-if="state.tab === 'lead'" />
         <template v-else>
             <div class="a-kpis kpi-row">
                 <FilterKpi
@@ -397,9 +416,6 @@ async function confirmCancel(reason) {
                 v-model:size="state.ps"
                 :total="total"
             />
-
-            <!-- V3 — how long each preparation takes, set once per type. -->
-            <PrepLeadCard />
 
             <FilterDrawer
                 :open="drawerOpen"

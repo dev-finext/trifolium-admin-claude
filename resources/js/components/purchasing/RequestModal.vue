@@ -111,18 +111,24 @@ function toggleClosed() {
             </span>
         </div>
 
-        <label class="a-field rm-note">
-            <span>{{ t('buying.note') }}</span>
-            <ATextarea
-                :model-value="list.note || ''"
-                :rows="2"
-                class="a-w100"
-                :placeholder="t('buying.notePlaceholder')"
-                @update:model-value="store.setNote(list.id, $event)"
-            />
-        </label>
-
-        <BuyingLinesPanel :list="list" :readonly="closed" />
+        <!-- The note goes into the panel's own grid rather than above it, so
+             it shares a column with the paste box instead of being a second
+             field of a different width. -->
+        <BuyingLinesPanel :list="list" :readonly="closed">
+            <template #head>
+                <label class="a-lbl" for="rm-note">
+                    {{ t('buying.note') }}
+                </label>
+                <ATextarea
+                    id="rm-note"
+                    :model-value="list.note || ''"
+                    :rows="2"
+                    class="a-w100 rm-note"
+                    :placeholder="t('buying.notePlaceholder')"
+                    @update:model-value="store.setNote(list.id, $event)"
+                />
+            </template>
+        </BuyingLinesPanel>
 
         <template #footer>
             <span class="rm-count">
@@ -165,8 +171,6 @@ function toggleClosed() {
 }
 
 .rm-note {
-    display: block;
-    max-width: 680px;
     margin-bottom: 16px;
 }
 

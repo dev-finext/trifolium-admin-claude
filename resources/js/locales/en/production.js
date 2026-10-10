@@ -23,6 +23,9 @@ export default {
         madeBy: 'Made by',
         checkedBy: 'Checked by',
     },
+    tab: {
+        orders: 'Production orders',
+    },
     title: 'Production orders',
     sub: '{open} open · {completed} completed in the last 30 days',
     countLabel: 'of {total} orders',

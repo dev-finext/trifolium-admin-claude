@@ -158,31 +158,37 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
 
 <template>
     <div class="bl">
-        <!-- Adding lines -->
-        <div v-if="!readonly" class="a-pane bl-add">
-            <div class="bl-paste">
-                <label class="a-lbl" :for="`paste-${list.id}`">
-                    {{ t('buying.paste') }}
-                </label>
-                <ATextarea
-                    :id="`paste-${list.id}`"
-                    v-model="paste"
-                    :rows="3"
-                    class="a-w100"
-                    :placeholder="t('buying.pastePlaceholder')"
-                />
-                <div class="a-hint">{{ t('buying.pasteHint') }}</div>
-                <AButton
-                    kind="p"
-                    icon="search"
-                    :disabled="!paste.trim()"
-                    @click="search"
-                >
-                    {{ t('buying.search') }}
-                </AButton>
+        <!-- Whatever the sheet carries above its lines, and the two ways a
+             line gets onto it. One grid, so every label starts on the same
+             line and every field shares one edge. -->
+        <div v-if="$slots.head || !readonly" class="bl-add">
+            <div class="bl-main">
+                <slot name="head" />
+
+                <template v-if="!readonly">
+                    <label class="a-lbl" :for="`paste-${list.id}`">
+                        {{ t('buying.paste') }}
+                    </label>
+                    <ATextarea
+                        :id="`paste-${list.id}`"
+                        v-model="paste"
+                        :rows="3"
+                        class="a-w100"
+                        :placeholder="t('buying.pastePlaceholder')"
+                    />
+                    <div class="a-hint">{{ t('buying.pasteHint') }}</div>
+                    <AButton
+                        kind="p"
+                        icon="search"
+                        :disabled="!paste.trim()"
+                        @click="search"
+                    >
+                        {{ t('buying.search') }}
+                    </AButton>
+                </template>
             </div>
 
-            <div class="bl-find">
+            <div v-if="!readonly" class="bl-find">
                 <label class="a-lbl" :for="`find-${list.id}`">
                     {{ t('buying.addOne') }}
                 </label>
@@ -421,7 +427,26 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
     gap: 16px;
 }
 
-.bl-add,
+/* The paste box and the type-ahead sit side by side: one is for the list you
+   already have, the other for the item you remember afterwards. Two columns
+   and `align-items: start`, not a flex row ending at the same baseline — the
+   left column is a label, a box, a hint and a button tall, so a bottom-aligned
+   neighbour floats down beside the button with nothing to line up against. */
+.bl-add {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    align-items: start;
+    gap: 18px;
+}
+
+.bl-main {
+    min-width: 0;
+}
+
+.bl-main .a-hint {
+    margin: 4px 0 8px;
+}
+
 .bl-found {
     display: flex;
     align-items: end;
@@ -429,20 +454,8 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
     flex-wrap: wrap;
 }
 
-/* The paste box and the type-ahead sit side by side: one is for the list you
-   already have, the other for the item you remember afterwards. */
-.bl-paste {
-    flex: 1 1 340px;
-    min-width: 0;
-}
-
-.bl-paste .a-hint {
-    margin: 4px 0 8px;
-}
-
 .bl-find {
     position: relative;
-    flex: 0 1 280px;
     min-width: 0;
 }
 
