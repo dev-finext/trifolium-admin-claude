@@ -109,6 +109,14 @@ const routes = [
         component: () => import('@/views/PurchasingView.vue'),
     },
     {
+        // One sheet, on a page of its own: a line carries the whole item card,
+        // so the table is far too wide for anything that floats over a screen.
+        path: '/purchasing/:kind(request|order)/:id',
+        name: 'buyingSheet',
+        meta: { titleKey: 'nav.item.purchasing' },
+        component: () => import('@/views/BuyingSheetView.vue'),
+    },
+    {
         path: '/safety',
         name: 'safety',
         meta: { titleKey: 'nav.item.safety' },

@@ -5,23 +5,20 @@
 // written, newest first, with where each one stands. "New" opens an empty one,
 // and a row opens the one it names.
 //
-// Where it opens depends on what the document is. A request is a shopping list
-// filled in a sitting or two, so it is a window — everything in one popup. An
-// order is a document with a life behind it — drafted, sent, received or
-// failed, with a goods receipt and a history — so it is a drawer, which is what
-// the console uses for a record you open to find out what happened to it.
+// A row opens its own page, not a drawer or a dialog. A line on these sheets
+// carries the whole item card, which makes the table twenty-nine columns wide,
+// and booking a sixty-seven line delivery in is the longest piece of typing in
+// the area — neither fits in a box floating over the screen.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
-import OrderDrawer from '@/components/purchasing/OrderDrawer.vue';
-import RequestModal from '@/components/purchasing/RequestModal.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { useUrlState } from '@/composables/useUrlState';
 import { buyingStateTone } from '@/config';
 import { useBuyingStore } from '@/stores/buying';
 
@@ -32,17 +29,19 @@ const props = defineProps({
 
 const { t } = useI18n();
 const { loc } = useLocalized();
+const router = useRouter();
 const store = useBuyingStore();
-
-// The open sheet is an address, so a colleague sent the link opens the sheet.
-const view = useUrlState({ sheet: '' });
 
 const sheets = computed(() => store.listsOf(props.kind));
 
-const open = computed(() => (view.sheet ? store.listById(view.sheet) : null));
+const openSheet = (id) =>
+    router.push({
+        name: 'buyingSheet',
+        params: { kind: props.kind, id },
+    });
 
 function newSheet() {
-    view.sheet = store.createList(props.kind).id;
+    openSheet(store.createList(props.kind).id);
 }
 
 const cols = computed(() => {
@@ -111,8 +110,7 @@ function progress(row) {
             :cols="cols"
             :rows="sheets"
             row-key="id"
-            :selected="view.sheet"
-            @row="view.sheet = $event.id"
+            @row="openSheet($event.id)"
         >
             <template #cell-number="{ row }">
                 <ANum class="a-code">{{ row.number }}</ANum>
@@ -145,17 +143,6 @@ function progress(row) {
                 }}</span>
             </template>
         </ADataTable>
-
-        <RequestModal
-            v-if="open && kind === 'request'"
-            :list="open"
-            @close="view.sheet = ''"
-        />
-        <OrderDrawer
-            v-if="open && kind === 'order'"
-            :list="open"
-            @close="view.sheet = ''"
-        />
     </div>
 </template>
 

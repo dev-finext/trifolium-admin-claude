@@ -56,9 +56,43 @@ export const buyingStateTone = (id) =>
 export const buyingFirstState = (kind) =>
     (BUYING_STATES[kind] || BUYING_STATES.request)[0].id;
 
-/** Can goods be booked in against this sheet? */
+/** The rail a sheet travels, in order. `failed` is off it — it is a dead end. */
+export const BUYING_RAIL = {
+    request: ['open', 'closed'],
+    order: ['draft', 'sent', 'received'],
+};
+
+/**
+ * The states a person may move this sheet to by hand.
+ *
+ * A draft has none: the only way out of a draft is to export it, because the
+ * spreadsheet *is* the order and until it exists nothing has been sent. From
+ * `sent` the two answers are the two things that can happen — the goods came,
+ * or they did not. The way back from either is there for a mistake, and for an
+ * order that fell through and was sent again.
+ */
+export function buyingMoves(list) {
+    if (!list) {
+        return [];
+    }
+
+    if (list.kind !== 'order') {
+        return list.state === 'closed' ? ['open'] : ['closed'];
+    }
+
+    return (
+        {
+            draft: [],
+            sent: ['received', 'failed'],
+            received: ['sent'],
+            failed: ['sent'],
+        }[list.state] || []
+    );
+}
+
+/** Can goods be booked in against this sheet? Only one that was sent. */
 export const canReceive = (list) =>
-    list?.kind === 'order' && ['sent', 'draft'].includes(list.state);
+    list?.kind === 'order' && list.state === 'sent';
 
 /** The two kinds, and what each one requires. */
 export const BUYING_KINDS = [
