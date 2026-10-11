@@ -442,10 +442,10 @@ function back() {
     position: sticky;
     top: calc(0px - var(--a-pane-pad, 0px));
     z-index: 6;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 6px 20px;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    gap: 6px 20px;
     margin-bottom: 18px;
     padding: 14px 18px;
     background: var(--a-surface);
@@ -459,6 +459,7 @@ function back() {
 }
 
 .bs-rail {
+    flex: 1 1 100%;
     display: flex;
     gap: 20px;
     margin: 0;
@@ -507,22 +508,22 @@ function back() {
 
 /* The sentence that says what to do, not what the record contains. */
 .bs-next {
-    grid-column: 1;
+    flex: 1 1 340px;
+    min-width: 0;
     margin: 0;
     font-size: 14px;
 }
 
 .bs-do {
-    grid-column: 2;
-    grid-row: 1 / span 2;
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    margin-inline-start: auto;
 }
 
 .bs-blocked {
-    grid-column: 1 / -1;
+    flex: 1 1 100%;
     margin: 0;
     font-size: 13px;
     font-weight: 600;
@@ -530,7 +531,7 @@ function back() {
 }
 
 .bs-facts {
-    grid-column: 1 / -1;
+    flex: 1 1 100%;
     display: flex;
     flex-wrap: wrap;
     gap: 4px 14px;
@@ -548,7 +549,7 @@ function back() {
 
 .bs-top {
     display: grid;
-    grid-template-columns: 320px minmax(0, 1fr);
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
     gap: 18px;
     align-items: start;
     margin-bottom: 18px;

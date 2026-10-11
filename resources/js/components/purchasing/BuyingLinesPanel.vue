@@ -5,25 +5,26 @@
 // of an email — and the search button turns the block into rows in one press.
 // The type-ahead beside it is for the item the buyer thinks of afterwards.
 //
-// A line carries the item card rather than pointing at it, which makes the
-// table wide, and a wide table is the right answer: the decision "do I order
-// this, and how much" is made out of those columns and not out of eleven item
-// cards opened one after another. The bar above the table reaches the rest.
-//
-// Shared by both editors, because a request's lines and an order's lines are
-// the same lines — what differs is three facts, and they are in config/buying.js.
+// **The table fits the page.** It carried the whole item card for a while,
+// twenty-nine columns and three thousand pixels of it, and that was the wrong
+// trade: the quantity — the one cell anybody comes here to fill — ended up past
+// the right-hand edge, and the page's own heading and status band scrolled out
+// of view to reach it. What stays on the row is what the decision is made from:
+// how much is on the shelf, how much is already coming, what the minimum is,
+// and the quantity. The rest of the card is a click away on the row, and the
+// export still writes every column, because a spreadsheet is the one place
+// where carrying everything costs nothing.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BuyingLineDrawer from '@/components/purchasing/BuyingLineDrawer.vue';
 import AButton from '@/components/ui/AButton.vue';
-import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import { BUYING_KIND } from '@/config';
-import { fmtISO } from '@/lib/dates';
 import { ils, num } from '@/lib/money';
 import { useBuyingStore } from '@/stores/buying';
 import { useItemsStore } from '@/stores/items';
@@ -92,68 +93,79 @@ function pick(row) {
 
 const label = (key) => t(`buying.col.${key}`);
 
-const amount = (key) => ({ k: key, label: label(key), align: 'end' });
-
 /** Was anything ever booked in against this sheet? */
 const hasReceipt = computed(() =>
     props.list.lines.some((line) => line.received !== null),
 );
 
 /**
- * The item card, column by column, in the card's own order: who it is, who it
- * comes from, what it costs, what is on the shelf, and how it is replenished.
+ * What a buyer reads before writing a quantity, and nothing else.
+ *
+ * `cls` on the two working columns tints them, header included, so the part of
+ * the row that is filled in reads as one block rather than as two more cells.
  */
 const cols = computed(() => {
     const out = [
-        { k: 'sku', label: label('sku'), nowrap: true },
-        { k: 'name', label: label('name') },
-        { k: 'foreignName', label: label('foreignName') },
-        { k: 'group', label: label('group') },
-        { k: 'state', label: label('state'), nowrap: true },
-
-        { k: 'supplier', label: label('supplier') },
-        { k: 'supplierCode', label: label('supplierCode'), nowrap: true },
-        { k: 'catalogNum', label: label('catalogNum'), nowrap: true },
-        { k: 'purchaseUom', label: label('purchaseUom'), nowrap: true },
-        amount('numInBuy'),
-        { k: 'packUom', label: label('packUom'), nowrap: true },
-        amount('packQty'),
-        amount('lastPrice'),
-        { k: 'lastPriceOn', label: label('lastPriceOn'), nowrap: true },
-        amount('evalPrice'),
-
-        { k: 'uom', label: label('uom'), nowrap: true },
-        amount('onHand'),
-        amount('committed'),
-        amount('available'),
-        amount('onOrder'),
-        amount('min'),
-        amount('max'),
-        amount('reorder'),
-
-        amount('minOrder'),
-        amount('leadDays'),
-        { k: 'procurement', label: label('procurement'), nowrap: true },
-
-        { k: 'qty', label: label('qty'), align: 'end', nowrap: true },
+        { k: 'sku', label: label('sku'), nowrap: true, sortable: true },
+        { k: 'name', label: label('name'), sortable: true },
+        { k: 'uom', label: label('uomShort'), nowrap: true },
+        {
+            k: 'available',
+            label: label('available'),
+            align: 'end',
+            nowrap: true,
+            sortable: true,
+        },
+        { k: 'onOrder', label: label('onOrder'), align: 'end', nowrap: true },
+        { k: 'min', label: label('minShort'), align: 'end', nowrap: true },
+        {
+            k: 'lastPrice',
+            label: label('lastPrice'),
+            align: 'end',
+            nowrap: true,
+        },
+        {
+            k: 'qty',
+            label: label('qty'),
+            align: 'end',
+            nowrap: true,
+            cls: 'bl-work',
+        },
     ];
 
     if (hasReceipt.value) {
-        out.push(amount('received'));
+        out.push({
+            k: 'received',
+            label: label('received'),
+            align: 'end',
+            nowrap: true,
+            cls: 'bl-work',
+        });
     }
 
     if (rules.value.checklist) {
-        out.push({ k: 'done', label: label('done'), nowrap: true });
+        out.push({
+            k: 'done',
+            label: label('done'),
+            nowrap: true,
+            cls: 'bl-work',
+        });
     }
 
-    if (!props.readonly) {
-        out.push({ k: 'drop', label: '', nowrap: true });
-    }
+    out.push({ k: 'more', label: '', nowrap: true });
 
     return out;
 });
 
 const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
+
+// ---- one line in full ------------------------------------------------------
+
+const openSku = ref('');
+
+const openLine = computed(
+    () => props.list.lines.find((line) => line.sku === openSku.value) || null,
+);
 </script>
 
 <template>
@@ -210,7 +222,7 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
         </div>
 
         <!-- What the last search did -->
-        <div v-if="found" class="a-pane bl-found">
+        <div v-if="found" class="bl-found">
             <span v-if="found.added.length" class="bl-ok">
                 {{
                     t(
@@ -245,84 +257,22 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
             :cols="cols"
             :rows="list.lines"
             row-key="sku"
+            :selected="openSku"
         >
             <template #cell-sku="{ row }">
                 <ANum class="a-code">{{ row.sku }}</ANum>
             </template>
-            <template #cell-foreignName="{ row }">
-                <span class="bl-lat" :class="{ 'bl-nil': !row.foreignName }">{{
-                    row.foreignName || '—'
-                }}</span>
-            </template>
-            <template #cell-group="{ row }">
-                <span :class="{ 'bl-nil': !row.group }">{{
-                    row.group || '—'
-                }}</span>
-            </template>
-            <template #cell-state="{ row }">
-                <AChip
-                    size="sm"
-                    :dot="false"
-                    :tone="row.state === 'active' ? 'green' : 'red'"
+            <template #cell-name="{ row }">
+                <button
+                    type="button"
+                    class="bl-name"
+                    :title="row.name"
+                    @click="openSku = row.sku"
                 >
-                    {{ t(`buying.itemState.${row.state}`) }}
-                </AChip>
-            </template>
-            <template #cell-supplier="{ row }">
-                <span :class="{ 'bl-nil': !row.supplier }">{{
-                    row.supplier || '—'
-                }}</span>
-            </template>
-            <template #cell-supplierCode="{ row }">
-                <ANum :class="{ 'bl-nil': !row.supplierCode }">{{
-                    row.supplierCode || '—'
-                }}</ANum>
-            </template>
-            <template #cell-catalogNum="{ row }">
-                <ANum :class="{ 'bl-nil': !row.catalogNum }">{{
-                    row.catalogNum || '—'
-                }}</ANum>
-            </template>
-            <template #cell-purchaseUom="{ row }">
-                {{ unit(row.purchaseUom || row.uom) }}
-            </template>
-            <template #cell-numInBuy="{ row }">
-                <ANum>{{ num(row.numInBuy, 3) }}</ANum>
-            </template>
-            <template #cell-packUom="{ row }">
-                <span :class="{ 'bl-nil': !row.packUom }">{{
-                    row.packUom || '—'
-                }}</span>
-            </template>
-            <template #cell-packQty="{ row }">
-                <ANum :class="{ 'bl-nil': row.packQty === null }">{{
-                    row.packQty === null ? '—' : num(row.packQty, 3)
-                }}</ANum>
-            </template>
-            <template #cell-lastPrice="{ row }">
-                <ANum :class="{ 'bl-nil': row.lastPrice === null }">{{
-                    row.lastPrice === null ? '—' : ils(row.lastPrice, 2)
-                }}</ANum>
-            </template>
-            <template #cell-lastPriceOn="{ row }">
-                <ANum :class="{ 'bl-nil': !row.lastPriceOn }">{{
-                    row.lastPriceOn ? fmtISO(row.lastPriceOn) : '—'
-                }}</ANum>
-            </template>
-            <template #cell-evalPrice="{ row }">
-                <ANum :class="{ 'bl-nil': row.evalPrice === null }">{{
-                    row.evalPrice === null ? '—' : ils(row.evalPrice, 2)
-                }}</ANum>
+                    {{ row.name }}
+                </button>
             </template>
             <template #cell-uom="{ row }">{{ unit(row.uom) }}</template>
-            <template #cell-onHand="{ row }">
-                <ANum>{{ num(row.onHand, 3) }}</ANum>
-            </template>
-            <template #cell-committed="{ row }">
-                <ANum :class="{ 'bl-nil': !row.committed }">{{
-                    num(row.committed, 3)
-                }}</ANum>
-            </template>
             <template #cell-available="{ row }">
                 <ANum :class="{ 'bl-low': row.available <= 0 }">{{
                     num(row.available, 3)
@@ -338,30 +288,10 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
                     row.min === null ? '—' : num(row.min, 3)
                 }}</ANum>
             </template>
-            <template #cell-max="{ row }">
-                <ANum :class="{ 'bl-nil': row.max === null }">{{
-                    row.max === null ? '—' : num(row.max, 3)
+            <template #cell-lastPrice="{ row }">
+                <ANum :class="{ 'bl-nil': row.lastPrice === null }">{{
+                    row.lastPrice === null ? '—' : ils(row.lastPrice, 2)
                 }}</ANum>
-            </template>
-            <template #cell-reorder="{ row }">
-                <ANum :class="{ 'bl-nil': row.reorder === null }">{{
-                    row.reorder === null ? '—' : num(row.reorder, 3)
-                }}</ANum>
-            </template>
-            <template #cell-minOrder="{ row }">
-                <ANum :class="{ 'bl-nil': row.minOrder === null }">{{
-                    row.minOrder === null ? '—' : num(row.minOrder, 3)
-                }}</ANum>
-            </template>
-            <template #cell-leadDays="{ row }">
-                <ANum :class="{ 'bl-nil': row.leadDays === null }">{{
-                    row.leadDays === null
-                        ? '—'
-                        : t('buying.days', { n: row.leadDays })
-                }}</ANum>
-            </template>
-            <template #cell-procurement="{ row }">
-                {{ t(`items.procurementMethod.${row.procurement}`) }}
             </template>
             <template #cell-qty="{ row }">
                 <AInput
@@ -402,25 +332,34 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
                     />
                 </label>
             </template>
-            <template #cell-drop="{ row }">
-                <AButton
-                    sm
-                    kind="ghost"
-                    icon="x"
-                    :title="t('buying.dropLine')"
-                    :aria-label="t('buying.dropLine')"
-                    @click="store.removeLine(list.id, row.sku)"
-                />
+            <template #cell-more="{ row }">
+                <span class="bl-tools">
+                    <AButton
+                        sm
+                        kind="ghost"
+                        icon="external"
+                        :title="t('buying.lineDetails')"
+                        :aria-label="t('buying.lineDetails')"
+                        @click="openSku = row.sku"
+                    />
+                    <AButton
+                        v-if="!readonly"
+                        sm
+                        kind="ghost"
+                        icon="x"
+                        :title="t('buying.dropLine')"
+                        :aria-label="t('buying.dropLine')"
+                        @click="store.removeLine(list.id, row.sku)"
+                    />
+                </span>
             </template>
         </ADataTable>
+
+        <BuyingLineDrawer :line="openLine" :list="list" @close="openSku = ''" />
     </div>
 </template>
 
 <style scoped>
-/* `minmax(0, 1fr)` and not the default `auto`: a grid track sizes itself to its
-   widest item, and the widest item here is a table three thousand pixels across.
-   Left to grow, the track takes the scroll bar above the table with it and there
-   is nothing left for it to scroll. */
 .bl {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -449,9 +388,10 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
 
 .bl-found {
     display: flex;
-    align-items: end;
-    gap: 18px;
+    align-items: center;
+    gap: 14px;
     flex-wrap: wrap;
+    font-size: 13px;
 }
 
 .bl-find {
@@ -499,12 +439,6 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
     white-space: nowrap;
 }
 
-.bl-found {
-    align-items: center;
-    gap: 14px;
-    font-size: 13px;
-}
-
 .bl-ok {
     color: var(--a-green);
     font-weight: 600;
@@ -519,8 +453,50 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
     font-weight: 600;
 }
 
+/* The item's name opens the rest of its card. It is a button rather than a
+   clickable row because the row already holds two inputs and a checkbox, and a
+   row that is itself a control swallows the clicks meant for them. */
+.bl-name {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--a-accent-ink, var(--a-ink));
+    text-align: start;
+    cursor: pointer;
+}
+
+.bl-name:hover {
+    text-decoration: underline;
+}
+
+/* Ten columns on a laptop pane is a tight fit, and the console's own cell
+   padding is written for tables of five. Trimming it is what keeps this table
+   off a horizontal scroll bar at the narrowest width the shell allows. */
+.bl-sheet :deep(th),
+.bl-sheet :deep(td) {
+    padding-inline: 12px;
+}
+
+/* The part of the row that is filled in, header included, so the quantity is
+   somewhere the eye lands instead of somewhere it has to be looked for. */
+.bl-sheet :deep(.bl-work) {
+    background: var(--a-tint);
+}
+
+/* Every width below is measured, not guessed: the row has to clear the 815
+   pixels a table gets inside the narrowest pane the shell allows.
+ *
+ * `min-width` and not only `width`: `.a-input` carries a 150px minimum, which
+ * is right for a form field and four times what a quantity needs, and a width
+ * alone does not get past it. That one line was 50 pixels of the overflow. */
 .bl-qty {
-    width: 92px;
+    width: 76px;
+    min-width: 76px;
+}
+
+.bl-sheet :deep(.a-code) {
+    padding-inline: 8px;
 }
 
 /* A quantity an order cannot leave without. Said on the field, not only in the
@@ -534,19 +510,9 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
     justify-content: center;
 }
 
-/* The sheet is wider than the pane, and that is the arrangement: the bar above
-   it reaches the columns it cannot show. What it must not do is make room by
-   squeezing the columns — left to `width: 100%`, the browser takes the space
-   out of the text columns first, and the item's name, which is the one thing
-   every row is read by, ends up the narrowest cell in the row. */
-.bl-sheet :deep(table.a-table) {
-    width: max-content;
-    min-width: 100%;
-}
-
-/* A name long enough to push the table out on its own wraps instead. */
-.bl-sheet :deep(tbody td) {
-    max-width: 280px;
+.bl-tools {
+    display: inline-flex;
+    gap: 0;
 }
 
 /* A cell with nothing in it should not read as loudly as one with a number. */
@@ -559,12 +525,5 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
 .bl-low {
     color: var(--a-red);
     font-weight: 600;
-}
-
-/* The botanical name is Latin inside a Hebrew row. */
-.bl-lat {
-    direction: ltr;
-    display: inline-block;
-    unicode-bidi: isolate;
 }
 </style>

@@ -82,6 +82,23 @@ export default {
         failed: 'Mark as failed',
     },
 
+    // What the row carries is what the decision is made from; the rest of the
+    // item card opens by clicking the name.
+    lineDetails: 'All the item details',
+    lineSnapshot:
+        'These are the values as they were when the line was added, not what the item card says now — a sheet written in March and read in May has to say what the shelf held in March.',
+    lineDone: 'Done',
+    lineNotDone: 'Not done yet',
+    openItemCard: 'Open the item card',
+    openItemCardHint: 'For what is current, as against what the line kept.',
+    group: {
+        working: 'What the line says',
+        identity: 'Item identity',
+        supply: 'Supplier and prices',
+        shelf: 'Stock',
+        replenish: 'Replenishment',
+    },
+
     railAria: 'Sheet stages',
     exportAndSend: 'Export to Excel and send',
     totalQty: '{n} in total',
@@ -183,11 +200,13 @@ export default {
         evalPrice: 'Valuation price',
 
         uom: 'Stock unit',
+        uomShort: 'Unit',
         onHand: 'On hand',
         committed: 'Committed',
         available: 'Available',
         onOrder: 'On order',
         min: 'Minimum level',
+        minShort: 'Minimum',
         max: 'Maximum level',
         reorder: 'Reorder quantity',
 
