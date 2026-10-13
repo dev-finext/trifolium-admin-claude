@@ -48,9 +48,8 @@ export async function openDatabase(onProgress = () => {}) {
     const db = await PGlite.create(STORE);
 
     if (!(await isSeeded(db))) {
-        // A tab closed halfway through the first build leaves the tables
-        // standing and empty, so the question is whether there are records in
-        // them — not whether the schema ran.
+        // Whatever is there is a half-build or an older schema, so the build
+        // starts from nothing rather than trying to reconcile with it.
         await db.exec(`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`);
         await seed(db, onProgress);
     }
@@ -60,12 +59,35 @@ export async function openDatabase(onProgress = () => {}) {
     return db;
 }
 
-/** Whether the database holds the console, rather than just its tables. */
+/**
+ * Whether the database holds the console, rather than just its tables.
+ *
+ * Two ways it does not. A tab closed halfway through the first build leaves the
+ * tables standing and empty — so the question is whether there are records in
+ * them. And a database built by an older version of this code can be perfectly
+ * full and still be missing a table today's boot query reads, which would fail
+ * the read rather than return nothing from it. The spec is the list of what has
+ * to be there, so the check never goes stale.
+ */
 async function isSeeded(db) {
     try {
         const rows = await db.query('SELECT count(*)::int AS n FROM items');
 
-        return (rows.rows[0]?.n || 0) > 0;
+        if ((rows.rows[0]?.n || 0) === 0) {
+            return false;
+        }
+
+        const present = await db.query(
+            `SELECT table_name FROM information_schema.tables
+             WHERE table_schema = 'public'`,
+        );
+        const have = new Set(present.rows.map((row) => row.table_name));
+
+        return TABLES.flatMap((spec) =>
+            spec.lines ? [spec.name, spec.lines.name] : [spec.name],
+        )
+            .concat(SETTINGS_KEY)
+            .every((name) => have.has(name));
     } catch {
         return false;
     }

@@ -75,6 +75,36 @@ flags, not preparation types — so the real count of preparation types is 14,
 not 17. **Not yet corrected** — it changes `typeId` on orders, the sticker
 templates and the lab, so it needs a decision first.
 
+## One file that is not from SAP: the address list
+
+`cities.json` — 818 settlements and 62,260 streets — is the Central Bureau of
+Statistics' own national list, published through data.gov.il as two cp1255 CSV
+files (`רשימת ישובים`, `רשימת רחובות`). SAP holds no street catalogue; the
+pharmacy's addresses are free text today, and this is the list the ניהול כתובות
+screen manages so an address can be picked instead.
+
+Produced by `scripts/import-cbs-addresses.py`, which is the authority on what it
+drops and why:
+
+```bash
+python scripts/import-cbs-addresses.py     ~/Downloads/ערים.csv ~/Downloads/רחובות.csv     resources/js/demo/real/cities.json
+```
+
+Three things worth knowing before trusting a row:
+
+* **498 settlements are missing on purpose.** The CBS list has 1,316; the ones
+  with no named streets — a kibbutz where the address is the settlement itself,
+  marked with street code 9000 — are left out, because there is nothing there to
+  pick from.
+* **No street has an English name.** There is none in the source, in any
+  settlement, so a street record holds Hebrew alone and `loc()` falls back.
+* **The English town names are the CBS transliterations**, which are not always
+  the spelling in common use (`Petah Tiqwa`, `Rishon Leziyyon`) and are cut at
+  twenty characters (`Modi'in-Makkabbim-Re`). They are what the source says; the
+  screen is where the pharmacy corrects them.
+
+Nothing here is personal data.
+
 ## Re-running the extraction
 
 Needs the local restore (see `C:\temp\DB_DUMP Trifolium\analysis\README.md`)

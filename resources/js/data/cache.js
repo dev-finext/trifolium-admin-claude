@@ -25,7 +25,7 @@ const KEY = 'dataset';
  * Bump when the shape of a record changes, so a reader carrying yesterday's
  * cache gets today's records instead of a screen built on the old ones.
  */
-const VERSION = '2026-09-26.1';
+const VERSION = '2026-10-13.1';
 
 function open() {
     return new Promise((resolve, reject) => {

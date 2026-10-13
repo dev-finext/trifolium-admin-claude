@@ -311,6 +311,16 @@ series** — 2600008 for a request, 2600164 for an order. Their working notes ar
 rewritten, because the real ones name staff and suppliers' contacts by first
 name and this build is published.
 
+### The address list — not from SAP
+
+`resources\js\demo\real\cities.json` is the Central Bureau of Statistics'
+national list (data.gov.il, two cp1255 CSVs): 818 settlements and 62,260
+streets, keyed by the CBS codes. SAP has no street catalogue — addresses are
+free text in the live system — so this is what the **ניהול כתובות** screen
+manages, and what a customer will pick a street from. Rebuilt by
+`scripts\import-cbs-addresses.py`; what it drops, and why, is in the README in
+`demo\real\`.
+
 ---
 
 ## 6 · The console's own database

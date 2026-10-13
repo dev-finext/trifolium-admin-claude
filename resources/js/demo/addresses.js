@@ -4,75 +4,24 @@
 // exactly one town — that is the whole point of the list — so the streets are
 // child rows of their city and nothing here holds a street on its own.
 //
-// Sample content, deliberately short: a handful of towns with their main
-// streets, enough to show how the screen behaves. The real list is the one the
-// pharmacy builds on this screen.
-import { L } from '@/lib/localized';
+// Not sample content. These are the Central Bureau of Statistics' own lists —
+// every settlement in Israel that has named streets (818 of them) and all
+// 62,260 streets in them — keyed by the CBS codes, which is why a city's id is
+// `3000` and a street's is `3000-164`. See `real/README.md` for where the files
+// came from and what was dropped on the way in.
+//
+// Two things the national list does not carry, and so neither does this:
+//
+//   * an English street name — there is none, in any settlement, so a street
+//     record holds Hebrew alone and `loc()` falls back to it;
+//   * a settlement with no named streets — a kibbutz where the address is the
+//     settlement itself. The CBS marks those with street code 9000 and they are
+//     left out, because there is nothing there to pick.
+//
+// The English town names are the CBS transliterations, which are not always the
+// spelling in common use (`Petah Tiqwa`, `Rishon Leziyyon`) and are cut at
+// twenty characters. They are what the source says; the screen is where the
+// pharmacy corrects them.
+import CITIES from '@/demo/real/cities.json';
 
-/** `[hebrew, english]` pairs → street records under `cityId`. */
-function streets(cityId, pairs) {
-    return pairs.map(([he, en], index) => ({
-        id: `${cityId}-s${index + 1}`,
-        name: L(he, en),
-    }));
-}
-
-function city(id, he, en, pairs) {
-    return { id, name: L(he, en), streets: streets(id, pairs) };
-}
-
-export const DEMO_CITIES = [
-    city('ct1', 'תל אביב', 'Tel Aviv', [
-        ['רוטשילד', 'Rothschild'],
-        ['אלנבי', 'Allenby'],
-        ['אבן גבירול', 'Ibn Gabirol'],
-        ['דיזנגוף', 'Dizengoff'],
-        ['בן יהודה', 'Ben Yehuda'],
-        ['אחד העם', 'Ahad Ha’am'],
-    ]),
-    city('ct2', 'רמת גן', 'Ramat Gan', [
-        ['ביאליק', 'Bialik'],
-        ['ז׳בוטינסקי', 'Jabotinsky'],
-        ['בן גוריון', 'Ben Gurion'],
-        ['קריניצי', 'Krinitzi'],
-        ['הרא״ה', 'HaRoeh'],
-    ]),
-    city('ct3', 'חיפה', 'Haifa', [
-        ['הנשיא', 'HaNasi'],
-        ['הרצל', 'Herzl'],
-        ['מוריה', 'Moriah'],
-        ['הכרמל', 'HaCarmel'],
-        ['העצמאות', 'HaAtzmaut'],
-    ]),
-    city('ct4', 'ירושלים', 'Jerusalem', [
-        ['יפו', 'Jaffa'],
-        ['קינג ג׳ורג׳', 'King George'],
-        ['עזה', 'Aza'],
-        ['אגרון', 'Agron'],
-        ['בן יהודה', 'Ben Yehuda'],
-    ]),
-    city('ct5', 'פתח תקווה', 'Petah Tikva', [
-        ['ז׳בוטינסקי', 'Jabotinsky'],
-        ['ההסתדרות', 'HaHistadrut'],
-        ['חיים עוזר', 'Chaim Ozer'],
-        ['הברון הירש', 'Baron Hirsch'],
-    ]),
-    city('ct6', 'כפר סבא', 'Kfar Saba', [
-        ['ויצמן', 'Weizmann'],
-        ['תל חי', 'Tel Hai'],
-        ['הרצל', 'Herzl'],
-        ['ששת הימים', 'Sheshet HaYamim'],
-    ]),
-    city('ct7', 'נתניה', 'Netanya', [
-        ['הרצל', 'Herzl'],
-        ['שדרות בנימין', 'Binyamin Blvd'],
-        ['דיזנגוף', 'Dizengoff'],
-        ['סמילנסקי', 'Smilansky'],
-    ]),
-    city('ct8', 'באר שבע', 'Beer Sheva', [
-        ['שדרות רגר', 'Rager Blvd'],
-        ['הרצל', 'Herzl'],
-        ['הדסה', 'Hadassah'],
-        ['טרומפלדור', 'Trumpeldor'],
-    ]),
-];
+export const DEMO_CITIES = CITIES;

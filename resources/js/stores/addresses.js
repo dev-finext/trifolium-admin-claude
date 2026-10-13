@@ -19,12 +19,19 @@ import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { FALLBACK_LOCALE, loc } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
 
-/** Both names off one typed form. English is optional and falls back to Hebrew. */
+/**
+ * Both names off one typed form.
+ *
+ * English is optional and is stored only when it was actually typed: `loc()`
+ * falls back to the Hebrew on its own, and a copy of the Hebrew sitting in the
+ * English field would claim a translation that nobody wrote. Most of the book
+ * is in that state — the national street list has no English side at all.
+ */
 function nameOf(form) {
     const he = String(form?.he || '').trim();
     const en = String(form?.en || '').trim();
 
-    return he ? { he, en: en || he } : null;
+    return he ? (en && en !== he ? { he, en } : { he }) : null;
 }
 
 /** The name a comparison uses: the Hebrew side, folded for a forgiving match. */
@@ -51,7 +58,14 @@ function byName(rows) {
     );
 }
 
-/** `ct7` → 7. The next free number in a series of ids sharing one prefix. */
+/**
+ * The next free number in a series of ids sharing one prefix.
+ *
+ * The ids are the CBS codes — `3000` for a town, `3000-164` for a street in it
+ * — so the prefix is the town's own id for a street and nothing at all for a
+ * town. A row the pharmacy adds takes the next number above everything there,
+ * which lands outside the official range and cannot collide with it.
+ */
 function nextId(rows, prefix) {
     const highest = rows.reduce((top, row) => {
         const digits = String(row.id).slice(prefix.length);
@@ -149,7 +163,7 @@ export const useAddressesStore = defineStore('addresses', () => {
         const rows = bag();
 
         if (!existingId) {
-            const city = { id: nextId(rows, 'ct'), name, streets: [] };
+            const city = { id: nextId(rows, ''), name, streets: [] };
 
             rows.push(city);
             writeLog({ act: 'city_create', ent: city.id, to: label(name) });
@@ -214,7 +228,7 @@ export const useAddressesStore = defineStore('addresses', () => {
 
         if (!existingId) {
             const street = {
-                id: nextId(city.streets, `${city.id}-s`),
+                id: nextId(city.streets, `${city.id}-`),
                 name,
             };
 

@@ -10,6 +10,12 @@
 // The open town is in the query string, so a link to it opens on the same town.
 // The two editors and the delete confirmation are actions, not addresses, and
 // stay in local state.
+//
+// Both panes page. The book holds the national list — 818 towns, and over four
+// thousand streets in one of them — so a pane that rendered everything it was
+// given would put four thousand rows in the document to show twenty-five. Each
+// pane carries its own page, size and sort in the URL under its own prefix, so
+// a link restores both of them as they were read.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -21,7 +27,9 @@ import ACard from '@/components/ui/ACard.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import ANum from '@/components/ui/ANum.vue';
+import APagination from '@/components/ui/APagination.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import { usePaged, useSorted } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
@@ -33,7 +41,58 @@ const { loc, searchHaystack } = useLocalized();
 const { push } = useToast();
 const addresses = useAddressesStore();
 
-const view = useUrlState({ city: '', q: '', sq: '' });
+const view = useUrlState({
+    city: '',
+    q: '',
+    sq: '',
+    // The towns pane, then the streets pane: page, page size, sort column, sort
+    // direction. `usePaged` and `useSorted` read `pg`/`ps`/`sk`/`sd`, so each
+    // pane is handed its own small view of the URL state under its own prefix.
+    cpg: 1,
+    cps: 25,
+    csk: '',
+    csd: 'asc',
+    spg: 1,
+    sps: 25,
+    ssk: '',
+    ssd: 'asc',
+});
+
+/** Page sizes offered on a pane; two lists side by side read best at 25. */
+const PAGE_SIZES = [25, 50, 100];
+
+/** The four page keys one pane owns, named the way the composables expect. */
+function pager(prefix) {
+    return {
+        get pg() {
+            return view[`${prefix}pg`];
+        },
+        set pg(value) {
+            view[`${prefix}pg`] = value;
+        },
+        get ps() {
+            return view[`${prefix}ps`];
+        },
+        set ps(value) {
+            view[`${prefix}ps`] = value;
+        },
+        get sk() {
+            return view[`${prefix}sk`];
+        },
+        set sk(value) {
+            view[`${prefix}sk`] = value;
+        },
+        get sd() {
+            return view[`${prefix}sd`];
+        },
+        set sd(value) {
+            view[`${prefix}sd`] = value;
+        },
+    };
+}
+
+const cityPage = pager('c');
+const streetPage = pager('s');
 
 /**
  * The open editor: `{ kind: 'city' | 'street', place }`, where `place` is null
@@ -47,13 +106,21 @@ const ask = ref(null);
 // ---- towns ----------------------------------------------------------------
 
 /**
- * The name in the language the reader is *not* in. The book holds two names for
- * every place and the table shows both — the reader's first, the other beside
- * it — so in English the second column is the Hebrew source and not a copy of
- * the first.
+ * The name in the language the reader is *not* in, or nothing.
+ *
+ * The reader's own language is already the first column, so this one is only
+ * worth a cell when the record actually carries a second name. Most streets do
+ * not — the national list has no English side — and an empty cell says that
+ * more honestly than the Hebrew name printed twice.
  */
 function otherName(row) {
-    return locale.value === 'he' ? row.name.en : row.name.he;
+    const { he, en } = row.name;
+
+    if (!en || en === he) {
+        return '';
+    }
+
+    return locale.value === 'he' ? en : he;
 }
 
 const cityTerm = computed(() => view.q.trim().toLowerCase());
@@ -94,9 +161,21 @@ const cityCols = computed(() => [
     { k: 'act', label: '', nowrap: true },
 ]);
 
+const { sort: citySort, sorted: sortedCities } = useSorted(
+    shownCities,
+    cityPage,
+    () => cityCols.value,
+);
+
+const { paged: pagedCities, total: cityTotal } = usePaged(
+    sortedCities,
+    cityPage,
+);
+
 function openStreets(city) {
     view.city = city.id;
     view.sq = '';
+    view.spg = 1;
 }
 
 // ---- streets --------------------------------------------------------------
@@ -117,16 +196,42 @@ const shownStreets = computed(() => {
         );
 });
 
+/**
+ * The second-name column, only when the list has second names to put in it.
+ *
+ * Streets usually have none — the national list carries no English side — and a
+ * column of empty cells is a column that says nothing. A town the pharmacy has
+ * translated itself brings it back.
+ */
+const streetsHaveAlt = computed(() =>
+    shownStreets.value.some((street) => otherName(street)),
+);
+
 const streetCols = computed(() => [
     { k: 'name', label: t('addresses.streets.col.name'), sortable: true },
-    {
-        k: 'alt',
-        label: t('addresses.streets.col.alt'),
-        nowrap: true,
-        sortValue: otherName,
-    },
+    ...(streetsHaveAlt.value
+        ? [
+              {
+                  k: 'alt',
+                  label: t('addresses.streets.col.alt'),
+                  nowrap: true,
+                  sortValue: otherName,
+              },
+          ]
+        : []),
     { k: 'act', label: '', nowrap: true },
 ]);
+
+const { sort: streetSort, sorted: sortedStreets } = useSorted(
+    shownStreets,
+    streetPage,
+    () => streetCols.value,
+);
+
+const { paged: pagedStreets, total: streetTotal } = usePaged(
+    sortedStreets,
+    streetPage,
+);
 
 // ---- the shared editor ----------------------------------------------------
 
@@ -347,8 +452,9 @@ function confirmAsk() {
                 </template>
 
                 <ADataTable
+                    v-model:sort="citySort"
                     :cols="cityCols"
-                    :rows="shownCities"
+                    :rows="pagedCities"
                     row-key="id"
                     :selected="view.city"
                     @row="openStreets"
@@ -400,6 +506,12 @@ function confirmAsk() {
                         </div>
                     </template>
                 </ADataTable>
+                <APagination
+                    v-model:page="view.cpg"
+                    v-model:size="view.cps"
+                    :sizes="PAGE_SIZES"
+                    :total="cityTotal"
+                />
             </ACard>
 
             <ACard
@@ -438,8 +550,9 @@ function confirmAsk() {
 
                 <ADataTable
                     v-else
+                    v-model:sort="streetSort"
                     :cols="streetCols"
-                    :rows="shownStreets"
+                    :rows="pagedStreets"
                     row-key="id"
                 >
                     <template #empty>
@@ -489,6 +602,13 @@ function confirmAsk() {
                         </div>
                     </template>
                 </ADataTable>
+                <APagination
+                    v-if="openCity"
+                    v-model:page="view.spg"
+                    v-model:size="view.sps"
+                    :sizes="PAGE_SIZES"
+                    :total="streetTotal"
+                />
             </ACard>
         </div>
 
