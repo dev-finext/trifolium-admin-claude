@@ -34,6 +34,7 @@ export default {
         integrations: 'אינטגרציות ומערכות חוץ',
         admins: 'ניהול משתמשי אדמין',
         systemContacts: 'אנשי קשר למערכות צד ג׳',
+        addresses: 'ניהול כתובות',
         log: 'יומן מערכת',
         database: 'מסד הנתונים',
     },

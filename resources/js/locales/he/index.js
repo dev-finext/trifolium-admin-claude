@@ -3,6 +3,7 @@
 //
 // `en/index.js` must list exactly the same namespaces — a key present in one
 // language and missing in the other is a bug, not a fallback.
+import addresses from '@/locales/he/addresses';
 import admins from '@/locales/he/admins';
 import attachments from '@/locales/he/attachments';
 import boot from '@/locales/he/boot';
@@ -45,6 +46,7 @@ import wallet from '@/locales/he/wallet';
 export default {
     ...common,
     ...enums,
+    addresses,
     admins,
     attachments,
     boot,

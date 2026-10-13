@@ -1,4 +1,5 @@
 // English catalog. Mirrors he/index.js namespace for namespace.
+import addresses from '@/locales/en/addresses';
 import admins from '@/locales/en/admins';
 import attachments from '@/locales/en/attachments';
 import boot from '@/locales/en/boot';
@@ -41,6 +42,7 @@ import wallet from '@/locales/en/wallet';
 export default {
     ...common,
     ...enums,
+    addresses,
     admins,
     attachments,
     boot,

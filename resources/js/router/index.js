@@ -65,6 +65,12 @@ const routes = [
     { path: '/boms', redirect: { name: 'items' } },
     { path: '/prep-types', redirect: { name: 'items' } },
     {
+        path: '/addresses',
+        name: 'addresses',
+        meta: { titleKey: 'nav.item.addresses' },
+        component: () => import('@/views/AddressesView.vue'),
+    },
+    {
         path: '/suppliers',
         name: 'suppliers',
         meta: { titleKey: 'nav.item.suppliers' },

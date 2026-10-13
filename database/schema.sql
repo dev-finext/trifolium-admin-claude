@@ -597,6 +597,23 @@ CREATE TABLE pickup_points (
     updated_at   timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE cities (
+    id           text PRIMARY KEY,
+    name         text,
+    doc          jsonb NOT NULL,
+    updated_at   timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE city_streets (
+    id           bigserial PRIMARY KEY,
+    parent_id    text NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
+    line_no      integer NOT NULL,
+    street_id    text,
+    name         text,
+    doc          jsonb NOT NULL,
+    UNIQUE (parent_id, line_no)
+);
+CREATE INDEX ON city_streets (parent_id);
+
 CREATE TABLE audit_log (
     id           text PRIMARY KEY,
     act          text,

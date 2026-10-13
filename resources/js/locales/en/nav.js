@@ -31,6 +31,7 @@ export default {
         integrations: 'Integrations & external systems',
         admins: 'Admin users',
         systemContacts: 'Third-party system contacts',
+        addresses: 'Address book',
         log: 'System log',
         database: 'Database',
     },

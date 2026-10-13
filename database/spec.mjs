@@ -497,6 +497,22 @@ export const TABLES = [
     { name: 'sticker_prints', source: 'stickerPrints', key: 'id' },
     { name: 'pickup_points', source: 'pickupPoints', key: 'id' },
     {
+        // The address book. A street has no existence apart from its town, so
+        // the streets are this table's line rows and not a table of their own.
+        name: 'cities',
+        source: 'cities',
+        key: 'id',
+        columns: [locCol('name', 'name')],
+        lines: {
+            field: 'streets',
+            name: 'city_streets',
+            columns: [
+                col('street_id', 'text', 'id'),
+                locCol('name', 'name'),
+            ],
+        },
+    },
+    {
         name: 'audit_log',
         source: 'log',
         key: 'id',

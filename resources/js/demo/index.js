@@ -11,6 +11,7 @@
 // about it: orders need practitioner cards, messages need orders, exception
 // flags need messages, and balances need the orders they are derived from.
 import { SETTINGS } from '@/config';
+import { DEMO_CITIES } from '@/demo/addresses';
 import { buildBuyingLists } from '@/demo/buying';
 import {
     DEMO_HERBS,
@@ -300,6 +301,7 @@ export function buildDataset() {
         inventorySettings: INVENTORY_SETTINGS,
 
         // deliveries & lab (V2)
+        cities: DEMO_CITIES,
         pickupPoints: buildPickupPoints(practitioners),
         printTexts: PRINT_TEXTS,
         // crm (V2)

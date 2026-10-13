@@ -55,6 +55,9 @@ export const NAV_GROUPS = [
             { id: 'integrations', icon: 'db' },
             { id: 'admins', icon: 'users', ready: true },
             { id: 'systemContacts', icon: 'phone', ready: true },
+            // The address book behind every delivery address: towns, and the
+            // streets in each. Not in the pharmacy's live system yet.
+            { id: 'addresses', icon: 'map_pin' },
             { id: 'log', icon: 'list' },
             { id: 'database', icon: 'db', devOnly: true },
         ],
