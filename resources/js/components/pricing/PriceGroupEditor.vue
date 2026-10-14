@@ -1,12 +1,13 @@
 <script setup>
-// One tiered pricing group, edited in three numbered steps: what the group is
-// (name, prefixes, unit, base quantity), how it states its ladder (a percent
-// per band, or a formula), and the ladder itself.
+// One tiered pricing group, edited in two numbered steps: what the group is
+// (name, prefixes, unit, base quantity), and the ladder itself — a percentage
+// per quantity band, every band written by this group.
 //
 // A group never holds a price. Every item priced by it has its own unit price;
 // the group only says how much comes off as the quantity grows. The example
-// price the agent types here is for reading the table as money — it is not
-// saved.
+// price above the table is a reading aid for seeing the percentages as money,
+// and it is never saved — which is why it sits with the table it drives rather
+// than among the fields that are.
 //
 // The rules this drawer exists to enforce:
 // - Prefix overlap between groups is refused as it is typed, because the
@@ -14,18 +15,15 @@
 // - The ladder must be sound before the group can be saved — a missing band,
 //   a percent outside 0–100 or one that shrinks would silently misprice an
 //   order. The store re-checks the same rules (lib/ladder).
-// - Switching mode throws the other mode's work away, so it is confirmed.
 import { computed, ref, useId } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { I18nT, useI18n } from 'vue-i18n';
 
-import FormulaFields from '@/components/pricing/FormulaFields.vue';
 import LadderPreview from '@/components/pricing/LadderPreview.vue';
 import PrefixChipInput from '@/components/pricing/PrefixChipInput.vue';
 import PricePreview from '@/components/pricing/PricePreview.vue';
-import ScaleModePicker from '@/components/pricing/ScaleModePicker.vue';
 import TierStep from '@/components/pricing/TierStep.vue';
 import TierTable from '@/components/pricing/TierTable.vue';
-import { fixed1, useTierRows } from '@/components/pricing/useTierRows';
+import { useTierRows } from '@/components/pricing/useTierRows';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
@@ -34,9 +32,10 @@ import AIcon from '@/components/ui/AIcon.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { PRICE_LADDER_MODE_IDS, SETTINGS } from '@/config';
+import { SETTINGS } from '@/config';
+import { LADDER_DECIMALS } from '@/lib/ladder';
 import { isLocalized, L } from '@/lib/localized';
-import { bandText, useCatalogStore } from '@/stores/catalog';
+import { useCatalogStore } from '@/stores/catalog';
 import { useDatasetStore } from '@/stores/dataset';
 
 const props = defineProps({
@@ -55,15 +54,6 @@ const uid = useId();
 const isNew = computed(() => !props.group);
 const selfId = props.group?.id || null;
 
-/** What a brand-new formula starts from: gentle steps, a common floor. */
-const BLANK_FORMULA = {
-    kind: 'step',
-    stepQty: '',
-    stepPct: '',
-    k: '',
-    floorPct: '30',
-};
-
 // ---- the form -------------------------------------------------------------
 
 const name = ref(props.group ? loc(props.group.name) : '');
@@ -72,50 +62,25 @@ const uom = ref(props.group?.uom || '');
 const baseQty = ref(
     props.group?.baseQty != null ? String(props.group.baseQty) : '1',
 );
-const mode = ref(props.group?.mode || 'percent');
-const custom = ref(
-    props.group && props.group.mode === 'percent'
-        ? catalog.isCustomScale(props.group)
-        : false,
-);
 const rows = ref(initialRows());
-const formula = ref(initialFormula());
 
 /** For reading the table as money — never saved. */
 const previewPrice = ref('1.00');
 
 function initialRows() {
-    if (props.group && props.group.mode === 'percent') {
-        const bands = props.group.breaks.length
-            ? props.group.breaks
-            : catalog.defaultBreaks;
+    const bands = props.group?.breaks || [];
 
-        return bands.map((lo, i) => ({
-            lo: String(lo),
-            pct:
-                props.group.percents[i] == null
-                    ? ''
-                    : fixed1(props.group.percents[i]),
-        }));
+    if (!bands.length) {
+        return [{ lo: '1', pct: '' }];
     }
 
-    return catalog.defaultBreaks.map((lo) => ({ lo: String(lo), pct: '' }));
-}
-
-function initialFormula() {
-    const source = props.group?.formula;
-
-    if (!source) {
-        return { ...BLANK_FORMULA };
-    }
-
-    return {
-        kind: source.kind || 'step',
-        stepQty: source.stepQty == null ? '' : String(source.stepQty),
-        stepPct: source.stepPct == null ? '' : String(source.stepPct),
-        k: source.k == null ? '' : String(source.k),
-        floorPct: source.floorPct == null ? '' : String(source.floorPct),
-    };
+    return bands.map((lo, i) => ({
+        lo: String(lo),
+        pct:
+            props.group.percents[i] == null
+                ? ''
+                : String(props.group.percents[i]),
+    }));
 }
 
 const baseQtyNumber = computed(() => parseFloat(baseQty.value) || 0);
@@ -123,7 +88,6 @@ const previewNumber = computed(() => parseFloat(previewPrice.value) || 0);
 
 const { los, pcts, filled, rangesOk, complete } = useTierRows(
     rows,
-    custom,
     baseQtyNumber,
 );
 
@@ -133,19 +97,6 @@ const uomName = computed(() =>
     uom.value ? t(`pricing.uom.${uom.value}`) : '',
 );
 
-/** A `1–5 · 5–10 · 10–20 … 1000+` taste of the fixed scale. */
-const sample = computed(() => {
-    const breaks = catalog.defaultBreaks;
-
-    if (breaks.length <= 3) {
-        return breaks.map((_, i) => bandText(breaks, i)).join(' · ');
-    }
-
-    const head = [0, 1, 2].map((i) => bandText(breaks, i)).join(' · ');
-
-    return `${head} … ${breaks[breaks.length - 1]}+`;
-});
-
 /** The record the store would receive — also what the preview is drawn from. */
 const draft = computed(() => ({
     ...(props.group || {}),
@@ -153,24 +104,8 @@ const draft = computed(() => ({
     prefixes: [...prefixes.value],
     uom: uom.value,
     baseQty: baseQtyNumber.value,
-    mode: mode.value,
-    breaks:
-        mode.value === 'percent'
-            ? custom.value
-                ? [...los.value]
-                : [...catalog.defaultBreaks]
-            : [],
-    percents: mode.value === 'percent' ? [...pcts.value] : [],
-    formula:
-        mode.value === 'formula'
-            ? {
-                  kind: formula.value.kind,
-                  stepQty: parseFloat(formula.value.stepQty),
-                  stepPct: parseFloat(formula.value.stepPct),
-                  k: parseFloat(formula.value.k),
-                  floorPct: parseFloat(formula.value.floorPct),
-              }
-            : null,
+    breaks: [...los.value],
+    percents: [...pcts.value],
 }));
 
 const ladderErrors = computed(() => catalog.groupErrors(draft.value));
@@ -180,6 +115,7 @@ const previewable = computed(
     () =>
         Boolean(uom.value) &&
         previewNumber.value > 0 &&
+        rangesOk.value &&
         ladderErrors.value.filter((id) => id !== 'prefix_conflict').length ===
             0,
 );
@@ -192,10 +128,7 @@ function snapshot() {
         prefixes: prefixes.value,
         uom: uom.value,
         baseQty: baseQty.value,
-        mode: mode.value,
-        custom: custom.value,
         rows: rows.value,
-        formula: formula.value,
     });
 }
 
@@ -231,8 +164,6 @@ const okMsg = computed(() => {
 // ---- confirmations ---------------------------------------------------------
 
 const askSave = ref(false);
-const askScale = ref(null);
-const askMode = ref(null);
 const askLeave = ref(false);
 
 const meName = computed(() => loc(dataset.me?.name) || '');
@@ -249,78 +180,6 @@ function validatePrefix(prefix) {
         other: clash.theirs,
         group: loc(clash.group.name),
     });
-}
-
-/** Whether the mode not currently shown still holds work worth confirming. */
-function otherModeHasWork(next) {
-    if (next === 'formula') {
-        return filled.value > 0 || (custom.value && rows.value.length > 1);
-    }
-
-    return Boolean(
-        formula.value.stepQty || formula.value.stepPct || formula.value.k,
-    );
-}
-
-function pickMode(next) {
-    if (next === mode.value) {
-        return;
-    }
-
-    if (otherModeHasWork(next)) {
-        askMode.value = next;
-
-        return;
-    }
-
-    mode.value = next;
-}
-
-function confirmMode() {
-    const next = askMode.value;
-
-    askMode.value = null;
-
-    if (next === 'formula') {
-        rows.value = catalog.defaultBreaks.map((lo) => ({
-            lo: String(lo),
-            pct: '',
-        }));
-        custom.value = false;
-    } else {
-        formula.value = { ...BLANK_FORMULA };
-    }
-
-    mode.value = next;
-}
-
-/** Switching scale clears the percent table — confirm unless nothing is lost. */
-function switchScale(toCustom) {
-    if (toCustom === custom.value) {
-        return;
-    }
-
-    if (filled.value > 0 || (custom.value && rows.value.length > 1)) {
-        askScale.value = toCustom;
-
-        return;
-    }
-
-    applyScale(toCustom);
-}
-
-function applyScale(toCustom) {
-    custom.value = toCustom;
-    rows.value = toCustom
-        ? [{ lo: '1', pct: '' }]
-        : catalog.defaultBreaks.map((lo) => ({ lo: String(lo), pct: '' }));
-}
-
-function confirmScale() {
-    const toCustom = askScale.value;
-
-    askScale.value = null;
-    applyScale(toCustom);
 }
 
 function requestClose() {
@@ -349,8 +208,16 @@ function removeRow(index) {
     rows.value = rows.value.filter((_, i) => i !== index);
 }
 
-/** Digits and a decimal point — what a quantity or a price is made of. */
-const cleanNumber = (event) => event.target.value.replace(/[^\d.]/g, '');
+/** Digits, one decimal point, and no more decimals than a ladder holds. */
+function cleanNumber(event) {
+    const [whole, ...rest] = event.target.value
+        .replace(/[^\d.]/g, '')
+        .split('.');
+
+    return rest.length
+        ? `${whole}.${rest.join('').slice(0, LADDER_DECIMALS)}`
+        : whole;
+}
 
 /** Keep the other language's name when only one side is being edited. */
 function localized(existing, text) {
@@ -503,21 +370,6 @@ function doSave() {
                                 }}
                             </div>
                         </div>
-                        <div>
-                            <label class="a-lbl" :for="`${uid}-preview`">
-                                {{ t('pricing.editor.previewPrice.label') }}
-                            </label>
-                            <input
-                                :id="`${uid}-preview`"
-                                class="a-input a-w100"
-                                inputmode="decimal"
-                                :value="previewPrice"
-                                @input="previewPrice = cleanNumber($event)"
-                            />
-                            <div class="a-hint">
-                                {{ t('pricing.editor.previewPrice.hint') }}
-                            </div>
-                        </div>
                     </div>
                     <PricePreview
                         :matched="matched"
@@ -530,53 +382,13 @@ function doSave() {
             <TierStep
                 n="2"
                 :title="t('pricing.editor.step2.title')"
-                :sub="t('pricing.editor.step2.sub')"
-            />
-            <ACard>
-                <div
-                    class="tp-mode"
-                    role="radiogroup"
-                    :aria-label="t('pricing.editor.modePick.aria')"
-                >
-                    <button
-                        v-for="id in PRICE_LADDER_MODE_IDS"
-                        :key="id"
-                        type="button"
-                        class="tp-modecard"
-                        :class="{ 'is-on': mode === id }"
-                        role="radio"
-                        :aria-checked="mode === id"
-                        @click="pickMode(id)"
-                    >
-                        <span v-if="mode === id" class="tp-mode-check">
-                            <AIcon name="check" :size="19" />
-                        </span>
-                        <div class="tp-mode-t">
-                            {{ t(`pricing.editor.modePick.${id}Title`) }}
-                        </div>
-                        <div class="tp-mode-s">
-                            {{ t(`pricing.editor.modePick.${id}Sub`) }}
-                        </div>
-                    </button>
-                </div>
-            </ACard>
-
-            <TierStep
-                n="3"
-                :title="
-                    mode === 'formula'
-                        ? t('pricing.editor.formula.title')
-                        : t('pricing.editor.step3.title')
-                "
                 :sub="
                     !uom
-                        ? t('pricing.editor.step3.subLocked')
-                        : mode === 'formula'
-                          ? t('pricing.editor.formula.sub')
-                          : t('pricing.editor.step3.sub', { uom: uomName })
+                        ? t('pricing.editor.step2.subLocked')
+                        : t('pricing.editor.step2.sub', { uom: uomName })
                 "
             >
-                <template v-if="uom && mode === 'percent'" #right>
+                <template v-if="uom" #right>
                     <AChip :tone="complete ? 'green' : 'amber'" size="sm">
                         {{
                             t('pricing.editor.table.filled', {
@@ -594,18 +406,37 @@ function doSave() {
                         <div>{{ t('pricing.editor.table.locked') }}</div>
                     </div>
                 </div>
-                <template v-else-if="mode === 'percent'">
-                    <div class="tp-scalepad">
-                        <ScaleModePicker
-                            :custom="custom"
-                            :band-count="catalog.defaultBreaks.length"
-                            :sample="sample"
-                            @select="switchScale"
-                        />
+                <template v-else>
+                    <!-- Not a field of the group: a reading aid for the table
+                         below, phrased as the sentence it is so nobody mistakes
+                         it for something the group has to be given. -->
+                    <div class="tp-assume">
+                        <AIcon name="calc" :size="17" class="tp-assume-ic" />
+                        <I18nT
+                            keypath="pricing.editor.previewPrice.line"
+                            tag="p"
+                            scope="global"
+                            class="tp-assume-t"
+                        >
+                            <template #price>
+                                <input
+                                    class="a-input tp-assume-in"
+                                    inputmode="decimal"
+                                    :value="previewPrice"
+                                    :aria-label="
+                                        t('pricing.editor.previewPrice.aria')
+                                    "
+                                    @input="previewPrice = cleanNumber($event)"
+                                />
+                            </template>
+                            <template #uom>{{ uomName }}</template>
+                        </I18nT>
+                        <span class="tp-assume-note">
+                            {{ t('pricing.editor.previewPrice.note') }}
+                        </span>
                     </div>
                     <TierTable
                         :rows="rows"
-                        :custom="custom"
                         :uom="uom"
                         :base-qty="baseQtyNumber"
                         :preview-price="previewNumber"
@@ -615,44 +446,12 @@ function doSave() {
                         @remove-row="removeRow"
                     />
                     <LadderPreview
-                        v-if="previewable && rangesOk"
-                        :group="draft"
-                        :unit-price="previewNumber"
-                        :vat-rate="SETTINGS.vatRate"
-                        :scale="catalog.defaultBreaks"
-                        class="tp-chartonly"
-                    />
-                </template>
-                <template v-else>
-                    <div class="tp-formulapad">
-                        <FormulaFields
-                            :formula="formula"
-                            :uom-name="uomName"
-                            @update="formula = $event"
-                        />
-                    </div>
-                    <div class="tp-previewhead">
-                        <div class="tp-step-t">
-                            {{ t('pricing.editor.formula.preview') }}
-                        </div>
-                        <div class="tp-step-s">
-                            {{ t('pricing.editor.formula.previewSub') }}
-                        </div>
-                    </div>
-                    <LadderPreview
                         v-if="previewable"
                         :group="draft"
                         :unit-price="previewNumber"
                         :vat-rate="SETTINGS.vatRate"
-                        :scale="catalog.defaultBreaks"
+                        class="tp-chartonly"
                     />
-                    <div v-else class="tp-lockpad tp-dim">
-                        {{
-                            ladderErrors.length
-                                ? t(`pricing.ladderError.${ladderErrors[0]}`)
-                                : t('pricing.editor.previewPrice.hint')
-                        }}
-                    </div>
                 </template>
             </ACard>
         </div>
@@ -696,7 +495,7 @@ function doSave() {
             :effects="[
                 t('pricing.editor.confirmSave.effect1', {
                     matched: matched.length,
-                    ranges: mode === 'percent' ? rows.length : 0,
+                    ranges: rows.length,
                 }),
                 t('pricing.editor.confirmSave.effect2', { name: meName }),
             ]"
@@ -708,46 +507,6 @@ function doSave() {
             :pin="catalog.approvalPin"
             @close="askSave = false"
             @confirm="doSave"
-        />
-        <ConfirmDialog
-            :open="askMode !== null"
-            :title="t('pricing.editor.modePick.confirmTitle')"
-            :body="
-                askMode === 'formula'
-                    ? t('pricing.editor.modePick.confirmToFormula')
-                    : t('pricing.editor.modePick.confirmToPercent')
-            "
-            :confirm-label="t('pricing.editor.modePick.confirm')"
-            danger
-            @close="askMode = null"
-            @confirm="confirmMode"
-        />
-        <ConfirmDialog
-            :open="askScale !== null"
-            :title="
-                askScale
-                    ? t('pricing.editor.confirmMode.titleCustom')
-                    : t('pricing.editor.confirmMode.titleDefault')
-            "
-            :body="
-                askScale
-                    ? t('pricing.editor.confirmMode.bodyCustom')
-                    : t('pricing.editor.confirmMode.bodyDefault', {
-                          n: catalog.defaultBreaks.length,
-                      })
-            "
-            :effects="[
-                t('pricing.editor.confirmMode.effect1'),
-                t('pricing.editor.confirmMode.effect2'),
-            ]"
-            :confirm-label="
-                askScale
-                    ? t('pricing.editor.confirmMode.confirmCustom')
-                    : t('pricing.editor.confirmMode.confirmDefault')
-            "
-            danger
-            @close="askScale = null"
-            @confirm="confirmScale"
         />
         <ConfirmDialog
             :open="askLeave"
@@ -787,34 +546,56 @@ function doSave() {
     grid-column: 1 / -1;
 }
 
-.tp-lockpad,
-.tp-scalepad,
-.tp-formulapad {
+.tp-lockpad {
     padding: 22px;
 }
 
-.tp-scalepad {
+/* The assumption the table is read under — a sentence with a number in it,
+   deliberately unlike the labelled fields of step 1. */
+.tp-assume {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 10px;
+    padding: 13px 18px;
+    background: var(--a-bg-2, var(--a-line-4, transparent));
     border-bottom: 1px solid var(--a-line);
 }
 
-.tp-previewhead {
-    padding: 14px 22px 6px;
-    border-top: 1px solid var(--a-line);
+.tp-assume-ic {
+    color: var(--a-ink-4);
 }
 
-.tp-chartonly :deep(table),
-.tp-chartonly :deep(.lp-foot) {
+.tp-assume-t {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--a-ink-2);
+}
+
+.tp-assume-in {
+    width: 110px;
+    text-align: center;
+}
+
+.tp-assume-note {
+    flex-basis: 100%;
+    padding-inline-start: 27px;
+    font-size: 12.5px;
+    color: var(--a-ink-4);
+}
+
+/* The rows are already in the table above; only the chart is new here. */
+.tp-chartonly :deep(table) {
     display: none;
 }
 
 .tp-lock-ic {
     color: var(--a-line-2);
     margin-bottom: 4px;
-}
-
-.tp-dim {
-    color: var(--a-ink-4);
-    font-size: 13.5px;
 }
 
 .tp-blocked {

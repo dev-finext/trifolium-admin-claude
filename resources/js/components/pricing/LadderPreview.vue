@@ -1,24 +1,26 @@
 <script setup>
-// What a ladder does to a price — the band table and a small chart of unit
-// price against quantity, both worked from one example unit price.
+// What a ladder does to a price — the band table and a chart of unit price
+// against quantity, both worked from one example unit price.
 //
-// The same preview serves both modes: a percent table has its rows anyway, a
-// formula has none until it is sampled, and this is where it is sampled.
+// The quantity axis is logarithmic, because a ladder is. Bands at 1, 1,000 and
+// 3,000 grams, or at 100 and 3,350 capsules, or at a millionth of a gram and a
+// whole one, are all multiplicative steps; on a linear axis the early bands
+// collapse into the left edge and the chart stops saying anything. Log spacing
+// gives every band the same room whatever its magnitude, which is what makes
+// one chart serve all of them.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import ANum from '@/components/ui/ANum.vue';
-import { floorQty, ladderTable } from '@/lib/ladder';
-import { ils, num, pct } from '@/lib/money';
+import { ladderTable } from '@/lib/ladder';
+import { money, pctText, qtyText } from '@/lib/money';
 
 const props = defineProps({
-    /** A normalised group draft — mode, baseQty, breaks/percents or formula. */
+    /** A normalised group draft — baseQty, breaks and percents. */
     group: { type: Object, required: true },
     /** The example unit price before VAT. */
     unitPrice: { type: Number, default: 1 },
     vatRate: { type: Number, default: 0 },
-    /** The shared quantity scale a curve is sampled on. */
-    scale: { type: Array, default: () => [] },
     /** Whether to draw the chart under the table. */
     chart: { type: Boolean, default: true },
 });
@@ -30,43 +32,61 @@ const uomName = computed(() =>
 );
 
 const rows = computed(() =>
-    ladderTable(props.group, props.unitPrice, props.vatRate, props.scale),
+    ladderTable(props.group, props.unitPrice, props.vatRate),
 );
 
-const floorAt = computed(() => floorQty(props.group));
-
 // ---- the chart ---------------------------------------------------------------
-//
-// A step chart: the unit price holds through each band and drops at the next
-// band's start. Axes are labelled; the drawing is plain SVG in the page's
-// tokens — no library for four lines and a handful of ticks.
 
 const W = 320;
 const H = 130;
-const PAD = { top: 10, right: 12, bottom: 26, left: 44 };
+const PAD = { top: 10, right: 12, bottom: 26, left: 52 };
+
+/** How many quantity labels fit along the axis without colliding. */
+const MAX_X_LABELS = 6;
 
 const points = computed(() =>
     rows.value.filter((row) => Number.isFinite(row.from) && row.from > 0),
 );
 
-const xMax = computed(() => {
-    const last = points.value[points.value.length - 1];
+/** The log-space window the bands are drawn in, with a little room after. */
+const span = computed(() => {
+    const list = points.value;
 
-    return last ? last.from * 1.15 : 1;
+    if (!list.length) {
+        return { from: 0, to: 1 };
+    }
+
+    const first = Math.log10(list[0].from);
+    const last = Math.log10(list[list.length - 1].from);
+    // A single band, or several at one magnitude, still needs a width.
+    const width = Math.max(last - first, 0.5);
+
+    return { from: first, to: first + width * 1.25 };
 });
 
-const xOf = (qty) => PAD.left + ((W - PAD.left - PAD.right) * qty) / xMax.value;
+const xOf = (qty) => {
+    const { from, to } = span.value;
+    const share = (Math.log10(qty) - from) / (to - from || 1);
+
+    return (
+        PAD.left + (W - PAD.left - PAD.right) * Math.min(1, Math.max(0, share))
+    );
+};
+
 const yOf = (price) =>
     PAD.top + (H - PAD.top - PAD.bottom) * (1 - price / (props.unitPrice || 1));
 
+/** A step line: the unit price holds through a band and drops at the next. */
 const path = computed(() => {
     if (!points.value.length) {
         return '';
     }
 
-    const parts = [`M ${xOf(0)} ${yOf(props.unitPrice)}`];
+    const parts = [
+        `M ${xOf(points.value[0].from)} ${yOf(points.value[0].unit)}`,
+    ];
 
-    points.value.forEach((row) => {
+    points.value.slice(1).forEach((row) => {
         parts.push(`H ${xOf(row.from)}`, `V ${yOf(row.unit)}`);
     });
     parts.push(`H ${W - PAD.right}`);
@@ -74,10 +94,23 @@ const path = computed(() => {
     return parts.join(' ');
 });
 
+/** Every band is a dot; only some can carry a label without colliding. */
+const xLabels = computed(() => {
+    const list = points.value;
+
+    if (list.length <= MAX_X_LABELS) {
+        return list;
+    }
+
+    const step = Math.ceil(list.length / MAX_X_LABELS);
+
+    return list.filter((_, i) => i % step === 0 || i === list.length - 1);
+});
+
 const yTicks = computed(() =>
     [1, 0.75, 0.5, 0.25].map((share) => ({
         y: yOf(props.unitPrice * share),
-        label: ils(props.unitPrice * share, 2),
+        label: money(props.unitPrice * share),
     })),
 );
 </script>
@@ -105,11 +138,11 @@ const yTicks = computed(() =>
                             {{
                                 row.to == null
                                     ? t('pricing.ladder.andUp', {
-                                          from: num(row.from),
+                                          from: qtyText(row.from),
                                       })
                                     : t('pricing.ladder.upTo', {
-                                          from: num(row.from),
-                                          to: num(row.to),
+                                          from: qtyText(row.from),
+                                          to: qtyText(row.to),
                                       })
                             }}
                         </ANum>
@@ -119,7 +152,7 @@ const yTicks = computed(() =>
                         <span v-if="row.pct" class="num">
                             {{
                                 t('pricing.ladder.off', {
-                                    pct: pct(row.pct, 1),
+                                    pct: pctText(row.pct),
                                 })
                             }}
                         </span>
@@ -127,27 +160,24 @@ const yTicks = computed(() =>
                             {{ t('pricing.ladder.base') }}
                         </span>
                     </td>
-                    <td class="num nowrap">{{ ils(row.unit, 2) }}</td>
+                    <td class="num nowrap">{{ money(row.unit) }}</td>
                     <td class="num nowrap lp-soft">
-                        {{ ils(row.unitInclVat, 2) }}
+                        {{ money(row.unitInclVat) }}
                     </td>
-                    <td class="num nowrap">{{ ils(row.exampleTotal, 2) }}</td>
+                    <td class="num nowrap">{{ money(row.exampleTotal) }}</td>
                 </tr>
             </tbody>
         </table>
         <div class="lp-foot">
             <span>
-                {{ t('pricing.ladder.vatNote', { rate: pct(vatRate * 100) }) }}
-            </span>
-            <span v-if="group.mode === 'formula'">
                 {{
-                    floorAt
-                        ? t('pricing.editor.formula.floorAt', {
-                              qty: num(Math.ceil(floorAt)),
-                              uom: uomName,
-                          })
-                        : t('pricing.editor.formula.floorNever')
+                    t('pricing.ladder.vatNote', {
+                        rate: pctText(vatRate * 100),
+                    })
                 }}
+            </span>
+            <span v-if="chart && points.length">
+                {{ t('pricing.ladder.chartScale') }}
             </span>
         </div>
 
@@ -156,7 +186,7 @@ const yTicks = computed(() =>
             class="lp-chart"
             :viewBox="`0 0 ${W} ${H}`"
             role="img"
-            :aria-label="t('pricing.editor.formula.chartAria')"
+            :aria-label="t('pricing.ladder.chartAria')"
         >
             <g v-for="tick in yTicks" :key="tick.label">
                 <line
@@ -178,14 +208,14 @@ const yTicks = computed(() =>
                 :y2="H - PAD.bottom"
             />
             <text
-                v-for="row in points"
-                :key="row.from"
-                class="lp-tick"
+                v-for="row in xLabels"
+                :key="`x${row.from}`"
+                class="lp-tick lp-xtick"
                 :x="xOf(row.from)"
                 :y="H - PAD.bottom + 14"
                 text-anchor="middle"
             >
-                {{ num(row.from) }}
+                {{ qtyText(row.from) }}
             </text>
             <path class="lp-line" :d="path" />
             <circle
@@ -202,7 +232,7 @@ const yTicks = computed(() =>
                 :y="H - 4"
                 text-anchor="end"
             >
-                {{ t('pricing.editor.formula.chartX', { uom: uomName }) }}
+                {{ t('pricing.ladder.chartX', { uom: uomName }) }}
             </text>
         </svg>
     </div>
@@ -254,6 +284,11 @@ const yTicks = computed(() =>
 
 .lp-tick {
     text-anchor: end;
+}
+
+/* The quantity labels sit under their own tick, not at the end of a row. */
+.lp-xtick {
+    text-anchor: middle;
 }
 
 .lp-line {

@@ -71,20 +71,6 @@ export const PRODUCT_STATUS_IDS = PRODUCT_STATUSES.map((status) => status.id);
  */
 export const DEFAULT_MIN_STOCK = 5;
 
-/**
- * How a tiered price list expresses its discount ladder. `percent` carries one
- * percentage per quantity band; `formula` derives the percentage from a few
- * parameters (lib/ladder.js does the arithmetic for both).
- */
-export const PRICE_LADDER_MODE_IDS = ['percent', 'formula'];
-
-/**
- * The parametric ladders a formula-mode group can use. `step` takes a fixed
- * percentage off for every `stepQty` above the base quantity; `curve` follows
- * `1 − (baseQty / qty) ^ k`. Both stop at `floorPct`.
- */
-export const LADDER_FORMULA_KIND_IDS = ['step', 'curve'];
-
 /** Units a discount ladder can be written for. */
 export const PRICE_UOM_IDS = ['ml', 'g', 'unit', 'capsule'];
 
@@ -96,7 +82,6 @@ export const PRICE_UOM_IDS = ['ml', 'g', 'unit', 'capsule'];
  */
 export const LADDER_ERROR_IDS = [
     'prefix_conflict',
-    'mode',
     'base_qty',
     'breaks_empty',
     'breaks_ascending',
@@ -104,9 +89,6 @@ export const LADDER_ERROR_IDS = [
     'percent_range',
     'percent_decreasing',
     'percent_below_base',
-    'formula_kind',
-    'formula_params',
-    'floor_range',
 ];
 
 /** Why an imported price-list row could not be applied. */

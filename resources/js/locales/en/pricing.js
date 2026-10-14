@@ -25,22 +25,9 @@ export default {
         capsule: 'per capsule',
     },
 
-    // config/catalog.js PRICE_LADDER_MODE_IDS — how a group states its ladder.
-    mode: {
-        percent: 'Percent off per band',
-        formula: 'Formula',
-    },
-
-    // config/catalog.js LADDER_FORMULA_KIND_IDS
-    formulaKind: {
-        step: 'Steps',
-        curve: 'Curve',
-    },
-
     // config/catalog.js LADDER_ERROR_IDS — why the store refuses to save a group.
     ladderError: {
         prefix_conflict: 'A prefix overlaps another pricing group',
-        mode: 'Choose how the ladder is stated — a percent table or a formula',
         base_qty: 'The base quantity must be greater than zero',
         breaks_empty: 'The ladder needs at least one quantity band',
         breaks_ascending: 'Quantity bands must rise from smallest to largest',
@@ -49,9 +36,6 @@ export default {
         percent_decreasing: 'The discount cannot shrink as the quantity grows',
         percent_below_base:
             'A band starting at or below the base quantity must carry no discount',
-        formula_kind: 'Choose a formula kind — steps or curve',
-        formula_params: 'Formula parameters must be positive numbers',
-        floor_range: 'The discount ceiling must be between 0 and 100 %',
     },
 
     // config/catalog.js PRICE_IMPORT_ERROR_IDS — why an imported row failed.
@@ -70,8 +54,11 @@ export default {
         example: 'Example total',
         base: 'Base',
         off: '−{pct}',
-        floor: 'Ceiling',
         vatNote: 'Prices are shown before and including VAT ({rate})',
+        chartAria: 'Unit price against quantity',
+        chartX: 'Quantity ({uom})',
+        // A ladder steps by multiples, so the axis does too.
+        chartScale: 'Quantity axis is logarithmic',
         andUp: '{from}+',
         upTo: '{from}–{to}',
     },
@@ -82,16 +69,12 @@ export default {
         searchAria: 'Search pricing groups',
         uomAria: 'Unit of measure',
         uomAll: 'Unit of measure — all',
-        scaleAria: 'Quantity scale',
-        scaleAll: 'Quantity scale — all',
         scaleCustom: 'Custom',
         scaleDefault: 'System default',
         fillAria: 'SKU assignment and prices',
         fillAll: 'Assignment and prices — all',
         fillNone: 'No SKUs assigned',
         fillHas: 'With SKUs assigned',
-        modeAria: 'Ladder mode',
-        modeAll: 'Ladder mode — all',
     },
 
     lookup: {
@@ -105,19 +88,14 @@ export default {
     table: {
         group: 'Pricing group',
         uom: 'Unit of measure',
-        scale: 'Quantity scale',
         base: 'Unit price',
+        ladder: 'Ladder',
         matched: 'SKUs assigned',
         updated: 'Last updated',
-        custom: 'Custom · {n} bands',
-        default: 'System default · {n} bands',
         from: 'from {price} {per}',
-        mode: 'Ladder',
         baseQty: 'Base quantity',
         baseQtyValue: 'up to {qty} {uom} — no discount',
         bands: '{n} bands · up to {pct}',
-        formulaStep: 'every {step} {uom} above base −{pct} · ceiling {floor}',
-        formulaCurve: 'curve k={k} · ceiling {floor}',
         items: 'Items priced',
         itemsNone: 'No item is priced by this group',
         itemsAria: 'Items priced by {name}',
@@ -154,12 +132,8 @@ export default {
             sub: 'Name, the SKU prefixes the group prices, and the unit of measure',
         },
         step2: {
-            title: 'Quantity bands',
-            sub: 'Which quantity steps the unit price is set by',
-        },
-        step3: {
             title: 'Price table',
-            sub: 'The price of one {uom} in each quantity band — the discount off the base price is shown alongside',
+            sub: 'The group’s quantity bands, and the discount in each — the price of one {uom}',
             subLocked: 'Choose a unit of measure in step 1 to open the table',
         },
 
@@ -190,49 +164,11 @@ export default {
             required: 'Enter a base quantity greater than zero',
         },
 
-        modePick: {
-            aria: 'How the discount is computed',
-            percentTitle: 'Percent table',
-            percentSub: 'A fixed discount for every quantity band — row by row',
-            formulaTitle: 'Formula',
-            formulaSub:
-                'A few parameters set the discount at every quantity — the table is derived from them',
-            confirmTitle: 'Switch the ladder mode',
-            confirmToFormula:
-                'The percent table is cleared and the group moves to a formula. The change only takes effect once saved.',
-            confirmToPercent:
-                'The formula parameters are cleared and the group moves to a percent table. The change only takes effect once saved.',
-            confirm: 'Switch mode',
-        },
-
-        formula: {
-            title: 'Formula parameters',
-            sub: 'The discount is computed from the quantity above the base quantity',
-            kind: 'Formula kind',
-            stepQty: 'Step size',
-            stepQtyHint:
-                'Every this many {uom} above base adds one discount step',
-            stepPct: 'Discount per step',
-            stepPctHint: 'The percentage each step adds',
-            k: 'Curve steepness (k)',
-            kHint: 'Higher — the discount grows faster. Formula: 1 − (base ÷ qty)^k',
-            floorPct: 'Discount ceiling',
-            floorPctHint:
-                'The discount never exceeds this percentage, at any quantity',
-            floorAt: 'The ceiling is reached from {qty} {uom}',
-            floorNever:
-                'With the current parameters the ceiling is never reached',
-            preview: 'Preview',
-            previewSub:
-                'Table and chart are computed for an example unit price',
-            chartAria: 'Unit price by quantity',
-            chartX: 'Quantity ({uom})',
-            chartY: 'Unit price (₪)',
-        },
-
+        // Not a field of the group — the assumption the table is read under.
         previewPrice: {
-            label: 'Example unit price',
-            hint: 'For the preview only — the real price is each item’s own',
+            line: 'Say for a moment the item costs {price} per {uom}:',
+            note: 'An illustration only. It is not saved and changes nothing — the real price is set on the item card.',
+            aria: 'Illustration price',
         },
 
         pctTable: {
@@ -251,17 +187,9 @@ export default {
             noPrefix:
                 'Add a SKU prefix to see which items the group would cover',
             noMatch: 'No SKU in the catalogue starts with the prefixes entered',
-        },
-
-        mode: {
-            aria: 'Choose a quantity scale',
-            defaultTitle: "The system's fixed scale",
-            defaultSub: '{n} ready-made bands: {sample}',
-            customTitle: 'Custom scale',
-            customSub:
-                'You define the bands yourself — row by row in the price table',
-            customNote:
-                'On a custom scale the fixed system scale no longer applies to this group: add bands in the table below and set the quantity each one starts at. Bands must rise from smallest to largest.',
+            headFound: '{n} of the group’s {matched} SKUs',
+            search: 'Search a code or a name',
+            noSearchMatch: 'No SKU in this group matches the search',
         },
 
         table: {
@@ -324,19 +252,6 @@ export default {
             effect1:
                 'The {n} price rows already filled stay exactly as they are',
             effect2: 'Quantity bands are measured in {next} from now on',
-        },
-
-        confirmMode: {
-            titleCustom: 'Switch to a custom scale',
-            titleDefault: 'Return to the fixed scale',
-            bodyCustom:
-                'The fixed scale will no longer apply to this group — you will define the quantity bands yourself, band by band.',
-            bodyDefault:
-                'The custom bands will be discarded and the group returns to the fixed system scale ({n} bands).',
-            confirmCustom: 'Switch to a custom scale',
-            confirmDefault: 'Return to the fixed scale',
-            effect1: 'The current price table is cleared and entered again',
-            effect2: 'The change only takes effect once saved',
         },
 
         confirmLeave: {
@@ -433,7 +348,6 @@ export default {
         appliedBody: '{applied} rows applied · {skipped} rejected',
         rejected:
             'The group “{group}” was not updated — the resulting ladder is not valid',
-        formulaGroup: 'Formula group — file rows do not apply to it',
     },
 
     toast: {

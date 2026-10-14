@@ -10,12 +10,11 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
-import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { num, pct } from '@/lib/money';
+import { pctText, qtyText } from '@/lib/money';
 import { useCatalogStore } from '@/stores/catalog';
 
 defineProps({
@@ -34,9 +33,8 @@ const catalog = useCatalogStore();
 const cols = computed(() => [
     { k: 'name', label: t('pricing.table.group'), w: '230px' },
     { k: 'uom', label: t('pricing.table.uom'), nowrap: true },
-    { k: 'mode', label: t('pricing.table.mode'), nowrap: true },
     { k: 'base', label: t('pricing.table.baseQty'), nowrap: true },
-    { k: 'ladder', label: t('pricing.table.scale') },
+    { k: 'ladder', label: t('pricing.table.ladder') },
     { k: 'items', label: t('pricing.table.items'), nowrap: true },
     { k: 'upd', label: t('pricing.table.updated'), nowrap: true },
     { k: 'act', label: '', nowrap: true },
@@ -44,32 +42,13 @@ const cols = computed(() => [
 
 const itemCount = (group) => catalog.itemsOfGroup(group.id).length;
 
-/** One line that says what the ladder does, in the mode's own terms. */
+/** One line that says how many bands the ladder has and where it tops out. */
 function ladderText(group) {
-    const uom = group.uom ? t(`pricing.uom.${group.uom}`) : '';
-    const floor = pct(group.formula?.floorPct || 0);
-
-    if (group.mode === 'formula' && group.formula?.kind === 'step') {
-        return t('pricing.table.formulaStep', {
-            step: num(group.formula.stepQty),
-            uom,
-            pct: pct(group.formula.stepPct, 1),
-            floor,
-        });
-    }
-
-    if (group.mode === 'formula') {
-        return t('pricing.table.formulaCurve', {
-            k: group.formula?.k,
-            floor,
-        });
-    }
-
     const top = catalog.topOfGroup(group);
 
     return t('pricing.table.bands', {
         n: group.breaks.length,
-        pct: pct(top?.pct || 0, 1),
+        pct: pctText(top?.pct || 0),
     });
 }
 </script>
@@ -102,21 +81,11 @@ function ladderText(group) {
             <span v-else class="tp-dim">—</span>
         </template>
 
-        <template #cell-mode="{ row }">
-            <AChip
-                :tone="row.mode === 'formula' ? 'teal' : 'gray'"
-                size="sm"
-                :dot="false"
-            >
-                {{ t(`pricing.mode.${row.mode}`) }}
-            </AChip>
-        </template>
-
         <template #cell-base="{ row }">
             <span class="tp-soft">
                 {{
                     t('pricing.table.baseQtyValue', {
-                        qty: num(row.baseQty),
+                        qty: qtyText(row.baseQty),
                         uom: row.uom ? t(`pricing.uom.${row.uom}`) : '',
                     })
                 }}

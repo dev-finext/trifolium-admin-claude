@@ -1,21 +1,24 @@
-// The arithmetic of one percent-mode ladder, in one place.
+// The arithmetic of one ladder's rows, in one place.
 //
 // The editor needs it to decide whether the group can be saved; the table
 // needs it to render each row's state. Both call this over the same rows, so
 // the two can never disagree. The store re-validates with lib/ladder on save.
 import { computed } from 'vue';
 
-/** A percent settles at one decimal — 12.5 % is a real ladder step. */
-export function fixed1(value) {
-    return String(Math.round(Number(value) * 10) / 10);
+import { LADDER_DECIMALS, roundTo } from '@/lib/ladder';
+
+/** A percent settled at the ladder's precision, as the field should read it. */
+export function settle(value) {
+    const n = Number(value);
+
+    return Number.isNaN(n) ? '' : String(roundTo(n, LADDER_DECIMALS));
 }
 
 /**
  * @param {import('vue').Ref<Array<{lo: string, pct: string}>>} rows
- * @param {import('vue').Ref<boolean>} custom Whether the group owns its bands.
  * @param {import('vue').Ref<number>} baseQty Bands at or below it carry 0 %.
  */
-export function useTierRows(rows, custom, baseQty) {
+export function useTierRows(rows, baseQty) {
     /** Where each band starts. NaN while the cell is empty or half-typed. */
     const los = computed(() => rows.value.map((row) => parseFloat(row.lo)));
 
@@ -43,15 +46,8 @@ export function useTierRows(rows, custom, baseQty) {
         () => pcts.value.filter((value) => value != null).length,
     );
 
-    /**
-     * Why a band's starting quantity is not acceptable. Only a custom scale can
-     * be wrong — the shared scale is fixed and always ascends.
-     */
+    /** Why a band's starting quantity is not acceptable. */
     function rangeError(index) {
-        if (!custom.value) {
-            return null;
-        }
-
         if (Number.isNaN(los.value[index]) || los.value[index] <= 0) {
             return 'required';
         }
@@ -111,9 +107,8 @@ export function useTierRows(rows, custom, baseQty) {
 
     const rangesOk = computed(
         () =>
-            !custom.value ||
-            (rows.value.length > 0 &&
-                rows.value.every((_, index) => !rangeError(index))),
+            rows.value.length > 0 &&
+            rows.value.every((_, index) => !rangeError(index)),
     );
 
     /** A group prices nothing until every band carries a sound percent. */
@@ -123,19 +118,6 @@ export function useTierRows(rows, custom, baseQty) {
             rows.value.every((_, index) => !pctError(index)),
     );
 
-    /** `10–20`, or `1000+` for the open-ended last band. */
-    function rangeText(index) {
-        if (Number.isNaN(los.value[index])) {
-            return '—';
-        }
-
-        const next = los.value[index + 1];
-
-        return next != null && !Number.isNaN(next)
-            ? `${los.value[index]}–${next}`
-            : `${los.value[index]}+`;
-    }
-
     return {
         los,
         pcts,
@@ -144,7 +126,6 @@ export function useTierRows(rows, custom, baseQty) {
         rangeError,
         pctError,
         rangesOk,
-        rangeText,
         complete,
     };
 }

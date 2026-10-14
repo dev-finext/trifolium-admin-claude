@@ -31,11 +31,10 @@ import FilterBar from '@/components/ui/FilterBar.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { PRICE_LADDER_MODE_IDS } from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
 import { ladderTable } from '@/lib/ladder';
-import { num, pct } from '@/lib/money';
+import { pctText, qtyText } from '@/lib/money';
 import { PRICE_SKU_QUERY_MIN_DIGITS, useCatalogStore } from '@/stores/catalog';
 import { useDatasetStore } from '@/stores/dataset';
 
@@ -58,7 +57,6 @@ const catalog = useCatalogStore();
 const view = useUrlState({
     q: '',
     uom: '',
-    mode: '',
     fill: '',
     edit: '',
     items: '',
@@ -81,10 +79,6 @@ const skuItem = computed(() =>
 const shown = computed(() =>
     catalog.priceGroups.filter((group) => {
         if (view.uom && group.uom !== view.uom) {
-            return false;
-        }
-
-        if (view.mode && group.mode !== view.mode) {
             return false;
         }
 
@@ -113,14 +107,11 @@ const shown = computed(() =>
     }),
 );
 
-const dirty = computed(() =>
-    Boolean(term.value || view.uom || view.mode || view.fill),
-);
+const dirty = computed(() => Boolean(term.value || view.uom || view.fill));
 
 function clearFilters() {
     view.q = '';
     view.uom = '';
-    view.mode = '';
     view.fill = '';
 }
 
@@ -144,17 +135,6 @@ const uomOptions = computed(() => {
         })),
     ];
 });
-
-const modeOptions = computed(() => [
-    { value: '', label: t('pricing.filters.modeAll') },
-    ...PRICE_LADDER_MODE_IDS.map((id) => ({
-        value: id,
-        label: option(
-            t(`pricing.mode.${id}`),
-            catalog.priceGroups.filter((group) => group.mode === id).length,
-        ),
-    })),
-]);
 
 const fillOptions = computed(() => [
     { value: '', label: t('pricing.filters.fillAll') },
@@ -257,17 +237,17 @@ function confirmAsk() {
 function groupRows(group) {
     const uom = group.uom ? t(`pricing.uom.${group.uom}`) : '';
 
-    return ladderTable(group, 1, 0, catalog.defaultBreaks).map((row) => [
+    return ladderTable(group, 1, 0).map((row) => [
         loc(group.name),
         group.prefixes.join(' '),
         uom,
         row.to == null
-            ? t('pricing.ladder.andUp', { from: num(row.from) })
+            ? t('pricing.ladder.andUp', { from: qtyText(row.from) })
             : t('pricing.ladder.upTo', {
-                  from: num(row.from),
-                  to: num(row.to),
+                  from: qtyText(row.from),
+                  to: qtyText(row.to),
               }),
-        pct(row.pct, 1),
+        pctText(row.pct),
     ]);
 }
 
@@ -363,11 +343,6 @@ function exportGroup(group) {
                     v-model="view.uom"
                     :options="uomOptions"
                     :aria-label="t('pricing.filters.uomAria')"
-                />
-                <ASelect
-                    v-model="view.mode"
-                    :options="modeOptions"
-                    :aria-label="t('pricing.filters.modeAria')"
                 />
                 <ASelect
                     v-model="view.fill"

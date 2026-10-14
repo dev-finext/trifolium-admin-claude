@@ -1,2 +1,8 @@
 dist
 node_modules
+
+# Extracted data, not authored source. These files are written compact by the
+# scripts that produce them — `prettier --write resources/` would re-indent
+# three megabytes of JSON into half a million lines and nothing would read
+# better for it.
+resources/js/demo/real

@@ -10,7 +10,7 @@ import { useI18n } from 'vue-i18n';
 
 import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { ils, num, pct } from '@/lib/money';
+import { money, pctText, qtyText } from '@/lib/money';
 import { useCatalogStore } from '@/stores/catalog';
 
 const props = defineProps({
@@ -66,10 +66,10 @@ const assignment = computed(() =>
             <div class="lc-head">
                 <span class="lc-strong">{{ loc(group.name) }}</span>
                 <span class="lc-sub">
-                    · {{ t(`pricing.mode.${group.mode}`) }} ·
+                    ·
                     {{
                         t('pricing.table.baseQtyValue', {
-                            qty: num(group.baseQty),
+                            qty: qtyText(group.baseQty),
                             uom: uomName,
                         })
                     }}
@@ -105,11 +105,11 @@ const assignment = computed(() =>
                                 {{
                                     row.to == null
                                         ? t('pricing.ladder.andUp', {
-                                              from: num(row.from),
+                                              from: qtyText(row.from),
                                           })
                                         : t('pricing.ladder.upTo', {
-                                              from: num(row.from),
-                                              to: num(row.to),
+                                              from: qtyText(row.from),
+                                              to: qtyText(row.to),
                                           })
                                 }}
                             </ANum>
@@ -119,7 +119,7 @@ const assignment = computed(() =>
                             <span v-if="row.pct" class="num">
                                 {{
                                     t('pricing.ladder.off', {
-                                        pct: pct(row.pct, 1),
+                                        pct: pctText(row.pct),
                                     })
                                 }}
                             </span>
@@ -127,9 +127,9 @@ const assignment = computed(() =>
                                 {{ t('pricing.ladder.base') }}
                             </span>
                         </td>
-                        <td class="num nowrap">{{ ils(row.unit, 2) }}</td>
+                        <td class="num nowrap">{{ money(row.unit) }}</td>
                         <td class="num nowrap lc-sub">
-                            {{ ils(row.unitInclVat, 2) }}
+                            {{ money(row.unitInclVat) }}
                         </td>
                     </tr>
                 </tbody>

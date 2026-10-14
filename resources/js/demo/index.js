@@ -89,11 +89,7 @@ import {
     DEMO_SESSION,
 } from '@/demo/people';
 import { buildConsumption, buildOpenOrders } from '@/demo/planning';
-import {
-    buildPriceGroups,
-    buildPriceImport,
-    DEMO_PRICE_BREAKS,
-} from '@/demo/pricing';
+import { buildPriceGroups, buildPriceImport } from '@/demo/pricing';
 import { buildProductionOrders } from '@/demo/production';
 import {
     buildProducts,
@@ -271,7 +267,6 @@ export function buildDataset() {
 
         // pricing
         priceGroups,
-        priceBreaks: DEMO_PRICE_BREAKS,
         priceImport: buildPriceImport(priceGroups),
 
         // items (V2): the unified card over stock rows and products, the

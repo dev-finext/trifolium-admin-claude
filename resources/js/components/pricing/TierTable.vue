@@ -1,10 +1,15 @@
 <script setup>
-// The percent table itself — one row per quantity band.
+// The ladder itself — one row per quantity band, every band written here.
 //
 // A band says how much comes off the item's own unit price once the quantity
-// reaches it. The group never holds a price: the unit price on every row is
-// the example price the editor lets the agent type, so the table reads as
-// money and not as abstract percentages.
+// reaches it. The group never holds a price: the unit price on every row is the
+// example price the editor lets the agent try, so the table reads as money and
+// not as abstract percentages.
+//
+// Quantities and percentages carry up to nine decimals, because the same table
+// has to serve a ladder written in capsules and one written in millionths of a
+// gram. Money follows the figure rather than a fixed two decimals, so a unit
+// price under an agora still says what it is instead of reading as zero.
 //
 // Every state the table renders (a missing percent, one outside 0–100, one that
 // shrinks against the band before it) comes from useTierRows, the same
@@ -12,17 +17,16 @@
 import { computed, onBeforeUpdate, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { fixed1, useTierRows } from '@/components/pricing/useTierRows';
+import { settle, useTierRows } from '@/components/pricing/useTierRows';
 import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ANum from '@/components/ui/ANum.vue';
-import { ils, num, pct } from '@/lib/money';
+import { LADDER_DECIMALS } from '@/lib/ladder';
+import { money, pctText, qtyText } from '@/lib/money';
 
 const props = defineProps({
     /** `[{ lo, pct }]`, both as typed strings. */
     rows: { type: Array, required: true },
-    /** True while the group owns its bands, which makes `lo` editable. */
-    custom: { type: Boolean, default: false },
     /** The unit id the ladder is written for. */
     uom: { type: String, required: true },
     /** Bands starting at or below it are the full price. */
@@ -37,9 +41,8 @@ const emit = defineEmits(['set-row', 'add-row', 'remove-row']);
 
 const { t } = useI18n();
 
-const { los, pcts, isBase, rangeError, pctError, rangeText } = useTierRows(
+const { los, pcts, isBase, rangeError, pctError } = useTierRows(
     computed(() => props.rows),
-    computed(() => props.custom),
     computed(() => props.baseQty),
 );
 
@@ -63,29 +66,24 @@ function focusNext(index) {
     }
 }
 
-/** Digits and at most one decimal point. */
+/** Digits, one decimal point, and no more decimals than a ladder holds. */
 function cleanNumber(text) {
-    let value = text.replace(/[^\d.]/g, '');
-    const parts = value.split('.');
+    const [whole, ...rest] = text.replace(/[^\d.]/g, '').split('.');
 
-    if (parts.length > 2) {
-        value = `${parts[0]}.${parts.slice(1).join('')}`;
+    if (!rest.length) {
+        return whole;
     }
 
-    return value;
+    return `${whole}.${rest.join('').slice(0, LADDER_DECIMALS)}`;
 }
 
 function onPct(index, event) {
     emit('set-row', index, { pct: cleanNumber(event.target.value) });
 }
 
-/** A percent settles at one decimal once the field is left. */
+/** A percent settles at the ladder's precision once the field is left. */
 function onPctBlur(index, event) {
-    const value = parseFloat(event.target.value);
-
-    emit('set-row', index, {
-        pct: Number.isNaN(value) ? '' : fixed1(value),
-    });
+    emit('set-row', index, { pct: settle(event.target.value) });
 }
 
 function onLo(index, event) {
@@ -120,10 +118,7 @@ function pctMessage(index) {
         <table class="a-table tp-table tp-table-lg">
             <thead>
                 <tr>
-                    <th
-                        scope="col"
-                        :style="{ width: custom ? '280px' : '170px' }"
-                    >
+                    <th scope="col" style="width: 300px">
                         {{ t('pricing.ladder.range') }}
                     </th>
                     <th scope="col" style="width: 190px">
@@ -136,59 +131,44 @@ function pctMessage(index) {
                         {{ t('pricing.ladder.unitInclVat') }}
                     </th>
                     <th scope="col">{{ t('pricing.ladder.example') }}</th>
-                    <th v-if="custom" scope="col" style="width: 60px"></th>
+                    <th scope="col" style="width: 60px"></th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="(row, i) in rows" :key="i">
                     <td class="nowrap tp-range">
-                        <template v-if="custom">
-                            <div class="tp-lorow">
-                                <span class="tp-cap">
-                                    {{ t('pricing.editor.table.rangeFrom') }}
-                                </span>
-                                <input
-                                    class="a-input tp-lo"
-                                    inputmode="decimal"
-                                    :value="row.lo"
-                                    :aria-label="
-                                        t('pricing.editor.table.rangeAria', {
-                                            n: i + 1,
-                                        })
-                                    "
-                                    @input="onLo(i, $event)"
-                                />
-                                <span class="tp-cap">
-                                    {{
-                                        rows[i + 1] && !Number.isNaN(los[i + 1])
-                                            ? t(
-                                                  'pricing.editor.table.rangeUpTo',
-                                                  { n: num(los[i + 1]) },
-                                              )
-                                            : t(
-                                                  'pricing.editor.table.rangeAndUp',
-                                              )
-                                    }}
-                                </span>
-                            </div>
-                            <div
-                                v-if="rangeError(i)"
-                                class="tp-cellnote tp-bad"
-                            >
+                        <div class="tp-lorow">
+                            <span class="tp-cap">
+                                {{ t('pricing.editor.table.rangeFrom') }}
+                            </span>
+                            <input
+                                class="a-input tp-lo"
+                                inputmode="decimal"
+                                :value="row.lo"
+                                :aria-label="
+                                    t('pricing.editor.table.rangeAria', {
+                                        n: i + 1,
+                                    })
+                                "
+                                @input="onLo(i, $event)"
+                            />
+                            <span class="tp-cap">
                                 {{
-                                    rangeError(i) === 'ascending'
-                                        ? t(
-                                              'pricing.editor.table.rangeAscending',
-                                          )
-                                        : t(
-                                              'pricing.editor.table.rangeRequired',
-                                          )
+                                    rows[i + 1] && !Number.isNaN(los[i + 1])
+                                        ? t('pricing.editor.table.rangeUpTo', {
+                                              n: qtyText(los[i + 1]),
+                                          })
+                                        : t('pricing.editor.table.rangeAndUp')
                                 }}
-                            </div>
-                        </template>
-                        <template v-else>
-                            <ANum>{{ rangeText(i) }}</ANum> {{ uomName }}
-                        </template>
+                            </span>
+                        </div>
+                        <div v-if="rangeError(i)" class="tp-cellnote tp-bad">
+                            {{
+                                rangeError(i) === 'ascending'
+                                    ? t('pricing.editor.table.rangeAscending')
+                                    : t('pricing.editor.table.rangeRequired')
+                            }}
+                        </div>
                     </td>
                     <td>
                         <template v-if="isBase(i)">
@@ -238,13 +218,13 @@ function pctMessage(index) {
                     </td>
                     <td class="nowrap">
                         <span v-if="unitAt(i) != null" class="num">
-                            {{ ils(unitAt(i), 2) }}
+                            {{ money(unitAt(i)) }}
                         </span>
                         <span v-else class="tp-dim">—</span>
                     </td>
                     <td class="nowrap">
                         <span v-if="unitAt(i) != null" class="num tp-soft">
-                            {{ ils(unitAt(i) * (1 + vatRate), 2) }}
+                            {{ money(unitAt(i) * (1 + vatRate)) }}
                         </span>
                         <span v-else class="tp-dim">—</span>
                     </td>
@@ -253,21 +233,21 @@ function pctMessage(index) {
                             v-if="unitAt(i) != null && !Number.isNaN(los[i])"
                             class="tp-ex"
                         >
-                            <ANum>{{ num(los[i]) }}</ANum> {{ uomName }} ·
+                            <ANum>{{ qtyText(los[i]) }}</ANum> {{ uomName }} ·
                             <span class="num tp-ex-total">
-                                {{ ils(unitAt(i) * los[i], 2) }}
+                                {{ money(unitAt(i) * los[i]) }}
                             </span>
                             <span v-if="pcts[i]" class="tp-off">
                                 {{
                                     t('pricing.ladder.off', {
-                                        pct: pct(pcts[i], 1),
+                                        pct: pctText(pcts[i]),
                                     })
                                 }}
                             </span>
                         </span>
                         <span v-else class="tp-dim">—</span>
                     </td>
-                    <td v-if="custom">
+                    <td>
                         <AButton
                             sm
                             kind="ghost"
@@ -289,7 +269,7 @@ function pctMessage(index) {
                 </tr>
             </tbody>
         </table>
-        <div v-if="custom" class="tp-addrow">
+        <div class="tp-addrow">
             <AButton icon="plus" @click="emit('add-row')">
                 {{ t('pricing.editor.table.addRange') }}
             </AButton>

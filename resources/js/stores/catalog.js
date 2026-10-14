@@ -267,9 +267,6 @@ export const useCatalogStore = defineStore('catalog', () => {
         return dataset.data.priceGroups;
     }
 
-    /** The quantity scale a percent-mode group inherits when it defines none of its own. */
-    const defaultBreaks = computed(() => dataset.data.priceBreaks || []);
-
     /** Units a ladder can be written for. */
     const priceUoms = PRICE_UOM_IDS;
 
@@ -427,12 +424,7 @@ export const useCatalogStore = defineStore('catalog', () => {
         const unitPrice = unitPriceOf(item);
 
         return group && unitPrice !== null
-            ? ladderTable(
-                  group,
-                  unitPrice,
-                  SETTINGS.vatRate,
-                  defaultBreaks.value,
-              )
+            ? ladderTable(group, unitPrice, SETTINGS.vatRate)
             : [];
     };
 
@@ -454,21 +446,6 @@ export const useCatalogStore = defineStore('catalog', () => {
 
     /** The deepest band of a group — `{ from, pct }` — for the overview and the items drawer. */
     const topOfGroup = (group) => ladderTop(group);
-
-    /**
-     * True when a group carries its own quantity scale rather than the shared
-     * one. Capsules are bought in thousands, so their bands are nothing like
-     * the default 1–5–10 ladder.
-     */
-    const isCustomScale = (group) => {
-        const bands = group.breaks || [];
-        const shared = defaultBreaks.value;
-
-        return (
-            bands.length !== shared.length ||
-            bands.some((band, i) => band !== shared[i])
-        );
-    };
 
     const conflictsFor = (prefixes, selfId) =>
         prefixConflicts(prefixes, priceGroups.value, selfId);
@@ -659,49 +636,25 @@ export const useCatalogStore = defineStore('catalog', () => {
 
     /**
      * A group as the form typed it, in the shape the ladder arithmetic reads:
-     * numbers coerced, the mode's other half emptied, and every percent-mode
-     * band that starts at or below the base quantity forced to 0.
+     * numbers coerced, and every band that starts at or below the base quantity
+     * forced to 0 — nothing comes off a quantity the ladder has not started on.
      */
     function normalizeGroup(draft) {
-        const mode = draft.mode || 'percent';
         const baseQty = numberOrNull(draft.baseQty);
-        const breaks =
-            mode === 'percent' ? (draft.breaks || []).map(numberOrNull) : [];
-        const percents =
-            mode === 'percent'
-                ? breaks.map((qty, i) =>
-                      baseQty !== null && qty !== null && qty <= baseQty
-                          ? 0
-                          : numberOrNull((draft.percents || [])[i]),
-                  )
-                : [];
-        const source = draft.formula || {};
-        const formula =
-            mode === 'formula'
-                ? source.kind === 'curve'
-                    ? {
-                          kind: 'curve',
-                          k: numberOrNull(source.k),
-                          floorPct: numberOrNull(source.floorPct),
-                      }
-                    : {
-                          kind: source.kind || 'step',
-                          stepQty: numberOrNull(source.stepQty),
-                          stepPct: numberOrNull(source.stepPct),
-                          floorPct: numberOrNull(source.floorPct),
-                      }
-                : null;
+        const breaks = (draft.breaks || []).map(numberOrNull);
 
         return {
             ...draft,
             prefixes: (draft.prefixes || []).map((prefix) =>
                 String(prefix).trim(),
             ),
-            mode,
             baseQty,
             breaks,
-            percents,
-            formula,
+            percents: breaks.map((qty, i) =>
+                baseQty !== null && qty !== null && qty <= baseQty
+                    ? 0
+                    : numberOrNull((draft.percents || [])[i]),
+            ),
         };
     }
 
@@ -796,9 +749,9 @@ export const useCatalogStore = defineStore('catalog', () => {
 
     /**
      * Apply the reviewed rows of a spreadsheet import: each valid row sets one
-     * band's percentage on a percent-mode group, and every touched group is
-     * saved through the normal path. A group whose imported ladder would not
-     * validate is left untouched and reported.
+     * band's percentage, and every touched group is saved through the normal
+     * path. A group whose imported ladder would not validate is left untouched
+     * and reported.
      *
      * @returns {{ applied: number, skipped: number, rejected: [{ group: string, errors: string[] }] }}
      */
@@ -811,7 +764,6 @@ export const useCatalogStore = defineStore('catalog', () => {
 
             if (
                 !group ||
-                group.mode !== 'percent' ||
                 row.index === null ||
                 row.index >= group.breaks.length
             ) {
@@ -872,7 +824,6 @@ export const useCatalogStore = defineStore('catalog', () => {
         labels,
         priceGroups,
         ingredientSkus,
-        defaultBreaks,
         priceUoms,
         priceImport,
         approvalPin,
@@ -895,7 +846,6 @@ export const useCatalogStore = defineStore('catalog', () => {
         topOfGroup,
         resolveSku,
         conflictsFor,
-        isCustomScale,
         groupErrors,
         statusTone,
 
