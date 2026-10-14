@@ -11,6 +11,7 @@
 import { computed, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import ItemPricePanel from '@/components/items/ItemPricePanel.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ActionGate from '@/components/ui/ActionGate.vue';
 import AInput from '@/components/ui/AInput.vue';
@@ -35,9 +36,6 @@ import {
     VALUATION_METHOD_IDS,
 } from '@/config';
 import { applyDraft, recordMoved, snapshot, stampOf } from '@/lib/draft';
-import { ladderTable } from '@/lib/ladder';
-import { ils, num } from '@/lib/money';
-import { useCatalogStore } from '@/stores/catalog';
 import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
 
@@ -57,7 +55,6 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const dataset = useDatasetStore();
 const store = useItemsStore();
-const catalog = useCatalogStore();
 
 const isNew = computed(() => !props.item.sku);
 const touched = reactive({});
@@ -551,27 +548,6 @@ const categoryOptions = computed(() => [
     })),
 ]);
 
-/**
- * What the ladder comes to for this item, as the ladders screen defines it.
- *
- * Read-only on purpose: the ladder belongs to a group of item codes and is set
- * there. Here it answers the question the person typing a price actually has
- * — "and what will somebody buying ten of these pay?"
- */
-const ladderGroup = computed(() =>
-    catalog.groupForItem({ ...props.item, sku: form.code || props.item?.sku }),
-);
-
-const ladderRows = computed(() => {
-    const price = Number(form.price.sale);
-
-    if (!ladderGroup.value || !Number.isFinite(price) || price <= 0) {
-        return [];
-    }
-
-    return ladderTable(ladderGroup.value, price, 0).slice(0, 4);
-});
-
 /** Only the properties SAP actually named are offered; the rest are blanks. */
 const propertyOptions = computed(() =>
     store.itemProperties.filter(
@@ -1011,79 +987,19 @@ const win = computed(() => ({
                                 {{ show('numIn') }}
                             </div>
                         </div>
-                        <div>
-                            <label class="a-lbl">{{
-                                t('items.editor.priceUom')
-                            }}</label>
-                            <ASelect
-                                v-model="form.uom.price"
-                                :disabled="!onSite"
-                                :options="uomOptions"
-                                class="a-w100"
-                            />
-                            <div class="a-hint">
-                                {{ t('items.editor.priceUomHint') }}
-                            </div>
-                        </div>
-                        <div>
-                            <label class="a-lbl">{{
-                                t('items.card.salePrice')
-                            }}</label>
-                            <AInput
-                                v-model="form.price.sale"
-                                :disabled="!onSite"
-                                type="number"
-                                ltr
-                                class="a-w100"
-                            />
-                            <div class="a-hint">
-                                {{
-                                    t('items.editor.salePriceHint', {
-                                        uom: t(`items.uom.${form.uom.sales}`),
-                                    })
-                                }}
-                            </div>
-                        </div>
-                        <!-- The ladder is not set here. It is set once per group of item
-                             codes on the ladders screen, and this is what it
-                             comes to for the price typed beside it. -->
-                        <div class="ladder-result">
-                            <label class="a-lbl">{{
-                                t('items.editor.ladderResult')
-                            }}</label>
-                            <div v-if="ladderGroup" class="lr-box">
-                                <div class="lr-name">
-                                    {{ loc(ladderGroup.name) }}
-                                </div>
-                                <ul v-if="ladderRows.length" class="lr-rows">
-                                    <li
-                                        v-for="step in ladderRows"
-                                        :key="step.from"
-                                    >
-                                        <span class="lr-q">
-                                            {{
-                                                t('items.editor.ladderFrom', {
-                                                    qty: num(step.from, 0),
-                                                    unit: t(
-                                                        `items.uom.${form.uom.sales}`,
-                                                    ),
-                                                })
-                                            }}
-                                        </span>
-                                        <span class="lr-p">{{
-                                            ils(step.unit, 2)
-                                        }}</span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div v-else class="a-hint">
-                                {{ t('items.editor.ladderNone') }}
-                            </div>
-                            <div class="a-hint">
-                                {{ t('items.editor.ladderResultHint') }}
-                            </div>
-                        </div>
                     </div>
+                </ActionGate>
+            </section>
+
+            <!-- the price: one field, everything around it derived -->
+            <section>
+                <div class="a-sect-t">{{ t('items.price.section') }}</div>
+                <ActionGate id="item_price" compact>
+                    <ItemPricePanel
+                        v-model="form.price.sale"
+                        :sku="form.code || item?.sku || ''"
+                        editable
+                    />
                 </ActionGate>
             </section>
 
@@ -1503,44 +1419,6 @@ const win = computed(() => ({
 </template>
 
 <style scoped>
-/* The ladder's result beside the price that produces it. */
-.lr-box {
-    border: 1px solid var(--a-line);
-    border-radius: 8px;
-    padding: 8px 10px;
-    background: var(--a-sunk);
-}
-
-.lr-name {
-    font-weight: 700;
-    font-size: 13px;
-    margin-bottom: 4px;
-}
-
-.lr-rows {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 2px;
-    font-size: 12.5px;
-}
-
-.lr-rows li {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.lr-q {
-    color: var(--a-ink-3);
-}
-
-.lr-p {
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-}
-
 /* A quantity and the unit it is counted in, which never travel apart. */
 .qty-with-unit {
     display: flex;

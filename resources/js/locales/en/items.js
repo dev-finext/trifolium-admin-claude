@@ -174,7 +174,7 @@ export default {
             state: 'Status',
             tree: 'SAP tree type',
             batch: 'Batch management',
-            ladder: 'Price ladder',
+            ladder: 'Price scale',
         },
         stockState: {
             out: 'Out of stock',
@@ -215,7 +215,7 @@ export default {
     },
     col: {
         sale: 'Sale price',
-        priceGroup: 'Tiered list',
+        priceGroup: 'Price scale',
         code: 'Code',
         name: 'Item',
         uom: 'Units',
@@ -237,7 +237,7 @@ export default {
         uom: '1 {purchase} = {factor} {stock}',
     },
     card: {
-        ladder: 'Tiered list',
+        ladder: 'Price scale',
         productionRuns: 'Production',
         recipe: 'Bill of materials',
         noRecipe: 'No recipe — a production order cannot be opened',
@@ -391,17 +391,42 @@ export default {
         internalNotes: 'Internal description',
         notes: 'Remarks',
     },
+    // The price area of the item card: one editable field, everything around it
+    // derived from the group of item codes the item falls into.
+    price: {
+        section: 'Price',
+        group: 'Code group',
+        groupBy: 'By prefix {prefix}',
+        uom: 'Unit of measure',
+        uomFrom: 'Set by the price scale “{group}”',
+        noGroup: 'This item belongs to no code group',
+        noGroupSub:
+            'Without a group there is no price scale, and no unit to price in. Assignment happens on the price scales screen, by code prefix.',
+        label: 'Price per {uom}',
+        labelPlain: 'Unit price',
+        aria: 'Unit price, before VAT',
+        beforeVat: 'Before VAT. Every price in this area is before VAT.',
+        none: 'No price entered',
+        missing:
+            'This item has a code group and no price — the scale cannot price it at any quantity.',
+        missingDot: 'No price',
+        derived:
+            'The table is derived from the code group. The price is the only field edited here.',
+        table: {
+            title: 'The price at every quantity · by “{group}”',
+            range: 'Quantity band',
+            pct: 'Discount',
+            unit: 'Unit price',
+            total: 'Total at the band’s start',
+        },
+    },
+
     editor: {
-        priceGroup: 'Tiered list',
-        ladderResult: 'Price ladder · the result',
-        ladderFrom: 'From {qty} {unit}',
-        ladderResultHint:
-            'The ladder is set on the price-ladders screen, per group of item codes. The price itself is set here, and this is what the group’s ladder makes of it.',
-        ladderNone: 'This item belongs to no ladder group — its price is flat.',
+        priceGroup: 'Price scale',
         priceGroupInherit: 'By code prefix (default)',
         priceGroupFixed: 'Fixed price — no list',
         priceGroupHint:
-            'The list sets only the discount ladder; the unit price is the item’s own',
+            'The scale sets only the discount; the unit price is the item’s own',
         draftStale:
             'The record changed after this draft was parked. Saving will overwrite that change — check before you do.',
         newTitle: 'New item',
@@ -421,7 +446,6 @@ export default {
         siteNameHint:
             'As shown on the consumer site — may differ from the internal name',
         pricing: 'Prices & suppliers',
-        salePriceHint: 'Per {uom}, before VAT',
         lastPurchaseHint: 'Updated automatically on every goods receipt',
         lastSupplierHint: 'Updated automatically on every purchase order',
         site: 'Consumer site',
@@ -455,8 +479,6 @@ export default {
             'The field exists in SAP and no item fills it — here one can be uploaded',
         trade: 'Purchasing and sales',
         numInHint: 'How many {unit} one unit holds',
-        priceUom: 'Pricing unit',
-        priceUomHint: 'A price list price is per one of these',
         inventory: 'Inventory',
         planning: 'Planning and production',
         properties: 'Properties and safety',

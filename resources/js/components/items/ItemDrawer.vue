@@ -13,8 +13,8 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import ItemBomPanel from '@/components/items/ItemBomPanel.vue';
+import ItemPricePanel from '@/components/items/ItemPricePanel.vue';
 import ItemStockPanel from '@/components/items/ItemStockPanel.vue';
-import LadderCalculator from '@/components/pricing/LadderCalculator.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
@@ -490,8 +490,10 @@ const categories = computed(() =>
                         {{ t('items.card.noPrices') }}
                     </p>
                     <div class="pad">
-                        <div class="a-lbl">{{ t('items.card.ladder') }}</div>
-                        <LadderCalculator :item="row" compact />
+                        <ItemPricePanel
+                            :sku="row.sku"
+                            :model-value="row.price?.sale ?? ''"
+                        />
                     </div>
                 </ACard>
 

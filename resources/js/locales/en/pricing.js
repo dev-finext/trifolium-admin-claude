@@ -1,6 +1,6 @@
-// Tiered price lists — mirrors he/pricing.js key for key.
+// Price scales — mirrors he/pricing.js key for key.
 export default {
-    title: 'Tiered price lists',
+    title: 'Price scales',
     sub: 'Formula ingredients priced by quantity — the unit price drops as the ordered quantity rises',
 
     actions: {
@@ -29,7 +29,7 @@ export default {
     ladderError: {
         prefix_conflict: 'A prefix overlaps another pricing group',
         base_qty: 'The base quantity must be greater than zero',
-        breaks_empty: 'The ladder needs at least one quantity band',
+        breaks_empty: 'The scale needs at least one quantity band',
         breaks_ascending: 'Quantity bands must rise from smallest to largest',
         percents_length: 'Every quantity band needs a discount percentage',
         percent_range: 'A discount must be between 0 and 100 %',
@@ -89,7 +89,7 @@ export default {
         group: 'Pricing group',
         uom: 'Unit of measure',
         base: 'Unit price',
-        ladder: 'Ladder',
+        ladder: 'Scale',
         matched: 'SKUs assigned',
         updated: 'Last updated',
         from: 'from {price} {per}',
@@ -278,14 +278,14 @@ export default {
     calculator: {
         more: 'and {n} more bands',
         title: 'Price by quantity',
-        sub: 'The item’s unit price after the “{group}” ladder',
-        fixed: 'Fixed price — no tiered price list applies',
+        sub: 'The item’s unit price after the “{group}” scale',
+        fixed: 'Fixed price — no price scale applies',
         fixedSub: 'The item sells at its unit price at any quantity',
         noPrice:
             'No unit price entered — the calculator appears once there is one',
         uomMismatch: 'The price list’s unit differs from the item’s sales unit',
         uomMismatchSub:
-            'The ladder was written per {groupUom}, the item sells per {itemUom} — quantities are computed in the item’s unit, without conversion',
+            'The scale was written per {groupUom}, the item sells per {itemUom} — quantities are computed in the item’s unit, without conversion',
         groupByPrefix: 'Grouped by item-code prefix: {prefix}',
         groupDefault: 'Default by prefix: {name}',
         groupExplicit: 'Assigned by hand: {name}',
@@ -322,7 +322,7 @@ export default {
             explicit: 'By hand',
         },
         noPrice: 'No price',
-        uomMismatch: 'Sales unit differs from the ladder’s unit',
+        uomMismatch: 'Sales unit differs from the scale’s unit',
         empty: 'No item is priced by this group',
         emptySub:
             'Add a SKU prefix that matches items, or assign items to the group from the item card',
@@ -347,7 +347,7 @@ export default {
         applied: 'Price list updated',
         appliedBody: '{applied} rows applied · {skipped} rejected',
         rejected:
-            'The group “{group}” was not updated — the resulting ladder is not valid',
+            'The group “{group}” was not updated — the resulting scale is not valid',
     },
 
     toast: {

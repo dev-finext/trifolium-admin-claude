@@ -15,7 +15,7 @@ export default {
         finance: 'Finance',
         wallet: 'Wallet & points',
         products: 'Shelf products',
-        pricing: 'Tiered price lists',
+        pricing: 'Price scales',
         ingredients: 'Formula ingredients',
         items: 'Item card',
         suppliers: 'Suppliers',

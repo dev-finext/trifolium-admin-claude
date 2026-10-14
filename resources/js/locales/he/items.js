@@ -388,13 +388,37 @@ export default {
         internalNotes: 'תיאור פנימי',
         notes: 'הערות',
     },
+    // The price area of the item card: one editable field, everything around it
+    // derived from the group of item codes the item falls into.
+    price: {
+        section: 'מחיר',
+        group: 'קבוצת מק״טים',
+        groupBy: 'לפי תחילית {prefix}',
+        uom: 'יחידת המידה',
+        uomFrom: 'נקבעה במחירון המדורג ״{group}״',
+        noGroup: 'הפריט אינו שייך לאף קבוצת מק״טים',
+        noGroupSub:
+            'ללא קבוצה אין מחירון מדורג, ואין יחידת מידה לתמחר לפיה. שיוך נעשה בעמוד המחירונים המדורגים, לפי תחילית המק״ט.',
+        label: 'מחיר ל{uom} אחת',
+        labelPlain: 'מחיר ליחידה',
+        aria: 'מחיר ליחידה, לפני מע״מ',
+        beforeVat: 'לפני מע״מ. כל המחירים באזור הזה לפני מע״מ.',
+        none: 'לא הוזן מחיר',
+        missing:
+            'לפריט יש קבוצת מק״טים ואין לו מחיר — המחירון המדורג אינו יכול לתמחר אותו בשום כמות.',
+        missingDot: 'חסר מחיר',
+        derived: 'הטבלה נגזרת מקבוצת המק״טים. המחיר הוא השדה היחיד שנערך כאן.',
+        table: {
+            title: 'המחיר בכל כמות · לפי ״{group}״',
+            range: 'טווח כמות',
+            pct: 'הנחה',
+            unit: 'מחיר ליחידה',
+            total: 'סה״כ בתחילת הטווח',
+        },
+    },
+
     editor: {
         priceGroup: 'מחירון מדורג',
-        ladderResult: 'מחירון מדורג · התוצאה',
-        ladderFrom: 'מ-{qty} {unit}',
-        ladderResultHint:
-            'המדרגות נקבעות בעמוד המחירונים המדורגים, לפי קבוצת מק״טים. כאן נקבע המחיר עצמו, וזאת התוצאה שלו לפי הסולם של הקבוצה.',
-        ladderNone: 'הפריט אינו שייך לקבוצת מחירון — המחיר קבוע.',
         priceGroupInherit: 'לפי קידומת המק״ט (ברירת מחדל)',
         priceGroupFixed: 'מחיר קבוע — ללא מחירון',
         priceGroupHint:
@@ -416,7 +440,6 @@ export default {
         siteName: 'שם לאתר',
         siteNameHint: 'כפי שיופיע באתר הצרכני — יכול להיות שונה מהשם הפנימי',
         pricing: 'מחירים וספקים',
-        salePriceHint: 'ל{uom} אחד, לפני מע״מ',
         lastPurchaseHint: 'מתעדכן אוטומטית בכל קליטה למלאי',
         lastSupplierHint: 'מתעדכן אוטומטית בכל הזמנת רכש',
         site: 'אתר צרכני',
@@ -447,8 +470,6 @@ export default {
         pictureHint: 'ב-SAP השדה קיים ואינו מלא באף פריט — כאן אפשר להעלות',
         trade: 'רכש ומכירות',
         numInHint: 'כמה {unit} יש ביחידה אחת',
-        priceUom: 'יחידת תמחור',
-        priceUomHint: 'המחיר במחירונים הוא ליחידה אחת מזו',
         inventory: 'מלאי',
         planning: 'תכנון וייצור',
         properties: 'מאפיינים ובטיחות',
