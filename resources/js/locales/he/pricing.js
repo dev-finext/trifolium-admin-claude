@@ -27,7 +27,7 @@ export default {
 
     // config/catalog.js LADDER_ERROR_IDS — why the store refuses to save a group.
     ladderError: {
-        prefix_conflict: 'תחילית חופפת לקבוצת תמחור אחרת',
+        group_conflict: 'קבוצת הפריט כבר שייכת למחירון אחר',
         base_qty: 'כמות הבסיס חייבת להיות גדולה מאפס',
         breaks_empty: 'המחירון חייב לכלול לפחות טווח כמות אחד',
         breaks_ascending: 'טווחי הכמות חייבים לעלות מקטן לגדול',
@@ -78,9 +78,9 @@ export default {
     },
 
     lookup: {
-        resolved: 'מק״ט {sku} מתומחר על ידי {group} (תחילית {prefix})',
+        resolved: 'מק״ט {sku} מתומחר על ידי {group} (קבוצת הפריט {itemGroup})',
         resolvedNamed:
-            'מק״ט {sku} · {name} מתומחר על ידי {group} (תחילית {prefix})',
+            'מק״ט {sku} · {name} מתומחר על ידי {group} (קבוצת הפריט {itemGroup})',
         open: 'פתיחת הקבוצה',
         unresolved: 'מק״ט {sku} אינו משויך לאף קבוצת תמחור.',
     },
@@ -142,16 +142,16 @@ export default {
             placeholder: 'למשל: שמנים אתריים',
         },
 
-        prefixes: {
-            label: 'תחיליות מק״ט',
-            // The rule the whole screen is built around: one SKU, one group.
-            hint: 'כל מק״ט משויך לקבוצה אחת בלבד — תחילית שחופפת לקבוצה אחרת תיחסם.',
-            placeholderFirst: 'למשל: 200 — ואז Enter',
-            placeholderMore: 'תחילית נוספת…',
-            aria: 'הוספת תחילית מק״ט',
-            removeAria: 'הסרת תחילית {prefix}',
-            conflict:
-                'לא ניתן להוסיף את התחילית {prefix} — היא חופפת לתחילית {other} של הקבוצה ״{group}״. המערכת אינה מאפשרת חפיפת תחיליות בין קבוצות.',
+        // The groups' own names are data, never translated — see ItemGroupPicker.
+        itemGroups: {
+            label: 'קבוצות פריט',
+            // The rule the whole screen is built around: one item, one scale.
+            hint: 'בחרו קבוצת פריט אחת או יותר. כל קבוצת פריט שייכת למחירון אחד בלבד — קבוצה שכבר תפוסה מוצגת נעולה עם שם המחירון שמחזיק אותה.',
+            search: 'חיפוש קבוצה',
+            none: 'טרם נבחרה קבוצת פריט',
+            chosen: 'נבחרה קבוצה אחת · {items} פריטים | {n} קבוצות · {items} פריטים',
+            heldBy: 'הקבוצה כבר שייכת למחירון ״{group}״',
+            noMatch: 'אין קבוצת פריט שמתאימה לחיפוש.',
         },
 
         uomField: {
@@ -281,7 +281,6 @@ export default {
         uomMismatch: 'יחידת המחירון שונה מיחידת המכירה של הפריט',
         uomMismatchSub:
             'המחירון נכתב ל{groupUom}, הפריט נמכר ב{itemUom} — הכמויות מחושבות ביחידת הפריט, ללא המרה',
-        groupByPrefix: 'שייך לפי קידומת המק״ט: {prefix}',
         groupDefault: 'ברירת מחדל לפי קידומת: {name}',
         groupExplicit: 'שיוך ידני: {name}',
         groupNone: 'קבוע — ללא מחירון',
@@ -311,11 +310,7 @@ export default {
             unitPrice: 'מחיר ליחידה',
             atBase: 'בבסיס ({qty}+)',
             atTop: 'בטווח הגבוה ({qty}+)',
-            assignment: 'אופן השיוך',
-        },
-        assignment: {
-            default: 'לפי קידומת {prefix}',
-            explicit: 'שיוך ידני',
+            itemGroup: 'קבוצת הפריט',
         },
         noPrice: 'ללא מחיר',
         uomMismatch: 'יחידת המכירה שונה מיחידת המחירון',

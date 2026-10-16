@@ -37,6 +37,7 @@ import { ladderTable } from '@/lib/ladder';
 import { pctText, qtyText } from '@/lib/money';
 import { PRICE_SKU_QUERY_MIN_DIGITS, useCatalogStore } from '@/stores/catalog';
 import { useDatasetStore } from '@/stores/dataset';
+import { useItemsStore } from '@/stores/items';
 
 /** How many skeleton rows stand in for the grid while the dataset loads. */
 const SKELETON_ROWS = 7;
@@ -53,6 +54,7 @@ const { push } = useToast();
 const router = useRouter();
 const dataset = useDatasetStore();
 const catalog = useCatalogStore();
+const itemsStore = useItemsStore();
 
 const view = useUrlState({
     q: '',
@@ -96,12 +98,14 @@ const shown = computed(() =>
             return true;
         }
 
+        // The scale's own name, or any item group it covers — the group
+        // names are SAP's, so they are searched as written.
         return (
             searchHaystack(group.name).includes(term.value.toLowerCase()) ||
-            group.prefixes.some(
-                (prefix) =>
-                    prefix.startsWith(term.value) ||
-                    term.value.startsWith(prefix),
+            (group.itemGroups || []).some((code) =>
+                searchHaystack(itemsStore.groupName(code), String(code))
+                    .toLowerCase()
+                    .includes(term.value.toLowerCase()),
             )
         );
     }),
@@ -370,8 +374,13 @@ function exportGroup(group) {
                     <template #group>
                         <b>{{ loc(skuHit.group.name) }}</b>
                     </template>
-                    <template #prefix>
-                        <span class="tp-chip">{{ skuHit.prefix }}</span>
+                    <template #itemGroup>
+                        <span class="tp-chip" dir="auto">
+                            {{
+                                itemsStore.groupName(skuHit.itemGroup) ||
+                                skuHit.itemGroup
+                            }}
+                        </span>
                     </template>
                 </I18nT>
                 <button

@@ -25,6 +25,7 @@ import { useLocalized } from '@/composables/useLocalized';
 import { LADDER_DECIMALS, ladderTable } from '@/lib/ladder';
 import { money, pctText, qtyText } from '@/lib/money';
 import { useCatalogStore } from '@/stores/catalog';
+import { useItemsStore } from '@/stores/items';
 
 const props = defineProps({
     /** The item code the group is resolved from. */
@@ -40,6 +41,7 @@ const emit = defineEmits(['update:modelValue']);
 const { t } = useI18n();
 const { loc } = useLocalized();
 const catalog = useCatalogStore();
+const itemsStore = useItemsStore();
 const uid = useId();
 
 const hit = computed(() => catalog.resolveSku(props.sku));
@@ -98,8 +100,14 @@ function onInput(event) {
                     {{ t('items.price.group') }}
                 </span>
                 <span class="ip-strong">{{ loc(group.name) }}</span>
-                <span class="ip-sub">
-                    {{ t('items.price.groupBy', { prefix: hit.prefix }) }}
+                <span class="ip-sub" dir="auto">
+                    {{
+                        t('items.price.groupBy', {
+                            itemGroup:
+                                itemsStore.groupName(hit.itemGroup) ||
+                                hit.itemGroup,
+                        })
+                    }}
                 </span>
             </div>
             <div class="ip-fact">

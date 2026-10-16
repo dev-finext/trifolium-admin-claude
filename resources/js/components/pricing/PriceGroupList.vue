@@ -2,10 +2,9 @@
 // The overview grid of pricing groups.
 //
 // The "items priced" figure is live resolution, not a stored count: every item
-// in the catalogue is resolved against all groups (an explicit assignment on
-// the item first, then the longest matching prefix), so a prefix edit in one
-// group moves the number shown on another. Zero is highlighted — a group that
-// prices nothing is usually a typo in its prefixes.
+// in the catalogue is matched to the scale holding its item group, so adding a
+// group to one scale moves the number on the screen at once. Zero is
+// highlighted — a scale covering an item group that holds nothing.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -16,6 +15,7 @@ import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { pctText, qtyText } from '@/lib/money';
 import { useCatalogStore } from '@/stores/catalog';
+import { useItemsStore } from '@/stores/items';
 
 defineProps({
     /** The groups that survived the screen's filters. */
@@ -29,6 +29,7 @@ const emit = defineEmits(['row', 'edit', 'items', 'export', 'remove']);
 const { t } = useI18n();
 const { loc } = useLocalized();
 const catalog = useCatalogStore();
+const itemsStore = useItemsStore();
 
 const cols = computed(() => [
     { k: 'name', label: t('pricing.table.group'), w: '230px' },
@@ -65,12 +66,14 @@ function ladderText(group) {
             <div>
                 <div class="t-strong">{{ loc(row.name) }}</div>
                 <div class="tp-chips tp-chips-pad">
+                    <!-- The item groups' own names, in SAP's words. -->
                     <span
-                        v-for="prefix in row.prefixes"
-                        :key="prefix"
+                        v-for="code in row.itemGroups"
+                        :key="code"
                         class="tp-chip"
+                        dir="auto"
                     >
-                        {{ prefix }}
+                        {{ itemsStore.groupName(code) || code }}
                     </span>
                 </div>
             </div>

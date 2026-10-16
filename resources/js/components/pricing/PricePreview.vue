@@ -1,12 +1,12 @@
 <script setup>
 // The live answer to "which items would this group price?".
 //
-// It re-renders as prefixes are typed, against the same resolution the store
-// uses everywhere else, so what the agent sees here is exactly what the saved
-// group will price.
+// It re-renders as item groups are picked, against the same resolution the
+// store uses everywhere else, so what the agent sees here is exactly what the
+// saved scale will price.
 //
-// A prefix as broad as `10` captures hundreds of herbs, which is a list nobody
-// reads by scrolling. The search box narrows it by code or name — it narrows
+// One item group can hold hundreds of herbs, which is a list nobody reads by
+// scrolling. The search box narrows it by code or name — it narrows
 // only what is shown, never what the group covers, and the count line says both
 // numbers so the two can never be confused.
 import { computed, ref, useId } from 'vue';
@@ -17,11 +17,12 @@ import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
 
 const props = defineProps({
-    /** The SKUs the prefixes currently capture. */
+    /** The SKUs the chosen item groups currently capture. */
     matched: { type: Array, default: () => [] },
     /** How many SKUs the whole ingredient catalogue holds. */
     total: { type: Number, default: 0 },
-    hasPrefixes: { type: Boolean, default: false },
+    /** True once at least one item group is chosen. */
+    hasGroups: { type: Boolean, default: false },
 });
 
 const { t } = useI18n();
@@ -73,7 +74,7 @@ const shown = computed(() =>
                 />
             </div>
             <div class="tp-preview-l">
-                <div v-if="!hasPrefixes" class="tp-preview-none">
+                <div v-if="!hasGroups" class="tp-preview-none">
                     {{ t('pricing.editor.preview.noPrefix') }}
                 </div>
                 <div v-else-if="!matched.length" class="tp-preview-none">

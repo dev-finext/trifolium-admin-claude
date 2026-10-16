@@ -396,7 +396,7 @@ export default {
     price: {
         section: 'Price',
         group: 'Code group',
-        groupBy: 'By prefix {prefix}',
+        groupBy: 'By item group {itemGroup}',
         uom: 'Unit of measure',
         uomFrom: 'Set by the price scale “{group}”',
         noGroup: 'This item belongs to no code group',

@@ -393,7 +393,7 @@ export default {
     price: {
         section: 'מחיר',
         group: 'קבוצת מק״טים',
-        groupBy: 'לפי תחילית {prefix}',
+        groupBy: 'לפי קבוצת הפריט {itemGroup}',
         uom: 'יחידת המידה',
         uomFrom: 'נקבעה במחירון המדורג ״{group}״',
         noGroup: 'הפריט אינו שייך לאף קבוצת מק״טים',

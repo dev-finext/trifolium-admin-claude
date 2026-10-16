@@ -1,12 +1,12 @@
 // Tiered price lists.
 //
-// A group owns a set of SKU prefixes and a DISCOUNT ladder — never a price. The
-// item carries its own unit price (`item.price.sale`, per the group's unit) and
-// the group says how much comes off it as the ordered quantity grows: nothing
+// A scale owns a set of ITEM GROUPS and a DISCOUNT ladder — never a price. The
+// item carries its own unit price (`item.price.sale`, per the scale's unit) and
+// the scale says how much comes off it as the ordered quantity grows: nothing
 // up to and including `baseQty`, then the percentage of the band the quantity
-// falls into. A SKU is priced by the group holding the LONGEST prefix that
-// matches it unless the item names a group itself, which is why two groups may
-// never own overlapping prefixes.
+// falls into. An item is priced by the scale holding its item group — SAP's
+// `OITB` code, the same grouping the item screen filters by — and an item group
+// belongs to one scale at most.
 //
 // Every group states its own quantity bands. Capsules are bought in thousands
 // and essential oils in tens of millilitres, and one scale over both would be a
@@ -38,8 +38,8 @@ export function buildPriceGroups() {
         {
             id: 'g1',
             name: L('שמנים אתריים', 'Essential oils'),
-            // Family 15 in SAP's item numbering.
-            prefixes: ['15'],
+            // 15 שמן אתרי
+            itemGroups: [104],
             uom: 'ml',
             baseQty: 10,
             // Steep early and then flat: 10 ml is the base, and by 50 ml the
@@ -52,7 +52,8 @@ export function buildPriceGroups() {
         {
             id: 'g2',
             name: L('שמנים מושרים', 'Infused oils'),
-            prefixes: ['201'],
+            // שמן מושרה
+            itemGroups: [107],
             uom: 'ml',
             baseQty: 1,
             breaks: OIL_BANDS,
@@ -68,7 +69,9 @@ export function buildPriceGroups() {
         {
             id: 'g3',
             name: L('שמני בסיס', 'Carrier oils'),
-            prefixes: ['21'],
+            // שמנים בכבישה קרה — the group exists and holds nothing yet, which
+            // is a real state the screen has to show.
+            itemGroups: [150],
             uom: 'ml',
             baseQty: 1,
             breaks: OIL_BANDS,
@@ -82,8 +85,8 @@ export function buildPriceGroups() {
         {
             id: 'g4',
             name: L('צמחי מרפא יבשים', 'Dried herbs'),
-            // Families 10 and 11 — the herbs and the 1:1 extracts.
-            prefixes: ['10', '11'],
+            // 10 צמחים and 11 צמחים 1:1 — one scale over two item groups.
+            itemGroups: [100, 101],
             uom: 'g',
             baseQty: 1,
             // SAP's SPP2 thresholds (1 / 1000 / 3000 g) and the shape of the
@@ -96,8 +99,8 @@ export function buildPriceGroups() {
         {
             id: 'g5',
             name: L('קפסולות', 'Capsules'),
-            // Family 30, where the capsule shells are numbered.
-            prefixes: ['30'],
+            // 30 חומרי עזר, where the capsule shells sit.
+            itemGroups: [112],
             uom: 'capsule',
             baseQty: 100,
             // Four percent for every 250 capsules above the first hundred,

@@ -1,9 +1,9 @@
 <script setup>
 // Which items a group prices, and what the ladder does to each of them.
 //
-// Answering this from the items collection — an explicit assignment on the
-// item first, then the longest matching prefix — is what makes the count on
-// the overview agree with the price group shown on every item card.
+// Answering this from the items collection — each item matched to the scale
+// holding its item group — is what makes the count on the overview agree with
+// the scale shown on every item card.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -16,6 +16,7 @@ import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { ils, num } from '@/lib/money';
 import { useCatalogStore } from '@/stores/catalog';
+import { useItemsStore } from '@/stores/items';
 
 const props = defineProps({
     /** The group whose items are listed, or null while closed. */
@@ -42,6 +43,7 @@ const emit = defineEmits(['close', 'open-item']);
 const { t } = useI18n();
 const { loc } = useLocalized();
 const catalog = useCatalogStore();
+const itemsStore = useItemsStore();
 
 const items = computed(() =>
     props.group ? catalog.itemsOfGroup(props.group.id) : [],
@@ -76,7 +78,7 @@ const cols = computed(() => [
     },
     {
         k: 'how',
-        label: t('pricing.itemsDrawer.col.assignment'),
+        label: t('pricing.itemsDrawer.col.itemGroup'),
         nowrap: true,
     },
 ]);
@@ -165,17 +167,12 @@ function priceAtTop(item) {
                 </span>
                 <span v-else class="ig-dim">—</span>
             </template>
+            <!-- Which item group brought this item in. SAP's own name. -->
             <template #cell-how="{ row }">
-                <AChip
-                    :tone="row.priceGroup ? 'blue' : 'gray'"
-                    size="sm"
-                    :dot="false"
-                >
-                    {{
-                        row.priceGroup
-                            ? t('pricing.itemsDrawer.assignment.explicit')
-                            : t('pricing.itemsDrawer.assignment.default')
-                    }}
+                <AChip tone="gray" size="sm" :dot="false">
+                    <span dir="auto">
+                        {{ itemsStore.groupName(row.group) || row.group }}
+                    </span>
                 </AChip>
             </template>
             <template #empty>

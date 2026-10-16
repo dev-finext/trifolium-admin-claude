@@ -76,12 +76,12 @@ export const PRICE_UOM_IDS = ['ml', 'g', 'unit', 'capsule'];
 
 /**
  * Why a price group cannot be saved. lib/ladder.js validateLadder() returns the
- * ladder ones; stores/catalog.js adds `prefix_conflict` when a prefix overlaps
- * another group's. Display text is in the locale catalogs under
+ * ladder ones; stores/catalog.js adds `group_conflict` when an item group is
+ * already held by another scale. Display text is in the locale catalogs under
  * `pricing.ladderError.*`.
  */
 export const LADDER_ERROR_IDS = [
-    'prefix_conflict',
+    'group_conflict',
     'base_qty',
     'breaks_empty',
     'breaks_ascending',

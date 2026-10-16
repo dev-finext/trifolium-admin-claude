@@ -1,7 +1,7 @@
 <script setup>
-// One tiered pricing group, edited in two numbered steps: what the group is
-// (name, prefixes, unit, base quantity), and the ladder itself — a percentage
-// per quantity band, every band written by this group.
+// One price scale, edited in two numbered steps: what the scale is (name, the
+// item groups it covers, unit, base quantity), and the ladder itself — a
+// percentage per quantity band, every band written by this scale.
 //
 // A group never holds a price. Every item priced by it has its own unit price;
 // the group only says how much comes off as the quantity grows. The example
@@ -10,16 +10,16 @@
 // than among the fields that are.
 //
 // The rules this drawer exists to enforce:
-// - Prefix overlap between groups is refused as it is typed, because the
-//   longest-matching-prefix resolution cannot tolerate two claims on one SKU.
+// - An item group already covered by another scale cannot be picked, because
+//   one item must not end up with two prices.
 // - The ladder must be sound before the group can be saved — a missing band,
 //   a percent outside 0–100 or one that shrinks would silently misprice an
 //   order. The store re-checks the same rules (lib/ladder).
 import { computed, ref, useId } from 'vue';
 import { I18nT, useI18n } from 'vue-i18n';
 
+import ItemGroupPicker from '@/components/pricing/ItemGroupPicker.vue';
 import LadderPreview from '@/components/pricing/LadderPreview.vue';
-import PrefixChipInput from '@/components/pricing/PrefixChipInput.vue';
 import PricePreview from '@/components/pricing/PricePreview.vue';
 import TierStep from '@/components/pricing/TierStep.vue';
 import TierTable from '@/components/pricing/TierTable.vue';
@@ -57,7 +57,7 @@ const selfId = props.group?.id || null;
 // ---- the form -------------------------------------------------------------
 
 const name = ref(props.group ? loc(props.group.name) : '');
-const prefixes = ref(props.group ? [...props.group.prefixes] : []);
+const itemGroups = ref(props.group ? [...props.group.itemGroups] : []);
 const uom = ref(props.group?.uom || '');
 const baseQty = ref(
     props.group?.baseQty != null ? String(props.group.baseQty) : '1',
@@ -91,7 +91,12 @@ const { los, pcts, filled, rangesOk, complete } = useTierRows(
     baseQtyNumber,
 );
 
-const matched = computed(() => catalog.skusForPrefixes(prefixes.value, selfId));
+const matched = computed(() => catalog.skusForItemGroups(itemGroups.value));
+
+/** The scale that already holds an item group, or null while it is free. */
+function heldBy(code) {
+    return catalog.conflictsFor([code], selfId)[0]?.group || null;
+}
 
 const uomName = computed(() =>
     uom.value ? t(`pricing.uom.${uom.value}`) : '',
@@ -101,7 +106,7 @@ const uomName = computed(() =>
 const draft = computed(() => ({
     ...(props.group || {}),
     id: selfId,
-    prefixes: [...prefixes.value],
+    itemGroups: [...itemGroups.value],
     uom: uom.value,
     baseQty: baseQtyNumber.value,
     breaks: [...los.value],
@@ -116,8 +121,7 @@ const previewable = computed(
         Boolean(uom.value) &&
         previewNumber.value > 0 &&
         rangesOk.value &&
-        ladderErrors.value.filter((id) => id !== 'prefix_conflict').length ===
-            0,
+        ladderErrors.value.filter((id) => id !== 'group_conflict').length === 0,
 );
 
 // ---- dirtiness and saveability ---------------------------------------------
@@ -125,7 +129,7 @@ const previewable = computed(
 function snapshot() {
     return JSON.stringify({
         name: name.value,
-        prefixes: prefixes.value,
+        itemGroups: itemGroups.value,
         uom: uom.value,
         baseQty: baseQty.value,
         rows: rows.value,
@@ -138,7 +142,7 @@ const dirty = computed(() => snapshot() !== initial);
 const ok = computed(() =>
     Boolean(
         name.value.trim() &&
-        prefixes.value.length &&
+        itemGroups.value.length &&
         uom.value &&
         !ladderErrors.value.length,
     ),
@@ -146,7 +150,7 @@ const ok = computed(() =>
 
 /** Why the save is blocked, worst problem first. */
 const okMsg = computed(() => {
-    if (!name.value.trim() || !prefixes.value.length) {
+    if (!name.value.trim() || !itemGroups.value.length) {
         return t('pricing.editor.save.blockedName');
     }
 
@@ -167,20 +171,6 @@ const askSave = ref(false);
 const askLeave = ref(false);
 
 const meName = computed(() => loc(dataset.me?.name) || '');
-
-function validatePrefix(prefix) {
-    const clash = catalog.conflictsFor([prefix], selfId)[0];
-
-    if (!clash) {
-        return null;
-    }
-
-    return t('pricing.editor.prefixes.conflict', {
-        prefix,
-        other: clash.theirs,
-        group: loc(clash.group.name),
-    });
-}
 
 function requestClose() {
     if (!dirty.value) {
@@ -317,14 +307,15 @@ function doSave() {
                         </div>
                         <div class="tp-wide">
                             <label class="a-lbl">
-                                {{ t('pricing.editor.prefixes.label') }}
+                                {{ t('pricing.editor.itemGroups.label') }}
                             </label>
-                            <PrefixChipInput
-                                v-model="prefixes"
-                                :validate="validatePrefix"
+                            <ItemGroupPicker
+                                v-model="itemGroups"
+                                :options="catalog.itemGroupOptions"
+                                :held-by="heldBy"
                             />
                             <div class="a-hint">
-                                {{ t('pricing.editor.prefixes.hint') }}
+                                {{ t('pricing.editor.itemGroups.hint') }}
                             </div>
                         </div>
                         <div>
@@ -374,7 +365,7 @@ function doSave() {
                     <PricePreview
                         :matched="matched"
                         :total="catalog.ingredientSkus.length"
-                        :has-prefixes="prefixes.length > 0"
+                        :has-groups="itemGroups.length > 0"
                     />
                 </div>
             </ACard>

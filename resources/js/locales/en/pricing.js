@@ -27,7 +27,7 @@ export default {
 
     // config/catalog.js LADDER_ERROR_IDS — why the store refuses to save a group.
     ladderError: {
-        prefix_conflict: 'A prefix overlaps another pricing group',
+        group_conflict: 'That item group already belongs to another scale',
         base_qty: 'The base quantity must be greater than zero',
         breaks_empty: 'The scale needs at least one quantity band',
         breaks_ascending: 'Quantity bands must rise from smallest to largest',
@@ -78,9 +78,9 @@ export default {
     },
 
     lookup: {
-        resolved: 'SKU {sku} is priced by {group} (prefix {prefix})',
+        resolved: 'SKU {sku} is priced by {group} (item group {itemGroup})',
         resolvedNamed:
-            'SKU {sku} · {name} is priced by {group} (prefix {prefix})',
+            'SKU {sku} · {name} is priced by {group} (item group {itemGroup})',
         open: 'Open the group',
         unresolved: 'SKU {sku} is not assigned to any pricing group.',
     },
@@ -142,15 +142,15 @@ export default {
             placeholder: 'e.g. Essential oils',
         },
 
-        prefixes: {
-            label: 'SKU prefixes',
-            hint: 'Every SKU belongs to exactly one group — a prefix that overlaps another group is refused.',
-            placeholderFirst: 'e.g. 200 — then Enter',
-            placeholderMore: 'Another prefix…',
-            aria: 'Add a SKU prefix',
-            removeAria: 'Remove the prefix {prefix}',
-            conflict:
-                'The prefix {prefix} cannot be added — it overlaps the prefix {other} of the group “{group}”. Overlapping prefixes between groups are not allowed.',
+        // The groups' own names are data, never translated — see ItemGroupPicker.
+        itemGroups: {
+            label: 'Item groups',
+            hint: 'Pick one or more item groups. An item group belongs to exactly one scale — one already taken is shown locked, with the name of the scale holding it.',
+            search: 'Search groups',
+            none: 'No item group chosen yet',
+            chosen: 'One group · {items} items | {n} groups · {items} items',
+            heldBy: 'Already held by the scale “{group}”',
+            noMatch: 'No item group matches the search.',
         },
 
         uomField: {
@@ -286,7 +286,6 @@ export default {
         uomMismatch: 'The price list’s unit differs from the item’s sales unit',
         uomMismatchSub:
             'The scale was written per {groupUom}, the item sells per {itemUom} — quantities are computed in the item’s unit, without conversion',
-        groupByPrefix: 'Grouped by item-code prefix: {prefix}',
         groupDefault: 'Default by prefix: {name}',
         groupExplicit: 'Assigned by hand: {name}',
         groupNone: 'Fixed — no price list',
@@ -315,11 +314,7 @@ export default {
             unitPrice: 'Unit price',
             atBase: 'At base ({qty}+)',
             atTop: 'Top band ({qty}+)',
-            assignment: 'Assignment',
-        },
-        assignment: {
-            default: 'By prefix {prefix}',
-            explicit: 'By hand',
+            itemGroup: 'Item group',
         },
         noPrice: 'No price',
         uomMismatch: 'Sales unit differs from the scale’s unit',

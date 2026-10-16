@@ -7,10 +7,10 @@
 // calls persist(), a no-op against the fixture — the console is fully
 // interactive without a backend and never pretends a request happened.
 //
-// The pricing resolution rules below (longest matching prefix wins, overlapping
-// prefixes are forbidden) are business rules, not sample data. They are stated
-// here rather than imported from @/demo so that pointing the console at an API
-// does not drag the fixture into the bundle.
+// The pricing resolution rule below (a scale holds whole item groups, and an
+// item group belongs to one scale) is a business rule, not sample data. It is
+// stated here rather than imported from @/demo so that pointing the console at
+// an API does not drag the fixture into the bundle.
 import { defineStore } from 'pinia';
 import { computed, ref, watch } from 'vue';
 
@@ -67,9 +67,6 @@ export function inPriceBand(product, band) {
 /** A free-text query is treated as a SKU lookup from this many digits on. */
 export const PRICE_SKU_QUERY_MIN_DIGITS = 3;
 
-/** Digits a SKU prefix may hold. */
-export const PRICE_PREFIX_MAX_DIGITS = 6;
-
 /** Upper case, no whitespace — the one canonical form of a SKU. */
 export function normalizeSku(value) {
     return String(value || '')
@@ -85,41 +82,37 @@ export function bandText(breaks, index) {
 }
 
 /**
- * The group that prices a SKU: the longest matching prefix wins, which is
- * exactly why two groups may never own overlapping prefixes.
+ * The scale that prices an item: the one holding the item's own item group.
+ *
+ * An item group belongs to at most one scale, so there is nothing to
+ * disambiguate — no longest match, no precedence, no overlap to resolve. The
+ * item group is SAP's `OITB` code, carried on every item as `group`.
  */
-export function resolveGroup(sku, groups) {
-    let best = null;
+export function resolveScale(item, scales) {
+    const code = item?.group ?? null;
 
-    groups.forEach((group) => {
-        group.prefixes.forEach((prefix) => {
-            if (
-                String(sku).startsWith(prefix) &&
-                (!best || prefix.length > best.prefix.length)
-            ) {
-                best = { group, prefix };
-            }
-        });
-    });
+    if (code === null || code === undefined) {
+        return null;
+    }
 
-    return best;
+    const scale = scales.find((one) => (one.itemGroups || []).includes(code));
+
+    return scale ? { group: scale, itemGroup: code } : null;
 }
 
-/** Prefixes that would collide with another group's — always forbidden. */
-export function prefixConflicts(prefixes, groups, selfId) {
+/** Item groups another scale already holds — always refused. */
+export function groupConflicts(itemGroups, scales, selfId) {
     const conflicts = [];
 
-    groups.forEach((group) => {
-        if (group.id === selfId) {
+    scales.forEach((scale) => {
+        if (scale.id === selfId) {
             return;
         }
 
-        group.prefixes.forEach((theirs) => {
-            prefixes.forEach((mine) => {
-                if (mine.startsWith(theirs) || theirs.startsWith(mine)) {
-                    conflicts.push({ mine, theirs, group });
-                }
-            });
+        (scale.itemGroups || []).forEach((theirs) => {
+            if (itemGroups.includes(theirs)) {
+                conflicts.push({ code: theirs, group: scale });
+            }
         });
     });
 
@@ -337,27 +330,32 @@ export const useCatalogStore = defineStore('catalog', () => {
     const labelById = (labelId) =>
         labels.value.find((label) => label.id === labelId) || null;
 
-    const resolveSku = (sku) => resolveGroup(sku, priceGroups.value);
+    /** The scale that prices one item record. */
+    const resolveItem = (item) => resolveScale(item, priceGroups.value);
+
+    /** The same, from a SKU — what the screen's lookup box is given. */
+    const resolveSku = (sku) =>
+        resolveItem(itemsStore.items.find((item) => item.sku === sku));
 
     const groupById = (groupId) =>
         priceGroups.value.find((group) => group.id === groupId) || null;
 
     /**
-     * The group that prices an item.
+     * The scale that prices an item.
      *
-     * The group decides, and it decides by the item codes it covers — that is
-     * what a price group *is*. An item card used to be able to pin itself to a
-     * group or opt out of laddering entirely, which meant the same question was
-     * answered in two places and the ladder screen was not the authority over
-     * its own subject. An item that should not be laddered belongs to a group
-     * without a ladder; there is no second mechanism.
+     * The scale decides, and it decides by the item groups it covers — that is
+     * what a price scale *is*. An item card used to be able to pin itself to a
+     * scale or opt out of laddering entirely, which meant the same question was
+     * answered in two places and the pricing screen was not the authority over
+     * its own subject. An item that should not be laddered sits in an item
+     * group no scale covers; there is no second mechanism.
      */
-    const groupForItem = (item) => resolveSku(item?.sku)?.group ?? null;
+    const groupForItem = (item) => resolveItem(item)?.group ?? null;
 
     /** The item's own unit price, before VAT, per its sales unit. */
     const unitPriceOf = (item) => item?.price?.sale ?? null;
 
-    /** The items a group prices — explicitly assigned or inherited by prefix. */
+    /** The items a scale prices — everything in the item groups it holds. */
     const itemsOfGroup = (groupId) =>
         itemsStore.items.filter((item) => groupForItem(item)?.id === groupId);
 
@@ -369,50 +367,35 @@ export const useCatalogStore = defineStore('catalog', () => {
         }));
 
     /**
-     * What a set of prefixes would price, as the editor is typed into: an item
-     * counts where the typed prefix is at least as long as any other group's
-     * claim on its SKU, unless the item names its group itself — an explicit
-     * assignment follows its group, `'none'` follows nobody.
+     * What a set of item groups would price, as the editor is being filled in.
+     *
+     * No precedence to work out: a group is either in the set or it is not, and
+     * a group another scale already holds cannot be in it at all.
      */
-    const skusForPrefixes = (prefixes, selfId) => {
-        if (!prefixes.length) {
+    const skusForItemGroups = (itemGroups) => {
+        if (!itemGroups.length) {
             return [];
         }
 
-        const others = priceGroups.value.filter((group) => group.id !== selfId);
-
         return itemsStore.items
-            .filter((item) => {
-                if (item.priceGroup) {
-                    return item.priceGroup === selfId;
-                }
-
-                let mine = 0;
-
-                prefixes.forEach((prefix) => {
-                    if (item.sku.startsWith(prefix)) {
-                        mine = Math.max(mine, prefix.length);
-                    }
-                });
-
-                if (!mine) {
-                    return false;
-                }
-
-                let theirs = 0;
-
-                others.forEach((group) =>
-                    group.prefixes.forEach((prefix) => {
-                        if (item.sku.startsWith(prefix)) {
-                            theirs = Math.max(theirs, prefix.length);
-                        }
-                    }),
-                );
-
-                return mine >= theirs;
-            })
+            .filter((item) => itemGroups.includes(item.group))
             .map((item) => ({ sku: item.sku, name: item.names }));
     };
+
+    /** Every item group, with how many items sits in each — what the picker shows. */
+    const itemGroupOptions = computed(() => {
+        const counts = new Map();
+
+        itemsStore.items.forEach((item) => {
+            counts.set(item.group, (counts.get(item.group) || 0) + 1);
+        });
+
+        return itemsStore.itemGroups.map((group) => ({
+            code: group.code,
+            name: group.name,
+            items: counts.get(group.code) || 0,
+        }));
+    });
 
     /**
      * The calculator rows for an item — its own unit price run through its
@@ -447,8 +430,8 @@ export const useCatalogStore = defineStore('catalog', () => {
     /** The deepest band of a group — `{ from, pct }` — for the overview and the items drawer. */
     const topOfGroup = (group) => ladderTop(group);
 
-    const conflictsFor = (prefixes, selfId) =>
-        prefixConflicts(prefixes, priceGroups.value, selfId);
+    const conflictsFor = (itemGroups, selfId) =>
+        groupConflicts(itemGroups, priceGroups.value, selfId);
 
     // ---- the system log -----------------------------------------------------
 
@@ -645,9 +628,7 @@ export const useCatalogStore = defineStore('catalog', () => {
 
         return {
             ...draft,
-            prefixes: (draft.prefixes || []).map((prefix) =>
-                String(prefix).trim(),
-            ),
+            itemGroups: [...new Set(draft.itemGroups || [])],
             baseQty,
             breaks,
             percents: breaks.map((qty, i) =>
@@ -658,13 +639,13 @@ export const useCatalogStore = defineStore('catalog', () => {
         };
     }
 
-    /** Why a draft cannot be saved: LADDER_ERROR_IDS, plus `prefix_conflict` when a prefix overlaps another group's. */
+    /** Why a draft cannot be saved: LADDER_ERROR_IDS, plus `group_conflict` when an item group is already another scale's. */
     function groupErrors(draft) {
         const group = normalizeGroup(draft);
         const errors = validateLadder(group);
 
-        if (conflictsFor(group.prefixes, group.id || null).length) {
-            errors.push('prefix_conflict');
+        if (conflictsFor(group.itemGroups, group.id || null).length) {
+            errors.push('group_conflict');
         }
 
         return errors;
@@ -839,7 +820,9 @@ export const useCatalogStore = defineStore('catalog', () => {
         unitPriceOf,
         itemsOfGroup,
         skusOfGroup,
-        skusForPrefixes,
+        skusForItemGroups,
+        itemGroupOptions,
+        resolveItem,
         ladderFor,
         priceForItem,
         uomMismatch,
