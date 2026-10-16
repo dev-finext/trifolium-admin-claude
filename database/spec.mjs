@@ -576,6 +576,24 @@ export const INDEXES = [
  */
 export const SETTINGS_KEY = 'settings';
 
+/**
+ * The shape of the records, not of the tables.
+ *
+ * `isSeeded()` can see a table that does not exist yet, which is what catches a
+ * schema change. It cannot see a record whose *fields* changed inside `doc` —
+ * a price scale that used to carry `prefixes` and now carries `itemGroups` sits
+ * in the same table, in the same column, and reads back as a record the current
+ * code cannot use. A database carrying one of those is rebuilt, and the
+ * read-model cache beside it is thrown away.
+ *
+ * **Bump this whenever a record's fields change.** The date plus a serial is
+ * enough; nothing parses it, it only has to differ.
+ */
+export const DATA_VERSION = '2026-10-16.1';
+
+/** The settings row that carries it. */
+export const DATA_VERSION_KEY = 'data:version';
+
 /** The rows the console reads straight out of SAP, kept as reference tables. */
 export const REFERENCE = [
     'consumption',

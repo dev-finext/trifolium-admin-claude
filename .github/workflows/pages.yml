@@ -4,8 +4,13 @@ name: Deploy the test environment
 # reviewed without standing up a backend.
 #
 # This is a review environment, not a production deploy. It is built with
-# VITE_DATA_SOURCE=demo, so every record on it comes from the fixture in
-# resources/js/demo/ and every action writes to memory that a refresh discards.
+# VITE_DATA_SOURCE=db, so every record on it comes from the fixture in
+# resources/js/demo/ — seeded once into PGlite in the reviewer's own browser
+# and persisted there, which is why a change made on it survives a refresh.
+#
+# That persistence is why `DATA_VERSION` in database/spec.mjs matters here more
+# than anywhere: a reviewer who visited before a record's fields changed is
+# carrying yesterday's records, and the stamp is what rebuilds them.
 #
 # That is also why this job runs `verify` and not `verify:prod`: `verify:prod`
 # ends in `check:build`, which exists to reject a bundle carrying the fixture —

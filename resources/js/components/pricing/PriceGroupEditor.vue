@@ -57,7 +57,7 @@ const selfId = props.group?.id || null;
 // ---- the form -------------------------------------------------------------
 
 const name = ref(props.group ? loc(props.group.name) : '');
-const itemGroups = ref(props.group ? [...props.group.itemGroups] : []);
+const itemGroups = ref([...(props.group?.itemGroups || [])]);
 const uom = ref(props.group?.uom || '');
 const baseQty = ref(
     props.group?.baseQty != null ? String(props.group.baseQty) : '1',

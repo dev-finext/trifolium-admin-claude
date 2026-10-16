@@ -17,15 +17,19 @@
 // the console simply opens from the database, a little slower and just as
 // correct.
 
+import { DATA_VERSION } from '@database/spec.mjs';
+
 const DB_NAME = 'trifolium-cache';
 const STORE = 'snapshot';
 const KEY = 'dataset';
 
 /**
- * Bump when the shape of a record changes, so a reader carrying yesterday's
- * cache gets today's records instead of a screen built on the old ones.
+ * The cache is a copy of the records, so it is stale exactly when they are:
+ * `DATA_VERSION` is the one knob, bumped in `database/spec.mjs` whenever a
+ * record's fields change. Two knobs would mean forgetting one of them, which
+ * is a reader rendering yesterday's records with today's code.
  */
-const VERSION = '2026-10-13.1';
+const VERSION = DATA_VERSION;
 
 function open() {
     return new Promise((resolve, reject) => {

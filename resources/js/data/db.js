@@ -26,7 +26,13 @@ import {
     toRow,
 } from '@database/rows.mjs';
 import { buildSchema } from '@database/schema.mjs';
-import { REFERENCE, SETTINGS_KEY, TABLES } from '@database/spec.mjs';
+import {
+    DATA_VERSION,
+    DATA_VERSION_KEY,
+    REFERENCE,
+    SETTINGS_KEY,
+    TABLES,
+} from '@database/spec.mjs';
 
 /** Where the data directory lives in the browser. */
 const STORE = 'idb://trifolium';
@@ -62,12 +68,15 @@ export async function openDatabase(onProgress = () => {}) {
 /**
  * Whether the database holds the console, rather than just its tables.
  *
- * Two ways it does not. A tab closed halfway through the first build leaves the
- * tables standing and empty — so the question is whether there are records in
- * them. And a database built by an older version of this code can be perfectly
+ * Three ways it does not. A tab closed halfway through the first build leaves
+ * the tables standing and empty — so the question is whether there are records
+ * in them. A database built by an older version of this code can be perfectly
  * full and still be missing a table today's boot query reads, which would fail
- * the read rather than return nothing from it. The spec is the list of what has
- * to be there, so the check never goes stale.
+ * the read rather than return nothing from it. And it can have every table and
+ * still hold records whose *fields* are yesterday's, which no query can detect
+ * — so the seed stamps DATA_VERSION and this compares it.
+ *
+ * The spec is the list in all three cases, so the check never goes stale.
  */
 async function isSeeded(db) {
     try {
@@ -83,11 +92,22 @@ async function isSeeded(db) {
         );
         const have = new Set(present.rows.map((row) => row.table_name));
 
-        return TABLES.flatMap((spec) =>
+        const complete = TABLES.flatMap((spec) =>
             spec.lines ? [spec.name, spec.lines.name] : [spec.name],
         )
             .concat(SETTINGS_KEY)
             .every((name) => have.has(name));
+
+        if (!complete) {
+            return false;
+        }
+
+        const stamp = await db.query(
+            `SELECT doc FROM ${SETTINGS_KEY} WHERE id = $1`,
+            [DATA_VERSION_KEY],
+        );
+
+        return stamp.rows[0]?.doc?.value === DATA_VERSION;
     } catch {
         return false;
     }
@@ -186,7 +206,12 @@ async function seed(db, onProgress) {
             tx,
             SETTINGS_KEY,
             ['id', 'doc'],
-            settings.map(([key, value]) => [key, { value }]),
+            [
+                // What these records look like, so a build made by older code
+                // is rebuilt rather than read as if it were current.
+                [DATA_VERSION_KEY, { value: DATA_VERSION }],
+                ...settings.map(([key, value]) => [key, { value }]),
+            ],
         );
     });
 
