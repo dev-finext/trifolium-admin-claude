@@ -100,4 +100,19 @@ dashboard." What that means in practice, as the opening position the first
 
 Format: `### <date> · <piece>` then *was · decided · why*. Append only.
 
-*(empty — the first entry is the system task)*
+### 18.10.2026 · מינון יומי — עמוד ההרכבה (frontend, not the admin)
+
+*Was* — four columns, each with a 36px decorative icon above its label: 248px
+of patient-facing card to collect a number, a unit, a frequency and a timing.
+A second component (`DoseInline`) already rendered the same values as a dense
+strip, and a third (`Step4Icon`) existed only to draw the icons.
+
+*Decided* — one `DoseStrip`: 36px controls, each under its own micro-label,
+groups parted by a hairline, timing chips continuing the same row. Icons gone,
+inner box gone, the separate "נקה" gone — a chip is its own undo. 248 → 111px.
+
+*Why* — the project had already answered this once in `DoseInline` and step 4
+never followed; the mobile stylesheet had already hidden those icons, which
+says they were never carrying information. Adopting the existing strip removed
+a duplicate rather than adding a fourth pattern. Approved by Avichai: variant
+א, one component for both callers, "נקה" dropped.
