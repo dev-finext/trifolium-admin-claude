@@ -7,9 +7,12 @@
 //   issue    — the plan is reserved: each component's stock row shows the
 //              quantity as committed, so the buyer sees it before it leaves.
 //   complete — the components leave their batches, the parent gets a new
-//              `P-` batch with the recipe's shelf life, what came out as waste
-//              gets a `W-` batch beside it, and the cost of the run is the
-//              cost of what went in.
+//              `P-` batch with the recipe's shelf life, and the cost of the
+//              run is the cost of what went in. What came out as waste gets a
+//              `W-` batch beside it only when the preparation type accepts
+//              waste (grinding a plant leaves a real remainder; a tincture's
+//              extraction loss does not) — otherwise the quantity is kept on
+//              the order for the record and nothing moves in stock.
 //   cancel   — the reservation is released.
 //
 // Every mutation is optimistic and calls persist(), a no-op against the fixture.
@@ -25,7 +28,15 @@ import {
 } from '@/config/production';
 import { persist } from '@/data/source';
 import { componentUnitCost, toStockUnits } from '@/demo/production';
-import { daysSince, fmtISO, hm, isoDaysAgo, now, stamp } from '@/lib/dates';
+import {
+    addMonths,
+    daysSince,
+    fmtISO,
+    hm,
+    isoDaysAgo,
+    now,
+    stamp,
+} from '@/lib/dates';
 import { L } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
@@ -128,8 +139,13 @@ export const useProductionStore = defineStore('production', () => {
      * Scale a recipe to a planned quantity and draw the FEFO plan for each
      * component. Waste batches are drawn only when the recipe's preparation
      * type accepts waste.
+     *
+     * `overrides` is a `{ [sku]: [{ batch, qty }] }` map — a hand-picked
+     * allocation replacing FEFO for that one component, from Natalie's ask to
+     * see and choose from the rest of the shelf (components/production/
+     * ComponentBatchPicker.vue).
      */
-    function planComponents(bom, plannedQty) {
+    function planComponents(bom, plannedQty, overrides = {}) {
         const runs = plannedQty / (bom.yield?.qty || 1);
         const prepType = items.prepTypeById(bom.prepType);
         const allowWaste = Boolean(prepType?.acceptsWaste);
@@ -138,21 +154,39 @@ export const useProductionStore = defineStore('production', () => {
             const row = inventory.itemBySku(component.sku);
             const planned = round2(component.qty * runs);
             const inStock = toStockUnits(planned, component.uom, row?.unit);
-            const picks = [];
-            let left = inStock;
+            const manual = overrides?.[component.sku];
+            let picks;
+            let left;
 
-            inventory
-                .openBatchesOf(component.sku, { allowWaste })
-                .forEach((batch) => {
-                    if (left <= 0) {
-                        return;
-                    }
+            if (manual) {
+                picks = manual.map((pick) => ({
+                    batch: pick.batch,
+                    qty: round2(Number(pick.qty) || 0),
+                }));
+                left = round2(
+                    Math.max(
+                        0,
+                        inStock -
+                            picks.reduce((sum, pick) => sum + pick.qty, 0),
+                    ),
+                );
+            } else {
+                picks = [];
+                left = inStock;
 
-                    const take = Math.min(batch.remaining, left);
+                inventory
+                    .openBatchesOf(component.sku, { allowWaste })
+                    .forEach((batch) => {
+                        if (left <= 0) {
+                            return;
+                        }
 
-                    picks.push({ batch: batch.id, qty: round2(take) });
-                    left = round2(left - take);
-                });
+                        const take = Math.min(batch.remaining, left);
+
+                        picks.push({ batch: batch.id, qty: round2(take) });
+                        left = round2(left - take);
+                    });
+            }
 
             return {
                 sku: component.sku,
@@ -221,7 +255,8 @@ export const useProductionStore = defineStore('production', () => {
     /**
      * Open a production order on a recipe.
      *
-     * @param {{ bomId: string, plannedQty: number, notes?: string }} form
+     * @param {{ bomId: string, plannedQty: number, notes?: string,
+     *          overrides?: Record<string, {batch: string, qty: number}[]> }} form
      */
     async function createOrder(form) {
         const bom = items.bomById(form.bomId);
@@ -245,7 +280,7 @@ export const useProductionStore = defineStore('production', () => {
             plannedQty,
             uom: bom.yield?.uom || 'unit',
             state: 'planned',
-            components: planComponents(bom, plannedQty),
+            components: planComponents(bom, plannedQty, form.overrides),
             yieldQty: null,
             wasteQty: null,
             outputBatch: null,
@@ -335,18 +370,31 @@ export const useProductionStore = defineStore('production', () => {
         const bom = items.bomById(order.bomId);
         const item = items.itemBySku(order.parentSku);
         const parent = inventory.itemBySku(order.parentSku);
+        const prepType = items.prepTypeById(order.prepType);
         const yieldQty = round2(Number(form.yieldQty) || 0);
         // What the run took off the shelf, for the goods issue it posts.
         const issued = [];
         const wasteQty = round2(Math.max(0, Number(form.wasteQty) || 0));
+        // Whether this preparation type's waste is a physical remainder worth a
+        // batch of its own (grinding a plant into powder leaves one) or a pure
+        // process loss with nothing to receive (a tincture's extraction loss is
+        // liquid that never reaches the shelf) — Natalie, on the tincture order
+        // that prompted this: "זה לא באמת פחת שנקלט למערכת... אני לא צריכה לקלוט
+        // אותו וגם לא לייצר עבורו אצווה". The quantity is kept on the order either
+        // way, because she also wants it for statistics; only the inventory and
+        // batch side is gated.
+        const wasteReceivable = wasteQty > 0 && Boolean(prepType?.acceptsWaste);
         const when = moment();
         const by = dataset.me?.name || null;
         const months = resolveExpiryMonths({
             item,
-            prepType: items.prepTypeById(order.prepType),
+            prepType,
             settings: dataset.data.inventorySettings,
         });
-        const expiresOn = form.expiresOn || isoDaysAgo(-(months || 24) * 30);
+        // Calendar months, not 30-day blocks — a 36-month shelf life lands on
+        // the same day three years later, which is the "round" number the
+        // pharmacy expects on the batch label.
+        const expiresOn = form.expiresOn || addMonths(null, months || 24);
 
         // Release the reservation, then take the real quantities out.
         reserve(order, -1);
@@ -477,7 +525,7 @@ export const useProductionStore = defineStore('production', () => {
 
         let waste = null;
 
-        if (wasteQty > 0) {
+        if (wasteReceivable) {
             const wasteStock = round2(
                 toStockUnits(wasteQty, order.uom, stockUnit),
             );

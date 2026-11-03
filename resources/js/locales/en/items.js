@@ -244,6 +244,10 @@ export default {
         canProduce: 'Can produce',
         canProduceValue: '{n} runs of {qty} {uom}',
         lastUnitCost: 'Last production cost per unit',
+        wasteTotal: 'Waste, total',
+        wasteTotalValue:
+            '{qty} · one production order | {qty} · {runs} production orders',
+        wasteTotalNone: 'No waste on record',
         lastRuns: 'Latest production orders',
         noRuns: 'Not produced yet',
         produce: 'New production order',
@@ -549,7 +553,7 @@ export default {
             acceptsWasteOn: 'Waste may go into this type',
             acceptsWasteOff: 'No waste — full batches only',
             acceptsWasteHint:
-                'When a recipe of this type is issued, the components’ waste batches join the FEFO pick. Powders and capsules usually do; tinctures do not.',
+                'One flag, two effects: when a recipe of this type is issued, the components’ waste batches join the FEFO pick; and when an order of this type is completed, its own waste is received into stock as a batch. Powders and capsules usually do; a tincture has no physical waste to receive — its extraction loss is liquid, not a remainder.',
             labelHe: 'Fixed label text (Hebrew)',
             labelHint:
                 'Printed on every preparation label of this type — “Shake before use”',

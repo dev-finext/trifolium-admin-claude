@@ -136,6 +136,10 @@ export default {
         // אחת לכל מק״ט, ולכן המתכון והמוצר הם אותה בחירה.
         product: 'מוצר',
         productChoose: 'בחירת מוצר…',
+        productSearch: 'חיפוש לפי שם או מק״ט',
+        productSearchAria: 'חיפוש מוצר לייצור',
+        productFound: 'מוצר אחד מתוך {total} | {n} מוצרים מתוך {total}',
+        productNone: 'אין מוצר שמתאים לחיפוש',
         recipeHint: 'המתכון מניב {qty} {uom} לריצה · המלאי מאפשר {runs} ריצות',
         qty: 'כמות לייצור',
         qtyHint: 'ב{uom}, לפי יחידת התפוקה של המתכון',
@@ -147,6 +151,20 @@ export default {
         notes: 'הערות לייצור',
         preview: 'מה ייצא מהמלאי',
         save: 'פתיחת ההוראה',
+
+        pick: {
+            manual: 'בחירת אצווה ידנית',
+            auto: 'אוטומטי · FEFO',
+            autoBack: 'חזרה לבחירה האוטומטית',
+            title: 'אצוות פתוחות — {name}',
+            needed: 'נדרש {qty} {uom}',
+            allocated: 'הוקצה {qty} מתוך {needed} {uom}',
+            none: 'אין אצווה פתוחה לרכיב הזה',
+            batchCol: 'אצווה',
+            expiryCol: 'תוקף',
+            remainingCol: 'במלאי',
+            qtyCol: 'כמות מאצווה זו',
+        },
     },
 
     complete: {

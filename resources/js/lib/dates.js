@@ -37,6 +37,38 @@ export function shift(daysAgo = 0, hh = null, mm = 0) {
     return d;
 }
 
+/**
+ * `iso` advanced by whole calendar months — real ones, not 30-day blocks.
+ *
+ * A shelf life is stated in months ("טינקטורה — 3 שנים" is 36 of them), and the
+ * pharmacy expects the result to land on the same day of the month: a batch made
+ * 05.08.2026 with a 36-month life expires 05.08.2029, not sixteen days earlier.
+ * `isoDaysAgo(-(months) * 30)` was the earlier shortcut here and that is exactly
+ * the gap it leaves — 36 real months are ~1,096 days, not 1,080. `setMonth`
+ * carries a day that would overflow the shorter target month to the month
+ * after (31 Jan + 1 month), so the result is pulled back to that month's last
+ * day instead, which is the one case a calendar month cannot honor "same day".
+ *
+ * @param {string|null} fromIso Omit (or pass null) to count from today.
+ * @param {number} months
+ */
+export function addMonths(fromIso, months) {
+    const base = fromIso ? new Date(`${fromIso}T00:00:00`) : now();
+    const day = base.getDate();
+    const d = new Date(base);
+
+    d.setDate(1);
+    d.setMonth(d.getMonth() + months);
+    d.setDate(Math.min(day, daysInMonth(d)));
+
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** How many days the month a Date falls in actually has. */
+function daysInMonth(d) {
+    return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+}
+
 /** `HH:MM`. */
 export function hm(date) {
     return `${pad(date.getHours())}:${pad(date.getMinutes())}`;

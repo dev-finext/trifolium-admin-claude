@@ -11,7 +11,7 @@ import AModal from '@/components/ui/AModal.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { resolveExpiryMonths } from '@/config';
-import { isoDaysAgo } from '@/lib/dates';
+import { addMonths } from '@/lib/dates';
 import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
@@ -42,7 +42,11 @@ const round2 = (value) => Math.round(value * 100) / 100;
 const form = reactive({
     yieldQty: String(round2(props.order.plannedQty * (1 - wastePct / 100))),
     wasteQty: String(round2(props.order.plannedQty * (wastePct / 100))),
-    expiresOn: isoDaysAgo(-(months || 24) * 30),
+    // Calendar months, not 30-day blocks — this is the value completeOrder()
+    // actually saves unless the operator edits the date, since a pre-filled
+    // field is never empty for its own `form.expiresOn || addMonths(...)`
+    // fallback to kick in (stores/production.js completeOrder).
+    expiresOn: addMonths(null, months || 24),
     note: '',
     actual: Object.fromEntries(
         props.order.components

@@ -15,6 +15,8 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BomPicker from '@/components/production/BomPicker.vue';
+import ComponentBatchPicker from '@/components/production/ComponentBatchPicker.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
@@ -22,6 +24,7 @@ import ANum from '@/components/ui/ANum.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { toStockUnits } from '@/demo/production';
 import { num } from '@/lib/money';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
@@ -46,6 +49,20 @@ const notes = ref('');
 const saving = ref(false);
 
 /**
+ * Hand-picked allocations, by component SKU, replacing FEFO for that one
+ * row — Natalie's ask to see the rest of the shelf and choose from it, not
+ * just where FEFO landed.
+ */
+const manualPicks = ref({});
+/** Which component row has its batch picker open, at most one at a time. */
+const expandedSku = ref('');
+
+watch(bomId, () => {
+    manualPicks.value = {};
+    expandedSku.value = '';
+});
+
+/**
  * Where the order starts its life — SAP's own two opening statuses.
  *
  * Planned is a run that is written down and holds nothing; released takes the
@@ -62,16 +79,16 @@ const startOptions = computed(() => [
 
 const bom = computed(() => (bomId.value ? items.bomById(bomId.value) : null));
 
-/** Every product the pharmacy has a recipe for, by name. */
-const productOptions = computed(() => [
-    { value: '', label: t('production.create.productChoose') },
-    ...[...items.boms]
+/** Every product the pharmacy has a recipe for, searchable by name or SKU. */
+const productOptions = computed(() =>
+    [...items.boms]
         .map((row) => ({
             value: row.id,
-            label: `${loc(row.name)} · ${row.parentSku}`,
+            name: row.name,
+            sku: row.parentSku,
         }))
-        .sort((a, b) => a.label.localeCompare(b.label, 'he')),
-]);
+        .sort((a, b) => loc(a.name).localeCompare(loc(b.name), 'he')),
+);
 
 watch(bom, (next) => {
     if (next && !qty.value) {
@@ -86,13 +103,36 @@ if (bom.value) {
 const qtyNumber = computed(() => Number(qty.value) || 0);
 const runs = computed(() => (bom.value ? store.canProduce(bom.value) : 0));
 
+/** Mirrors planComponents' own gate on drawing from waste batches. */
+const allowWaste = computed(() =>
+    Boolean(items.prepTypeById(bom.value?.prepType)?.acceptsWaste),
+);
+
 const plan = computed(() =>
     bom.value && qtyNumber.value > 0
-        ? store.planComponents(bom.value, qtyNumber.value)
+        ? store.planComponents(bom.value, qtyNumber.value, manualPicks.value)
         : [],
 );
 
 const ok = computed(() => Boolean(bom.value) && qtyNumber.value > 0);
+
+function batchesFor(sku) {
+    return inventory.openBatchesOf(sku, { allowWaste: allowWaste.value });
+}
+
+function toggleManual(sku) {
+    expandedSku.value = expandedSku.value === sku ? '' : sku;
+}
+
+function onPicksChange(sku, picks) {
+    if (picks === null) {
+        delete manualPicks.value[sku];
+
+        return;
+    }
+
+    manualPicks.value[sku] = picks;
+}
 
 async function save() {
     if (!ok.value || saving.value) {
@@ -105,6 +145,7 @@ async function save() {
         bomId: bom.value.id,
         plannedQty: qtyNumber.value,
         notes: notes.value,
+        overrides: manualPicks.value,
     });
 
     // Released means the components are taken and the run is at the bench; the
@@ -130,11 +171,10 @@ async function save() {
                 <label class="a-lbl" for="cp-bom">{{
                     t('production.create.product')
                 }}</label>
-                <ASelect
-                    id="cp-bom"
+                <BomPicker
+                    input-id="cp-bom"
                     v-model="bomId"
                     :options="productOptions"
-                    class="a-w100"
                 />
                 <div v-if="bom" class="a-hint">
                     {{
@@ -215,42 +255,80 @@ async function save() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="row in plan" :key="row.sku">
-                        <td>
-                            <div class="t-strong">{{ loc(row.name) }}</div>
-                            <div class="t-sub num">{{ row.sku }}</div>
-                        </td>
-                        <td class="nowrap">
-                            <ANum>{{ num(row.plannedQty) }}</ANum>
-                            {{ t(`inventory.unit.${row.uom}`) }}
-                        </td>
-                        <td>
-                            <span
-                                v-for="pick in row.picks"
-                                :key="pick.batch"
-                                class="cp-pick"
-                            >
-                                <span class="a-code a-tag">{{
-                                    inventory.batchNo(pick.batch)
-                                }}</span>
-                                <ANum>{{ num(pick.qty, 2) }}</ANum>
-                                {{ t(`inventory.unit.${row.stockUnit}`) }}
-                            </span>
-                            <span v-if="row.short" class="cp-uncovered">
-                                {{
-                                    t('production.drawer.short', {
-                                        qty: num(row.short, 2),
-                                        uom: t(
-                                            `inventory.unit.${row.stockUnit}`,
-                                        ),
-                                    })
-                                }}
-                            </span>
-                            <span v-else-if="!row.picks.length" class="t-sub">
-                                {{ t('production.drawer.noBatch') }}
-                            </span>
-                        </td>
-                    </tr>
+                    <template v-for="row in plan" :key="row.sku">
+                        <tr>
+                            <td>
+                                <div class="t-strong">{{ loc(row.name) }}</div>
+                                <div class="t-sub num">{{ row.sku }}</div>
+                            </td>
+                            <td class="nowrap">
+                                <ANum>{{ num(row.plannedQty) }}</ANum>
+                                {{ t(`inventory.unit.${row.uom}`) }}
+                            </td>
+                            <td>
+                                <span
+                                    v-for="pick in row.picks"
+                                    :key="pick.batch"
+                                    class="cp-pick"
+                                >
+                                    <span class="a-code a-tag">{{
+                                        inventory.batchNo(pick.batch)
+                                    }}</span>
+                                    <ANum>{{ num(pick.qty, 2) }}</ANum>
+                                    {{ t(`inventory.unit.${row.stockUnit}`) }}
+                                </span>
+                                <span v-if="row.short" class="cp-uncovered">
+                                    {{
+                                        t('production.drawer.short', {
+                                            qty: num(row.short, 2),
+                                            uom: t(
+                                                `inventory.unit.${row.stockUnit}`,
+                                            ),
+                                        })
+                                    }}
+                                </span>
+                                <span
+                                    v-else-if="!row.picks.length"
+                                    class="t-sub"
+                                >
+                                    {{ t('production.drawer.noBatch') }}
+                                </span>
+                                <AButton
+                                    sm
+                                    kind="ghost"
+                                    icon="layers"
+                                    class="cp-manual-btn"
+                                    @click="toggleManual(row.sku)"
+                                >
+                                    {{
+                                        manualPicks[row.sku]
+                                            ? t('production.create.pick.auto')
+                                            : t('production.create.pick.manual')
+                                    }}
+                                </AButton>
+                            </td>
+                        </tr>
+                        <tr v-if="expandedSku === row.sku" class="cp-pick-row">
+                            <td colspan="3">
+                                <ComponentBatchPicker
+                                    :name="row.name"
+                                    :batches="batchesFor(row.sku)"
+                                    :needed="
+                                        toStockUnits(
+                                            row.plannedQty,
+                                            row.uom,
+                                            row.stockUnit,
+                                        )
+                                    "
+                                    :uom="t(`inventory.unit.${row.stockUnit}`)"
+                                    :model-value="manualPicks[row.sku] || []"
+                                    @update:model-value="
+                                        onPicksChange(row.sku, $event)
+                                    "
+                                />
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>
@@ -289,6 +367,16 @@ async function save() {
     gap: 5px;
     align-items: baseline;
     margin-inline-end: 12px;
+}
+
+.cp-manual-btn {
+    display: block;
+    margin-top: 4px;
+}
+
+.cp-pick-row td {
+    padding-top: 0;
+    background: var(--a-bg-2, transparent);
 }
 
 /* What an open batch does not cover. Said plainly: it does not stop the run. */

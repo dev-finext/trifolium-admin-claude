@@ -147,6 +147,27 @@ const lastUnitCost = computed(() =>
     props.row ? production.lastUnitCost(props.row.sku) : null,
 );
 
+/**
+ * Waste across every completed run of this item — for statistics, per
+ * Natalie's ask: "אנחנו כן רוצים לראות את כמות הפחת שיוצאת בכל הוראת ייצור...
+ * לצורך בניית סטטיסטיקה". Counted whether or not the preparation type turns
+ * the waste into a batch — this is the figure the batch may be missing from.
+ */
+const wasteStats = computed(() => {
+    if (!props.row) {
+        return { qty: 0, runs: 0 };
+    }
+
+    const completed = production
+        .ordersOf(props.row.sku)
+        .filter((run) => run.state === 'completed' && run.wasteQty > 0);
+
+    return {
+        qty: completed.reduce((sum, run) => sum + run.wasteQty, 0),
+        runs: completed.length,
+    };
+});
+
 /** The item's rows in `ITM1`, named by their price list. */
 const priceRows = computed(() =>
     (props.row?.prices || [])
@@ -785,6 +806,22 @@ const categories = computed(() =>
                                 lastUnitCost != null
                                     ? ils(lastUnitCost, 2)
                                     : notSet(),
+                            ],
+                            [
+                                t('items.card.wasteTotal'),
+                                wasteStats.runs
+                                    ? t(
+                                          'items.card.wasteTotalValue',
+                                          {
+                                              qty: qty(
+                                                  wasteStats.qty,
+                                                  recipe.yield?.uom,
+                                              ),
+                                              runs: num(wasteStats.runs),
+                                          },
+                                          wasteStats.runs,
+                                      )
+                                    : t('items.card.wasteTotalNone'),
                             ],
                         ]"
                     />

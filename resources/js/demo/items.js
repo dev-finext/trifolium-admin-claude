@@ -135,8 +135,10 @@ export const PREP_TYPES = [
         name: L('חליטה Raw', 'Raw infusion'),
         unit: 'g',
         expiryMonths: 12,
-        // Whether the waste of a grinding run may be folded into this type.
-        acceptsWaste: true,
+        // Natalie, in "ניהול אצוות": "אצוות הפחת לא יכולה להיות שימושית לסוג
+        // הכנה RAW (חליטה) כי לא מדובר בצמח, אלא בפחת שעבר תהליך טחינה" —
+        // RAW is the intact dried herb; grinding waste is explicitly not it.
+        acceptsWaste: false,
         labelText: L('לשמור בקירור לאחר פתיחה', 'Refrigerate after opening'),
         contains: [],
         recipe: [],

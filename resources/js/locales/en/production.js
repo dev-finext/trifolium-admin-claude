@@ -136,10 +136,29 @@ export default {
         // and the same choice.
         product: 'Product',
         productChoose: 'Choose a product…',
+        productSearch: 'Search by name or SKU',
+        productSearchAria: 'Search for a product to produce',
+        productFound: 'One product of {total} | {n} products of {total}',
+        productNone: 'No product matches the search',
         recipeHint:
             'The recipe yields {qty} {uom} per run · stock allows {runs} runs',
         qty: 'Quantity to make',
         qtyHint: 'In {uom}, the recipe’s yield unit',
+
+        pick: {
+            manual: 'Pick a batch by hand',
+            auto: 'Automatic · FEFO',
+            autoBack: 'Back to automatic picking',
+            title: 'Open batches — {name}',
+            needed: 'Needs {qty} {uom}',
+            allocated: 'Allocated {qty} of {needed} {uom}',
+            none: 'No open batch of this component',
+            batchCol: 'Batch',
+            expiryCol: 'Expires',
+            remainingCol: 'In stock',
+            qtyCol: 'Quantity from this batch',
+        },
+
         start: 'Opening status',
         startHint: {
             planned:
