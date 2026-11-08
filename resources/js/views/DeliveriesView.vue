@@ -1,465 +1,1126 @@
 <script setup>
-// The deliveries desk.
+// עמדת משלוחים — the shipping station (SHIPPING_STATION_SPEC.md,
+// DEMO_SHIPPING_STATION_PROMPT.md). One page: the worker never leaves it. The
+// dashboard counts and opens tabs; the scan bar drives packing; each tab is
+// the one list that status needs; the order card (StationOrderCard) is a
+// drawer over the page, never a navigation.
 //
-// Three panes behind one segmented control: the queue of everything on the desk,
-// the powers of attorney that gate courier handover, and the mapping between a
-// courier's letter code and the company behind it.
-//
-// Everything the reader chose — pane, date range, handling stage, every filter,
-// the sort, and which power-of-attorney group is open — lives in the query string,
-// so a filtered view can be pasted to a colleague and opens the same way.
-import { computed, ref } from 'vue';
+// New locale keys this file and its small modals reference (none exist yet —
+// a later pass authors `locales/{he,en}/deliveries.js` for the whole screen):
+//   deliveries.title, deliveries.sub
+//   deliveries.tab.{in_production,packing,awaiting_courier,pickup,exceptions,shipped,couriers}
+//   deliveries.kpi.{inProduction,packing,awaitingCourier,readyForPickup,exceptions,shippedToday,collectedToday}
+//   deliveries.scanLabel, deliveries.scanPlaceholder
+//   deliveries.scan.{orderNotFound,orderNotInStation,orderOpened,containerScanned,
+//     alreadyScanned,belongsToAnotherOrder,badBarcode,allScannedShipping,allScannedPickup}
+//   deliveries.col.{order,sentToLab,practitioner,recipient,city,ship,containers,gate,
+//     scanned,courier,packages,trackingNumber,linkedAt,manual,status,problem,since,
+//     lastAction,payer,phone,readySince,handedAt,by}
+//   deliveries.gate.{ok,noAddress,noPoa}
+//   deliveries.ship.courier, deliveries.ship.pickup
+//   deliveries.action.{linkCourier,retry,manualTracking,sendPoaRequest,editAddress,
+//     open,markReady,markCollected,reprintLabel}
+//   deliveries.export.file
+//   deliveries.pickupList.* (used by PickupListModal.vue)
+//   deliveries.manualTracking.* (used by ManualTrackingModal.vue)
+//   deliveries.collect.* (used by CollectModal.vue)
+//   deliveries.courierTab.* (used by CourierSettingsTab.vue)
+//   exception.{poa,unknown_recipient,shipment_error,stuck,address}.short (config/exceptions.js ids)
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
 
-import { deliveryCols } from '@/components/deliveries/columns';
-import CourierAssignModal from '@/components/deliveries/CourierAssignModal.vue';
-import CourierMap from '@/components/deliveries/CourierMap.vue';
-import DeliveryQueue from '@/components/deliveries/DeliveryQueue.vue';
-import PickupPointsPanel from '@/components/deliveries/PickupPointsPanel.vue';
-import PowerOfAttorneyPanel from '@/components/deliveries/PowerOfAttorneyPanel.vue';
+import CollectModal from '@/components/deliveries/CollectModal.vue';
+import CourierSettingsTab from '@/components/deliveries/CourierSettingsTab.vue';
+import ManualTrackingModal from '@/components/deliveries/ManualTrackingModal.vue';
+import PickupListModal from '@/components/deliveries/PickupListModal.vue';
+import StationOrderCard from '@/components/deliveries/StationOrderCard.vue';
 import { useCourierName } from '@/components/deliveries/useCourierName';
-import { useDeliveryActions } from '@/components/deliveries/useDeliveryActions';
-import { useDeliveryExport } from '@/components/deliveries/useDeliveryExport';
 import PageHead from '@/components/layout/PageHead.vue';
 import AButton from '@/components/ui/AButton.vue';
-import AInput from '@/components/ui/AInput.vue';
-import APagination from '@/components/ui/APagination.vue';
+import AChip from '@/components/ui/AChip.vue';
+import ADataTable from '@/components/ui/ADataTable.vue';
+import AEmpty from '@/components/ui/AEmpty.vue';
+import ANum from '@/components/ui/ANum.vue';
+import ASelect from '@/components/ui/ASelect.vue';
+import ASkeleton from '@/components/ui/ASkeleton.vue';
 import ATabs from '@/components/ui/ATabs.vue';
-import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import DateRangeBar from '@/components/ui/DateRangeBar.vue';
-import FilterBar from '@/components/ui/FilterBar.vue';
-import FilterChips from '@/components/ui/FilterChips.vue';
-import FilterDrawer from '@/components/ui/FilterDrawer.vue';
-import SavedViews from '@/components/ui/SavedViews.vue';
-import {
-    filterDefaults,
-    PAGE_DEFAULTS,
-    useListFilters,
-    usePaged,
-    useSorted,
-} from '@/composables/useListFilters';
+import ExceptionChip from '@/components/ui/ExceptionChip.vue';
+import FilterKpi from '@/components/ui/FilterKpi.vue';
+import StatusChip from '@/components/ui/StatusChip.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { useStickerData } from '@/composables/useStickerData';
+import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { COURIER_IDS } from '@/config';
-import { hasRange, inRange as insideRange } from '@/lib/dateRange';
-import { FALLBACK_LOCALE, loc as resolve } from '@/lib/localized';
-import {
-    DELIVERY_FILTER_FIELDS,
-    DELIVERY_FILTER_GROUPS,
-    DELIVERY_STAGES,
-    DESK_STATUS_IDS,
-    matchesFilters,
-    useDeliveriesStore,
-} from '@/stores/deliveries';
+import { ACTIVE_COURIER_IDS } from '@/config';
+import { totalContainers } from '@/lib/containers';
+import { inRange, presetRange } from '@/lib/dateRange';
+import { durationParts, isoDaysAgo } from '@/lib/dates';
+import { num } from '@/lib/money';
+import { downloadXlsx } from '@/lib/xlsx';
+import { useDatasetStore } from '@/stores/dataset';
+import { useDeliveriesStore } from '@/stores/deliveries';
+import { statusOf, useOrdersStore } from '@/stores/orders';
 
-/** The panes, in the order the segmented control shows them. */
-const PANES = [
-    { id: 'queue', icon: 'list' },
-    { id: 'poa', icon: 'signature' },
-    { id: 'points', icon: 'map_pin' },
-    { id: 'codes', icon: 'settings' },
-];
-
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const { loc } = useLocalized();
-const router = useRouter();
-const deliveries = useDeliveriesStore();
+const { push } = useToast();
+const { labelsForShipping, printStickers } = useStickerData();
 const { courierName } = useCourierName();
-
-const SPEC = { fields: DELIVERY_FILTER_FIELDS };
-
-const drawerOpen = ref(false);
-const savedViews = ref(null);
+const dataset = useDatasetStore();
+const orders = useOrdersStore();
+const store = useDeliveriesStore();
 
 const state = useUrlState({
-    view: 'queue',
-    preset: 'all',
-    from: '',
-    to: '',
-    stage: 'all',
+    tab: 'in_production',
+    order: '',
     q: '',
-    poa: 'missing',
-    ...filterDefaults(SPEC),
-    ...PAGE_DEFAULTS,
+    shippedFrom: presetRange('7').from,
+    shippedTo: presetRange('7').to,
+    shippedPreset: '7',
+    shippedCourier: '',
 });
 
-const range = computed({
-    get: () => ({ preset: state.preset, from: state.from, to: state.to }),
+const TABS = [
+    { id: 'in_production', icon: 'clipboard_list' },
+    { id: 'packing', icon: 'package' },
+    { id: 'awaiting_courier', icon: 'truck' },
+    { id: 'pickup', icon: 'map_pin' },
+    { id: 'exceptions', icon: 'alert' },
+    { id: 'shipped', icon: 'check' },
+    { id: 'couriers', icon: 'phone' },
+];
+
+const tabs = computed(() =>
+    TABS.map((tab) => ({
+        id: tab.id,
+        icon: tab.icon,
+        label: t(`deliveries.tab.${tab.id}`),
+        n: countFor(tab.id),
+    })),
+);
+
+function countFor(id) {
+    switch (id) {
+        case 'in_production':
+            return store.inProduction.length;
+        case 'packing':
+            return store.packing.length;
+        case 'awaiting_courier':
+            return store.awaitingCourier.length;
+        case 'pickup':
+            return store.pickupOrders.length;
+        case 'exceptions':
+            return store.exceptionOrders.length;
+        default:
+            return undefined;
+    }
+}
+
+const openOrder = computed(() =>
+    state.order ? orders.byId(state.order) : null,
+);
+
+// ---- the search box every tab's table shares ------------------------------
+
+function matchesSearch(order) {
+    const q = state.q.trim().toLowerCase();
+
+    if (!q) {
+        return true;
+    }
+
+    const haystack = [
+        order.id,
+        loc(order.patient?.name),
+        order.patient?.phone,
+        loc(order.address?.city),
+        order.tracking,
+    ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+    return haystack.includes(q);
+}
+
+// ---- age -------------------------------------------------------------------
+
+function ageText(order) {
+    const parts = durationParts(Math.max(0, order.daysAgo || 0) * 86400000);
+
+    return t(`duration.${parts.unit}`, { a: parts.a, b: parts.b });
+}
+
+function gateState(order) {
+    const exceptions = store.stationExceptionsOf(order);
+
+    if (exceptions.includes('address')) {
+        return { label: t('deliveries.gate.noAddress'), tone: 'red' };
+    }
+
+    if (exceptions.includes('poa')) {
+        return { label: t('deliveries.gate.noPoa'), tone: 'red' };
+    }
+
+    return { label: t('deliveries.gate.ok'), tone: 'green' };
+}
+
+// ---- tab 1: בהכנה ------------------------------------------------------------
+
+const inProductionRows = computed(() =>
+    store.inProduction.filter(matchesSearch),
+);
+
+const inProductionCols = computed(() => [
+    { k: 'order', label: t('deliveries.col.order'), nowrap: true },
+    { k: 'sentToLab', label: t('deliveries.col.sentToLab'), nowrap: true },
+    { k: 'practitioner', label: t('deliveries.col.practitioner') },
+    { k: 'recipient', label: t('deliveries.col.recipient') },
+    { k: 'city', label: t('deliveries.col.city') },
+    { k: 'ship', label: t('deliveries.col.ship'), nowrap: true },
+    { k: 'containers', label: t('deliveries.col.containers'), nowrap: true },
+    { k: 'gate', label: t('deliveries.col.gate'), nowrap: true },
+]);
+
+// ---- tab 2: באריזה ------------------------------------------------------------
+
+const packingRows = computed(() => store.packing.filter(matchesSearch));
+
+const packingCols = computed(() => [
+    ...inProductionCols.value,
+    { k: 'scanned', label: t('deliveries.col.scanned'), nowrap: true },
+    { k: 'courier', label: t('deliveries.col.courier'), nowrap: true },
+    { k: 'packages', label: t('deliveries.col.packages'), nowrap: true },
+    { k: 'act', label: '', nowrap: true },
+]);
+
+function openForLink(order) {
+    state.order = order.id;
+}
+
+// ---- tab 3: ממתין לשליח, grouped by company ----------------------------------
+
+const awaitingGroups = computed(() =>
+    store.awaitingByCourier
+        .map((group) => ({
+            ...group,
+            orders: group.orders.filter(matchesSearch),
+        }))
+        .filter((group) => group.orders.length),
+);
+
+const awaitingCols = computed(() => [
+    { k: 'order', label: t('deliveries.col.order'), nowrap: true },
+    { k: 'recipient', label: t('deliveries.col.recipient') },
+    { k: 'city', label: t('deliveries.col.city') },
+    { k: 'packages', label: t('deliveries.col.packages'), nowrap: true },
+    { k: 'tracking', label: t('deliveries.col.trackingNumber'), nowrap: true },
+    { k: 'linkedAt', label: t('deliveries.col.linkedAt'), nowrap: true },
+    { k: 'manual', label: '', nowrap: true },
+]);
+
+const pickupListModal = ref({ open: false, code: '', orders: [] });
+
+function openPickupList(group) {
+    pickupListModal.value = {
+        open: true,
+        code: group.code,
+        orders: group.orders,
+    };
+}
+
+// ---- tab 4: איסוף עצמי --------------------------------------------------------
+
+const pickupRows = computed(() => store.pickupOrders.filter(matchesSearch));
+
+const pickupCols = computed(() => [
+    { k: 'order', label: t('deliveries.col.order'), nowrap: true },
+    { k: 'payer', label: t('deliveries.col.payer') },
+    { k: 'phone', label: t('deliveries.col.phone'), nowrap: true },
+    { k: 'status', label: t('deliveries.col.status'), nowrap: true },
+    { k: 'scanned', label: t('deliveries.col.scanned'), nowrap: true },
+    { k: 'readySince', label: t('deliveries.col.readySince'), nowrap: true },
+    { k: 'act', label: '', nowrap: true },
+]);
+
+const collectModal = ref({ open: false, order: null });
+
+async function onMarkReady(order) {
+    await store.markReadyForPickup(order);
+    push({ title: t('deliveries.toast.readyForPickup'), body: order.id });
+}
+
+function onMarkCollected(order) {
+    collectModal.value = { open: true, order };
+}
+
+// ---- tab 5: חריגים ------------------------------------------------------------
+
+const exceptionRows = computed(() =>
+    store.exceptionOrders.filter(matchesSearch),
+);
+
+const exceptionCols = computed(() => [
+    { k: 'order', label: t('deliveries.col.order'), nowrap: true },
+    { k: 'status', label: t('deliveries.col.status'), nowrap: true },
+    { k: 'problem', label: t('deliveries.col.problem') },
+    { k: 'since', label: t('deliveries.col.since'), nowrap: true },
+    { k: 'act', label: '', nowrap: true },
+]);
+
+const manualTrackingModal = ref({ open: false, order: null });
+
+async function onRequestPoa(order) {
+    await store.requestPoa(order);
+    push({ title: t('deliveries.toast.poaRequested'), body: order.id });
+}
+
+async function onRetry(order) {
+    const result = await store.retryLink(order);
+
+    push(
+        result.ok
+            ? { title: t('deliveries.toast.linked'), body: result.tracking }
+            : {
+                  title: t('deliveries.toast.linkFailed'),
+                  body: result.message || '',
+                  bad: true,
+              },
+    );
+}
+
+function onManualTracking(order) {
+    manualTrackingModal.value = { open: true, order };
+}
+
+// ---- tab 6: נשלחו --------------------------------------------------------------
+
+const shippedRange = computed({
+    get: () => ({
+        preset: state.shippedPreset,
+        from: state.shippedFrom,
+        to: state.shippedTo,
+    }),
     set: (next) => {
-        state.preset = next.preset;
-        state.from = next.from;
-        state.to = next.to;
+        state.shippedPreset = next.preset;
+        state.shippedFrom = next.from;
+        state.shippedTo = next.to;
     },
 });
 
-// The date range comes first: every count below it is scoped to it.
-const ranged = computed(() =>
-    deliveries.deskOrders.filter((order) =>
-        insideRange(order.iso, range.value),
-    ),
+const shippedRows = computed(() =>
+    store.shippedAndDone
+        .filter(matchesSearch)
+        .filter((order) => {
+            const at =
+                order.collectedAt?.iso || order.shippedAt?.iso || order.iso;
+
+            return inRange(at, shippedRange.value);
+        })
+        .filter(
+            (order) =>
+                !state.shippedCourier || order.courier === state.shippedCourier,
+        ),
 );
 
-const searched = computed(() =>
-    ranged.value.filter((order) => matchesFilters(order, state)),
-);
+const shippedCols = computed(() => [
+    { k: 'order', label: t('deliveries.col.order'), nowrap: true },
+    { k: 'recipient', label: t('deliveries.col.recipient') },
+    { k: 'city', label: t('deliveries.col.city') },
+    { k: 'courier', label: t('deliveries.col.courier'), nowrap: true },
+    { k: 'tracking', label: t('deliveries.col.trackingNumber'), nowrap: true },
+    { k: 'packages', label: t('deliveries.col.packages'), nowrap: true },
+    { k: 'handedAt', label: t('deliveries.col.handedAt'), nowrap: true },
+    { k: 'by', label: t('deliveries.col.by'), nowrap: true },
+    { k: 'act', label: '', nowrap: true },
+]);
 
-const filters = useListFilters(SPEC, state, searched);
+const courierFilterOptions = computed(() => [
+    { value: '', label: t('ui.all') },
+    ...ACTIVE_COURIER_IDS.map((id) => ({
+        value: id,
+        label: t(`courier.${id}`),
+    })),
+]);
 
-const rows = computed(() => filters.rows);
+async function reprintLabel(order) {
+    const labels = labelsForShipping(order);
+    const template = dataset.data.stickerTemplates?.find(
+        (row) => row.id === 'shipping',
+    );
 
-// The queue's own columns, so the whole list sorts before a page is cut out
-// of it — the header sorts the list, not the fifty rows on screen.
-const cols = computed(() => deliveryCols(t, courierName));
+    if (!template) {
+        return;
+    }
 
-const { sort, sorted } = useSorted(rows, state, cols);
-
-const { paged, total } = usePaged(sorted, state);
-
-const spec = computed(() => ({
-    id: 'deliveries',
-    ns: 'deliveries',
-    noun: t('deliveries.filter.noun'),
-    groups: DELIVERY_FILTER_GROUPS,
-    fields: DELIVERY_FILTER_FIELDS.map((field) => {
-        if (field.key === 'courier') {
-            return {
-                ...field,
-                optionLabel: (id) =>
-                    id === 'none'
-                        ? t('deliveries.filter.noCourier')
-                        : courierName(id),
-            };
-        }
-
-        if (field.key === 'city') {
-            return {
-                ...field,
-                optionLabel: (he) => {
-                    const hit = ranged.value.find(
-                        (order) => order.address?.city?.he === he,
-                    );
-
-                    return hit ? loc(hit.address.city) : he;
-                },
-            };
-        }
-
-        if (field.key === 'point') {
-            return {
-                ...field,
-                optionLabel: (id) => {
-                    if (id === 'none') {
-                        return t('deliveries.filter.noPoint');
-                    }
-
-                    const point = deliveries.pointById(id);
-
-                    return point ? loc(point.name) : String(id);
-                },
-            };
-        }
-
-        return field;
-    }),
-}));
-
-function applyView(patch) {
-    Object.assign(state, filterDefaults(SPEC), { q: '' }, patch);
+    await printStickers(template, labels, order.id);
 }
 
-function removeChip(chip) {
-    if (chip.value === null) {
-        filters.clearField(chip.key);
+// ---- export ------------------------------------------------------------------
+
+function exportActive() {
+    const sheets = {
+        in_production: {
+            cols: inProductionCols.value,
+            rows: inProductionRows.value,
+        },
+        packing: { cols: packingCols.value, rows: packingRows.value },
+        pickup: { cols: pickupCols.value, rows: pickupRows.value },
+        exceptions: { cols: exceptionCols.value, rows: exceptionRows.value },
+        shipped: { cols: shippedCols.value, rows: shippedRows.value },
+    };
+    const sheet = sheets[state.tab];
+
+    if (!sheet) {
+        push({ title: t('deliveries.export.none'), bad: true });
 
         return;
     }
 
-    filters.toggle(chip.key, chip.value);
+    const header = sheet.cols.filter((c) => c.k !== 'act').map((c) => c.label);
+    const rows = sheet.rows.map((order) => [
+        order.id,
+        loc(order.patient?.name) || '',
+        loc(order.address?.city) || '',
+        statusOf(order),
+        order.courier ? courierName(order.courier) : '',
+        order.tracking || '',
+    ]);
+
+    downloadXlsx(
+        t('deliveries.export.file', {
+            tab: t(`deliveries.tab.${state.tab}`),
+            date: isoDaysAgo(0),
+        }),
+        {
+            name: t(`deliveries.tab.${state.tab}`),
+            rows: [
+                header.length
+                    ? header
+                    : [
+                          'order',
+                          'recipient',
+                          'city',
+                          'status',
+                          'courier',
+                          'tracking',
+                      ],
+                ...rows,
+            ],
+        },
+    );
 }
 
-const cities = computed(() => {
-    const seen = new Map();
+// ---- the scan bar --------------------------------------------------------------
 
-    deliveries.deskOrders.forEach((order) => {
-        const key = resolve(order.address.city, FALLBACK_LOCALE);
+const scanValue = ref('');
+const scanResult = ref(null);
+const scanInput = ref(null);
 
-        if (key && !seen.has(key)) {
-            seen.set(key, loc(order.address.city));
-        }
-    });
+function focusScan() {
+    if (document.activeElement === scanInput.value) {
+        return;
+    }
 
-    return [...seen]
-        .map(([value, label]) => ({ value, label }))
-        .sort((a, b) => a.label.localeCompare(b.label, locale.value));
+    if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+        return;
+    }
+
+    scanInput.value?.focus();
+}
+
+onMounted(() => {
+    focusScan();
+    document.addEventListener('click', focusScan);
 });
 
-const counts = computed(() => {
-    const list = ranged.value;
-    const tally = (ids, pick) =>
-        Object.fromEntries(
-            ids.map((id) => [
-                id,
-                list.filter((row) => pick(row) === id).length,
-            ]),
-        );
+/** `scanResult.params` carries bilingual `name`/`city` as-is; resolve them to
+ * the reader's language before they reach the interpolated message. */
+const scanParams = computed(() => {
+    const params = scanResult.value?.params || {};
 
     return {
-        inRange: list.length,
-        stage: Object.fromEntries(
-            DELIVERY_STAGES.map((stage) => [
-                stage.id,
-                list.filter(stage.match).length,
-            ]),
-        ),
-        status: tally(DESK_STATUS_IDS, (row) => row.status),
-        courier: tally(COURIER_IDS, (row) => row.courier),
-        city: tally(
-            cities.value.map((city) => city.value),
-            (row) => resolve(row.address.city, FALLBACK_LOCALE),
-        ),
+        ...params,
+        name: params.name ? loc(params.name) : params.name,
+        city: params.city ? loc(params.city) : params.city,
+        status: params.status ? t(`status.${params.status}`) : params.status,
     };
 });
 
-const stageTabs = computed(() =>
-    DELIVERY_STAGES.map((stage) => ({
-        id: stage.id,
-        label: t(`deliveries.stage.${stage.id}`),
-        n: counts.value.stage[stage.id],
-    })),
-);
+async function onScanEnter() {
+    const code = scanValue.value;
 
-const rangeNote = computed(() => {
-    if (!hasRange(range.value)) {
-        return t('deliveries.range.hint');
+    scanValue.value = '';
+
+    if (!code.trim()) {
+        return;
     }
 
-    const open = t('deliveries.range.open');
+    const result = await store.scanBarcode(code, state.order || null);
 
-    return t('deliveries.range.note', {
-        n: ranged.value.length,
-        from: range.value.from || open,
-        to: range.value.to || open,
-    });
-});
+    scanResult.value = result;
 
-const crumbs = computed(() => [
-    t('nav.group.daily_ops'),
-    t('nav.item.deliveries'),
-]);
+    if (result.order && result.ok !== false) {
+        state.order = result.order.id;
+    } else if (result.order && result.message === 'alreadyScanned') {
+        state.order = result.order.id;
+    }
 
-const sub = computed(() =>
-    t('deliveries.sub', {
-        courier: deliveries.courierOrders.length,
-        pickup: deliveries.pickupOrders.length,
-    }),
-);
-
-const dirty = computed(
-    () => state.stage !== 'all' || filters.dirty || Boolean(state.q),
-);
-
-function clear() {
-    state.q = '';
-    state.stage = 'all';
-    filters.clear();
+    await nextTick();
+    focusScan();
 }
-
-function openOrder(order) {
-    router.push({ name: 'order', params: { id: order.id } });
-}
-
-const {
-    assigning,
-    saveAssignment,
-    shipping,
-    shipBody,
-    shipEffects,
-    confirmShip,
-    notifying,
-    notifyBody,
-    notifyEffects,
-    confirmNotify,
-} = useDeliveryActions();
-
-const { exportRows } = useDeliveryExport(rows);
-
-/**
- * The panes as a tab strip. The counts are what each pane is responsible for —
- * the desk queue, the powers of attorney still missing, and the courier codes —
- * so the strip reports work outstanding rather than merely naming three views.
- */
-const paneTabs = computed(() =>
-    PANES.map((pane) => ({
-        id: pane.id,
-        label: t(`deliveries.view.${pane.id}`),
-        icon: pane.icon,
-        n:
-            pane.id === 'queue'
-                ? deliveries.deskOrders.length
-                : pane.id === 'poa'
-                  ? deliveries.poaPending.length || undefined
-                  : pane.id === 'points'
-                    ? deliveries.todayAlert.points || undefined
-                    : COURIER_IDS.length,
-    })),
-);
 </script>
 
 <template>
-    <PageHead :crumbs="crumbs" :title="t('deliveries.title')" :sub="sub">
-        <template #actions>
-            <AButton
-                v-if="state.view === 'queue'"
-                icon="download"
-                @click="exportRows"
-            >
-                {{ t('deliveries.export.action') }}
-            </AButton>
-        </template>
-    </PageHead>
-
-    <ATabs
-        :tabs="paneTabs"
-        :model-value="state.view"
-        @update:model-value="state.view = $event"
-    />
-
-    <CourierMap v-if="state.view === 'codes'" />
-
-    <PickupPointsPanel
-        v-else-if="state.view === 'points'"
-        @open="((state.view = 'queue'), (state.type = 'pickup'))"
-    />
-
-    <PowerOfAttorneyPanel
-        v-else-if="state.view === 'poa'"
-        :orders="deliveries.poaOrders"
-        :state="state.poa"
-        @update:state="state.poa = $event"
-        @open="openOrder"
-    />
-
-    <template v-else>
-        <!-- V2: the daily dispatch alert for the pickup points -->
-        <div
-            v-if="deliveries.todayAlert.points"
-            class="a-note a-note--warn a-note--btn dv-alert"
-            role="button"
-            tabindex="0"
-            @click="state.view = 'points'"
-            @keydown.enter.prevent="state.view = 'points'"
+    <div>
+        <PageHead
+            :crumbs="[t('nav.group.daily_ops'), t('nav.item.deliveries')]"
+            :title="t('deliveries.title')"
         >
-            <strong>{{
-                t('deliveries.alert.title', deliveries.todayAlert)
-            }}</strong>
-            <span class="a-note-a">{{ t('deliveries.alert.open') }}</span>
-        </div>
+            <template #actions>
+                <AButton icon="download" @click="exportActive">
+                    {{ t('ui.exportExcel') }}
+                </AButton>
+            </template>
+        </PageHead>
 
-        <DateRangeBar v-model="range" :note="rangeNote" />
+        <ASkeleton v-if="dataset.isBusy" :rows="6" />
 
-        <ATabs
-            v-if="hasRange(range)"
-            :tabs="stageTabs"
-            :model-value="state.stage"
-            @update:model-value="state.stage = $event"
-        />
+        <template v-else>
+            <div class="a-kpis dv-kpis">
+                <FilterKpi
+                    icon="clipboard_list"
+                    :label="t('deliveries.kpi.inProduction')"
+                    :value="store.inProduction.length"
+                    :active="state.tab === 'in_production'"
+                    @click="state.tab = 'in_production'"
+                />
+                <FilterKpi
+                    icon="package"
+                    :label="t('deliveries.kpi.packing')"
+                    :value="store.packing.length"
+                    :active="state.tab === 'packing'"
+                    @click="state.tab = 'packing'"
+                />
+                <FilterKpi
+                    icon="truck"
+                    :label="t('deliveries.kpi.awaitingCourier')"
+                    :value="store.awaitingCourier.length"
+                    :active="state.tab === 'awaiting_courier'"
+                    @click="state.tab = 'awaiting_courier'"
+                >
+                    <template v-if="awaitingGroups.length" #sub>
+                        <span
+                            v-for="group in awaitingGroups"
+                            :key="group.code"
+                            class="dv-kpi-sub"
+                        >
+                            {{ courierName(group.code) }}
+                            {{ group.orders.length }}
+                        </span>
+                    </template>
+                </FilterKpi>
+                <FilterKpi
+                    icon="map_pin"
+                    :label="t('deliveries.kpi.readyForPickup')"
+                    :value="store.readyForPickup.length"
+                    :active="state.tab === 'pickup'"
+                    @click="state.tab = 'pickup'"
+                />
+                <FilterKpi
+                    icon="alert"
+                    :label="t('deliveries.kpi.exceptions')"
+                    :value="store.exceptionOrders.length"
+                    :active="state.tab === 'exceptions'"
+                    @click="state.tab = 'exceptions'"
+                />
+                <FilterKpi
+                    icon="send"
+                    :label="t('deliveries.kpi.shippedToday')"
+                    :value="
+                        store.shippedAndDone.filter(
+                            (o) => o.shippedAt?.iso === isoDaysAgo(0),
+                        ).length
+                    "
+                    :active="false"
+                    @click="state.tab = 'shipped'"
+                />
+                <FilterKpi
+                    icon="check"
+                    :label="t('deliveries.kpi.collectedToday')"
+                    :value="
+                        store.shippedAndDone.filter(
+                            (o) => o.collectedAt?.iso === isoDaysAgo(0),
+                        ).length
+                    "
+                    :active="false"
+                    @click="state.tab = 'shipped'"
+                />
+            </div>
 
-        <SavedViews
-            ref="savedViews"
-            :spec="spec"
-            :filters="state"
-            :rows="searched"
-            @apply="applyView"
-        />
+            <div class="dv-scan">
+                <label class="a-lbl" for="dv-scan-input">
+                    {{ t('deliveries.scanLabel') }}
+                </label>
+                <input
+                    id="dv-scan-input"
+                    ref="scanInput"
+                    v-model="scanValue"
+                    class="a-input a-ltr-input dv-scan-input"
+                    :placeholder="t('deliveries.scanPlaceholder')"
+                    autocomplete="off"
+                    @keydown.enter="onScanEnter"
+                />
+                <span
+                    v-if="scanResult"
+                    class="dv-scan-result"
+                    :class="`is-${scanResult.sound}`"
+                >
+                    {{ t(`deliveries.scan.${scanResult.message}`, scanParams) }}
+                </span>
+            </div>
 
-        <FilterBar
-            :count="rows.length"
-            :label="t('deliveries.count', { n: counts.inRange || 0 })"
-            :dirty="dirty"
-            @clear="clear"
-        >
-            <AInput
+            <ATabs v-model="state.tab" :tabs="tabs" />
+
+            <input
+                v-if="state.tab !== 'couriers'"
                 v-model="state.q"
-                class="dq-search"
-                :aria-label="t('deliveries.filter.search')"
-                :placeholder="t('deliveries.filter.searchPlaceholder')"
+                class="a-input dv-search"
+                :placeholder="t('deliveries.search')"
             />
-            <AButton icon="layers" @click="drawerOpen = true">
-                {{
-                    filters.active.length
-                        ? t('filters.openWith', { n: filters.active.length })
-                        : t('filters.open')
-                }}
-            </AButton>
-        </FilterBar>
 
-        <FilterChips
-            :spec="spec"
-            :filters="state"
-            :rows="searched"
-            @remove="removeChip"
-            @clear="clear"
+            <!-- in production -->
+            <ADataTable
+                v-if="state.tab === 'in_production'"
+                :cols="inProductionCols"
+                :rows="inProductionRows"
+                row-key="id"
+                :selected="state.order"
+                @row="state.order = $event.id"
+            >
+                <template #cell-order="{ row }">
+                    <div class="t-strong">{{ row.id }}</div>
+                    <AChip v-if="row.urgent" tone="red" size="sm" :dot="false">
+                        {{ t('orders.detail.urgent') }}
+                    </AChip>
+                </template>
+                <template #cell-sentToLab="{ row }"
+                    ><ANum>{{ ageText(row) }}</ANum></template
+                >
+                <template #cell-practitioner="{ row }">{{
+                    loc(row.practitioner.name)
+                }}</template>
+                <template #cell-recipient="{ row }">{{
+                    loc(row.patient.name)
+                }}</template>
+                <template #cell-city="{ row }">{{
+                    loc(row.address?.city)
+                }}</template>
+                <template #cell-ship="{ row }">
+                    {{
+                        row.shipTo === 'pickup'
+                            ? t('deliveries.ship.pickup')
+                            : t('deliveries.ship.courier')
+                    }}
+                </template>
+                <template #cell-containers="{ row }"
+                    ><ANum>{{ num(totalContainers(row)) }}</ANum></template
+                >
+                <template #cell-gate="{ row }">
+                    <AChip :tone="gateState(row).tone" size="sm" :dot="false">
+                        {{ gateState(row).label }}
+                    </AChip>
+                </template>
+                <template #empty>
+                    <AEmpty
+                        icon="clipboard_list"
+                        :title="t('deliveries.empty.title')"
+                    />
+                </template>
+            </ADataTable>
+
+            <!-- packing -->
+            <ADataTable
+                v-else-if="state.tab === 'packing'"
+                :cols="packingCols"
+                :rows="packingRows"
+                row-key="id"
+                :selected="state.order"
+                @row="state.order = $event.id"
+            >
+                <template #cell-order="{ row }">
+                    <div class="t-strong">{{ row.id }}</div>
+                    <AChip v-if="row.urgent" tone="red" size="sm" :dot="false">
+                        {{ t('orders.detail.urgent') }}
+                    </AChip>
+                </template>
+                <template #cell-sentToLab="{ row }"
+                    ><ANum>{{ ageText(row) }}</ANum></template
+                >
+                <template #cell-practitioner="{ row }">{{
+                    loc(row.practitioner.name)
+                }}</template>
+                <template #cell-recipient="{ row }">{{
+                    loc(row.patient.name)
+                }}</template>
+                <template #cell-city="{ row }">{{
+                    loc(row.address?.city)
+                }}</template>
+                <template #cell-ship="{ row }">
+                    {{
+                        row.shipTo === 'pickup'
+                            ? t('deliveries.ship.pickup')
+                            : t('deliveries.ship.courier')
+                    }}
+                </template>
+                <template #cell-containers="{ row }"
+                    ><ANum>{{ num(totalContainers(row)) }}</ANum></template
+                >
+                <template #cell-gate="{ row }">
+                    <AChip :tone="gateState(row).tone" size="sm" :dot="false">
+                        {{ gateState(row).label }}
+                    </AChip>
+                </template>
+                <template #cell-scanned="{ row }">
+                    <ANum
+                        >{{ store.packedCount(row) }}/{{
+                            totalContainers(row)
+                        }}</ANum
+                    >
+                </template>
+                <template #cell-courier="{ row }">
+                    {{ row.courier ? courierName(row.courier) : '—' }}
+                </template>
+                <template #cell-packages="{ row }"
+                    ><ANum>{{ row.packagesCount || 1 }}</ANum></template
+                >
+                <template #cell-act="{ row }">
+                    <div class="a-rowbtns" @click.stop>
+                        <AButton
+                            v-if="
+                                row.shipTo === 'pickup' && store.allPacked(row)
+                            "
+                            sm
+                            kind="p"
+                            icon="check"
+                            @click="onMarkReady(row)"
+                        >
+                            {{ t('deliveries.action.markReady') }}
+                        </AButton>
+                        <AButton
+                            v-else-if="store.allPacked(row)"
+                            sm
+                            kind="p"
+                            icon="truck"
+                            @click="openForLink(row)"
+                        >
+                            {{ t('deliveries.action.linkCourier') }}
+                        </AButton>
+                    </div>
+                </template>
+                <template #empty>
+                    <AEmpty
+                        icon="package"
+                        :title="t('deliveries.empty.title')"
+                    />
+                </template>
+            </ADataTable>
+
+            <!-- awaiting courier -->
+            <template v-else-if="state.tab === 'awaiting_courier'">
+                <AEmpty
+                    v-if="!awaitingGroups.length"
+                    icon="truck"
+                    :title="t('deliveries.empty.title')"
+                />
+                <div
+                    v-for="group in awaitingGroups"
+                    :key="group.code"
+                    class="dv-group"
+                >
+                    <div class="dv-group-h">
+                        <span class="t-strong">{{
+                            courierName(group.code)
+                        }}</span>
+                        <span class="t-sub">{{ group.orders.length }}</span>
+                        <div class="dv-group-a">
+                            <AButton
+                                sm
+                                icon="printer"
+                                @click="openPickupList(group)"
+                            >
+                                {{ t('deliveries.action.printPickupList') }}
+                            </AButton>
+                        </div>
+                    </div>
+                    <ADataTable
+                        :cols="awaitingCols"
+                        :rows="group.orders"
+                        row-key="id"
+                        :selected="state.order"
+                        @row="state.order = $event.id"
+                    >
+                        <template #cell-order="{ row }">{{ row.id }}</template>
+                        <template #cell-recipient="{ row }">{{
+                            loc(row.patient.name)
+                        }}</template>
+                        <template #cell-city="{ row }">{{
+                            loc(row.address?.city)
+                        }}</template>
+                        <template #cell-packages="{ row }"
+                            ><ANum>{{ row.packagesCount || 1 }}</ANum></template
+                        >
+                        <template #cell-tracking="{ row }"
+                            ><ANum>{{ row.tracking }}</ANum></template
+                        >
+                        <template #cell-linkedAt="{ row }">
+                            <ANum>{{
+                                store.activeShipmentOf(row)?.linkedAt?.stamp
+                            }}</ANum>
+                        </template>
+                        <template #cell-manual="{ row }">
+                            <AChip
+                                v-if="store.activeShipmentOf(row)?.isManual"
+                                tone="gray"
+                                size="sm"
+                                :dot="false"
+                            >
+                                {{ t('deliveries.manual') }}
+                            </AChip>
+                        </template>
+                    </ADataTable>
+                </div>
+            </template>
+
+            <!-- self pickup -->
+            <ADataTable
+                v-else-if="state.tab === 'pickup'"
+                :cols="pickupCols"
+                :rows="pickupRows"
+                row-key="id"
+                :selected="state.order"
+                @row="state.order = $event.id"
+            >
+                <template #cell-order="{ row }">{{ row.id }}</template>
+                <template #cell-payer="{ row }">
+                    {{
+                        loc(
+                            row.payer === 'patient'
+                                ? row.patient.name
+                                : row.practitioner.name,
+                        )
+                    }}
+                </template>
+                <template #cell-phone="{ row }"
+                    ><ANum>{{ row.recipientPhone }}</ANum></template
+                >
+                <template #cell-status="{ row }"
+                    ><StatusChip :status="statusOf(row)"
+                /></template>
+                <template #cell-scanned="{ row }">
+                    <ANum
+                        >{{ store.packedCount(row) }}/{{
+                            totalContainers(row)
+                        }}</ANum
+                    >
+                </template>
+                <template #cell-readySince="{ row }">
+                    {{
+                        statusOf(row) === 'ready_for_pickup'
+                            ? ageText(row)
+                            : '—'
+                    }}
+                </template>
+                <template #cell-act="{ row }">
+                    <div class="a-rowbtns" @click.stop>
+                        <AButton
+                            v-if="
+                                statusOf(row) === 'packing' &&
+                                store.allPacked(row)
+                            "
+                            sm
+                            kind="p"
+                            icon="check"
+                            @click="onMarkReady(row)"
+                        >
+                            {{ t('deliveries.action.markReady') }}
+                        </AButton>
+                        <AButton
+                            v-if="statusOf(row) === 'ready_for_pickup'"
+                            sm
+                            kind="p"
+                            icon="check"
+                            @click="onMarkCollected(row)"
+                        >
+                            {{ t('deliveries.action.markCollected') }}
+                        </AButton>
+                    </div>
+                </template>
+                <template #empty>
+                    <AEmpty
+                        icon="map_pin"
+                        :title="t('deliveries.empty.title')"
+                    />
+                </template>
+            </ADataTable>
+
+            <!-- exceptions -->
+            <ADataTable
+                v-else-if="state.tab === 'exceptions'"
+                :cols="exceptionCols"
+                :rows="exceptionRows"
+                row-key="id"
+                :selected="state.order"
+                @row="state.order = $event.id"
+            >
+                <template #cell-order="{ row }">{{ row.id }}</template>
+                <template #cell-status="{ row }"
+                    ><StatusChip :status="statusOf(row)"
+                /></template>
+                <template #cell-problem="{ row }">
+                    <ExceptionChip
+                        v-for="id in store.stationExceptionsOf(row)"
+                        :key="id"
+                        :id="id"
+                        size="sm"
+                    />
+                </template>
+                <template #cell-since="{ row }"
+                    ><ANum>{{ ageText(row) }}</ANum></template
+                >
+                <template #cell-act="{ row }">
+                    <div class="a-rowbtns" @click.stop>
+                        <AButton
+                            v-if="
+                                store
+                                    .stationExceptionsOf(row)
+                                    .includes('address')
+                            "
+                            sm
+                            icon="map_pin"
+                            @click="state.order = row.id"
+                        >
+                            {{ t('deliveries.action.editAddress') }}
+                        </AButton>
+                        <AButton
+                            v-if="
+                                store.stationExceptionsOf(row).includes('poa')
+                            "
+                            sm
+                            icon="whatsapp"
+                            @click="onRequestPoa(row)"
+                        >
+                            {{ t('deliveries.action.sendPoaRequest') }}
+                        </AButton>
+                        <template
+                            v-if="
+                                store
+                                    .stationExceptionsOf(row)
+                                    .includes('shipment_error')
+                            "
+                        >
+                            <AButton sm icon="refresh" @click="onRetry(row)">
+                                {{ t('deliveries.action.retry') }}
+                            </AButton>
+                            <AButton
+                                sm
+                                icon="edit"
+                                @click="onManualTracking(row)"
+                            >
+                                {{ t('deliveries.action.manualTracking') }}
+                            </AButton>
+                        </template>
+                        <AButton
+                            v-if="
+                                store
+                                    .stationExceptionsOf(row)
+                                    .some((id) =>
+                                        ['unknown_recipient', 'stuck'].includes(
+                                            id,
+                                        ),
+                                    )
+                            "
+                            sm
+                            icon="external"
+                            @click="state.order = row.id"
+                        >
+                            {{ t('deliveries.action.open') }}
+                        </AButton>
+                    </div>
+                </template>
+                <template #empty>
+                    <AEmpty
+                        icon="alert"
+                        :title="t('deliveries.exceptions.empty')"
+                    />
+                </template>
+            </ADataTable>
+
+            <!-- shipped -->
+            <template v-else-if="state.tab === 'shipped'">
+                <div class="dv-shipped-filters">
+                    <DateRangeBar v-model="shippedRange" />
+                    <ASelect
+                        v-model="state.shippedCourier"
+                        :options="courierFilterOptions"
+                        class="dv-courier-filter"
+                    />
+                </div>
+                <ADataTable
+                    :cols="shippedCols"
+                    :rows="shippedRows"
+                    row-key="id"
+                    :selected="state.order"
+                    @row="state.order = $event.id"
+                >
+                    <template #cell-order="{ row }">{{ row.id }}</template>
+                    <template #cell-recipient="{ row }">{{
+                        loc(row.patient.name)
+                    }}</template>
+                    <template #cell-city="{ row }">{{
+                        loc(row.address?.city)
+                    }}</template>
+                    <template #cell-courier="{ row }">
+                        {{
+                            row.courier
+                                ? courierName(row.courier)
+                                : t('deliveries.ship.pickup')
+                        }}
+                    </template>
+                    <template #cell-tracking="{ row }"
+                        ><ANum>{{ row.tracking }}</ANum></template
+                    >
+                    <template #cell-packages="{ row }"
+                        ><ANum>{{ row.packagesCount || 1 }}</ANum></template
+                    >
+                    <template #cell-handedAt="{ row }">
+                        <ANum>{{
+                            (row.shippedAt || row.collectedAt)?.stamp
+                        }}</ANum>
+                    </template>
+                    <template #cell-by="{ row }">
+                        {{
+                            loc(
+                                store.handedShipmentOf(row)?.handedBy ||
+                                    row.collectedBy,
+                            )
+                        }}
+                    </template>
+                    <template #cell-act="{ row }">
+                        <div class="a-rowbtns" @click.stop>
+                            <AButton
+                                v-if="row.courier"
+                                sm
+                                icon="printer"
+                                @click="reprintLabel(row)"
+                            >
+                                {{ t('deliveries.action.reprintLabel') }}
+                            </AButton>
+                        </div>
+                    </template>
+                    <template #empty>
+                        <AEmpty
+                            icon="check"
+                            :title="t('deliveries.empty.title')"
+                        />
+                    </template>
+                </ADataTable>
+            </template>
+
+            <!-- courier companies -->
+            <CourierSettingsTab v-else-if="state.tab === 'couriers'" />
+        </template>
+
+        <!-- StationOrderCard owns its own ADrawer (header, win-bar, scrim). -->
+        <StationOrderCard :order="openOrder" @close="state.order = ''" />
+
+        <PickupListModal
+            :open="pickupListModal.open"
+            :courier-code="pickupListModal.code"
+            :orders="pickupListModal.orders"
+            @close="pickupListModal.open = false"
         />
 
-        <DeliveryQueue
-            :rows="paged"
-            v-model:sort="sort"
-            @assign="assigning = $event"
-            @ship="shipping = $event"
-            @notify="notifying = $event"
-            @open="openOrder"
+        <ManualTrackingModal
+            :open="manualTrackingModal.open"
+            :order="manualTrackingModal.order"
+            @close="manualTrackingModal.open = false"
         />
 
-        <APagination
-            v-model:page="state.pg"
-            v-model:size="state.ps"
-            :total="total"
+        <CollectModal
+            :open="collectModal.open"
+            :order="collectModal.order"
+            @close="collectModal.open = false"
         />
-
-        <FilterDrawer
-            :open="drawerOpen"
-            :spec="spec"
-            :filters="state"
-            :rows="searched"
-            :result-count="rows.length"
-            @close="drawerOpen = false"
-            @clear="clear"
-            @patch="filters.patch"
-            @save="savedViews?.openSave()"
-        />
-    </template>
-
-    <CourierAssignModal
-        :open="Boolean(assigning)"
-        :order="assigning"
-        @close="assigning = null"
-        @save="saveAssignment"
-    />
-
-    <ConfirmDialog
-        :open="Boolean(shipping)"
-        :title="t('deliveries.ship.title')"
-        :body="shipBody"
-        :effects="shipEffects"
-        :confirm-label="t('deliveries.ship.confirm')"
-        @close="shipping = null"
-        @confirm="confirmShip"
-    />
-
-    <ConfirmDialog
-        :open="Boolean(notifying)"
-        :title="t('deliveries.notify.title')"
-        :body="notifyBody"
-        :effects="notifyEffects"
-        :confirm-label="t('deliveries.notify.confirm')"
-        @close="notifying = null"
-        @confirm="confirmNotify"
-    />
+    </div>
 </template>
 
 <style scoped>
-.dv-alert {
+.dv-kpis {
     margin-bottom: 14px;
+}
+
+.dv-kpi-sub {
+    margin-inline-end: 10px;
+}
+
+.dv-scan {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.dv-scan-input {
+    max-width: 320px;
+    font-size: 17px;
+}
+
+.dv-scan-result {
+    font-weight: 600;
+}
+
+.dv-scan-result.is-ok {
+    color: var(--a-green, #1f8a4c);
+}
+
+.dv-scan-result.is-warn {
+    color: var(--a-amber, #b9770e);
+}
+
+.dv-scan-result.is-error {
+    color: var(--a-red);
+}
+
+.dv-search {
+    max-width: 360px;
+    margin: 12px 0;
+}
+
+.dv-group {
+    margin-bottom: 20px;
+}
+
+.dv-group-h {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.dv-group-a {
+    margin-inline-start: auto;
+}
+
+.dv-shipped-filters {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.dv-courier-filter {
+    max-width: 220px;
 }
 </style>

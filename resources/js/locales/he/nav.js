@@ -12,7 +12,7 @@ export default {
     },
     item: {
         orders: 'הזמנות',
-        deliveries: 'משלוחים',
+        deliveries: 'עמדת משלוחים',
         messaging: 'הודעות ו-WhatsApp',
         users: 'משתמשים ואישורים',
         finance: 'כספים',

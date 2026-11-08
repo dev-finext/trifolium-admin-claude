@@ -43,7 +43,14 @@ const COUNT_NOTES = [
 const RECEIPT_GAP_DAYS = 7;
 
 /** Order statuses at which the lab has drawn the formula's herbs from stock. */
-const CONSUMING_STATUS_IDS = ['lab', 'packed', 'sent', 'closed'];
+const CONSUMING_STATUS_IDS = [
+    'in_production',
+    'packing',
+    'awaiting_courier',
+    'shipped',
+    'ready_for_pickup',
+    'collected',
+];
 
 /** Families an order line may carry that never sit on a shelf. */
 const NOT_STOCKED_FAMILIES = ['labour', 'workshop'];

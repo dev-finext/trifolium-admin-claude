@@ -1,14 +1,16 @@
 // ערכי אנומרציה — כל רשימה מוגדרת ב-config/ ומתויגת כאן.
 export default {
     status: {
-        new: 'הזמנה חדשה',
-        in_process: 'בטיפול',
-        lab: 'מעבדה',
-        packed: 'ארוז',
-        sent: 'נשלח',
-        closed: 'סגור',
-        on_hold: 'מושהה',
-        cancelled: 'מבוטל',
+        pending_payment: 'ממתין לתשלום',
+        credit: 'בהקפה',
+        paid: 'שולם',
+        in_production: 'בהכנה',
+        packing: 'באריזה',
+        awaiting_courier: 'ממתין לשליח',
+        shipped: 'נשלח',
+        ready_for_pickup: 'מוכן לאיסוף',
+        collected: 'נאסף',
+        cancelled: 'בוטל',
     },
     payment: {
         unpaid: 'לא שולם',
@@ -64,15 +66,25 @@ export default {
             short: 'אינטראקציה לאישור',
             fix: 'אישור רוקח בלשונית בטיחות',
         },
-        lab: {
-            label: 'תקועה במעבדה 2+ ימים',
-            short: 'תקועה במעבדה',
-            fix: 'בדיקה מול המעבדה',
+        poa: {
+            label: 'חסר ייפוי כוח לשליח',
+            short: 'חסר ייפוי כוח',
+            fix: 'שליחת בקשה למטופל',
         },
-        courier: {
-            label: 'מוכנה לאריזה בלי שליח',
-            short: 'בלי שליח',
-            fix: 'הקצאת שליח',
+        unknown_recipient: {
+            label: 'לא ידוע מי מקבל את ההזמנה',
+            short: 'נמען לא ידוע',
+            fix: 'בחירת הנמען בכרטיס ההזמנה',
+        },
+        shipment_error: {
+            label: 'שיוך לשליח נכשל',
+            short: 'שגיאת שיוך',
+            fix: 'ניסיון חוזר או הזנת מספר מעקב ידנית',
+        },
+        stuck: {
+            label: 'תקועה בשלב הנוכחי זמן רב מהרגיל',
+            short: 'תקועה',
+            fix: 'פתיחת הכרטיס בעמדת המשלוחים',
         },
     },
     docType: {
@@ -272,10 +284,6 @@ export default {
         thu: 'חמישי',
         fri: 'שישי',
         sat: 'שבת',
-    },
-    pickupKind: {
-        shop: 'חנות שותפה',
-        practitioner: 'מטפל',
     },
     logAction: {
         order_status_change: 'שינוי סטטוס הזמנה',

@@ -57,7 +57,9 @@ const instructionsText = computed(() =>
 
 const cancelled = computed(() => Boolean(props.item.cancelled));
 
-const done = computed(() => ['sent', 'closed'].includes(statusOf(props.order)));
+const done = computed(() =>
+    ['shipped', 'collected'].includes(statusOf(props.order)),
+);
 
 const meta = computed(() =>
     t('orders.value.itemMeta', {

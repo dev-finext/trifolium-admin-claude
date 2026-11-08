@@ -33,6 +33,7 @@ import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { applyFilters } from '@/lib/facets';
 import { locDeep, searchHaystack } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
+import { useMessagingStore } from '@/stores/messaging';
 
 /** Fields the free-text search covers, in both languages. */
 export function orderHaystack(order) {
@@ -100,7 +101,7 @@ export function canSendToLab(order) {
         return false;
     }
 
-    if (!['new', 'new'].includes(statusOf(order))) {
+    if (!['paid', 'credit'].includes(statusOf(order))) {
         return false;
     }
 
@@ -312,6 +313,7 @@ function moment() {
 
 export const useOrdersStore = defineStore('orders', () => {
     const dataset = useDatasetStore();
+    const messaging = useMessagingStore();
 
     const all = computed(() => dataset.orders);
     const templates = computed(() => dataset.data.messageTemplates || []);
@@ -493,14 +495,6 @@ export const useOrdersStore = defineStore('orders', () => {
             resolved.add('link_expiring');
         }
 
-        if (status !== 'lab') {
-            resolved.add('lab');
-        }
-
-        if (status !== 'packed' || order.courier) {
-            resolved.add('courier');
-        }
-
         if (order.addressProvided) {
             resolved.add('address');
         }
@@ -557,6 +551,34 @@ export const useOrdersStore = defineStore('orders', () => {
         return order;
     }
 
+    /** Who the "בהכנה" / "מוכן לאיסוף" WhatsApp goes to (SHIPPING_STATION_SPEC.md §12.3). */
+    function parcelRecipient(order) {
+        if (order.shipTo === 'patient') {
+            return {
+                name: order.patient.name,
+                type: 'patient',
+                phone: order.recipientPhone || order.patient.phone,
+            };
+        }
+
+        if (order.shipTo === 'me') {
+            return {
+                name: order.practitioner.name,
+                type: 'practitioner',
+                phone: order.recipientPhone || order.practitioner.phone,
+            };
+        }
+
+        // Pickup, or an order from before `shipTo` existed: the payer.
+        return order.payer === 'patient'
+            ? { name: order.patient.name, type: 'patient', phone: order.patient.phone }
+            : {
+                  name: order.practitioner.name,
+                  type: 'practitioner',
+                  phone: order.practitioner.phone,
+              };
+    }
+
     /**
      * Send one order to the lab. Returns null when the order is not cleared for
      * it, so a stale button cannot start work on an unpaid order.
@@ -568,7 +590,18 @@ export const useOrdersStore = defineStore('orders', () => {
             return null;
         }
 
-        return setStatus(id, 'lab', reason);
+        const moved = await setStatus(id, 'in_production', reason);
+
+        if (moved) {
+            messaging.sendNow({
+                templateId: 't4',
+                recipient: parcelRecipient(order),
+                order: order.id,
+                values: { order_no: order.id },
+            });
+        }
+
+        return moved;
     }
 
     /** Ids in a selection that are cleared for the lab. */
@@ -633,38 +666,6 @@ export const useOrdersStore = defineStore('orders', () => {
         });
 
         return refund;
-    }
-
-    /**
-     * Assign or update the courier and the tracking number.
-     *
-     * There is no courier API yet: the number is typed in and stored on the
-     * order, which is why this writes nothing else.
-     */
-    async function assignCourier(id, { courier, tracking, shipDate }) {
-        const order = byId(id);
-
-        if (!order || !courier) {
-            return null;
-        }
-
-        order.courier = courier;
-        order.tracking = tracking || null;
-        reviewFlags(order);
-
-        logEntry(order, {
-            actionId: 'tracking_update',
-            detail: {
-                key: 'orders.doc.courierAssigned',
-                params: { tracking: tracking || '', date: shipDate || '' },
-            },
-            from: order.tracking || '',
-            to: tracking || '',
-        });
-
-        await persist(`orders/${id}/courier`, { courier, tracking, shipDate });
-
-        return order;
     }
 
     /** V2: flag an order as urgent, or clear the flag. The lab works it first. */
@@ -1082,7 +1083,6 @@ export const useOrdersStore = defineStore('orders', () => {
         sendManyToLab,
         cancelOrder,
         cancelItem,
-        assignCourier,
         setUrgent,
         setLabRole,
         setItemFields,
@@ -1097,6 +1097,7 @@ export const useOrdersStore = defineStore('orders', () => {
         recordMessage,
         addDocumentation,
         exportRows,
+        parcelRecipient,
     };
 });
 
@@ -1136,7 +1137,7 @@ export const STATUS_ACTIONS = {
             id: 'send_to_lab',
             icon: 'beaker',
             primary: true,
-            statusTo: 'lab',
+            statusTo: 'in_production',
             effects: ['batchesAllocated', 'msgByTrigger'],
         },
         { id: 'print_prep_sheet', icon: 'printer', instant: true },
@@ -1146,7 +1147,7 @@ export const STATUS_ACTIONS = {
             id: 'send_to_lab',
             icon: 'beaker',
             primary: true,
-            statusTo: 'lab',
+            statusTo: 'in_production',
             effects: ['batchesAllocated', 'stillOnDebt'],
         },
         {
@@ -1161,68 +1162,14 @@ export const STATUS_ACTIONS = {
         },
         { id: 'print_prep_sheet', icon: 'printer', instant: true },
     ],
-    in_production: [
-        {
-            id: 'mark_ready',
-            icon: 'check',
-            primary: true,
-            statusTo: 'packed',
-            effects: ['batchesDeducted', 'showsOnDeliveries'],
-        },
-        { id: 'print_label', icon: 'printer', instant: true },
-    ],
-    ready_for_delivery: [
-        {
-            id: 'assign_courier',
-            icon: 'truck',
-            primary: true,
-            assign: true,
-            when: (order) => order.deliveryType === 'courier',
-        },
-        {
-            id: 'notify_pickup_ready',
-            icon: 'whatsapp',
-            primary: true,
-            when: (order) => order.deliveryType === 'pickup',
-            effects: ['msgPickupReady'],
-        },
-        {
-            id: 'mark_shipped',
-            icon: 'send',
-            statusTo: 'sent',
-            effects: ['shipDateRecorded', 'msgWithTracking'],
-        },
-    ],
-    shipped: [
-        { id: 'update_tracking', icon: 'truck', assign: true },
-        {
-            id: 'mark_delivered',
-            icon: 'check',
-            primary: true,
-            statusTo: 'closed',
-            effects: ['pointsAccrue', 'docEmailedToCustomer'],
-        },
-    ],
-    delivered: [
-        { id: 'print_receipt', icon: 'printer', instant: true },
-        {
-            id: 'credit_points',
-            icon: 'coin',
-            primary: true,
-            pin: true,
-            effects: [
-                [
-                    'pointsCredit',
-                    (order) => ({
-                        n: order.pricing.pointsEarn,
-                        code: order.practitioner.code,
-                    }),
-                ],
-                'walletNeedsPin',
-                'pointsLedgerRow',
-            ],
-        },
-    ],
+    // From here on, only the shipping station moves the order — see
+    // SHIPPING_STATION_SPEC.md §3.2 rule 5. The orders screen offers nothing.
+    in_production: [],
+    packing: [],
+    awaiting_courier: [],
+    shipped: [],
+    ready_for_pickup: [],
+    collected: [],
     completed: [{ id: 'print_receipt', icon: 'printer', instant: true }],
     cancelled: [],
 };
@@ -1240,7 +1187,14 @@ const COLLECTION_ACTION = {
 };
 
 /** Statuses at which an unpaid credit order has already left the lab. */
-const AFTER_LAB = ['lab', 'packed', 'sent', 'closed'];
+const AFTER_LAB = [
+    'in_production',
+    'packing',
+    'awaiting_courier',
+    'shipped',
+    'ready_for_pickup',
+    'collected',
+];
 
 /**
  * The actions an order offers right now.
@@ -1259,7 +1213,7 @@ export function actionsFor(order) {
             ...list.filter((action) => action.id !== 'print_receipt'),
             {
                 ...COLLECTION_ACTION,
-                primary: status === 'closed',
+                primary: ['shipped', 'collected'].includes(status),
             },
         ];
     }
@@ -1268,11 +1222,15 @@ export function actionsFor(order) {
 }
 
 /**
- * True while an order is still open enough to cancel. A delivered or completed
- * order is closed; a cancelled one cannot be cancelled twice.
+ * True while the orders screen itself may cancel this order.
+ *
+ * Only before the lab: once an order is `in_production` or further along,
+ * cancellation moves to the shipping station (SHIPPING_STATION_SPEC.md §3.4,
+ * §13) — the courier shipment and the stock it holds have to unwind first, in
+ * an order only the station's own flow knows how to run.
  */
 export function isCancellable(order) {
-    return !['cancelled', 'closed'].includes(statusOf(order));
+    return ['pending_payment', 'paid', 'credit'].includes(statusOf(order));
 }
 
 /**

@@ -1,355 +1,269 @@
-// Deliveries desk — English. Mirrors he/deliveries.js key for key.
+// The shipping station — one page, from "in production" to "shipped" /
+// "collected" (SHIPPING_STATION_SPEC.md, DEMO_SHIPPING_STATION_PROMPT.md).
+//
+// Enum labels are not repeated here: an order status reads from `status.*`,
+// an exception from `exception.*`, a courier company from `courier.*`.
 export default {
-    title: 'Deliveries',
-    sub: '{courier} courier deliveries · {pickup} self pickups',
+    title: 'Shipping station',
 
-    view: {
-        queue: 'Deliveries',
-        poa: 'Powers of attorney',
-        codes: 'Courier codes',
-        points: 'Pickup points',
+    tab: {
+        in_production: 'In production',
+        packing: 'Packing',
+        awaiting_courier: 'Awaiting courier',
+        pickup: 'Self pickup',
+        exceptions: 'Exceptions',
+        shipped: 'Shipped',
+        couriers: 'Courier companies',
     },
 
-    export: {
-        action: 'Export',
-        done: 'Export downloaded',
-        body: '{n} rows · {file}',
-        file: 'deliveries-{date}.csv',
+    kpi: {
+        inProduction: 'In production',
+        packing: 'Packing',
+        awaitingCourier: 'Awaiting courier',
+        readyForPickup: 'Ready for pickup',
+        exceptions: 'Exceptions',
+        shippedToday: 'Shipped today',
+        collectedToday: 'Collected today',
     },
 
-    range: {
-        note: '{n} deliveries in range ({from} to {to}) · the handling stages count inside it',
-        hint: 'Pick a date range to get a count per handling stage',
-        open: 'No limit',
-    },
+    scanLabel: 'Scan',
+    scanPlaceholder: 'Scan an order or container barcode',
+    search: 'Order · recipient · city · tracking number',
 
-    // The handling stages in stores/deliveries.js DELIVERY_STAGES.
-    stage: {
-        all: 'All',
-        assign: 'Awaiting courier assignment',
-        handed: 'Handed to the courier',
-        transit: 'In transit',
-        pickup: 'Ready for pickup',
-        done: 'Delivered',
+    scan: {
+        orderNotFound: 'Order not found',
+        orderNotInStation: 'The order is {status} — not at the station',
+        orderOpened: '✓ Order opened',
+        containerScanned: '✓ Item {k} of {n} · {name}, {city}',
+        alreadyScanned: 'This item was already scanned',
+        belongsToAnotherOrder:
+            'This item belongs to order {id}, not the open order',
+        badBarcode: 'Not a valid barcode',
+        allScannedShipping: '✓ Everything is scanned — ready to link a courier',
+        allScannedPickup:
+            '✓ Everything is scanned — ready to mark ready for pickup',
     },
-
-    filterGroup: {
-        state: 'Delivery state',
-        how: 'How it leaves',
-        where: 'Destination',
-    },
-
-    filter: {
-        noun: 'deliveries',
-        field: {
-            status: 'Status',
-            tracking: 'Tracking number',
-            signed: 'Power of attorney',
-            type: 'How it leaves',
-            courier: 'Courier',
-            city: 'City',
-            point: 'Pickup point',
-        },
-        trackingState: {
-            yes: 'Has a tracking number',
-            no: 'No tracking number',
-        },
-        poaState: {
-            yes: 'Signed',
-            no: 'Missing',
-        },
-        noCourier: 'No courier assigned',
-        noPoint: 'Pickup at the pharmacy',
-        search: 'Search deliveries',
-        searchPlaceholder: 'Order · recipient · city · tracking number',
-        stage: 'Handling stage',
-        stageAll: 'Handling stage — all',
-        status: 'Order status',
-        statusAll: 'Status — all',
-        type: 'Fulfilment',
-        typeAll: 'Fulfilment — all',
-        courier: 'Courier company',
-        courierAll: 'Courier company — all',
-        tracking: 'Tracking number',
-        trackingAll: 'Tracking number — all',
-        trackingYes: 'With a tracking number',
-        trackingNo: 'Without a tracking number',
-        city: 'Destination city',
-        cityAll: 'Destination city — all',
-        option: '{label} ({n})',
-    },
-
-    count: 'deliveries · out of {n} in range',
 
     col: {
         order: 'Order',
+        sentToLab: 'Sent to the lab',
+        practitioner: 'Practitioner',
         recipient: 'Recipient',
-        type: 'Fulfilment',
-        address: 'Address',
-        courier: 'Courier company',
-        tracking: 'Tracking number',
+        city: 'City',
+        ship: 'Fulfilment',
+        containers: 'Containers',
+        gate: 'Gate',
+        scanned: 'Scanned',
+        courier: 'Company',
+        packages: 'Packages',
+        trackingNumber: 'Tracking number',
+        linkedAt: 'Linked on',
         status: 'Status',
-        date: 'Date',
-        actions: 'Actions',
+        problem: 'Problem',
+        since: 'Since',
+        payer: 'Practitioner / payer',
+        phone: 'Phone',
+        readySince: 'Ready since',
+        handedAt: 'Handed / collected on',
+        by: 'By',
     },
 
-    row: {
-        street: '{street} {num}, {city}',
-        addressDetail: 'Apt {apt} · floor {floor} · entrance {entry}',
-        addressPending: 'Address to be filled in by the customer',
-        noCourier: 'Not assigned',
-        supplierCode: 'Supplier code {code}',
-        sentOn: 'Dispatched {date}',
-        notified: 'Notified {stamp}',
-        none: '—',
-        point: 'Pickup point: {name}',
-        urgent: 'Urgent',
-    },
-
-    action: {
-        assign: 'Assign a courier',
-        updateTracking: 'Update tracking',
-        ship: 'Mark as shipped',
-        shipBlocked:
-            'Cannot be marked as shipped before a signed power of attorney is on file',
-        notifyPickup: 'Notify it is ready',
-        open: 'Open',
-    },
-
-    empty: {
-        title: 'No deliveries at this stage',
-        sub: 'Pick another stage, widen the date range, or clear the filter',
-    },
-
-    assign: {
-        title: 'Courier assignment · {id}',
-        courier: 'Courier company',
-        courierPick: 'Pick a courier company',
-        courierOption: '{code} — {name}',
-        courierPhone: 'Company phone: {phone}',
-        sentOn: 'Dispatch date',
-        save: 'Save and assign',
-        addressMissing:
-            'The address has not come back from the customer yet. A courier can be assigned, but there is nowhere to deliver to until it arrives.',
-        poaMissing:
-            'The recipient has no signed power of attorney. A courier can be assigned, but handover is blocked until it is signed — the request is sent from the powers-of-attorney tab.',
-        done: {
-            title: 'Courier assigned',
-            body: '{courier} · tracking number {tracking}',
-            bodyNoTracking:
-                '{courier} · the tracking number will be entered later',
-        },
-    },
-
-    tracking: {
-        label: 'Tracking number',
-        format: 'The supplier letter, six digits, then IL — as printed on the shipping label',
-        invalid:
-            'Not in the expected format: supplier letter, six digits, then IL',
-        mismatch:
-            'The number starts with {found}, not with {expected} — the letter of the company you picked',
-        manual: 'None of the courier companies exposes an API. The tracking number is typed in off the shipping label and saved on the order alone — nothing is checked against the carrier and no status updates arrive on their own.',
+    gate: {
+        ok: '✓',
+        noAddress: 'No address',
+        noPoa: 'No POA',
     },
 
     ship: {
-        title: 'Mark the order as shipped',
-        body: 'Order {id} will be marked as shipped with {courier}.',
-        confirm: 'Mark as shipped',
-        effect: {
-            status: 'The order status becomes "shipped" and every formula on it is marked shipped',
-            date: 'The dispatch date is saved on the order',
-            message:
-                'A WhatsApp message goes to the customer with the courier company and the tracking number',
-        },
-        done: {
-            title: 'Order marked as shipped',
-            body: '{id} · {courier}',
-        },
-    },
-
-    notify: {
-        title: 'Tell the customer the order is ready for pickup',
-        body: 'A message will be sent to {name} ({phone}) about order {id}.',
-        confirm: 'Send the message',
-        effect: {
-            template: 'A WhatsApp message on the "ready for pickup" template',
-            details: 'It carries the pharmacy address and the opening hours',
-        },
-        done: {
-            title: 'Message sent',
-            body: '{name} · ready for pickup',
-        },
-    },
-
-    poa: {
-        title: 'Power of attorney for the courier',
-        note: 'Courier delivery requires a signed power of attorney from the recipient: the courier hands the parcel to whoever opens the door, or leaves it at the address, and without a signature there is nobody to attribute the handover to. Self-pickup orders need none — the recipient identifies themselves at the pharmacy.',
-        kpi: {
-            missing: 'Awaiting a signature',
-            requested: 'Request sent',
-            signed: 'Signed',
-        },
-        state: {
-            missing: 'No power of attorney',
-            requested: 'Request sent',
-            signed: 'Signed',
-        },
-        col: {
-            state: 'Power of attorney',
-            city: 'Destination city',
-        },
-        request: 'Request over WhatsApp',
-        requestAgain: 'Request again',
-        requestAll: 'Request from all {n} recipients',
-        requestedAt: 'Sent {stamp}',
-        confirm: {
-            title: 'Request a power of attorney from the recipient',
-            body: 'A request will be sent to {name} ({phone}) to sign a power of attorney for the courier on order {id}.',
-            label: 'Send the request',
-        },
-        confirmAll: {
-            title: 'Request a power of attorney from every recipient',
-            body: 'A request will be sent to {n} recipients who have no signed power of attorney.',
-            label: 'Send every request',
-        },
-        effect: {
-            template:
-                'A WhatsApp message on the "address & power of attorney request" template',
-            link: 'It carries a link to sign digitally',
-            blocked:
-                'The order stays blocked for handover until the signature comes back',
-        },
-        done: {
-            title: 'Request sent',
-            body: '{name} · power of attorney for the courier',
-            bodyAll: '{n} power-of-attorney requests sent',
-        },
-        empty: {
-            missing: {
-                title: 'Every delivery has a power of attorney',
-                sub: 'No courier order is waiting for a signature',
-            },
-            requested: {
-                title: 'No open requests',
-                sub: 'A request that was sent shows here until the signature comes back',
-            },
-            signed: {
-                title: 'No signed powers of attorney yet',
-                sub: 'A courier order with a signature shows here',
-            },
-        },
-    },
-
-    // V2 — pickup points and the daily dispatch alert
-    alert: {
-        title: '{points} pickup points go out today · {orders} orders waiting ({ready} ready)',
-        none: 'No pickup points go out today',
-        open: 'To the pickup points',
-    },
-
-    points: {
-        note: 'A pickup point is a partner shop or a practitioner collecting for their patients: dispatch days, a regular courier and consolidation notes. The order chooses a point; the daily alert says what goes out today.',
-        add: 'New pickup point',
-        pickupList: 'Courier pickup list',
-        today: 'Goes out today',
-        inactive: 'Inactive',
-        waiting: '{n} waiting · {ready} ready',
-        col: {
-            name: 'Pickup point',
-            kind: 'Kind',
-            address: 'Address',
-            days: 'Dispatch days',
-            courier: 'Courier',
-            notes: 'Consolidation notes',
-            waiting: 'Orders waiting',
-        },
-        editor: {
-            newTitle: 'New pickup point',
-            editTitle: 'Edit pickup point · {name}',
-            kind: 'Kind of point',
-            practitioner: 'Practitioner',
-            pickPractitioner: 'Choose a practitioner…',
-            nameHe: 'Name (Hebrew)',
-            nameEn: 'Name (English)',
-            city: 'City',
-            address: 'Address',
-            days: 'Dispatch days',
-            courier: 'Regular courier',
-            noCourier: 'No regular courier',
-            notes: 'Consolidation notes',
-            notesPh: 'For example: every 4 orders go out as one shipment',
-            active: 'Active',
-            activeOn: 'Offered on new orders',
-            activeOff: 'Not offered on new orders',
-            createConfirm: 'Create point',
-            saveConfirm: 'Save changes',
-            validate: {
-                name: 'Enter a name',
-                practitioner: 'Choose a practitioner',
-                days: 'At least one dispatch day',
-            },
-        },
-        toast: {
-            created: 'Pickup point created',
-            updated: 'Pickup point updated',
-        },
-    },
-
-    pickupList: {
-        title: 'Courier pickup list',
-        note: 'Parcels handed to the courier and not yet dispatched — ready to pack with a courier assigned. Today this is the “orders for Tapuz” query.',
         courier: 'Courier',
+        pickup: 'Self pickup',
+    },
+
+    action: {
+        linkCourier: 'Link to courier',
+        retry: 'Retry',
+        manualTracking: 'Enter tracking number by hand',
+        sendPoaRequest: 'Send request to patient',
+        editAddress: 'Edit address',
+        open: 'Open',
+        markReady: 'Ready for pickup',
+        markCollected: 'Collected',
+        reprintLabel: 'Reprint shipping labels',
+        printPickupList: 'Print pickup list',
+    },
+
+    manual: 'Manual',
+
+    empty: {
+        title: 'No orders in this tab',
+    },
+
+    exceptions: {
+        empty: 'No exceptions right now',
+    },
+
+    toast: {
+        readyForPickup: 'Marked as ready for pickup',
+        poaRequested: 'Power-of-attorney request sent to the patient',
+        linked: 'Linked to courier',
+        linkFailed: 'The link failed',
+    },
+
+    export: {
+        none: 'There is no table to export on this tab',
+        file: '{tab}-{date}.xlsx',
+    },
+
+    // StationOrderCard.vue — the order card at the station
+    card: {
+        urgent: 'Urgent',
+        recipientTitle: 'Recipient and address',
+        recipient: 'Recipient',
+        phone: 'Phone',
+        address: 'Address',
+        city: 'City',
+        street: 'Street and number',
+        apt: 'Apartment',
+        floor: 'Floor',
+        entry: 'Entrance',
+        notes: 'Delivery notes',
+        editAddress: 'Edit address',
+        addressSaved: 'The address was saved',
+        addressMissing: 'The address is incomplete',
+        poa: 'Power of attorney',
+        poaSigned: 'Signed',
+        poaMissing: 'Missing',
+        poaRequested: 'Request sent',
+        poaRequestedAt: 'Sent on {stamp}',
+        requestPoa: 'Send request to patient',
+        shipTo: {
+            me: 'To me (the practitioner)',
+            patient: 'To the patient',
+            pickup: 'Self pickup',
+        },
+
+        packingTitle: 'Packing checklist',
+        col: {
+            item: 'Item',
+            containers: 'Containers',
+        },
+        num: '{k} of {n}',
+        tick: 'Tick',
+        manualTick: 'Manual tick',
+        manualTickBody:
+            'The container will be marked as scanned by hand, with no barcode.',
+
+        shipmentTitle: 'Shipment',
+        courier: 'Courier company',
+        packages: 'Number of packages',
+        link: 'Link to courier',
+        linking: 'Linking to courier…',
+        linked: 'Linked to courier',
+        linkedBody: 'Tracking number {tracking} · {courier}',
+        linkFailed: 'The link failed',
+        tracking: 'Tracking number',
+        trackingNumber: 'Tracking number',
+        linkedAt: 'Linked on {stamp} by {by}',
+        manual: 'Manual',
+        retry: 'Retry',
+        manualTracking: 'Enter tracking number by hand',
+        reprintLabel: 'Reprint shipping labels',
+
+        contentTitle: "The order's content",
+
+        historyTitle: 'History',
+        visibleToCustomer: 'Customer sees this',
+
+        stepBack: 'Step back',
+        stepBackDestroyLabel:
+            'If a shipping label was already printed, destroy it — a new one prints on the next link.',
+        cancelOrder: 'Cancel order',
+        markReady: 'Ready for pickup',
+        markCollected: 'Collected',
+        collectedByName: 'Collected by (optional)',
+        openInOrders: 'Open in the orders screen',
+    },
+
+    event: {
+        packing_started: 'Packing started',
+        container_scanned_manual: 'A container was ticked by hand',
+        shipment_linked: 'Linked to courier, tracking {tracking}',
+        shipment_link_failed: 'The courier link failed: {message}',
+        shipment_manual: 'A tracking number was entered by hand',
+        shipment_cancelled: 'The shipment was cancelled',
+        label_printed: 'The shipping label was printed',
+        pickup_list_printed: 'The order joined a pickup list',
+        handed_to_courier: 'Handed to the courier',
+        ready_for_pickup: 'Marked as ready for pickup',
+        collected: 'Collected',
+        address_updated: 'The address was updated',
+        delivery_auth_requested: 'A power-of-attorney request was sent',
+        delivery_auth_signed: 'The power of attorney was signed',
+        status_reverted: 'Stepped back one stage',
+        cancelled_by_station: 'The order was cancelled at the station',
+    },
+
+    history: {
+        statusChange: 'Status changed from {from} to {to}',
+    },
+
+    // CourierSettingsTab.vue
+    courierTab: {
+        title: 'Courier companies',
+        col: {
+            name: 'Company',
+            connection: 'Connection',
+            active: 'Active',
+            default: 'Default',
+            phone: 'Phone',
+            contact: 'Contact',
+            lastPickup: 'Last pickup time',
+            notes: 'Notes',
+            lastResult: 'Last success / error',
+        },
+        connected: 'Connected',
+        notConnected: 'No connection',
+        noConnection: 'A company with no connection cannot be made active',
+        hasWaiting:
+            "Can't deactivate — {n} orders are waiting on this courier | Can't deactivate — one order is waiting on this courier",
+        lastSuccess: 'Last success: {stamp}',
+    },
+
+    // PickupListModal.vue
+    pickupList: {
+        title: 'Pickup list',
+        titleFor: 'Pickup list · {courier}',
         col: {
             order: 'Order',
             recipient: 'Recipient',
-            address: 'Address',
-            phone: 'Phone',
-            tracking: 'Tracking',
-            items: 'Items',
+            city: 'City',
+            packages: 'Packages',
+            tracking: 'Tracking number',
         },
-        empty: 'No parcels waiting for this courier',
+        totals: '{orders} orders · {packages} packages',
+        driverName: "Driver's name",
+        signature: 'Signature',
+        time: 'Time',
+        untickHint: 'Every row starts ticked — untick what stayed behind',
         print: 'Print the list',
-        printed: 'The list opened for printing',
-        blocked: 'The browser blocked the print window',
-        header: 'Pickup list · {courier} · {date}',
-        total: '{n} parcels in total',
-        signPharmacy: 'Pharmacy signature',
-        signCourier: 'Courier signature',
+        handOver: 'Handed to courier',
+        handedTitle: 'Handed to courier',
+        handedBody: 'One order was handed over | {n} orders were handed over',
     },
 
-    codes: {
-        title: 'Courier code mapping',
-        note: 'Every courier company is identified by a single letter code, printed on the shipping label and opening the tracking number. The code itself is fixed; the company name and phone behind it are set here and are used by every new order.',
-        col: {
-            code: 'Supplier code',
-            name: 'Courier company name',
-            phone: 'Phone',
-            api: 'API integration',
-            orders: 'Deliveries on the desk',
-        },
-        nameLabel: 'Company name for code {code}',
-        phoneLabel: 'Company phone for code {code}',
-        api: {
-            on: 'Connected',
-            off: 'In preparation',
-        },
-        save: 'Save the mapping',
-        historical: 'Historical — not offered for new assignments',
-        tp: 'TP number + shipment number',
-        confirm: {
-            title: 'Save the courier company mapping',
-            body: 'The courier company names and their phone numbers will be updated.',
-            label: 'Save the mapping',
-        },
-        effect: {
-            newOrders: 'Every new order uses the updated names',
-            oldOrders:
-                'Existing orders keep showing the supplier code saved on them',
-            log: 'The change is written to the system log',
-        },
-        done: {
-            title: 'Mapping saved',
-            body: 'The codes will be used by every new order',
-        },
+    // ManualTrackingModal.vue
+    manualTracking: {
+        title: 'Enter tracking number by hand',
+        courier: 'Courier company',
+        tracking: 'Tracking number',
+        save: 'Save',
+    },
+
+    // CollectModal.vue
+    collect: {
+        title: 'Mark as collected',
+        byLabel: 'Collected by (optional)',
+        byHint: "For whoever collects on the patient's behalf — not required by default",
+        confirm: 'Mark as collected',
     },
 };

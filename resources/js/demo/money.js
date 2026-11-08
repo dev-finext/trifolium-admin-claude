@@ -640,7 +640,7 @@ export function buildDocuments(orders) {
         .filter(
             (order) =>
                 order.docStatus === 'issued' &&
-                order.status === 'closed' &&
+                ['shipped', 'collected'].includes(order.status) &&
                 order.payer === 'practitioner' &&
                 !order.credit &&
                 order.pricing.total > 0 &&

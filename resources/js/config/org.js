@@ -23,7 +23,7 @@ export const ORG = {
  * tracking is a TP number plus a shipment number, hence `tp`.
  */
 export const COURIERS = [
-    { code: 'T', id: 'tapuz', phone: '03-0001200', hasApi: false },
+    { code: 'T', id: 'tapuz', phone: '03-0001200', hasApi: true },
     { code: 'A', id: 'special_delivery', phone: '', hasApi: false, v2: true },
     { code: 'F', id: 'focus', phone: '', hasApi: false, v2: true },
     { code: 'Y', id: 'yarden', phone: '', hasApi: false, v2: true },
@@ -56,9 +56,6 @@ export const ACTIVE_COURIERS = COURIERS.filter(
 );
 
 export const ACTIVE_COURIER_IDS = ACTIVE_COURIERS.map((courier) => courier.id);
-
-/** A pickup point is a partner shop or a practitioner collecting for patients. */
-export const PICKUP_POINT_KIND_IDS = ['shop', 'practitioner'];
 
 /** Weekdays, Sunday first — `Date#getDay()` order. Labels at `weekday.<id>`. */
 export const WEEKDAY_IDS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];

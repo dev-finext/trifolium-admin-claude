@@ -45,7 +45,6 @@ const emit = defineEmits([
     'toggle',
     'toggle-all',
     'remind',
-    'assign',
     'to-lab',
     'update:sort',
     'clear',
@@ -281,17 +280,6 @@ function itemSummary(order) {
                     @click="emit('remind', row)"
                 >
                     {{ t('orders.row.remind') }}
-                </AButton>
-                <AButton
-                    v-if="
-                        statusOf(row) === 'packed' &&
-                        row.deliveryType === 'courier'
-                    "
-                    sm
-                    icon="truck"
-                    @click="emit('assign', row)"
-                >
-                    {{ t('orders.row.assign') }}
                 </AButton>
                 <AButton sm icon="external" @click="emit('open', row)">
                     {{ t('orders.row.open') }}

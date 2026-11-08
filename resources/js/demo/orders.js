@@ -24,15 +24,14 @@ import {
     CREDIT,
     DOC_PROVIDER,
     EXCEPTION_THRESHOLDS,
-    ORDER_FLOW,
-    ORDER_STATUS_BY_CODE,
+    flowFor,
+    flowIdOf,
     PAY_LINK,
     PREPARATION_FORM,
     SETTINGS,
 } from '@/config';
 import { PAY_PROVIDER } from '@/config/integrations';
 import { DOSE_TIMING_IDS, EVAPORATION_IDS } from '@/demo/catalog';
-import { PICKUP_POINT_IDS } from '@/demo/deliveries';
 import { at, chance, pickFrom, rareChance, spread } from '@/demo/fixture';
 import {
     DEMO_ACTORS,
@@ -41,8 +40,226 @@ import {
     SUPPORT_ACTORS,
 } from '@/demo/people';
 import REAL_ORDERS from '@/demo/real/orders.json';
+import { orderContainers, totalContainers } from '@/lib/containers';
 import { daysSince } from '@/lib/dates';
 import { L } from '@/lib/localized';
+
+/** Statuses at which packing has at least started — see `buildStationState`. */
+const PAST_PACKING = [
+    'packing',
+    'awaiting_courier',
+    'shipped',
+    'ready_for_pickup',
+    'collected',
+];
+
+/** Statuses at which a courier has actually been linked. */
+const COURIER_LINKED = ['awaiting_courier', 'shipped'];
+
+/**
+ * The shipping station's own history and fields (SHIPPING_STATION_SPEC.md
+ * §4): who receives, how many packages, the power-of-attorney gate, and — as
+ * far as the order's own status implies it happened — its pack checklist,
+ * its courier shipment and its events. Built from the status the fixture
+ * already landed the order on, so a "ממתין לשליח" order really does carry an
+ * active shipment and a "באריזה" order really does have some containers
+ * ticked and some not.
+ */
+function buildStationState(order, slot) {
+    const containers = orderContainers(order);
+    const total = totalContainers(order);
+    const isPickup = order.shipTo === 'pickup';
+    const pastPacking = PAST_PACKING.includes(order.status);
+    const courierLinked = COURIER_LINKED.includes(order.status);
+
+    const recipientPhone =
+        order.shipTo === 'patient'
+            ? order.patient.phone
+            : order.practitioner.phone;
+
+    // Courier authorization ("אליי") or a signed power of attorney
+    // ("אל המטופל/ת") — the gate a courier link needs (spec §11). A pickup
+    // order has neither.
+    const courierAuth = order.shipTo === 'me' ? order.poaSigned : null;
+    const poaWillSign = order.shipTo === 'patient' && order.poaSigned;
+    const poaRequested =
+        order.shipTo === 'patient' &&
+        !order.poaSigned &&
+        chance(`${slot}:poa:asked`, 0.5);
+    const poa =
+        order.shipTo === 'patient'
+            ? {
+                  status: poaWillSign ? 'signed' : 'missing',
+                  fullName: poaWillSign ? order.patient.name : null,
+                  // The patient's own `tz` (demo/people.js) — already a safe,
+                  // deliberately-invalid fixture id, and it is actually theirs.
+                  idNumber: poaWillSign ? order.patient.tz : null,
+                  signed: poaWillSign,
+                  consentVersion: poaWillSign ? 'v1' : null,
+                  signedAt: poaWillSign
+                      ? at(Math.max(0, order.daysAgo - 1), 10, 5)
+                      : null,
+                  requestedAt:
+                      poaWillSign || poaRequested
+                          ? at(Math.max(0, order.daysAgo - 1), 9, 40)
+                          : null,
+              }
+            : null;
+
+    // Packages are only a real count once something has actually been packed;
+    // before that the order has not been through a scale yet.
+    const packagesCount = pastPacking
+        ? spread(`${slot}:pkgs`, 1, Math.min(3, Math.max(1, total)))
+        : 1;
+
+    const events = [];
+    const packChecks = [];
+    const shipments = [];
+    let shippedAt = null;
+    let collectedAt = null;
+    let collectedBy = null;
+    let collectedByName = null;
+
+    if (pastPacking && total > 0) {
+        events.push({
+            type: 'packing_started',
+            at: at(Math.max(0, order.daysAgo - 1), 8, 50),
+            user: DEMO_ACTORS.ellaSupport,
+            visibleToCustomer: false,
+        });
+
+        // A "באריזה" order mid-scan leaves some containers open on purpose —
+        // the partial-scan case the station's own checklist has to show.
+        const scanned =
+            order.status === 'packing'
+                ? Math.max(
+                      0,
+                      total - 1 - (chance(`${slot}:partial`, 0.4) ? 1 : 0),
+                  )
+                : total;
+
+        containers.forEach((row) => {
+            row.barcodes.forEach((barcode, i) => {
+                const index =
+                    containers
+                        .slice(0, containers.indexOf(row))
+                        .reduce((sum, r) => sum + r.count, 0) + i;
+
+                if (index >= scanned) {
+                    return;
+                }
+
+                packChecks.push({
+                    orderItemId: row.item.id,
+                    containerNo: i + 1,
+                    barcode,
+                    checkedAt: at(
+                        Math.max(0, order.daysAgo - 1),
+                        9,
+                        10 + index,
+                    ),
+                    checkedBy: DEMO_ACTORS.ellaSupport,
+                    isManual: false,
+                });
+            });
+        });
+    }
+
+    if (!isPickup && (courierLinked || order.status === 'cancelled')) {
+        const manual = chance(`${slot}:ship:manual`, 0.15);
+        const failedFirst = !manual && rareChance(`${slot}:ship:retry`, 0.2);
+
+        if (failedFirst) {
+            events.push({
+                type: 'shipment_link_failed',
+                at: at(Math.max(0, order.daysAgo - 1), 11, 0),
+                user: DEMO_ACTORS.ellaSupport,
+                data: { message: 'תקלה מס׳ -3 מתפוז: עיר יעד לא מוכרת' },
+                visibleToCustomer: false,
+            });
+        }
+
+        shipments.push({
+            id: `sh-${order.id}`,
+            courierCode: order.courier || 'tapuz',
+            status: order.status === 'shipped' ? 'handed' : 'active',
+            trackingNumber: order.tracking,
+            packagesCount,
+            isManual: manual,
+            manualReason: manual
+                ? L('תפוז לא זמין טלפונית', 'Tapuz unreachable by phone')
+                : null,
+            linkedAt: at(Math.max(0, order.daysAgo - 1), 11, 5),
+            linkedBy: DEMO_ACTORS.ellaSupport,
+            handedAt:
+                order.status === 'shipped'
+                    ? at(Math.max(0, order.daysAgo - 1), 16, 0)
+                    : null,
+            handedBy: order.status === 'shipped' ? DEMO_ACTORS.amitLab : null,
+        });
+
+        events.push({
+            type: manual ? 'shipment_manual' : 'shipment_linked',
+            at: at(Math.max(0, order.daysAgo - 1), 11, 5),
+            user: DEMO_ACTORS.ellaSupport,
+            data: { courier: order.courier, tracking: order.tracking },
+            visibleToCustomer: true,
+        });
+        events.push({
+            type: 'label_printed',
+            at: at(Math.max(0, order.daysAgo - 1), 11, 6),
+            user: DEMO_ACTORS.ellaSupport,
+            visibleToCustomer: false,
+        });
+
+        if (order.status === 'shipped') {
+            shippedAt = at(Math.max(0, order.daysAgo - 1), 16, 0);
+            events.push({
+                type: 'handed_to_courier',
+                at: shippedAt,
+                user: DEMO_ACTORS.amitLab,
+                visibleToCustomer: true,
+            });
+        }
+    }
+
+    if (isPickup && ['ready_for_pickup', 'collected'].includes(order.status)) {
+        events.push({
+            type: 'ready_for_pickup',
+            at: at(Math.max(0, order.daysAgo - 1), 15, 30),
+            user: DEMO_ACTORS.ellaSupport,
+            visibleToCustomer: true,
+        });
+
+        if (order.status === 'collected') {
+            collectedAt = at(Math.max(0, order.daysAgo - 1), 17, 15);
+            collectedBy = order.practitioner.name;
+            collectedByName = chance(`${slot}:collectedByOther`, 0.2)
+                ? L('מלווה של המטופל', "The patient's companion")
+                : null;
+            events.push({
+                type: 'collected',
+                at: collectedAt,
+                user: DEMO_ACTORS.ellaSupport,
+                visibleToCustomer: true,
+            });
+        }
+    }
+
+    return {
+        recipientPhone,
+        packagesCount,
+        shippedAt,
+        collectedAt,
+        collectedBy,
+        collectedByName,
+        courierAuth,
+        poa,
+        events,
+        packChecks,
+        shipments,
+    };
+}
 
 /**
  * Item codes that are a charge, not a thing: SAP bills delivery and the
@@ -365,7 +582,14 @@ function realFormula(source, herbLines, materialLines, slot) {
  */
 function buildItems(order) {
     const items = [];
-    const inLab = ['lab', 'packed', 'sent', 'closed'].includes(order.status);
+    const inLab = [
+        'in_production',
+        'packing',
+        'awaiting_courier',
+        'shipped',
+        'ready_for_pickup',
+        'collected',
+    ].includes(order.status);
 
     [order.formula, order.formula2].filter(Boolean).forEach((formula, k) => {
         const slot = `${order.id}:item:${k}`;
@@ -473,8 +697,12 @@ function buildAudit(order) {
         });
     }
 
-    const sequence = ORDER_FLOW;
-    const reached = sequence.indexOf(order.status);
+    // `paid` is the flow's own label for the position; a credit order reached
+    // the same position by `credit` instead, and the history must say which.
+    const sequence = flowFor(order);
+    const stepId = (status) =>
+        status === 'paid' && order.credit ? 'credit' : status;
+    const reached = sequence.indexOf(flowIdOf(order.status));
 
     sequence.slice(0, reached + 1).forEach((status, k) => {
         rows.push({
@@ -490,8 +718,8 @@ function buildAudit(order) {
                 'Status written to the database · messages sent by the triggers',
             ),
             valueType: 'status',
-            from: k === 0 ? 'new' : sequence[k - 1],
-            to: status,
+            from: k === 0 ? 'pending_payment' : stepId(sequence[k - 1]),
+            to: stepId(status),
         });
     });
 
@@ -615,7 +843,7 @@ function labRoles(status, slot, daysAgo) {
         packer: null,
     };
 
-    if (status === 'lab') {
+    if (status === 'in_production') {
         return {
             ...none,
             picker: { by: DEMO_ACTORS.amitLab, when: when(9) },
@@ -625,7 +853,15 @@ function labRoles(status, slot, daysAgo) {
         };
     }
 
-    if (['packed', 'sent', 'closed'].includes(status)) {
+    if (
+        [
+            'packing',
+            'awaiting_courier',
+            'shipped',
+            'ready_for_pickup',
+            'collected',
+        ].includes(status)
+    ) {
         return {
             picker: { by: DEMO_ACTORS.amitLab, when: when(9) },
             checker: { by: DEMO_ACTORS.nirSupport, when: when(10) },
@@ -653,6 +889,41 @@ const collectedInPerson = (source) =>
     String(source.whoReceives || '').includes('איסוף עצמי');
 
 /**
+ * SAP's `U_OrderState` → the console's own status, per the fixture mapping in
+ * `DEMO_SHIPPING_STATION_PROMPT.md` §3. Three of the eight SAP codes (1 הזמנה
+ * חדשה, 2 בטיפול, 7 מושהה) have no status of their own in the new model — an
+ * order at any of them is really just wherever its money stands — so the id
+ * comes from `credit`/`paid` rather than the code.
+ */
+function statusFromState(code, { credit, creditPaid, paid, deliveryType }) {
+    const byPayment = () => {
+        if (credit && !creditPaid) {
+            return 'credit';
+        }
+
+        return paid ? 'paid' : 'pending_payment';
+    };
+
+    switch (code) {
+        case 1:
+        case 2:
+        case 7:
+            return byPayment();
+        case 3:
+            return 'in_production';
+        case 4:
+            return 'packing';
+        case 5:
+        case 6:
+            return deliveryType === 'pickup' ? 'collected' : 'shipped';
+        case 8:
+            return 'cancelled';
+        default:
+            return 'pending_payment';
+    }
+}
+
+/**
  * One `ORDR` document as an order record.
  *
  * The money is reconciled rather than copied: SAP holds the gross total and the
@@ -665,7 +936,7 @@ const collectedInPerson = (source) =>
 function realOrder(source, practitioners, patients) {
     const slot = `order:${source.docEntry}`;
     const id = `TF-${source.docNum}`;
-    const status = ORDER_STATUS_BY_CODE[Number(source.state)] || 'new';
+    const stateCode = Number(source.state);
     const daysAgo = Math.max(0, daysSince(source.docDate));
     // SAP stores the document's date but not its hour; the clock time is the
     // fixture's, so the audit trail reads in a sensible order.
@@ -735,11 +1006,37 @@ function realOrder(source, practitioners, patients) {
 
     const payer = paidBy(source);
     const deliveryType = collectedInPerson(source) ? 'pickup' : 'courier';
+    // Who physically takes delivery: the practitioner, the patient, or the
+    // pharmacy counter. Checkout does not exist in this console — the site
+    // that captures it is out of this task's scope — so it is derived here
+    // from who pays, the same split the order already carries.
+    const shipTo =
+        deliveryType === 'pickup'
+            ? 'pickup'
+            : payer === 'patient'
+              ? 'patient'
+              : 'me';
     const courierId = COURIER_BY_CODE[source.courier] || null;
+    // Credit and paid read the raw SAP code, not the console's own status id —
+    // for three of those codes (1, 2, 7) the id is itself picked FROM credit
+    // and paid, by `statusFromState` below, and a status derived from itself
+    // would be circular.
     const credit =
         payer === 'practitioner' &&
         practitioner.credit &&
-        !['new', 'cancelled'].includes(status);
+        ![1, 8].includes(stateCode);
+    const creditPaid = credit && daysAgo >= 18 && daysAgo % 3 !== 0;
+    // U_PayedSite is "paid on the site": a practitioner billed at month end
+    // never sets it, so an order past the counter counts as settled too.
+    const paid =
+        source.paidOnline === 'Y' ||
+        (!credit && ![1, 7, 8].includes(stateCode));
+    const status = statusFromState(stateCode, {
+        credit,
+        creditPaid,
+        paid,
+        deliveryType,
+    });
     const payMethod =
         source.paidOnline === 'Y'
             ? 'card'
@@ -780,6 +1077,7 @@ function realOrder(source, practitioners, patients) {
             promo: false,
         },
         deliveryType,
+        shipTo,
         courier: courierId,
         // The courier's own tracking number is not in the extract.
         tracking: courierId
@@ -818,22 +1116,18 @@ function realOrder(source, practitioners, patients) {
         docStatus: rareChance(`${slot}:docfail`, 0.06) ? 'failed' : 'issued',
         docReq: null,
         credit,
-        creditPaid: credit && daysAgo >= 18 && daysAgo % 3 !== 0,
-        // U_PayedSite is "paid on the site": a practitioner billed at month end
-        // never sets it, so an order past the counter counts as settled too.
-        paid:
-            source.paidOnline === 'Y' ||
-            (!credit && !['new', 'cancelled', 'on_hold'].includes(status)),
+        creditPaid,
+        paid,
         linkExpires: null,
         gcSession: `gc_sess_${spread(`${slot}:gcs`, 100000, 999999)}`,
         gcTxn:
-            status === 'new'
+            status === 'pending_payment'
                 ? null
                 : `gc_txn_${spread(`${slot}:gct`, 1000000, 9999999)}`,
         payToken: `pl_${spread(`${slot}:tok`, 100000, 999999).toString(36)}${spread(`${slot}:tok2`, 1000, 9999)}`,
         linkState:
             payer === 'patient'
-                ? status === 'new'
+                ? status === 'pending_payment'
                     ? pickFrom(`${slot}:link`, LINK_STATES)
                     : 'paid'
                 : null,
@@ -849,15 +1143,8 @@ function realOrder(source, practitioners, patients) {
         // The urgency mark and the four hands in the lab are the console's own
         // — SAP has neither field.
         urgent:
-            !['cancelled', 'closed'].includes(status) &&
+            !['cancelled', 'shipped', 'collected'].includes(status) &&
             chance(`${slot}:urgent`, 0.12),
-        // `U_IsufName` held an unsubstituted template token in every sampled
-        // row, so which point an order is collected from is the fixture's;
-        // whether it is collected at all is SAP's.
-        pickupPoint:
-            deliveryType === 'pickup'
-                ? pickFrom(`${slot}:point:id`, PICKUP_POINT_IDS)
-                : null,
         lab: labRoles(status, slot, daysAgo),
         cancelCause:
             status === 'cancelled'
@@ -871,7 +1158,11 @@ function realOrder(source, practitioners, patients) {
 
     const unpaidCredit = order.credit && !order.creditPaid;
 
-    if (status === 'new' || status === 'cancelled' || unpaidCredit) {
+    if (
+        status === 'pending_payment' ||
+        status === 'cancelled' ||
+        unpaidCredit
+    ) {
         order.docNum = null;
         order.docAlloc = null;
         order.docStatus = unpaidCredit ? 'awaiting_credit' : 'none';
@@ -884,7 +1175,7 @@ function realOrder(source, practitioners, patients) {
     }
 
     order.linkExpires =
-        payer === 'patient' && status === 'new'
+        payer === 'patient' && status === 'pending_payment'
             ? Math.max(0, PAY_LINK.days - daysAgo)
             : null;
 
@@ -901,22 +1192,8 @@ export function buildOrders(practitioners, patients) {
         order.items = buildItems(order);
         order.audit = buildAudit(order);
         order.documentation = buildDocumentation(order, order.audit);
+        Object.assign(order, buildStationState(order, `${order.id}:station`));
     });
-
-    // One packed-and-waiting order is deliberately left without a courier, so
-    // the "ready to pack, no courier" exception is always reachable — the same
-    // trick inventory.js uses to keep both batch expiry states on screen.
-    const awaitingCourier = orders.filter(
-        (order) =>
-            order.status === 'packed' && order.deliveryType === 'courier',
-    );
-
-    if (awaitingCourier.length > 1) {
-        const last = awaitingCourier[awaitingCourier.length - 1];
-
-        last.courier = null;
-        last.tracking = null;
-    }
 
     // V3 — the lab queue is never empty.
     //
@@ -934,7 +1211,7 @@ export function buildOrders(practitioners, patients) {
     orders
         .filter(
             (order) =>
-                order.status === 'new' &&
+                order.status === 'pending_payment' &&
                 (order.items || []).some(
                     (item) => item.kind === 'formula' && !item.cancelled,
                 ),
@@ -944,18 +1221,184 @@ export function buildOrders(practitioners, patients) {
             if (i === 0) {
                 order.paid = true;
                 order.linkState = 'paid';
+                order.status = 'paid';
             } else {
                 order.credit = true;
                 order.creditPaid = false;
+                order.status = 'credit';
             }
+
+            // The audit trail and its log were built from the status this
+            // order had a moment ago — rebuild both so they still agree.
+            order.audit = buildAudit(order);
+            order.documentation = buildDocumentation(order, order.audit);
         });
 
     // One order on the lab bench is always urgent, so the queue's ordering and
     // the urgency marks are on screen whatever the rest of the fixture does.
-    const bench = orders.find((order) => order.status === 'lab');
+    const bench = orders.find((order) => order.status === 'in_production');
 
     if (bench) {
         bench.urgent = true;
+    }
+
+    // The shipping station's own screen must always be able to show every one
+    // of its exceptions and every reachable scan state, whichever way the
+    // random sample happened to land. A 50-order draw from SAP's own history
+    // can easily hold zero orders at some of these — "ארוז" is 5 orders out
+    // of 355,046 system-wide — so these are forced onto specific orders
+    // rather than merely searched for, the same reasoning as the lab queue
+    // above (DEMO_SHIPPING_STATION_PROMPT.md §12).
+
+    /** Fully ticks every container of an order, as of `daysAgo - 1`. */
+    function fillPackChecks(order) {
+        order.packChecks = orderContainers(order).flatMap((row) =>
+            row.barcodes.map((barcode, i) => ({
+                orderItemId: row.item.id,
+                containerNo: i + 1,
+                barcode,
+                checkedAt: at(Math.max(0, order.daysAgo - 1), 9, 10),
+                checkedBy: DEMO_ACTORS.ellaSupport,
+                isManual: false,
+            })),
+        );
+    }
+
+    /** Orders available to repurpose for a guaranteed scenario — never one
+     * already claimed by an earlier guarantee, never cancelled. */
+    const claimed = new Set();
+
+    function claimOrder(filter) {
+        const found = orders.find(
+            (order) =>
+                !claimed.has(order.id) &&
+                order.status !== 'cancelled' &&
+                filter(order),
+        );
+
+        if (found) {
+            claimed.add(found.id);
+        }
+
+        return found;
+    }
+
+    // A real, named courier failure: the order is fully packed but stuck —
+    // its last courier link failed and nothing has succeeded since.
+    const stuckOnShipment = claimOrder(
+        (order) => order.shipTo !== 'pickup' && totalContainers(order) > 0,
+    );
+
+    if (stuckOnShipment) {
+        stuckOnShipment.status = 'packing';
+        fillPackChecks(stuckOnShipment);
+        stuckOnShipment.shipments = [];
+        stuckOnShipment.events = [
+            ...stuckOnShipment.events.filter(
+                (event) => event.type !== 'shipment_link_failed',
+            ),
+            {
+                type: 'shipment_link_failed',
+                at: at(Math.max(0, stuckOnShipment.daysAgo - 1), 11, 0),
+                user: DEMO_ACTORS.ellaSupport,
+                data: { message: 'תקלה מס׳ -3 מתפוז: עיר יעד לא מוכרת' },
+                visibleToCustomer: false,
+            },
+        ];
+    }
+
+    // A partial scan — the checklist's own k/N-not-yet-N case.
+    const partialScan = claimOrder(
+        (order) => order.shipTo !== 'pickup' && totalContainers(order) > 1,
+    );
+
+    if (partialScan) {
+        partialScan.status = 'packing';
+        fillPackChecks(partialScan);
+        partialScan.packChecks = partialScan.packChecks.slice(0, -1);
+    }
+
+    /** A shipment row, as `linkCourier`/`enterManualTracking` would build one. */
+    function shipmentFor(order, { manual = false } = {}) {
+        return {
+            id: `sh-${order.id}`,
+            courierCode: order.courier || 'tapuz',
+            status: 'active',
+            trackingNumber: order.tracking,
+            packagesCount: order.packagesCount || 1,
+            isManual: manual,
+            manualReason: manual
+                ? L('תפוז לא ענה בטלפון', 'Tapuz did not answer by phone')
+                : null,
+            linkedAt: at(Math.max(0, order.daysAgo - 1), 11, 5),
+            linkedBy: DEMO_ACTORS.ellaSupport,
+            cancelledAt: null,
+            cancelledBy: null,
+            cancelledReason: null,
+            handedAt: null,
+            handedBy: null,
+            pickupListId: null,
+        };
+    }
+
+    // "ממתין לשליח" must always have at least one order — one of them manual.
+    const awaitingAuto = claimOrder((order) => order.shipTo !== 'pickup');
+
+    if (awaitingAuto) {
+        awaitingAuto.status = 'awaiting_courier';
+        fillPackChecks(awaitingAuto);
+        awaitingAuto.courier = awaitingAuto.courier || 'tapuz';
+        awaitingAuto.tracking =
+            awaitingAuto.tracking ||
+            `T${spread(`${awaitingAuto.id}:fix:tr`, 1000000, 9999999)}IL`;
+        awaitingAuto.shipments = [shipmentFor(awaitingAuto)];
+    }
+
+    const awaitingManual = claimOrder((order) => order.shipTo !== 'pickup');
+
+    if (awaitingManual) {
+        awaitingManual.status = 'awaiting_courier';
+        fillPackChecks(awaitingManual);
+        awaitingManual.courier = awaitingManual.courier || 'tapuz';
+        awaitingManual.tracking =
+            awaitingManual.tracking ||
+            `T${spread(`${awaitingManual.id}:fix:tr`, 1000000, 9999999)}IL`;
+        awaitingManual.shipments = [
+            shipmentFor(awaitingManual, { manual: true }),
+        ];
+    }
+
+    // "נשלחו היום" must never open empty.
+    const shippedToday = orders.find(
+        (order) => order.status === 'shipped' && order.shippedAt?.daysAgo === 0,
+    );
+    const anyShipped =
+        shippedToday ||
+        claimOrder((order) => order.status === 'shipped') ||
+        orders.find((order) => order.status === 'shipped');
+
+    if (!shippedToday && anyShipped) {
+        anyShipped.shippedAt = at(0, 16, 0);
+        (anyShipped.shipments || []).forEach((shipment) => {
+            shipment.handedAt = anyShipped.shippedAt;
+        });
+    }
+
+    // An order from before `ship_to` existed — the "נמען לא ידוע" exception.
+    const unknownRecipient = claimOrder(
+        (order) =>
+            order.shipTo &&
+            order.shipTo !== 'pickup' &&
+            [
+                'in_production',
+                'packing',
+                'awaiting_courier',
+                'ready_for_pickup',
+            ].includes(order.status),
+    );
+
+    if (unknownRecipient) {
+        unknownRecipient.shipTo = null;
     }
 
     return orders;
@@ -981,9 +1424,9 @@ export function orderExceptionFlags(order, messages) {
     }
 
     if (
-        order.payer === 'patient' &&
+        order.shipTo === 'patient' &&
         !order.addressProvided &&
-        !['cancelled', 'new'].includes(order.status)
+        !['cancelled', 'pending_payment'].includes(order.status)
     ) {
         flags.push('address');
     }
@@ -998,7 +1441,7 @@ export function orderExceptionFlags(order, messages) {
     }
 
     if (
-        order.status === 'new' &&
+        order.status === 'pending_payment' &&
         order.daysAgo >= EXCEPTION_THRESHOLDS.payStaleDays
     ) {
         flags.push('pay_stale');
@@ -1008,20 +1451,12 @@ export function orderExceptionFlags(order, messages) {
         flags.push('interaction');
     }
 
-    if (
-        order.status === 'lab' &&
-        order.daysAgo >= EXCEPTION_THRESHOLDS.labStuckDays
-    ) {
-        flags.push('lab');
-    }
-
-    if (
-        order.status === 'packed' &&
-        order.deliveryType === 'courier' &&
-        !order.courier
-    ) {
-        flags.push('courier');
-    }
+    // The shipping-station exceptions (missing POA, an unknown recipient, a
+    // failed courier link, stuck too long) are computed live by the station
+    // itself from the order's current fields — see stores/deliveries.js —
+    // rather than seeded once here, because they depend on state (a shipment's
+    // last error, today's date against the status's own age) that changes
+    // after the fixture is built.
 
     return flags;
 }

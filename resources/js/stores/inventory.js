@@ -1081,6 +1081,92 @@ export const useInventoryStore = defineStore('inventory', () => {
         return { rows: made, short, already: false };
     }
 
+    /**
+     * The other half of `allocateToOrder`: give back what a cancelled order had
+     * already committed (SHIPPING_STATION_SPEC.md §3.4 step 2 — the shipping
+     * station calls this before it runs the order's own cancellation). A batch
+     * gets its remaining quantity back, never past what it started with; an
+     * order with nothing allocated (cancelled before the lab) is a no-op.
+     *
+     * @returns {Promise<{rows: Array}>}
+     */
+    async function releaseFromOrder(order, reason = '') {
+        if (!order) {
+            return { rows: [] };
+        }
+
+        const held = batchUse.value.filter((row) => row.order === order.id);
+
+        if (!held.length) {
+            return { rows: [] };
+        }
+
+        const when = moment();
+        const by = dataset.me?.name || null;
+        const touched = { batches: new Set(), rows: new Set() };
+        const moves = [];
+
+        held.forEach((use) => {
+            const batch = batchById(use.batch);
+            const row = batch ? stock.value.find((one) => one.sku === batch.sku) : null;
+
+            if (batch) {
+                batch.remaining =
+                    Math.round((batch.remaining + use.qty) * 1000) / 1000;
+                syncBatch(batch);
+                touched.batches.add(batch);
+            }
+
+            if (row) {
+                row.onHand = Math.round((row.onHand + use.qty) * 1000) / 1000;
+                syncRow(row);
+                touched.rows.add(row);
+            }
+
+            const move = {
+                id: `mv-release-${order.id}-${use.batch}-${use.item}`,
+                kind: 'returned_from_cancel',
+                sku: use.sku,
+                name: use.batchName,
+                unit: use.unit,
+                wh: batch?.wh,
+                qty: use.qty,
+                batch: use.batch,
+                ref: order.id,
+                reason,
+                when,
+                by,
+            };
+
+            writeMovement(move);
+            moves.push(move);
+        });
+
+        const remaining = bag('batchUse').filter((row) => row.order !== order.id);
+
+        dataset.data.batchUse = remaining;
+
+        writeLog({
+            act: 'batch_release',
+            entType: 'order',
+            ent: order.id,
+            to: String(held.length),
+        });
+
+        await Promise.all([
+            ...[...touched.batches].map((batch) =>
+                persist(`batches/${batch.id}`, batch, 'PUT'),
+            ),
+            ...[...touched.rows].map((row) =>
+                persist(`inventory/ingredients/${row.sku}`, row, 'PUT'),
+            ),
+            ...moves.map((move) => persist('movements', move)),
+            persist(`orders/${order.id}/batch-allocation`, { rows: [] }, 'DELETE'),
+        ]);
+
+        return { rows: held };
+    }
+
     async function editBatchDates(id, { expiry, madeOn, reason = '' } = {}) {
         const batch = batchById(id);
 
@@ -1656,6 +1742,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         movements,
         batchUse,
         allocateToOrder,
+        releaseFromOrder,
         ingredients,
 
         lowStock,

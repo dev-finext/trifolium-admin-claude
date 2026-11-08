@@ -51,7 +51,7 @@ const open = ref(
         const busy = formulas.value.find(
             (item) =>
                 !item.cancelled &&
-                !['sent', 'closed'].includes(statusOf(props.order)),
+                !['shipped', 'collected'].includes(statusOf(props.order)),
         );
 
         return busy ? [busy.id] : [];

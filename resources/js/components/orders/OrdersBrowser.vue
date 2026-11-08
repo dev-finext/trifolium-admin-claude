@@ -14,7 +14,6 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 import PageHead from '@/components/layout/PageHead.vue';
-import CourierDialog from '@/components/orders/CourierDialog.vue';
 import OrderBulkBar from '@/components/orders/OrderBulkBar.vue';
 import OrderTable from '@/components/orders/OrderTable.vue';
 import AButton from '@/components/ui/AButton.vue';
@@ -32,7 +31,7 @@ import { useLocalized } from '@/composables/useLocalized';
 import { useSendToLab } from '@/composables/useSendToLab';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
-import { COURIERS, DEFAULT_QUIET_HOURS, ORDER_STATUSES } from '@/config';
+import { DEFAULT_QUIET_HOURS, ORDER_STATUSES } from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { hasRange } from '@/lib/dateRange';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
@@ -80,7 +79,6 @@ const drawerOpen = ref(false);
 const savedViews = ref(null);
 
 const selection = ref([]);
-const assigning = ref(null);
 const ask = ref(null);
 
 const range = computed({
@@ -338,7 +336,7 @@ function askSendToLab(order) {
             t('orders.lab.effect.batches'),
             t('orders.lab.effect.sheet'),
             t('orders.lab.effect.labels'),
-            t('orders.effect.statusTo', { status: t('status.lab') }),
+            t('orders.effect.statusTo', { status: t('status.in_production') }),
         ],
         done: async (reason) => {
             const result = await sendOne(order, { reason });
@@ -402,30 +400,6 @@ function askRemind(order) {
     };
 }
 
-async function saveCourier(payload) {
-    const order = assigning.value;
-
-    if (!order) {
-        return;
-    }
-
-    await orders.assignCourier(order.id, payload);
-
-    toast.push({
-        title: t('orders.courierDialog.done'),
-        body: payload.tracking
-            ? t('orders.courierDialog.doneBody', {
-                  tracking: payload.tracking,
-                  courier: t(`courier.${payload.courier}`),
-              })
-            : t('orders.courierDialog.doneNoTracking', {
-                  courier: t(`courier.${payload.courier}`),
-              }),
-    });
-
-    assigning.value = null;
-}
-
 // ---- bulk actions ---------------------------------------------------------
 
 // Only orders whose money is settled can go to the lab, so the dialog counts them
@@ -440,7 +414,7 @@ function askToLab() {
         reason: true,
         body: t('orders.bulk.toLabBody', { n: sendable.length }),
         effects: [
-            t('orders.effect.statusTo', { status: t('status.lab') }),
+            t('orders.effect.statusTo', { status: t('status.in_production') }),
             t('orders.effect.itemsToLabQueue'),
             t('orders.effect.msgByTriggers'),
             ...(skipped
@@ -492,42 +466,6 @@ function askBulkRemind() {
             toast.push({
                 title: t('orders.bulk.remindDone'),
                 body: t('orders.bulk.remindDoneBody', { n }),
-            });
-            selection.value = [];
-        },
-    };
-}
-
-/**
- * Bulk assignment sets the courier only. Tracking numbers arrive one at a time
- * from the courier's own system, so they are typed in per order afterwards.
- */
-function askBulkCourier() {
-    const n = selection.value.length;
-    const courier = COURIERS[0].id;
-
-    ask.value = {
-        title: t('orders.bulk.courierTitle'),
-        confirmLabel: t('orders.bulk.assignCourier'),
-        body: t('orders.bulk.courierBody', {
-            n,
-            courier: t(`courier.${courier}`),
-        }),
-        effects: [
-            t('orders.effect.courierOnAll'),
-            t('orders.effect.trackingLater'),
-        ],
-        done: async () => {
-            await Promise.all(
-                selection.value.map((id) =>
-                    orders.assignCourier(id, { courier, tracking: '' }),
-                ),
-            );
-            toast.push({
-                title: t('orders.bulk.courierDone'),
-                body: t('orders.courierDialog.doneNoTracking', {
-                    courier: t(`courier.${courier}`),
-                }),
             });
             selection.value = [];
         },
@@ -654,7 +592,6 @@ function exportOrders(list, suffix = '') {
                 :selection="selection"
                 :sendable-count="sendableCount"
                 @to-lab="askToLab"
-                @assign="askBulkCourier"
                 @remind="askBulkRemind"
                 @export="exportOrders(selectedOrders, '-selected')"
                 @clear="selection = []"
@@ -669,7 +606,6 @@ function exportOrders(list, suffix = '') {
                 @toggle="toggle"
                 @toggle-all="toggleAll"
                 @remind="askRemind"
-                @assign="assigning = $event"
                 @to-lab="askSendToLab"
                 @clear="clearFilters"
             />
@@ -685,13 +621,6 @@ function exportOrders(list, suffix = '') {
             @clear="clearFilters"
             @patch="patch"
             @save="savedViews?.openSave()"
-        />
-
-        <CourierDialog
-            :open="Boolean(assigning)"
-            :order="assigning"
-            @close="assigning = null"
-            @save="saveCourier"
         />
 
         <ConfirmDialog

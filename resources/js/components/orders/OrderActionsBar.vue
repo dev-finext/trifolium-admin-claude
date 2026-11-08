@@ -64,7 +64,7 @@ const cancellable = computed(() => isCancellable(props.order));
 
 /** V2: urgency can be flagged on any order still in the pharmacy's hands. */
 const urgentToggle = computed(
-    () => !['cancelled', 'closed'].includes(status.value),
+    () => !['cancelled', 'shipped', 'collected'].includes(status.value),
 );
 
 async function toggleUrgent() {
@@ -104,9 +104,10 @@ const cancelMoneyEffect = computed(() => {
     return t('orders.effect.creditNoteIssued');
 });
 
+// Cancelling from this screen only ever happens before the lab (`isCancellable`
+// below), so nothing has been allocated yet — there is no stock to release.
 const cancelEffects = computed(() => [
     t('orders.effect.statusTo', { status: t('status.cancelled') }),
-    t('orders.effect.releaseStock'),
     cancelMoneyEffect.value,
     t('orders.effect.reasonLogged'),
 ]);
@@ -114,7 +115,7 @@ const cancelEffects = computed(() => [
 // A credit order goes to the lab against an approved balance rather than a
 // payment, so the dialog says which of the two cleared it.
 const labEffects = computed(() => [
-    t('orders.effect.statusTo', { status: t('status.lab') }),
+    t('orders.effect.statusTo', { status: t('status.in_production') }),
     t('orders.effect.itemsToLabQueue'),
     t('orders.effect.msgByTriggers'),
     paymentStateOf(props.order) === 'credit'

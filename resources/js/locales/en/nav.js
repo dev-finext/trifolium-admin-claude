@@ -9,7 +9,7 @@ export default {
     },
     item: {
         orders: 'Orders',
-        deliveries: 'Deliveries',
+        deliveries: 'Shipping station',
         messaging: 'Messaging & WhatsApp',
         users: 'Users & approvals',
         finance: 'Finance',

@@ -19,6 +19,8 @@ export default {
     close: 'סגור',
     cancel: 'ביטול',
     confirm: 'אישור',
+    all: 'הכל',
+    exportExcel: 'ייצוא לאקסל',
     clear: 'נקה',
     clearFilter: 'נקה סינון',
     retry: 'נסה שוב',

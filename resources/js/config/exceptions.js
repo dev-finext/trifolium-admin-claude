@@ -15,8 +15,13 @@ export const EXCEPTION_TYPES = [
     { id: 'msg', tone: 'red' },
     { id: 'pay_stale', tone: 'amber' },
     { id: 'interaction', tone: 'amber' },
-    { id: 'lab', tone: 'amber' },
-    { id: 'courier', tone: 'amber' },
+    // The shipping station's own exceptions (SHIPPING_STATION_SPEC.md §5.7) —
+    // shared through this one registry rather than a tab of its own, so an
+    // order stuck at the station shows on the same bell as every other.
+    { id: 'poa', tone: 'red' },
+    { id: 'unknown_recipient', tone: 'red' },
+    { id: 'shipment_error', tone: 'red' },
+    { id: 'stuck', tone: 'amber' },
 ];
 
 export const EXCEPTION = Object.fromEntries(
@@ -39,6 +44,16 @@ export const EXCEPTION_THRESHOLDS = {
     payStaleDays: 3,
     /** A payment link becomes `link_expiring` inside this many hours. */
     linkExpiringHours: 24,
-    /** An order stuck in the lab becomes `lab` after this many days. */
-    labStuckDays: 2,
+};
+
+/**
+ * How long an order may sit in each station status before it is `stuck`
+ * (SHIPPING_STATION_SPEC.md §5.7) — Avichai's proposed defaults, confirmed
+ * 08.11.2026. "ממתין לשליח" has no fixed day count: it is stuck once it has
+ * missed its company's own next pickup, which the station computes itself.
+ */
+export const STATION_STUCK_DAYS = {
+    in_production: 2,
+    packing: 1,
+    ready_for_pickup: 7,
 };

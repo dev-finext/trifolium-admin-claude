@@ -16,7 +16,6 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
-import CourierDialog from '@/components/orders/CourierDialog.vue';
 import OrderActionsBar from '@/components/orders/OrderActionsBar.vue';
 import OrderDeliveryTab from '@/components/orders/OrderDeliveryTab.vue';
 import OrderDocsStream from '@/components/orders/OrderDocsStream.vue';
@@ -42,6 +41,7 @@ import PaymentChip from '@/components/ui/PaymentChip.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
+import { DELIVERY_STATUS_IDS } from '@/config';
 import { ils } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { statusOf, useOrdersStore } from '@/stores/orders';
@@ -94,6 +94,11 @@ const creditUnpaid = computed(
     () => Boolean(order.value?.credit) && !order.value?.creditPaid,
 );
 
+/** Once an order reaches the lab, the station — not this drawer — moves it on. */
+const atStation = computed(
+    () => Boolean(order.value) && DELIVERY_STATUS_IDS.includes(status.value),
+);
+
 const tabs = computed(() => {
     if (!order.value) {
         return [];
@@ -136,19 +141,6 @@ const activeComponent = computed(() => TAB_COMPONENTS[activeTab.value]);
  * a switch to another.
  */
 const ask = ref(null);
-
-/** The order whose courier is being assigned, if any. */
-const assigning = ref(null);
-
-async function saveCourier(form) {
-    const target = assigning.value;
-
-    assigning.value = null;
-
-    if (target) {
-        await orders.assignCourier(target.id, form);
-    }
-}
 
 function confirmAsk(reason, code) {
     const pending = ask.value;
@@ -264,6 +256,19 @@ function close() {
 
                     <div class="a-dhead-a">
                         <AButton
+                            v-if="atStation"
+                            sm
+                            icon="truck"
+                            @click="
+                                router.push({
+                                    name: 'deliveries',
+                                    query: { order: order.id },
+                                })
+                            "
+                        >
+                            {{ t('orders.detail.openInStation') }}
+                        </AButton>
+                        <AButton
                             sm
                             :icon="view.full ? 'chevron_left' : 'grid'"
                             @click="view.full = !view.full"
@@ -311,20 +316,12 @@ function close() {
                         :is="activeComponent"
                         :order="order"
                         @ask="ask = $event"
-                        @assign="assigning = order"
                     />
                 </div>
                 <OrderStatusRail :order="order" class="od-rail" />
             </div>
         </template>
     </ADrawer>
-
-    <CourierDialog
-        :open="Boolean(assigning)"
-        :order="assigning"
-        @close="assigning = null"
-        @save="saveCourier"
-    />
 
     <ConfirmDialog
         :open="Boolean(ask)"

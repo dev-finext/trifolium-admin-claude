@@ -24,7 +24,7 @@ const props = defineProps({
     sendableCount: { type: Number, default: 0 },
 });
 
-const emit = defineEmits(['to-lab', 'assign', 'remind', 'export', 'clear']);
+const emit = defineEmits(['to-lab', 'remind', 'export', 'clear']);
 
 const { t } = useI18n();
 
@@ -54,9 +54,6 @@ const count = computed(() => props.selection.length);
             @click="emit('to-lab')"
         >
             {{ t('orders.bulk.toLab') }}
-        </AButton>
-        <AButton sm icon="truck" @click="emit('assign')">
-            {{ t('orders.bulk.assignCourier') }}
         </AButton>
         <AButton sm icon="whatsapp" @click="emit('remind')">
             {{ t('orders.bulk.remind') }}

@@ -1,354 +1,266 @@
-// Deliveries desk — the courier queue, the power-of-attorney panel and the
-// courier code mapping.
+// עמדת המשלוחים — עמוד אחד, מ-"בהכנה" ועד "נשלח" / "נאסף"
+// (SHIPPING_STATION_SPEC.md, DEMO_SHIPPING_STATION_PROMPT.md).
 //
-// Enum labels are not repeated here: an order status reads from `status.*`, the
-// way an order leaves the pharmacy from `fulfilment.*`, a courier company from
-// `courier.*`, and an exception from `exception.*`.
+// תוויות אנומרציה אינן חוזרות כאן: סטטוס הזמנה נקרא מ-`status.*`, חריג
+// מ-`exception.*`, וחברת שליחויות מ-`courier.*`.
 export default {
-    title: 'משלוחים',
-    sub: '{courier} משלוחי שליח · {pickup} איסופים עצמיים',
+    title: 'עמדת משלוחים',
 
-    view: {
-        queue: 'משלוחים',
-        poa: 'ייפויי כוח',
-        codes: 'קודי חברות',
-        points: 'נקודות איסוף',
+    tab: {
+        in_production: 'בהכנה',
+        packing: 'באריזה',
+        awaiting_courier: 'ממתין לשליח',
+        pickup: 'איסוף עצמי',
+        exceptions: 'חריגים',
+        shipped: 'נשלחו',
+        couriers: 'חברות משלוחים',
     },
 
-    export: {
-        action: 'ייצוא',
-        done: 'הייצוא ירד',
-        body: '{n} שורות · {file}',
-        file: 'deliveries-{date}.csv',
+    kpi: {
+        inProduction: 'בהכנה',
+        packing: 'באריזה',
+        awaitingCourier: 'ממתין לשליח',
+        readyForPickup: 'מוכן לאיסוף',
+        exceptions: 'חריגים',
+        shippedToday: 'נשלחו היום',
+        collectedToday: 'נאספו היום',
     },
 
-    range: {
-        note: '{n} משלוחים בטווח ({from} עד {to}) · שלבי הטיפול נספרים בתוך הטווח',
-        hint: 'בחר טווח תאריכים כדי לקבל ספירה לפי שלב טיפול',
-        open: 'ללא הגבלה',
-    },
+    scanLabel: 'סריקה',
+    scanPlaceholder: 'סרקו ברקוד הזמנה או מכל',
+    search: 'הזמנה · מקבל · עיר · מספר מעקב',
 
-    // The handling stages in stores/deliveries.js DELIVERY_STAGES.
-    stage: {
-        all: 'הכל',
-        assign: 'ממתין להקצאת שליח',
-        handed: 'נמסר לשליח',
-        transit: 'בדרך',
-        pickup: 'מוכן לאיסוף',
-        done: 'נמסר',
+    scan: {
+        orderNotFound: 'הזמנה לא נמצאה',
+        orderNotInStation: 'ההזמנה במצב {status} — לא בעמדה',
+        orderOpened: '✓ ההזמנה נפתחה',
+        containerScanned: '✓ פריט {k} מתוך {n} · {name}, {city}',
+        alreadyScanned: 'הפריט כבר נסרק',
+        belongsToAnotherOrder: 'הפריט שייך להזמנה {id}, לא להזמנה הפתוחה',
+        badBarcode: 'ברקוד לא תקין',
+        allScannedShipping: '✓ כל הפריטים נסרקו — אפשר לשייך לשליח',
+        allScannedPickup: '✓ כל הפריטים נסרקו — אפשר לסמן מוכן לאיסוף',
     },
-
-    filterGroup: {
-        state: 'מצב המשלוח',
-        how: 'אופן מסירה',
-        where: 'יעד',
-    },
-
-    filter: {
-        noun: 'משלוחים',
-        field: {
-            status: 'סטטוס',
-            tracking: 'מספר מעקב',
-            signed: 'ייפוי כוח',
-            type: 'אופן מסירה',
-            courier: 'חברת שליחויות',
-            city: 'עיר',
-            point: 'נקודת איסוף',
-        },
-        trackingState: {
-            yes: 'יש מספר מעקב',
-            no: 'ללא מספר מעקב',
-        },
-        poaState: {
-            yes: 'חתום',
-            no: 'חסר',
-        },
-        noCourier: 'לא הוקצה שליח',
-        noPoint: 'איסוף בבית המרקחת',
-        search: 'חיפוש משלוח',
-        searchPlaceholder: 'הזמנה · מקבל · עיר · מספר מעקב',
-        stage: 'שלב טיפול',
-        stageAll: 'שלב טיפול — הכל',
-        status: 'סטטוס הזמנה',
-        statusAll: 'סטטוס — הכל',
-        type: 'אופן מסירה',
-        typeAll: 'אופן מסירה — הכל',
-        courier: 'חברת שליחויות',
-        courierAll: 'חברת שליחויות — הכל',
-        tracking: 'מספר מעקב',
-        trackingAll: 'מספר מעקב — הכל',
-        trackingYes: 'עם מספר מעקב',
-        trackingNo: 'בלי מספר מעקב',
-        city: 'עיר יעד',
-        cityAll: 'עיר יעד — הכל',
-        option: '{label} ({n})',
-    },
-
-    count: 'משלוחים · מתוך {n} בטווח',
 
     col: {
         order: 'הזמנה',
+        sentToLab: 'נשלחה למעבדה ב-',
+        practitioner: 'מטפל',
         recipient: 'מקבל',
-        type: 'אופן מסירה',
-        address: 'כתובת',
-        courier: 'חברת שליחויות',
-        tracking: 'מספר מעקב',
+        city: 'עיר',
+        ship: 'אופן מסירה',
+        containers: 'מכלים',
+        gate: 'מצב השער',
+        scanned: 'נסרקו',
+        courier: 'חברה',
+        packages: 'חבילות',
+        trackingNumber: 'מספר מעקב',
+        linkedAt: 'שויך ב-',
         status: 'סטטוס',
-        date: 'תאריך',
-        actions: 'פעולות',
+        problem: 'הבעיה',
+        since: 'ממתי',
+        payer: 'מטפל / משלם',
+        phone: 'טלפון',
+        readySince: 'מוכן מ-',
+        handedAt: 'נמסר / נאסף ב-',
+        by: 'על ידי',
     },
 
-    row: {
-        street: '{street} {num}, {city}',
-        addressDetail: 'דירה {apt} · קומה {floor} · כניסה {entry}',
-        addressPending: 'כתובת תמולא ע״י הלקוח',
-        noCourier: 'לא הוקצה',
-        supplierCode: 'קוד ספק {code}',
-        sentOn: 'נשלח ב-{date}',
-        notified: 'הודענו ב-{stamp}',
-        none: '—',
-        point: 'נקודת איסוף: {name}',
-        urgent: 'דחוף',
-    },
-
-    action: {
-        assign: 'הקצה שליח',
-        updateTracking: 'עדכון מעקב',
-        ship: 'סמן כנשלח',
-        shipBlocked: 'אי אפשר לסמן כנשלח לפני שיש ייפוי כוח חתום',
-        notifyPickup: 'הודע שמוכן',
-        open: 'פתח',
-    },
-
-    empty: {
-        title: 'אין משלוחים בשלב הזה',
-        sub: 'בחר שלב אחר, הרחב את טווח התאריכים או נקה את הסינון',
-    },
-
-    assign: {
-        title: 'הקצאת שליח · {id}',
-        courier: 'חברת שליחויות',
-        courierPick: 'בחר חברת שליחויות',
-        courierOption: '{code} — {name}',
-        courierPhone: 'טלפון החברה: {phone}',
-        sentOn: 'תאריך שליחה',
-        save: 'שמור והקצה',
-        addressMissing:
-            'הכתובת עדיין לא התקבלה מהלקוח. אפשר להקצות שליח, אבל אין לאן למסור עד שהכתובת תגיע.',
-        poaMissing:
-            'למקבל אין ייפוי כוח חתום. אפשר להקצות שליח, אבל המסירה חסומה עד לחתימה — את הבקשה שולחים מלשונית ייפויי כוח.',
-        done: {
-            title: 'השליח הוקצה',
-            body: '{courier} · מספר מעקב {tracking}',
-            bodyNoTracking: '{courier} · מספר המעקב יוזן בהמשך',
-        },
-    },
-
-    tracking: {
-        label: 'מספר מעקב',
-        format: 'אות הספק, שש ספרות, ואחריהן IL — כפי שמודפס על תווית המשלוח',
-        invalid: 'המספר לא בפורמט הצפוי: אות ספק, שש ספרות, ואחריהן IL',
-        mismatch:
-            'המספר מתחיל באות {found}, ולא באות {expected} של החברה שנבחרה',
-        manual: 'לאף אחת מחברות השליחויות אין ממשק API. מספר המעקב מוקלד מתווית המשלוח ונשמר על ההזמנה בלבד — אין בדיקה מול החברה ואין עדכון מצב אוטומטי.',
+    gate: {
+        ok: '✓',
+        noAddress: 'חסרה כתובת',
+        noPoa: 'חסר ייפוי כוח',
     },
 
     ship: {
-        title: 'סימון ההזמנה כנשלחה',
-        body: 'ההזמנה {id} תסומן כנשלחה עם {courier}.',
-        confirm: 'סמן כנשלח',
-        effect: {
-            status: 'סטטוס ההזמנה יעודכן ל״נשלח״, וכל הפורמולות שבה יסומנו כנשלחו',
-            date: 'תאריך השליחה יישמר על ההזמנה',
-            message:
-                'תישלח ללקוח הודעת WhatsApp עם שם חברת השליחויות ומספר המעקב',
-        },
-        done: {
-            title: 'ההזמנה סומנה כנשלחה',
-            body: '{id} · {courier}',
-        },
+        courier: 'שליח',
+        pickup: 'איסוף עצמי',
     },
 
-    notify: {
-        title: 'הודעה שההזמנה מוכנה לאיסוף',
-        body: 'תישלח הודעה ל{name} ({phone}) על ההזמנה {id}.',
-        confirm: 'שלח הודעה',
-        effect: {
-            template: 'הודעת WhatsApp בתבנית ״מוכן לאיסוף״',
-            details: 'ההודעה כוללת את כתובת בית המרקחת ואת שעות הפעילות',
-        },
-        done: {
-            title: 'ההודעה נשלחה',
-            body: '{name} · מוכן לאיסוף',
-        },
+    action: {
+        linkCourier: 'שייך לשליח',
+        retry: 'נסה שוב',
+        manualTracking: 'הזנת מספר מעקב ידנית',
+        sendPoaRequest: 'שלח בקשה למטופל',
+        editAddress: 'עריכת כתובת',
+        open: 'פתח',
+        markReady: 'מוכן לאיסוף',
+        markCollected: 'נאסף',
+        reprintLabel: 'הדפס מדבקות משלוח',
+        printPickupList: 'הדפס רשימת איסוף',
     },
 
-    poa: {
-        title: 'ייפוי כוח לשליח',
-        note: 'מסירה בשליח מחייבת ייפוי כוח חתום מהמקבל: השליח מוסר את החבילה למי שפותח את הדלת או משאיר אותה בכתובת, ובלי חתימה אין למי לייחס את המסירה. הזמנות באיסוף עצמי אינן נדרשות לייפוי כוח — המקבל מזדהה בבית המרקחת.',
-        kpi: {
-            missing: 'ממתין לחתימה',
-            requested: 'נשלחה בקשה',
-            signed: 'חתום',
+    manual: 'ידני',
+
+    empty: {
+        title: 'אין הזמנות בטאב הזה',
+    },
+
+    exceptions: {
+        empty: 'אין חריגים כרגע',
+    },
+
+    toast: {
+        readyForPickup: 'ההזמנה סומנה כמוכנה לאיסוף',
+        poaRequested: 'בקשת ייפוי כוח נשלחה למטופל',
+        linked: 'שויך לשליח',
+        linkFailed: 'השיוך נכשל',
+    },
+
+    export: {
+        none: 'אין טבלה לייצוא בטאב הזה',
+        file: '{tab}-{date}.xlsx',
+    },
+
+    // StationOrderCard.vue — כרטיס ההזמנה בעמדה
+    card: {
+        urgent: 'דחוף',
+        recipientTitle: 'מקבל וכתובת',
+        recipient: 'מקבל',
+        phone: 'טלפון',
+        address: 'כתובת',
+        city: 'עיר',
+        street: 'רחוב ומספר',
+        apt: 'דירה',
+        floor: 'קומה',
+        entry: 'כניסה',
+        notes: 'הערות משלוח',
+        editAddress: 'עריכת כתובת',
+        addressSaved: 'הכתובת נשמרה',
+        addressMissing: 'חסרה כתובת מלאה',
+        poa: 'ייפוי כוח',
+        poaSigned: 'חתום',
+        poaMissing: 'חסר',
+        poaRequested: 'בקשה נשלחה',
+        poaRequestedAt: 'נשלחה ב-{stamp}',
+        requestPoa: 'שלח בקשה למטופל',
+        shipTo: {
+            me: 'אליי (המטפל)',
+            patient: 'אל המטופל/ת',
+            pickup: 'איסוף עצמי',
         },
-        state: {
-            missing: 'חסר ייפוי כוח',
-            requested: 'בקשה נשלחה',
-            signed: 'חתום',
-        },
+
+        packingTitle: 'רשימת בדיקה לאריזה',
         col: {
-            state: 'ייפוי כוח',
-            city: 'עיר יעד',
+            item: 'פריט',
+            containers: 'מכלים',
         },
-        request: 'בקש ב-WhatsApp',
-        requestAgain: 'בקש שוב',
-        requestAll: 'בקשה מכל {n} המקבלים',
-        requestedAt: 'נשלחה ב-{stamp}',
-        confirm: {
-            title: 'בקשת ייפוי כוח מהמקבל',
-            body: 'תישלח בקשה ל{name} ({phone}) לחתום על ייפוי כוח לשליח עבור ההזמנה {id}.',
-            label: 'שלח בקשה',
-        },
-        confirmAll: {
-            title: 'בקשת ייפוי כוח מכל המקבלים',
-            body: 'תישלח בקשה ל-{n} מקבלים שאין להם ייפוי כוח חתום.',
-            label: 'שלח את כל הבקשות',
-        },
-        effect: {
-            template: 'הודעת WhatsApp בתבנית ״בקשת כתובת וייפוי כוח״',
-            link: 'ההודעה כוללת קישור לחתימה דיגיטלית',
-            blocked: 'ההזמנה תישאר חסומה למסירה עד שהחתימה תתקבל',
-        },
-        done: {
-            title: 'הבקשה נשלחה',
-            body: '{name} · ייפוי כוח לשליח',
-            bodyAll: '{n} בקשות ייפוי כוח נשלחו',
-        },
-        empty: {
-            missing: {
-                title: 'לכל המשלוחים יש ייפוי כוח',
-                sub: 'אין הזמנה בשליח שממתינה לחתימה',
-            },
-            requested: {
-                title: 'אין בקשות פתוחות',
-                sub: 'בקשה שנשלחה תופיע כאן עד שהחתימה תתקבל',
-            },
-            signed: {
-                title: 'אין עדיין ייפויי כוח חתומים',
-                sub: 'הזמנה בשליח עם חתימה תופיע כאן',
-            },
-        },
+        num: '{k} מתוך {n}',
+        tick: 'סימון',
+        manualTick: 'סימון ידני',
+        manualTickBody: 'המכל יסומן כנסרק ידנית, ללא ברקוד.',
+
+        shipmentTitle: 'משלוח',
+        courier: 'חברת שליחויות',
+        packages: 'מספר חבילות',
+        link: 'שייך לשליח',
+        linking: 'משייך לשליח…',
+        linked: 'שויך לשליח',
+        linkedBody: 'מספר מעקב {tracking} · {courier}',
+        linkFailed: 'השיוך נכשל',
+        tracking: 'מספר מעקב',
+        trackingNumber: 'מספר מעקב',
+        linkedAt: 'שויך ב-{stamp} על ידי {by}',
+        manual: 'ידני',
+        retry: 'נסה שוב',
+        manualTracking: 'הזנת מספר מעקב ידנית',
+        reprintLabel: 'הדפס מדבקות משלוח',
+
+        contentTitle: 'תוכן ההזמנה',
+
+        historyTitle: 'היסטוריה',
+        visibleToCustomer: 'הלקוח רואה',
+
+        stepBack: 'החזר צעד',
+        stepBackDestroyLabel:
+            'אם כבר הודפסה מדבקת משלוח, יש להשמיד אותה — מדבקה חדשה תודפס בשיוך הבא.',
+        cancelOrder: 'ביטול הזמנה',
+        markReady: 'מוכן לאיסוף',
+        markCollected: 'נאסף',
+        collectedByName: 'נאסף על ידי (רשות)',
+        openInOrders: 'פתח במסך ההזמנות',
     },
 
-    // V2 — pickup points and the daily dispatch alert
-    alert: {
-        title: '{points} נקודות איסוף יוצאות היום · {orders} הזמנות ממתינות ({ready} מוכנות)',
-        none: 'אין נקודות איסוף שיוצאות היום',
-        open: 'לנקודות האיסוף',
+    event: {
+        packing_started: 'התחילה אריזה',
+        container_scanned_manual: 'מכל סומן ידנית',
+        shipment_linked: 'שויך לשליח, מספר מעקב {tracking}',
+        shipment_link_failed: 'שיוך לשליח נכשל: {message}',
+        shipment_manual: 'מספר מעקב הוזן ידנית',
+        shipment_cancelled: 'המשלוח בוטל',
+        label_printed: 'מדבקת משלוח הודפסה',
+        pickup_list_printed: 'ההזמנה נכנסה לרשימת איסוף',
+        handed_to_courier: 'נמסר לשליח',
+        ready_for_pickup: 'סומן כמוכן לאיסוף',
+        collected: 'נאסף',
+        address_updated: 'הכתובת עודכנה',
+        delivery_auth_requested: 'בקשת ייפוי כוח נשלחה',
+        delivery_auth_signed: 'ייפוי הכוח נחתם',
+        status_reverted: 'הוחזר צעד אחד אחורה',
+        cancelled_by_station: 'ההזמנה בוטלה מהעמדה',
     },
 
-    points: {
-        note: 'נקודת איסוף היא חנות שותפה או מטפל שאוסף עבור מטופליו: ימי יציאה, שליח קבוע והערות ריכוז. ההזמנה בוחרת נקודה; ההתראה היומית אומרת מה יוצא היום.',
-        add: 'נקודת איסוף חדשה',
-        pickupList: 'רשימת איסוף לשליח',
-        today: 'יוצאת היום',
-        inactive: 'לא פעילה',
-        waiting: '{n} ממתינות · {ready} מוכנות',
+    history: {
+        statusChange: 'הסטטוס השתנה מ-{from} ל-{to}',
+    },
+
+    // CourierSettingsTab.vue
+    courierTab: {
+        title: 'חברות משלוחים',
         col: {
-            name: 'נקודת איסוף',
-            kind: 'סוג',
-            address: 'כתובת',
-            days: 'ימי יציאה',
-            courier: 'שליח',
-            notes: 'הערות ריכוז',
-            waiting: 'הזמנות ממתינות',
-        },
-        editor: {
-            newTitle: 'נקודת איסוף חדשה',
-            editTitle: 'עריכת נקודת איסוף · {name}',
-            kind: 'סוג הנקודה',
-            practitioner: 'מטפל',
-            pickPractitioner: 'בחירת מטפל…',
-            nameHe: 'שם (עברית)',
-            nameEn: 'שם (אנגלית)',
-            city: 'עיר',
-            address: 'כתובת',
-            days: 'ימי יציאה',
-            courier: 'שליח קבוע',
-            noCourier: 'ללא שליח קבוע',
-            notes: 'הערות ריכוז',
-            notesPh: 'לדוגמה: כל 4 הזמנות להוציא משלוח אחד',
+            name: 'חברה',
+            connection: 'חיבור',
             active: 'פעילה',
-            activeOn: 'מוצעת בהזמנות חדשות',
-            activeOff: 'לא מוצעת בהזמנות חדשות',
-            createConfirm: 'הקם נקודה',
-            saveConfirm: 'שמור שינויים',
-            validate: {
-                name: 'נא להזין שם',
-                practitioner: 'נא לבחור מטפל',
-                days: 'לפחות יום יציאה אחד',
-            },
+            default: 'ברירת מחדל',
+            phone: 'טלפון',
+            contact: 'איש קשר',
+            lastPickup: 'שעת איסוף אחרונה',
+            notes: 'הערות',
+            lastResult: 'הצלחה / שגיאה אחרונה',
         },
-        toast: {
-            created: 'נקודת האיסוף הוקמה',
-            updated: 'נקודת האיסוף עודכנה',
-        },
+        connected: 'מחובר',
+        notConnected: 'אין חיבור',
+        noConnection: 'אי אפשר להפעיל חברה בלי חיבור',
+        hasWaiting:
+            'אי אפשר להשבית — {n} הזמנות ממתינות לשליח הזה | אי אפשר להשבית — הזמנה אחת ממתינה לשליח הזה',
+        lastSuccess: 'הצלחה אחרונה: {stamp}',
     },
 
+    // PickupListModal.vue
     pickupList: {
         title: 'רשימת איסוף לשליח',
-        note: 'החבילות שנמסרו לשליח וטרם נשלחו — מוכנות לאריזה עם שליח מוקצה. היום זו שאילתת ״רשימת הזמנות לתפוז״.',
-        courier: 'שליח',
+        titleFor: 'רשימת איסוף · {courier}',
         col: {
             order: 'הזמנה',
             recipient: 'מקבל',
-            address: 'כתובת',
-            phone: 'טלפון',
+            city: 'עיר',
+            packages: 'חבילות',
             tracking: 'מספר מעקב',
-            items: 'פריטים',
         },
-        empty: 'אין חבילות ממתינות לשליח זה',
-        print: 'הדפסת הרשימה',
-        printed: 'הרשימה נפתחה להדפסה',
-        blocked: 'הדפדפן חסם את חלון ההדפסה',
-        header: 'רשימת איסוף · {courier} · {date}',
-        total: 'סה״כ {n} חבילות',
-        signPharmacy: 'חתימת בית המרקחת',
-        signCourier: 'חתימת השליח',
+        totals: '{orders} הזמנות · {packages} חבילות',
+        driverName: 'שם השליח',
+        signature: 'חתימה',
+        time: 'שעה',
+        untickHint: 'כל השורות מסומנות כנאספו — יש לבטל סימון למה שנשאר',
+        print: 'הדפס רשימה',
+        handOver: 'נמסר לשליח',
+        handedTitle: 'נמסר לשליח',
+        handedBody: 'הזמנה אחת נמסרה | {n} הזמנות נמסרו',
     },
 
-    codes: {
-        title: 'מיפוי קודי חברות שליחויות',
-        note: 'כל חברת שליחויות מזוהה בקוד אות בודדת, שמודפס על תווית המשלוח ופותח את מספר המעקב. הקוד עצמו קבוע; שם החברה והטלפון שלה מוגדרים כאן ומשמשים בכל הזמנה חדשה.',
-        col: {
-            code: 'קוד ספק',
-            name: 'שם חברת השליחויות',
-            phone: 'טלפון',
-            api: 'אינטגרציית API',
-            orders: 'משלוחים על השולחן',
-        },
-        nameLabel: 'שם החברה לקוד {code}',
-        phoneLabel: 'טלפון החברה לקוד {code}',
-        api: {
-            on: 'מחובר',
-            off: 'בהכנה',
-        },
-        save: 'שמור מיפוי',
-        historical: 'היסטורי — לא להקצאה חדשה',
-        tp: 'מספר TP + מספר משלוח',
-        confirm: {
-            title: 'שמירת מיפוי חברות שליחויות',
-            body: 'שמות חברות השליחויות והטלפונים שלהן יעודכנו במערכת.',
-            label: 'שמור מיפוי',
-        },
-        effect: {
-            newOrders: 'כל הזמנה חדשה תשתמש בשמות המעודכנים',
-            oldOrders: 'הזמנות קיימות ימשיכו להציג את קוד הספק שנשמר בהן',
-            log: 'השינוי יירשם ביומן המערכת',
-        },
-        done: {
-            title: 'המיפוי נשמר',
-            body: 'הקודים ישמשו בכל הזמנה חדשה',
-        },
+    // ManualTrackingModal.vue
+    manualTracking: {
+        title: 'הזנת מספר מעקב ידנית',
+        courier: 'חברת שליחויות',
+        tracking: 'מספר מעקב',
+        save: 'שמור',
+    },
+
+    // CollectModal.vue
+    collect: {
+        title: 'סימון כנאסף',
+        byLabel: 'נאסף על ידי (רשות)',
+        byHint: 'למי שאוסף עבור המטופל — לא נדרש כברירת מחדל',
+        confirm: 'סמן כנאסף',
     },
 };

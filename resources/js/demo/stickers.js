@@ -260,9 +260,16 @@ export const STICKER_TEMPLATES = [
             field('tracking', 'tracking', {
                 x: 31,
                 y: 52,
-                w: 67,
+                w: 48,
                 size: 7,
                 label: true,
+            }),
+            field('split', 'split', {
+                x: 81,
+                y: 52,
+                w: 17,
+                size: 7,
+                align: 'end',
             }),
         ],
         updated: at(60, 14, 5),
@@ -386,7 +393,13 @@ export function buildStickerPrints(orders, receipts) {
         );
 
         if (
-            ['packed', 'sent', 'closed'].includes(order.status) &&
+            [
+                'packing',
+                'awaiting_courier',
+                'shipped',
+                'ready_for_pickup',
+                'collected',
+            ].includes(order.status) &&
             live.length
         ) {
             const count = live.reduce((sum, item) => sum + prepCount(item), 0);
@@ -400,11 +413,14 @@ export function buildStickerPrints(orders, receipts) {
             );
         }
 
-        if (['sent', 'closed'].includes(order.status) && order.courier) {
+        if (
+            ['awaiting_courier', 'shipped'].includes(order.status) &&
+            order.courier
+        ) {
             push(
                 'shipping',
                 order.id,
-                1,
+                order.packagesCount || 1,
                 order.courier,
                 `sticker:${order.id}:ship`,
             );

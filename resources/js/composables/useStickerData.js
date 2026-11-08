@@ -12,6 +12,7 @@ import { formatAddress } from '@/components/users/address';
 import { useLocalized } from '@/composables/useLocalized';
 import { batchBarcode, ITEM_UOM_IDS, ORG, STICKER_RULES } from '@/config';
 import { code39Svg, code39Value } from '@/lib/barcode';
+import { containerBarcode, orderContainers } from '@/lib/containers';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
 import { esc, printHtml } from '@/lib/print';
 import { useInventoryStore } from '@/stores/inventory';
@@ -62,6 +63,14 @@ export function useStickerData() {
         const settings = orders.printTexts || {};
         const made = isoDaysAgo(0);
         const months = type?.expiryMonths || STICKER_RULES.fallbackExpiryMonths;
+        const lineNo =
+            orderContainers(order).find((row) => row.item.id === item.id)
+                ?.lineNo || 1;
+        // `total` can run past the item's real container count — a few spare
+        // labels for capsules, never a container of their own (lib/containers.js)
+        // — so a spare repeats the last real container's own barcode rather than
+        // inventing one the station would never find.
+        const containerNo = Math.min(index, item.packages || 1);
 
         return {
             ...pharmacy(),
@@ -87,7 +96,7 @@ export function useStickerData() {
             expiry: fmtISO(addMonths(made, months)),
             orderId: order.id,
             split: `${index}/${total}`,
-            barcode: item.id || order.id,
+            barcode: containerBarcode(order.id, lineNo, containerNo),
         };
     }
 
@@ -127,18 +136,19 @@ export function useStickerData() {
         };
     }
 
-    /** Field values for the parcel label of one order. */
-    function shippingData(order) {
+    /** Field values for package `index` of `total` on one order's shipment. */
+    function shippingData(order, index = 1, total = 1) {
         return {
             ...pharmacy(),
             patient: loc(order.patient.name),
             address: formatAddress(order.address, t, loc),
-            phone: order.patient.phone || '',
+            phone: order.recipientPhone || order.patient.phone || '',
             courier: order.courier
                 ? courierName(order.courier)
                 : t('fulfilment.pickup'),
             tracking: order.tracking || '',
             orderId: order.id,
+            split: `${index}/${total}`,
             barcode: order.id,
         };
     }
@@ -183,9 +193,15 @@ export function useStickerData() {
         return rows;
     }
 
-    const labelsForShipping = (order) => [
-        { key: order.id, data: shippingData(order) },
-    ];
+    /** One shipping label per package (SHIPPING_STATION_SPEC.md §8). */
+    function labelsForShipping(order) {
+        const total = Math.max(1, Number(order.packagesCount) || 1);
+
+        return Array.from({ length: total }, (_, i) => ({
+            key: `${order.id}-${i + 1}`,
+            data: shippingData(order, i + 1, total),
+        }));
+    }
 
     /** One element as positioned markup. Empty values print nothing. */
     function elementHtml(element, data) {

@@ -16,7 +16,6 @@ import { useLocalized } from '@/composables/useLocalized';
 import { isSettled, LAB_ROLE_IDS, ORG, SAFETY_LEVEL_IDS } from '@/config';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
 import { esc, printHtml } from '@/lib/print';
-import { useDeliveriesStore } from '@/stores/deliveries';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 import { shelfItems, trackedItems, useOrdersStore } from '@/stores/orders';
@@ -28,7 +27,6 @@ export function usePrepSheet() {
     const orders = useOrdersStore();
     const inventory = useInventoryStore();
     const items = useItemsStore();
-    const deliveries = useDeliveriesStore();
 
     const text = (value) => esc(loc(value));
 
@@ -89,7 +87,7 @@ export function usePrepSheet() {
         }
 
         const paid = (order.audit || []).find(
-            (row) => row.valueType === 'status' && row.to === 'new',
+            (row) => row.valueType === 'status' && row.to === 'pending_payment',
         );
 
         return paid?.when?.stamp
@@ -99,13 +97,7 @@ export function usePrepSheet() {
 
     function deliveryLine(order) {
         if (order.deliveryType === 'pickup') {
-            const point = order.pickupPoint
-                ? deliveries.pointById(order.pickupPoint)
-                : null;
-
-            return point
-                ? t('orders.sheet.pickupAt', { name: loc(point.name) })
-                : t('orders.sheet.pharmacy');
+            return t('orders.sheet.pharmacy');
         }
 
         return order.courier

@@ -34,7 +34,7 @@ import {
     EVENT_KIND_IDS,
 } from '@/demo/content';
 import { buildActivities } from '@/demo/crm';
-import { buildPickupPoints } from '@/demo/deliveries';
+import { buildCourierPickupLists, buildCourierSettings } from '@/demo/deliveries';
 import {
     buildBatchUse,
     buildBatches,
@@ -173,7 +173,7 @@ export function buildDataset() {
             ...orders
                 .filter(
                     (order) =>
-                        order.status === 'new' &&
+                        order.status === 'pending_payment' &&
                         (order.paid || (order.credit && !order.creditPaid)),
                 )
                 .flatMap((order) =>
@@ -297,7 +297,8 @@ export function buildDataset() {
 
         // deliveries & lab (V2)
         cities: DEMO_CITIES,
-        pickupPoints: buildPickupPoints(practitioners),
+        courierSettings: buildCourierSettings(),
+        courierPickupLists: buildCourierPickupLists(orders),
         printTexts: PRINT_TEXTS,
         // crm (V2)
         activities: buildActivities(practitioners, customers, orders),

@@ -29,7 +29,7 @@ const round2 = (value) => Math.round(value * 100) / 100;
 const monthStart = (iso) => `${String(iso).slice(0, 7)}-01`;
 
 /** Orders whose shelf lines have left the pharmacy — what "sales" counts. */
-const SOLD_STATUS_IDS = ['sent', 'closed'];
+const SOLD_STATUS_IDS = ['shipped', 'collected'];
 
 const PO_SERIES = 'PO-';
 const NOTE_SERIES = 'SDN-';

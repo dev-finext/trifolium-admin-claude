@@ -137,14 +137,12 @@ export default {
 
     row: {
         remind: 'תזכורת',
-        assign: 'הקצה שליח',
         open: 'פתח',
     },
 
     bulk: {
         selected: 'הזמנה אחת נבחרה | {n} הזמנות נבחרו',
         toLab: 'העבר למעבדה',
-        assignCourier: 'הקצה שליח',
         remind: 'שלח תזכורת',
         export: 'ייצוא נבחרות',
         clear: 'נקה בחירה',
@@ -158,9 +156,6 @@ export default {
         toLabNone: 'אין הזמנה שניתן להעביר למעבדה',
         toLabNoneBody:
             'הזמנה עוברת למעבדה אחרי שהיא שולמה, או כשהמטפל מאושר להקפה — ורק אם יש בה פורמולה לרקיחה',
-        courierTitle: 'הקצאת שליח לכל ההזמנות שנבחרו',
-        courierBody: '{n} הזמנות יוקצו ל{courier}.',
-        courierDone: 'שליח הוקצה',
         remindTitle: 'שליחת תזכורות תשלום',
         remindBody: 'יישלחו {n} הודעות בתבנית ״תזכורת תשלום״.',
         remindDone: 'התזכורות נשלחו',
@@ -203,6 +198,7 @@ export default {
             'הזמנה בהקפה — טרם שולמה · {name} מאושר לתשלום דחוי, ולכן ההזמנה ירדה למעבדה ללא תשלום. הסכום נכלל ביתרת חוב פתוחה של {debt} (גיל החוב: {days} ימים) ונגבה בלינק מרוכז מעמוד כספים.',
         docFailed:
             'הפקת חשבונית המס נכשלה — התשלום נסלק, אך ספק החשבוניות החזיר שגיאה ולא הופק מסמך. יש להפיק מחדש בלשונית תשלום.',
+        openInStation: 'פתח בעמדת המשלוחים',
     },
 
     tabs: {
@@ -431,66 +427,42 @@ export default {
     },
 
     delivery: {
-        // V2
-        pickupPointNamed: '{name} · {address}',
-        pickupAtPharmacy: 'בית המרקחת',
+        // From "בהכנה" onward only the shipping station moves an order — this
+        // tab is read-only (SHIPPING_STATION_SPEC.md §13).
+        pickupCard: 'איסוף עצמי',
         method: 'אופן מסירה',
-        pickupPoint: 'נקודת איסוף',
+        pickupPoint: 'מיקום האיסוף',
         hours: 'שעות פעילות',
         collector: 'אוסף',
         phone: 'טלפון',
         recipient: 'מקבל',
-        city: 'עיר',
-        street: 'רחוב ומספר',
-        aptFloorEntry: 'דירה · קומה · כניסה',
-        notReceived: '— טרם התקבל',
+        address: 'כתובת',
+        notes: 'הערות משלוח',
+        notReceived: '— טרם התקבלה',
         poa: 'ייפוי כוח לשליח',
         poaSigned: 'חתום',
-        poaMissing: 'חסר — נדרש לפני מסירה',
+        poaRequested: 'בקשה נשלחה',
+        poaMissing: 'חסר — נדרש לפני שיוך לשליח',
         courier: 'חברת שליחויות',
-        noCourier: '— לא הוקצה',
+        noCourier: '— טרם שויך',
+        manualShipment: 'ידני',
         tracking: 'מספר מעקב',
-        shipDate: 'תאריך שליחה',
-        readyConfirm: 'שלח הודעה',
-        readyEffectMessage: 'הודעת WhatsApp בתבנית ״מוכן לאיסוף״',
-        readyEffectLogged: 'ההודעה נרשמת ביומן ההודעות ובהיסטוריית ההזמנה',
-        pickupNotReady:
-            'ההזמנה טרם מוכנה לאיסוף. המעבדה מדווחת על המוכנות בעצמה — אין מה לסמן כאן עד אז.',
-        pickupConfirm: 'סמן כנמסר',
-        pickupEffectPoints: 'צבירת הנקודות למטפל תתבצע אוטומטית',
-        pickupCard: 'איסוף עצמי',
-        addressPending:
-            'הכתובת תמולא ע״י הלקוח דרך קישור ה-WhatsApp — טרם התקבלה.',
-        addressCard: 'מקבל וכתובת',
+        packages: 'מספר חבילות',
+        shipDate: 'נשלח ב-',
         courierCard: 'שליח ומעקב',
-        assign: 'הקצאה / עדכון',
-        courierIntegrationNote:
-            'יצירת משלוח דרך חברת השליחויות — האינטגרציה בהכנה. בשלב זה יש להזין מספר מעקב ידנית.',
-        markReadyNotify: 'הודע ללקוח שההזמנה מוכנה',
-        deliveredAtPickup: 'נמסר בעת איסוף',
-        readyTitle: 'הודעה ללקוח שההזמנה מוכנה לאיסוף',
-        readyBody:
-            'תישלח הודעה ללקוח שההזמנה {id} מחכה לו בבית המרקחת. הסטטוס אינו משתנה — הוא כבר ״מוכן לאריזה״.',
-        readyDone: 'נשלחה הודעת ״מוכן לאיסוף״',
-        pickupTitle: 'סימון כנמסר בעת איסוף',
-        pickupBody: 'ההזמנה {id} תסומן כנמסרה ללקוח בבית המרקחת.',
-        pickupDone: 'סומן כנמסר בעת איסוף',
-    },
-
-    courierDialog: {
-        title: 'הקצאת שליח · {id}',
-        company: 'חברת שליחויות',
-        companyPlaceholder: 'בחר חברת שליחויות',
-        tracking: 'מספר מעקב',
-        trackingPlaceholder: 'T123456IL',
-        shipDate: 'תאריך שליחה',
-        save: 'שמור והקצה',
-        needCompany: 'יש לבחור חברת שליחויות כדי לשמור את ההקצאה.',
-        apiNote:
-            'יצירת משלוח אוטומטית דרך ה-API של חברת השליחויות — האינטגרציה בהכנה. כרגע ההזנה ידנית ומספר המעקב נשמר בהזמנה בלבד.',
-        done: 'השליח הוקצה',
-        doneBody: 'מספר מעקב {tracking} · {courier}',
-        doneNoTracking: 'מספר מעקב יוזן בהמשך · {courier}',
+        addressCard: 'מקבל וכתובת',
+        addressPending:
+            'הכתובת תמולא ע״י המטופל דרך קישור ה-WhatsApp — טרם התקבלה.',
+        unknownRecipient:
+            'לא ידוע מי מקבל את ההזמנה — יש לבחור בעמדת המשלוחים.',
+        shipmentHistory: 'היסטוריית משלוח',
+        shipmentState: {
+            active: 'פעיל',
+            cancelled: 'בוטל',
+            handed: 'נמסר לשליח',
+        },
+        collectedNote: 'נאסף ב-{stamp} · {by}',
+        openInStation: 'פתח בעמדת המשלוחים',
     },
 
     messaging: {
@@ -917,7 +889,6 @@ export default {
         pointsCredit: 'זיכוי {n} נקודות לכרטיס {code}',
         walletNeedsPin: 'כל שינוי בארנק המטפל מחייב סיסמת אישור',
         pointsLedgerRow: 'רשומה ביומן הנקודות',
-        releaseStock: 'שחרור המלאי והאצוות שהוקצו להזמנה',
         creditNoteIssued: 'תופק חשבונית זיכוי אוטומטית',
         debtRemoves: 'הסכום יוסר מיתרת החוב של המטפל',
         reasonLogged: 'הסיבה, המבצע והשעה יירשמו ביומן',
@@ -929,13 +900,9 @@ export default {
         alreadyPaid: 'ההזמנה שולמה — אין חסימת גבייה',
         collectedOnCredit: 'ההזמנה בהקפה — הגבייה בלינק המרוכז של המטפל',
         msgByTriggers: 'שליחת הודעת עדכון ללקוח לפי הטריגרים הפעילים',
-        courierOnAll: 'עדכון חברת השליחויות בכל ההזמנות',
-        trackingLater: 'מספרי מעקב יוזנו ידנית לאחר מכן',
         remindersLogged: 'ההודעות יירשמו ביומן ההודעות',
         queued: 'ההודעה תיכנס לתור התזמונים',
         quietHours: 'שעות שקט מוגדרות: {from}–{to}',
-        trackingStored: 'מספר המעקב יישמר בהזמנה',
-        shipmentManual: 'יצירת המשלוח מול חברת השליחויות נעשית ידנית',
     },
 
     // Enum labels this area needs that the shared catalog does not carry yet.

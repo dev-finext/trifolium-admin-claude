@@ -16,6 +16,8 @@ export default {
     close: 'Close',
     cancel: 'Cancel',
     confirm: 'Confirm',
+    all: 'All',
+    exportExcel: 'Export to Excel',
     clear: 'Clear',
     clearFilter: 'Clear filter',
     retry: 'Try again',

@@ -591,8 +591,17 @@ CREATE TABLE sticker_prints (
     updated_at   timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE pickup_points (
+CREATE TABLE courier_settings (
     id           text PRIMARY KEY,
+    doc          jsonb NOT NULL,
+    updated_at   timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE courier_pickup_lists (
+    id           text PRIMARY KEY,
+    courier_code text,
+    printed_at   date,
+    handed_at    date,
     doc          jsonb NOT NULL,
     updated_at   timestamptz NOT NULL DEFAULT now()
 );

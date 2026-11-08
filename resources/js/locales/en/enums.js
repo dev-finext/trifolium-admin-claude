@@ -1,13 +1,15 @@
 // English mirror of he/enums.js — same keys, real translations.
 export default {
     status: {
-        new: 'New order',
-        in_process: 'In process',
-        lab: 'In the lab',
-        packed: 'Packed',
-        sent: 'Sent',
-        closed: 'Closed',
-        on_hold: 'On hold',
+        pending_payment: 'Awaiting payment',
+        credit: 'On credit',
+        paid: 'Paid',
+        in_production: 'In preparation',
+        packing: 'Packing',
+        awaiting_courier: 'Awaiting courier',
+        shipped: 'Shipped',
+        ready_for_pickup: 'Ready for pickup',
+        collected: 'Collected',
         cancelled: 'Cancelled',
     },
     payment: {
@@ -64,15 +66,25 @@ export default {
             short: 'Interaction to approve',
             fix: 'Pharmacist approval on the Safety tab',
         },
-        lab: {
-            label: 'Stuck in the lab for 2+ days',
-            short: 'Stuck in lab',
-            fix: 'Check with the lab',
+        poa: {
+            label: 'Missing a signed power of attorney for the courier',
+            short: 'Missing POA',
+            fix: 'Send a request to the patient',
         },
-        courier: {
-            label: 'Ready to pack with no courier assigned',
-            short: 'No courier',
-            fix: 'Assign a courier',
+        unknown_recipient: {
+            label: "The order's recipient is not known",
+            short: 'Unknown recipient',
+            fix: 'Choose the recipient on the order card',
+        },
+        shipment_error: {
+            label: 'The courier link failed',
+            short: 'Shipment error',
+            fix: 'Retry, or enter a tracking number by hand',
+        },
+        stuck: {
+            label: 'Sitting at its current stage longer than usual',
+            short: 'Stuck',
+            fix: 'Open the card at the shipping station',
         },
     },
     docType: {
@@ -272,10 +284,6 @@ export default {
         thu: 'Thursday',
         fri: 'Friday',
         sat: 'Saturday',
-    },
-    pickupKind: {
-        shop: 'Partner shop',
-        practitioner: 'Practitioner',
     },
     logAction: {
         order_status_change: 'Order status changed',

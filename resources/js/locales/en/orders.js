@@ -131,14 +131,12 @@ export default {
 
     row: {
         remind: 'Remind',
-        assign: 'Assign courier',
         open: 'Open',
     },
 
     bulk: {
         selected: 'one order selected | {n} orders selected',
         toLab: 'Send to the lab',
-        assignCourier: 'Assign courier',
         remind: 'Send reminder',
         export: 'Export selected',
         clear: 'Clear selection',
@@ -152,9 +150,6 @@ export default {
         toLabNone: 'No order can be sent to the lab',
         toLabNoneBody:
             'An order goes to the lab once it is paid, or once the practitioner is approved for credit terms — and only if it has a formula to compound',
-        courierTitle: 'Assign a courier to every selected order',
-        courierBody: '{n} orders will be assigned to {courier}.',
-        courierDone: 'Courier assigned',
         remindTitle: 'Send payment reminders',
         remindBody:
             '{n} messages will go out on the "payment reminder" template.',
@@ -198,6 +193,7 @@ export default {
             'Order on credit terms — not yet paid · {name} is approved for deferred payment, so this order reached the lab unpaid. The amount is part of an open balance of {debt} (debt age: {days} days) and is collected with one consolidated link from the Finance screen.',
         docFailed:
             'Issuing the tax invoice failed — the payment was captured, but the invoice provider returned an error and no document was issued. Reissue it on the Payment tab.',
+        openInStation: 'Open at the shipping station',
     },
 
     tabs: {
@@ -432,70 +428,42 @@ export default {
     },
 
     delivery: {
-        // V2
-        pickupPointNamed: '{name} · {address}',
-        pickupAtPharmacy: 'The pharmacy',
+        // From "in production" onward only the shipping station moves an
+        // order — this tab is read-only (SHIPPING_STATION_SPEC.md §13).
+        pickupCard: 'Self pickup',
         method: 'Fulfilment',
-        pickupPoint: 'Pickup point',
+        pickupPoint: 'Pickup location',
         hours: 'Opening hours',
         collector: 'Collected by',
         phone: 'Phone',
         recipient: 'Recipient',
-        city: 'City',
-        street: 'Street and number',
-        aptFloorEntry: 'Apartment · floor · entrance',
+        address: 'Address',
+        notes: 'Delivery notes',
         notReceived: '— not received yet',
         poa: 'Power of attorney for the courier',
         poaSigned: 'Signed',
-        poaMissing: 'Missing — required before handover',
+        poaRequested: 'Request sent',
+        poaMissing: 'Missing — required before linking a courier',
         courier: 'Courier company',
-        noCourier: '— not assigned',
+        noCourier: '— not yet linked',
+        manualShipment: 'Manual',
         tracking: 'Tracking number',
+        packages: 'Packages',
         shipDate: 'Shipped on',
-        readyConfirm: 'Send the message',
-        readyEffectMessage:
-            'WhatsApp message using the "ready for pickup" template',
-        readyEffectLogged:
-            'The message is written to the message log and the order history',
-        pickupNotReady:
-            'The order is not ready for collection yet. The lab reports readiness itself — there is nothing to mark here until it does.',
-        pickupConfirm: 'Mark as collected',
-        pickupEffectPoints:
-            "The practitioner's points are credited automatically",
-        pickupCard: 'Self pickup',
-        addressPending:
-            'The customer fills the address in through the WhatsApp link — it has not arrived yet.',
-        addressCard: 'Recipient and address',
         courierCard: 'Courier and tracking',
-        assign: 'Assign / update',
-        courierIntegrationNote:
-            'Creating the shipment through the courier — the integration is in preparation. For now the tracking number is entered by hand.',
-        markReadyNotify: 'Tell the customer it is ready',
-        deliveredAtPickup: 'Handed over at pickup',
-        readyTitle: 'Tell the customer the order is ready for collection',
-        readyBody:
-            'The customer will be told that order {id} is waiting at the pharmacy. The status does not change — it is already ready for packing.',
-        readyDone: 'The "ready for pickup" message was sent',
-        pickupTitle: 'Mark as handed over at pickup',
-        pickupBody:
-            'Order {id} will be marked as handed to the customer at the pharmacy.',
-        pickupDone: 'Marked as handed over at pickup',
-    },
-
-    courierDialog: {
-        title: 'Assign a courier · {id}',
-        company: 'Courier company',
-        companyPlaceholder: 'Choose a courier company',
-        tracking: 'Tracking number',
-        trackingPlaceholder: 'T123456IL',
-        shipDate: 'Ship date',
-        save: 'Save and assign',
-        needCompany: 'Choose a courier company to save the assignment.',
-        apiNote:
-            'Creating the shipment automatically through the courier API — the integration is in preparation. For now entry is manual and the tracking number is stored on the order only.',
-        done: 'Courier assigned',
-        doneBody: 'Tracking {tracking} · {courier}',
-        doneNoTracking: 'Tracking number to be entered later · {courier}',
+        addressCard: 'Recipient and address',
+        addressPending:
+            'The address is filled in by the patient through the WhatsApp link — it has not arrived yet.',
+        unknownRecipient:
+            "The order's recipient is not known — choose one at the shipping station.",
+        shipmentHistory: 'Shipment history',
+        shipmentState: {
+            active: 'Active',
+            cancelled: 'Cancelled',
+            handed: 'Handed to courier',
+        },
+        collectedNote: 'Collected on {stamp} · {by}',
+        openInStation: 'Open at the shipping station',
     },
 
     messaging: {
@@ -930,8 +898,6 @@ export default {
         walletNeedsPin:
             "Every change to a practitioner's wallet requires an approval code",
         pointsLedgerRow: 'A row in the points ledger',
-        releaseStock:
-            'The stock and batches allocated to the order are released',
         creditNoteIssued: 'A credit note is issued automatically',
         debtRemoves:
             "The amount is removed from the practitioner's open balance",
@@ -949,14 +915,9 @@ export default {
             "The order is on credit terms — collected through the practitioner's combined link",
         msgByTriggers:
             'An update message goes to the customer per the active triggers',
-        courierOnAll: 'The courier is set on every selected order',
-        trackingLater: 'Tracking numbers are entered by hand afterwards',
         remindersLogged: 'The messages are written to the message log',
         queued: 'The message joins the schedule queue',
         quietHours: 'Quiet hours in force: {from}–{to}',
-        trackingStored: 'The tracking number is stored on the order',
-        shipmentManual:
-            'Creating the shipment with the courier is still done by hand',
     },
 
     use: {

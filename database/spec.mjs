@@ -495,7 +495,17 @@ export const TABLES = [
     { name: 'sticker_templates', source: 'stickerTemplates', key: 'id' },
     { name: 'sticker_notes', source: 'stickerNotes', key: 'id' },
     { name: 'sticker_prints', source: 'stickerPrints', key: 'id' },
-    { name: 'pickup_points', source: 'pickupPoints', key: 'id' },
+    { name: 'courier_settings', source: 'courierSettings', key: 'code' },
+    {
+        name: 'courier_pickup_lists',
+        source: 'courierPickupLists',
+        key: 'id',
+        columns: [
+            col('courier_code', 'text', 'courierCode'),
+            col('printed_at', 'date', 'printedAt.iso'),
+            col('handed_at', 'date', 'handedAt.iso'),
+        ],
+    },
     {
         // The address book. A street has no existence apart from its town, so
         // the streets are this table's line rows and not a table of their own.
