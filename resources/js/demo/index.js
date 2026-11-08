@@ -156,40 +156,12 @@ export function buildDataset() {
     const stock = buildStock();
     const products = buildProducts();
     const boms = buildBoms(stock, products);
-    // The receipts open batches for what the production runs will consume
-    // first, so a run dated weeks ago has something to draw from.
-    const receipts = buildReceipts(stock, [
-        ...new Set([
-            ...boms
-                .filter((bom) => (bom.yield?.qty || 1) > 1)
-                .flatMap((bom) =>
-                    bom.components.map((component) => component.sku),
-                ),
-            // V3 — and whatever the orders waiting for the lab are made of.
-            // Sending one down commits its quantities to named batches, so the
-            // herbs it needs have to have batches to commit to; without this
-            // the step works and reports every line short, which is true of the
-            // fixture and not of the pharmacy.
-            ...orders
-                .filter(
-                    (order) =>
-                        order.status === 'pending_payment' &&
-                        (order.paid || (order.credit && !order.creditPaid)),
-                )
-                .flatMap((order) =>
-                    (order.items || [])
-                        .filter(
-                            (item) =>
-                                item.kind === 'formula' && !item.cancelled,
-                        )
-                        .flatMap((item) =>
-                            (item.herbs || []).map((herb) => herb.id),
-                        ),
-                ),
-        ]),
-    ]);
-    const batches = buildBatches(receipts, stock);
+    // Batches are the real ones (demo/real/batches.json); receipts are the
+    // real goods-receipt history (demo/real/goodsReceipts.json) — the two no
+    // longer derive from one another.
+    const batches = buildBatches(stock);
     const batchUse = buildBatchUse(orders, batches, stock);
+    const receipts = buildReceipts(stock);
     const priceGroups = buildPriceGroups();
     const items = buildItems(DEMO_SUPPLIERS);
     // V3 — the buyer's own sheets: the pharmacy's real purchase requests and
@@ -314,7 +286,7 @@ export function buildDataset() {
         batches,
         batchUse,
         movements: [
-            ...buildMovements(receipts, batchUse),
+            ...buildMovements(batches, batchUse),
             ...production.movements,
         ].sort((a, b) =>
             `${b.when.iso}${b.id}`.localeCompare(`${a.when.iso}${a.id}`),

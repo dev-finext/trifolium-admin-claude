@@ -1,46 +1,35 @@
 // Inventory. The quantities here ARE the stock — nothing is pulled from an
 // outside system.
 //
-// Goods receipt is the only way stock enters: each receipt line opens one batch
-// with its own expiry, and every batch can be traced forward to the customer
-// who received it. The receipts that were made against a purchase order carry
-// its id; the rest record the supplier's name and delivery-note number as
-// plain data.
+// Batches, the goods-receipt history and the stock ledger come straight from
+// the real SAP extract (demo/real/batches.json, batchMovements.json,
+// goodsReceipts.json, stockCounts.json) — not invented
+// (DEMO_INVENTORY_FIXES_PROMPT.md §3). On top of that real baseline, the
+// demo's own order book (buildBatchUse) draws down whatever batches are open,
+// exactly as "העבר למעבדה" would in the running app, so the 50 real orders
+// this console manages have something real to consume.
 import {
     BATCH_EXPIRY_WARN_DAYS,
     DEFAULT_WAREHOUSE,
     convertQty,
     familyOfCode,
-    ITEM_FAMILY,
 } from '@/config';
-import { at, fraction, pickFrom, spread } from '@/demo/fixture';
+import { at, pickFrom, spread } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
+import REAL_BATCHES from '@/demo/real/batches.json';
+import REAL_BATCH_MOVEMENTS from '@/demo/real/batchMovements.json';
+import REAL_GOODS_RECEIPTS from '@/demo/real/goodsReceipts.json';
 import REAL_INGREDIENTS from '@/demo/real/ingredients.json';
 import REAL_ORDERS from '@/demo/real/orders.json';
 import REAL_PRODUCTS from '@/demo/real/products.json';
-import { DEMO_SUPPLIERS } from '@/demo/vendors';
+import REAL_STOCK_COUNTS from '@/demo/real/stockCounts.json';
 import { daysSince, isoDaysAgo } from '@/lib/dates';
 import { L } from '@/lib/localized';
 
-/** How many goods receipts the fixture carries, and where each family's batch serial starts. */
-const RECEIPT_COUNT = 16;
-const FIRST_BATCH_NUMBER = 2610;
-
-/** Inventory documents run in SAP's own 26xxxxx block. */
+/** Inventory documents run in SAP's own 26xxxxx block — only for documents this
+ * fixture itself invents (production); real receipts and counts keep their own
+ * real document numbers, which sit in lower, non-overlapping ranges. */
 const FIRST_DOC_NUMBER = 2602000;
-
-/** When the stock counts were taken, newest first. */
-const COUNT_DAYS = [12, 41, 76, 118];
-
-const COUNT_NOTES = [
-    L('ספירת רבעון', 'Quarterly count'),
-    L('ספירה חלקית — מדף עליון', 'Partial count — top shelf'),
-    L('ספירה לאחר פער במלאי', 'Count after a stock discrepancy'),
-    L('ספירת סוף שנה', 'Year-end count'),
-];
-
-/** Days between one receipt and the next, newest first. */
-const RECEIPT_GAP_DAYS = 7;
 
 /** Order statuses at which the lab has drawn the formula's herbs from stock. */
 const CONSUMING_STATUS_IDS = [
@@ -105,6 +94,20 @@ const UOM_BY_SAP = {
 
 const uomOf = (name) => UOM_BY_SAP[String(name || '').trim()] || 'g';
 
+/**
+ * One real date turned into the three language-neutral forms every record
+ * needs. The hour and minute are not in the extract, so they are a stable
+ * pseudo-time derived from the record's own key — never `now()`, so the
+ * fixture never drifts between loads (demo/fixture.js's own rule).
+ */
+function momentOf(iso, slot) {
+    return at(
+        daysSince(iso),
+        spread(`${slot}:hh`, 8, 17),
+        spread(`${slot}:mm`, 0, 59),
+    );
+}
+
 /** Which pricing prefix an item's family is priced under. */
 const KIND_BY_FAMILY = {
     herb: 'raw',
@@ -129,13 +132,6 @@ const KIND_BY_FAMILY = {
 };
 
 /**
- * One OITM row as a stock row.
- *
- * The identity, the quantities, the units, the minimum level and the safety
- * limits are SAP's own — only the warehouse id is translated, because the
- * console models two warehouses where SAP numbers seven.
- */
-/**
  * Which warehouse a row is counted in: the one `OITW` shows the quantity in,
  * and the general warehouse when the item has none anywhere.
  */
@@ -145,6 +141,13 @@ function warehouseOf(item) {
     return holding ? holding.warehouse : DEFAULT_WAREHOUSE;
 }
 
+/**
+ * One OITM row as a stock row.
+ *
+ * The identity, the quantities, the units, the minimum level and the safety
+ * limits are SAP's own — only the warehouse id is translated, because the
+ * console models two warehouses where SAP numbers seven.
+ */
 function stockRowOf(item) {
     const kind = KIND_BY_FAMILY[item.family] || 'raw';
     const onHand = Math.max(0, round2(item.onHand || 0));
@@ -167,6 +170,11 @@ function stockRowOf(item) {
         cn: pinyin,
         system: pinyin ? 'chinese' : 'west',
         wh: warehouseOf(item),
+        // The full per-warehouse breakdown, real (OITW), for a screen that
+        // needs more than the one warehouse the row is filed under.
+        warehouses: (item.warehouses || []).filter(
+            (row) => row.onHand > 0 || row.committed > 0,
+        ),
         unit: uomOf(item.stockUom),
         size: null,
         sizeUnit: null,
@@ -251,15 +259,96 @@ export function buildStock() {
     return rows.map(syncStockRow);
 }
 
-const RECEIPT_NOTES = [
-    null,
-    null,
-    L(
-        'נבדק מול תעודת המשלוח — תקין',
-        'Checked against the delivery note — correct',
-    ),
-    L('אריזה אחת פגומה, לא נקלטה', 'One package damaged, not received'),
-];
+/**
+ * Every real batch (demo/real/batches.json), as the pharmacy's own stock
+ * actually sits today — 700 of them, every one in warehouse `01` (the real
+ * data never shows a split batch, matching rule 1: only the main warehouse
+ * carries batches that count).
+ *
+ * `source` is read off the batch number itself, the same split the live
+ * database shows: a purely numeric number is the house running series, which
+ * only an item made in-house carries; anything else — a supplier's own code,
+ * or the `WV` + date the pharmacy wrote in for a receipt with no lot code —
+ * is a purchase (see [[v3-planning-batches]]: 3,646 of 5,830 batches carry the
+ * running number and are all made in-house, the rest all purchased).
+ */
+export function buildBatches(stock = []) {
+    const bySku = new Map(stock.map((row) => [row.sku, row]));
+    const numericNumber = /^\d+$/;
+
+    return REAL_BATCHES.map((real) => {
+        const row = bySku.get(real.code);
+        const name = row ? row.name : { he: real.itemName, en: real.itemName };
+        const unit = row ? row.unit : 'kg';
+        const source = numericNumber.test(real.batch) ? 'production' : 'supplier';
+        const remaining = real.quantity;
+        const daysToExp = -daysSince(real.expiresOn);
+
+        return {
+            id: String(real.batchKey),
+            number: real.batch,
+            sku: real.code,
+            name,
+            unit,
+            wh: real.warehouse,
+            source,
+            production: null,
+            // Real data carries no document linking a batch to the receipt
+            // that opened it (demo/real/goodsReceipts.json does not join to
+            // demo/real/batches.json by key) — left null rather than guessed.
+            receipt: null,
+            supplier: null,
+            supplierBatch: real.supplierBatch || null,
+            received: momentOf(real.receivedOn, `batch:${real.batchKey}:recv`),
+            madeOn: real.producedOn || null,
+            qty: real.quantity,
+            remaining,
+            expiry: real.expiresOn,
+            daysToExp,
+            state: batchStateOf(remaining, daysToExp),
+            waste: false,
+            // No real per-batch cost in this extract; the item's own last
+            // purchase price stands in, same fallback INVENTORY_SPEC.md §11
+            // uses for an opening batch ("עלות פתיחה משוערת").
+            unitCost: row?.price ?? null,
+            costEstimated: true,
+            components: null,
+            by: null,
+        };
+    });
+}
+
+/** A row with batches holds what its batches hold. */
+export function reconcileStock(stock, batches) {
+    const sums = new Map();
+
+    batches.forEach((batch) => {
+        sums.set(batch.sku, (sums.get(batch.sku) || 0) + batch.remaining);
+    });
+
+    stock.forEach((row) => {
+        if (!sums.has(row.sku)) {
+            return;
+        }
+
+        row.onHand = round2(sums.get(row.sku));
+        row.alloc = Math.min(row.alloc, row.onHand);
+        syncStockRow(row);
+    });
+}
+
+/** The state a batch is in, from what is left and how far off its expiry is. */
+export function batchStateOf(remaining, daysToExp) {
+    if (remaining <= 0) {
+        return 'depleted';
+    }
+
+    if (daysToExp < 0) {
+        return 'expired';
+    }
+
+    return daysToExp < BATCH_EXPIRY_WARN_DAYS ? 'expiring' : 'active';
+}
 
 const RECEIVERS = [
     DEMO_ACTORS.orit,
@@ -268,185 +357,43 @@ const RECEIVERS = [
 ];
 
 /**
- * Which purchase order each receipt was made against. `buildSupplierNotes`
- * (demo/purchasing.js) pairs delivery note k with receipt k, and the notes are
- * written for the orders that have had goods received — PO-26031, 26032, 26033
- * and 26036, in that order — so those four receipts name them. The rest are
- * free receipts, which is what keeps the "against a purchase order" facet
- * two-sided.
+ * Real goods receipts (demo/real/goodsReceipts.json) — 140 of them, each with
+ * its real supplier, delivery-note reference and lines. The lines carry no
+ * batch: this source does not join to demo/real/batches.json by any shared
+ * key, so a receipt's batch column stays empty rather than a guessed one.
  */
-const RECEIPT_PO = ['PO-26031', 'PO-26032', 'PO-26033', 'PO-26036'];
-
-/**
- * The supplier of each receipt, newest first: the order's supplier where the
- * receipt was made against one (the orders cycle the supplier list in code
- * order), then the raw-material and base suppliers in turn.
- */
-const RECEIPT_SUPPLIER_CODES = [
-    'S-104',
-    'S-118',
-    'S-131',
-    'S-163',
-    'S-155',
-    'S-104',
-    'S-118',
-    'S-131',
-    'S-155',
-    'S-104',
-    'S-142',
-    'S-118',
-    'S-104',
-    'S-155',
-    'S-131',
-    'S-104',
-];
-
-/**
- * Which items the receipts should open batches for, oldest receipt first: the
- * components the production runs will consume, then the ingredients the real
- * order book names, most used first. A herb an order actually consumed is what a batch has to exist
- * for — traceability that points at herbs nobody ordered is theatre.
- */
-function receiptLinePool(stock, inputs) {
-    const usage = new Map();
+export function buildReceipts(stock = []) {
     const bySku = new Map(stock.map((row) => [row.sku, row]));
 
-    REAL_ORDERS.forEach((order) => {
-        (order.lines || []).forEach((line) => {
+    return REAL_GOODS_RECEIPTS.map((real) => {
+        const when = momentOf(real.docDate, `gr:${real.docNum}`);
+        const lines = real.lines.map((line) => {
             const row = bySku.get(line.code);
 
-            if (!row || row.kind === 'shelf' || !/^[12]/.test(line.code)) {
-                return;
-            }
-
-            usage.set(line.code, (usage.get(line.code) || 0) + 1);
+            return {
+                sku: line.code,
+                name: row ? row.name : { he: line.name, en: line.name },
+                unit: row ? row.unit : uomOf(line.uom),
+                qty: line.qty,
+                wh: line.warehouse || DEFAULT_WAREHOUSE,
+                batch: null,
+                price: line.price || null,
+            };
         });
-    });
 
-    const ordered = [...usage]
-        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-        .map(([sku]) => sku)
-        .filter((sku) => !inputs.includes(sku));
-
-    return [...inputs, ...ordered].map((sku) => bySku.get(sku)).filter(Boolean);
-}
-
-/** A delivery quantity in the row's own unit. */
-function receiptQty(slot, row) {
-    if (row.unit === 'kg' || row.unit === 'l') {
-        return spread(slot, 2, 25);
-    }
-
-    if (row.unit === 'unit') {
-        return spread(slot, 20, 120);
-    }
-
-    if (row.kind === 'base') {
-        return spread(slot, 2000, 20000);
-    }
-
-    return spread(slot, 500, 5000);
-}
-
-/** Goods receipts — the single entry point of all stock. */
-export function buildReceipts(stock, productionInputs = []) {
-    const pool = receiptLinePool(stock, productionInputs);
-    const receipts = [];
-    // Lines are dealt from the pool, and batch numbers run per item family
-    // (`10-02610`), oldest receipt first — the list itself is newest first,
-    // as every list here is.
-    const serial = {};
-    const batchNoOf = (sku) => {
-        const prefix = ITEM_FAMILY[familyOfCode(sku)]?.prefix || '00';
-
-        serial[prefix] = (serial[prefix] || FIRST_BATCH_NUMBER - 1) + 1;
-
-        return `${prefix}-${String(serial[prefix]).padStart(5, '0')}`;
-    };
-    const deal = [];
-    let dealt = 0;
-    // The line a later delivery repeats — filled once the first receipt is built.
-    let repeatOf = null;
-
-    for (let i = RECEIPT_COUNT - 1; i >= 0; i -= 1) {
-        deal[i] = { count: spread(`receipt:${i}:lines`, 3, 6), from: dealt };
-        dealt += deal[i].count;
-    }
-
-    for (let i = RECEIPT_COUNT - 1; i >= 0; i -= 1) {
-        const slot = `receipt:${i}`;
-        const supplier =
-            DEMO_SUPPLIERS.find(
-                (row) => row.code === RECEIPT_SUPPLIER_CODES[i],
-            ) || DEMO_SUPPLIERS[0];
-        const days = 3 + i * RECEIPT_GAP_DAYS;
-        const { count, from } = deal[i];
-        const lines = [];
-
-        for (let k = 0; k < count; k += 1) {
-            const lineSlot = `${slot}:line:${k}`;
-            const item = pool[(from + k) % pool.length];
-            const shelfLifeMonths =
-                item.kind === 'raw'
-                    ? spread(`${lineSlot}:life`, 18, 36)
-                    : spread(`${lineSlot}:life`, 24, 48);
-
-            lines.push({
-                sku: item.sku,
-                name: item.name,
-                unit: item.unit,
-                qty: receiptQty(`${lineSlot}:qty`, item),
-                wh: item.wh,
-                batch: batchNoOf(item.sku),
-                expiry: isoDaysAgo(
-                    -Math.round(shelfLifeMonths * 30) +
-                        spread(`${lineSlot}:jitter`, 0, 180),
-                ),
-                supplierBatch: `L${spread(`${lineSlot}:sbatch`, 10000, 99999)}`,
-                // V3 — the supplier's own manufacturing date, off the same
-                // delivery note as the expiry: a few weeks to a few months
-                // before the goods reached the pharmacy.
-                madeOn: isoDaysAgo(days + spread(`${lineSlot}:made`, 14, 150)),
-                // V2: how many item labels the receipt asked for
-                labels: spread(`${lineSlot}:labels`, 1, 3),
-            });
-        }
-
-        // V3 — the newest delivery brings a second shipment of a lot the
-        // pharmacy already has on the shelf: same item, same supplier batch,
-        // same expiry. It joins the batch that is already open rather than
-        // opening a second one under the same number.
-        if (i === 0 && repeatOf) {
-            lines.push({
-                ...repeatOf,
-                qty: receiptQty('repeat:qty', repeatOf),
-            });
-        }
-
-        receipts.unshift({
-            id: `GR-26${70 + i * 2}`,
-            supplier: supplier.name,
-            supplierCode: supplier.code,
-            po: RECEIPT_PO[i] || null,
-            docNum: String(spread(`${slot}:doc`, 400000, 499999)),
-            when: at(
-                days,
-                spread(`${slot}:hh`, 9, 16),
-                spread(`${slot}:mm`, 0, 59),
-            ),
-            by: pickFrom(`${slot}:by`, RECEIVERS),
-            note: pickFrom(`${slot}:note`, RECEIPT_NOTES),
+        return {
+            id: `GR-${real.docNum}`,
+            supplier: real.supplier,
+            supplierCode: real.supplierCode,
+            po: null,
+            docNum: String(real.docNum),
+            when,
+            by: null,
+            note: real.comments || null,
             lines,
-            batches: lines.map((line) => line.batch),
-        });
-
-        // The oldest receipt in the run donates the lot that comes again.
-        if (i === RECEIPT_COUNT - 1) {
-            repeatOf = lines[0] || null;
-        }
-    }
-
-    return receipts;
+            batches: [],
+        };
+    });
 }
 
 // --------------------------------------------------------- inventory documents
@@ -454,16 +401,11 @@ export function buildReceipts(stock, productionInputs = []) {
 /**
  * The paperwork behind every movement, as SAP posts it.
  *
- * Stock does not move in SAP without a document: a goods receipt (`OIGN`)
- * brings it in, a goods issue (`OIGE`) takes it out, a count (`OINC`) corrects
- * it and a transfer (`OWTR`) moves it between warehouses. Almost all of the
- * first two are raised by a production order and say so — 64% of receipt lines
- * and 87% of issue lines in the live database carry `BaseType` 202 — and SAP
- * writes the order's number into the remark, which is why the remarks below
- * read the way they do.
- *
- * The documents are the record; the batches, the quantities and the movement
- * ledger are what they produced, and are built before them.
+ * The goods receipts and the stock counts are real documents
+ * (demo/real/goodsReceipts.json, demo/real/stockCounts.json), kept under
+ * their own real document numbers. A production run is still this fixture's
+ * own (production orders are demo-built), so those keep the synthetic
+ * `FIRST_DOC_NUMBER` series — a range real receipts and counts never reach.
  */
 export function buildInventoryDocs({ receipts, production, stock }) {
     const bySku = new Map(stock.map((row) => [row.sku, row]));
@@ -475,12 +417,12 @@ export function buildInventoryDocs({ receipts, production, stock }) {
         return String(number);
     };
 
-    // The supplier receipts, oldest first, so the numbers run with the dates.
+    // The real goods receipts, oldest first, so the numbers run with the dates.
     [...receipts]
         .sort((a, b) => b.when.daysAgo - a.when.daysAgo)
         .forEach((receipt) => {
             docs.push({
-                id: next(),
+                id: receipt.docNum,
                 type: 'goods_receipt',
                 base: receipt.po ? 'purchase_order' : 'manual',
                 baseRef: receipt.po || null,
@@ -588,49 +530,48 @@ export function buildInventoryDocs({ receipts, production, stock }) {
             }
         });
 
-    // The counts the pharmacy runs on the shelf it cannot weigh per order, and
-    // the one transfer a year that moves stock to the external warehouse.
-    const countable = stock
-        .filter((row) => row.onHand > 0)
-        .sort((a, b) => String(a.sku).localeCompare(String(b.sku)));
-
-    COUNT_DAYS.forEach((daysAgo, i) => {
-        const lines = Array.from({ length: 3 }, (_, k) => {
-            const row = countable[(i * 7 + k * 31) % countable.length];
-            const counted = round2(
-                row.onHand * (1 + (fraction(`count:${i}:${k}`) - 0.5) / 12),
-            );
+    // The real stock counts (demo/real/stockCounts.json) — 25 of them, each
+    // with its real variance.
+    REAL_STOCK_COUNTS.forEach((real) => {
+        const lines = real.lines.map((line) => {
+            const row = bySku.get(line.code);
 
             return {
-                sku: row.sku,
-                name: row.name,
-                unit: row.unit,
-                qty: round2(counted - row.onHand),
-                counted,
-                inStock: row.onHand,
-                wh: row.wh,
+                sku: line.code,
+                name: row ? row.name : { he: line.name, en: line.name },
+                unit: row ? row.unit : uomOf(line.uom),
+                qty: line.variance,
+                counted: line.countedQty,
+                inStock: line.onRecord,
+                wh: line.warehouse || DEFAULT_WAREHOUSE,
                 batch: null,
                 price: null,
             };
         });
 
         docs.push({
-            id: next(),
+            id: String(real.docNum),
             type: 'count',
             base: 'manual',
             baseRef: null,
-            warehouse: DEFAULT_WAREHOUSE,
+            warehouse: real.lines[0]?.warehouse || DEFAULT_WAREHOUSE,
             supplier: null,
             supplierCode: null,
             receipt: null,
-            remarks: pickFrom(`count:${i}:note`, COUNT_NOTES),
-            when: at(daysAgo, 8, 30),
-            by: pickFrom(`count:${i}:by`, RECEIVERS),
+            remarks: real.remarks || null,
+            when: momentOf(real.countedOn, `count:${real.docNum}`),
+            by: null,
             lines,
         });
     });
 
-    const moved = countable[11] || countable[0];
+    // One illustrative transfer — real data carries no transfer documents at
+    // all (demo/real has no transfers file; the live database shows only 11 in
+    // nine years), so this one stays the fixture's own.
+    const transferable = [...stock]
+        .filter((row) => row.onHand > 0)
+        .sort((a, b) => b.onHand - a.onHand);
+    const moved = transferable[Math.min(11, transferable.length - 1)];
 
     if (moved) {
         docs.push({
@@ -669,137 +610,6 @@ export function buildInventoryDocs({ receipts, production, stock }) {
 }
 
 /**
- * One batch per receipt line, with what is left of it.
- *
- * A batch received in the fixture's window is still whole — what the orders
- * and the production runs drew from it is deducted by their own builders, so
- * every gram that left is on the ledger. A batch older than sixty days has
- * also served orders the book no longer shows, and carries a spent share.
- *
- * The batches then ARE the stock: a row that has batches holds exactly what
- * they hold, and the SAP figure the row arrived with is replaced. Rows without
- * batches keep SAP's quantity.
- */
-export function buildBatches(receipts, stock = []) {
-    const batches = [];
-    const byId = new Map();
-
-    receipts.forEach((receipt) => {
-        receipt.lines.forEach((line) => {
-            // V3 — a second delivery of the same lot grows the batch that is
-            // already open and adds its own date to the batch's receipt list.
-            const already = byId.get(line.batch);
-
-            if (already) {
-                already.qty = round2(already.qty + line.qty);
-                already.remaining = round2(already.remaining + line.qty);
-
-                return;
-            }
-
-            const daysToExp = -daysSince(line.expiry);
-            const remaining =
-                receipt.when.daysAgo > 60
-                    ? round2(
-                          line.qty *
-                              (0.55 +
-                                  fraction(`batch:${line.batch}:left`) * 0.4),
-                      )
-                    : line.qty;
-
-            const opened = {
-                madeOn: line.madeOn,
-                id: line.batch,
-                // V3 — goods from a supplier carry the supplier's own batch
-                // code as their number, always. Yaron: "אם חומר גלם מגיע מספק
-                // המוצר מקבל אצוות ספק תמיד". The key stays the console's own,
-                // because 2,914 numbers in the live database are shared by more
-                // than one item and a key cannot be.
-                number: line.supplierBatch,
-                sku: line.sku,
-                name: line.name,
-                unit: line.unit,
-                wh: line.wh,
-                source: 'supplier',
-                receipt: receipt.id,
-                production: null,
-                supplier: receipt.supplier,
-                supplierBatch: line.supplierBatch,
-                received: receipt.when,
-                qty: line.qty,
-                remaining,
-                expiry: line.expiry,
-                daysToExp,
-                state: batchStateOf(remaining, daysToExp),
-                waste: false,
-                unitCost: null,
-                components: null,
-                by: receipt.by,
-            };
-
-            byId.set(opened.id, opened);
-            batches.push(opened);
-        });
-    });
-
-    // Two fixed cases on one of the older receipts, so both expiry states are
-    // always on screen whatever the rest of the fixture does — and never on the
-    // batches the production runs were issued against.
-    const aged = batches.filter(
-        (batch) => batch.receipt === receipts[RECEIPT_COUNT - 3]?.id,
-    );
-
-    if (aged.length > 1) {
-        Object.assign(aged[0], {
-            expiry: isoDaysAgo(-46),
-            daysToExp: 46,
-            state: batchStateOf(aged[0].remaining, 46),
-        });
-        Object.assign(aged[1], {
-            expiry: isoDaysAgo(18),
-            daysToExp: -18,
-            state: batchStateOf(aged[1].remaining, -18),
-        });
-    }
-
-    reconcileStock(stock, batches);
-
-    return batches;
-}
-
-/** A row with batches holds what its batches hold. */
-export function reconcileStock(stock, batches) {
-    const sums = new Map();
-
-    batches.forEach((batch) => {
-        sums.set(batch.sku, (sums.get(batch.sku) || 0) + batch.remaining);
-    });
-
-    stock.forEach((row) => {
-        if (!sums.has(row.sku)) {
-            return;
-        }
-
-        row.onHand = round2(sums.get(row.sku));
-        row.alloc = Math.min(row.alloc, row.onHand);
-        syncStockRow(row);
-    });
-}
-
-/** The state a batch is in, from what is left and how far off its expiry is. */
-export function batchStateOf(remaining, daysToExp) {
-    if (remaining <= 0) {
-        return 'depleted';
-    }
-
-    if (daysToExp < 0) {
-        return 'expired';
-    }
-
-    return daysToExp < BATCH_EXPIRY_WARN_DAYS ? 'expiring' : 'active';
-}
-
-/**
  * Traceability: batch → compounded item → order → customer.
  *
  * Every formula herb on an order the lab has started is drawn from the open
@@ -827,7 +637,8 @@ export function buildBatchUse(orders, batches, stock = []) {
                                 (batch) =>
                                     batch.sku === herb.id &&
                                     batch.remaining > 0 &&
-                                    batch.state !== 'rejected',
+                                    batch.state !== 'expired' &&
+                                    !batch.waste,
                             )
                             .sort((a, b) => a.expiry.localeCompare(b.expiry));
                         const before = open.filter(
@@ -900,32 +711,57 @@ export function buildBatchUse(orders, batches, stock = []) {
 }
 
 /**
- * The stock ledger, newest first. Every row here is a projection of a receipt
- * line, a batch allocation or a consumption period that already exists —
- * nothing moves stock in this fixture without a document behind it. The
- * time-consumption rows are the ones the nightly job would have written since
- * each consumable was last counted.
+ * The real stock ledger (demo/real/batchMovements.json), joined onto the real
+ * batches by their SAP key — 4,234 rows, the two years of history behind
+ * today's balance. `ref` stays null: a historical row's own SAP document
+ * number does not resolve to anything in `inventoryDocs` (that list holds
+ * only the real receipts, real counts and this fixture's own production
+ * docs), and a reference that cannot be opened is worse than none
+ * (DEMO_INVENTORY_FIXES_PROMPT.md §5.4.3 — broken reference links).
  */
-export function buildMovements(receipts, batchUse) {
-    const rows = [];
+const DOC_TYPE_KIND = {
+    59: () => 'goods_in',
+    15: () => 'allocated_to_compounding',
+    60: (qty) => (qty >= 0 ? 'manual_in' : 'manual_out'),
+    10000071: () => 'count',
+    20: (qty) => (qty >= 0 ? 'production_in' : 'production_out'),
+};
 
-    receipts.forEach((receipt) => {
-        receipt.lines.forEach((line) => {
-            rows.push({
-                id: `mv-in-${receipt.id}-${line.batch}`,
-                kind: 'goods_in',
-                sku: line.sku,
-                name: line.name,
-                unit: line.unit,
-                wh: line.wh,
-                qty: line.qty,
-                batch: line.batch,
-                ref: receipt.id,
-                when: receipt.when,
-                by: receipt.by,
-            });
-        });
-    });
+function historicalMovements(batches) {
+    const byKey = new Map(batches.map((batch) => [batch.id, batch]));
+
+    return REAL_BATCH_MOVEMENTS.map((real, i) => {
+        const batch = byKey.get(String(real.batchKey));
+
+        if (!batch) {
+            return null;
+        }
+
+        const kind =
+            (DOC_TYPE_KIND[real.docType] || DOC_TYPE_KIND[60])(real.quantity);
+
+        return {
+            id: `mv-hist-${i}`,
+            kind,
+            sku: batch.sku,
+            name: batch.name,
+            unit: batch.unit,
+            wh: batch.wh,
+            qty: real.quantity,
+            batch: batch.id,
+            ref: null,
+            when: momentOf(real.docDate, `mv:${i}`),
+            by: real.party || null,
+        };
+    }).filter(Boolean);
+}
+
+/**
+ * The stock ledger, newest first: the real history behind today's batches,
+ * plus the demo's own order-driven consumption on top of it.
+ */
+export function buildMovements(batches, batchUse) {
+    const rows = [...historicalMovements(batches)];
 
     batchUse.forEach((use) => {
         rows.push({

@@ -250,7 +250,11 @@ const cols = computed(() => [
 const { sort, sorted } = useSorted(rows, view, () => cols.value);
 const { paged, total } = usePaged(sorted, view);
 
-const isOrderRef = (move) => ORDER_REF_KINDS.includes(move.kind);
+// A historical movement can carry this kind with no resolvable order (real
+// SAP history predates the demo's own 50 orders) — never render a link with
+// no id behind it.
+const isOrderRef = (move) =>
+    ORDER_REF_KINDS.includes(move.kind) && Boolean(move.ref);
 </script>
 
 <template>
