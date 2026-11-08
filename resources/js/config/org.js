@@ -20,13 +20,16 @@ export const ORG = {
  * Deliver, and Sosna as history. The first version listed companies the pharmacy
  * never used; the replacements carry `v2`. A historical courier keeps its code so
  * old orders still read, but is never offered for a new assignment; Sosna's
- * tracking is a TP number plus a shipment number, hence `tp`.
+ * tracking is a TP number plus a shipment number, hence `tp`. `hasApi` is the
+ * one flag `CourierSettingsTab.vue` actually gates "active" on — Special
+ * Delivery, Focus and Yarden have since been wired up alongside Tapuz; Deliver
+ * is still the one company waiting on its own integration.
  */
 export const COURIERS = [
     { code: 'T', id: 'tapuz', phone: '03-0001200', hasApi: true },
-    { code: 'A', id: 'special_delivery', phone: '', hasApi: false, v2: true },
-    { code: 'F', id: 'focus', phone: '', hasApi: false, v2: true },
-    { code: 'Y', id: 'yarden', phone: '', hasApi: false, v2: true },
+    { code: 'A', id: 'special_delivery', phone: '03-0001250', hasApi: true, v2: true },
+    { code: 'F', id: 'focus', phone: '03-0001270', hasApi: true, v2: true },
+    { code: 'Y', id: 'yarden', phone: '03-0001290', hasApi: true, v2: true },
     { code: 'D', id: 'deliver', phone: '', hasApi: false, v2: true },
     {
         code: 'S',

@@ -23,7 +23,6 @@ export default {
         readyForPickup: 'מוכן לאיסוף',
         exceptions: 'חריגים',
         shippedToday: 'נשלחו היום',
-        collectedToday: 'נאספו היום',
     },
 
     scanLabel: 'סריקה',

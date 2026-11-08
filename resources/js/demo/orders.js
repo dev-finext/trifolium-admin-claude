@@ -1318,6 +1318,77 @@ export function buildOrders(practitioners, patients) {
         partialScan.packChecks = partialScan.packChecks.slice(0, -1);
     }
 
+    /** Repeats `claimOrder`, collecting up to `n` matches instead of one. */
+    function claimMany(filter, n) {
+        const found = [];
+
+        for (let i = 0; i < n; i += 1) {
+            const next = claimOrder(filter);
+
+            if (!next) {
+                break;
+            }
+
+            found.push(next);
+        }
+
+        return found;
+    }
+
+    /** Forces an order onto a station status, rebuilding everything that
+     * status implies — the same transform the initial pass already ran
+     * (`buildStationState`/`buildAudit`/`buildDocumentation`), replayed with a
+     * different outcome. A courier and tracking number from a past (real)
+     * life as a shipped order are cleared unless the new status is one where
+     * a link already exists — otherwise the card would show a tracking
+     * number before anyone at the station linked one. */
+    function promoteToStation(order, status, shipTo) {
+        order.status = status;
+
+        if (shipTo !== undefined) {
+            order.shipTo = shipTo;
+
+            if (shipTo === 'pickup') {
+                order.deliveryType = 'pickup';
+            }
+        }
+
+        if (!COURIER_LINKED.includes(status) || shipTo === 'pickup') {
+            order.courier = null;
+            order.tracking = null;
+        }
+
+        Object.assign(
+            order,
+            buildStationState(order, `${order.id}:station:promoted`),
+        );
+        order.audit = buildAudit(order);
+        order.documentation = buildDocumentation(order, order.audit);
+    }
+
+    // The station has to look like a pharmacy mid-shift, not a handful of
+    // leftovers: a 50-order draw settles most of its volume into "נשלחו" once
+    // enough days have passed, which starves every earlier tab — "מוכן
+    // לאיסוף" can easily land on zero. A chunk of that settled volume is
+    // pulled back onto the bench here, the same claim-and-override idiom as
+    // the named scenarios above (08.11.2026 follow-up: the dashboard must
+    // carry a believable count in every stage).
+    claimMany((order) => order.status === 'shipped', 2).forEach((order) =>
+        promoteToStation(order, 'in_production'),
+    );
+    claimMany((order) => order.status === 'shipped', 3).forEach((order) =>
+        promoteToStation(order, 'packing'),
+    );
+    claimMany((order) => order.status === 'shipped', 3).forEach((order) =>
+        promoteToStation(order, 'awaiting_courier'),
+    );
+    claimMany((order) => order.status === 'collected', 1).forEach((order) =>
+        promoteToStation(order, 'ready_for_pickup'),
+    );
+    claimMany((order) => order.status === 'shipped', 4).forEach((order) =>
+        promoteToStation(order, 'ready_for_pickup', 'pickup'),
+    );
+
     /** A shipment row, as `linkCourier`/`enterManualTracking` would build one. */
     function shipmentFor(order, { manual = false } = {}) {
         return {

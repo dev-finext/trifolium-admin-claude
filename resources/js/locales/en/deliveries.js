@@ -23,7 +23,6 @@ export default {
         readyForPickup: 'Ready for pickup',
         exceptions: 'Exceptions',
         shippedToday: 'Shipped today',
-        collectedToday: 'Collected today',
     },
 
     scanLabel: 'Scan',

@@ -558,17 +558,6 @@ async function onScanEnter() {
                     :active="false"
                     @click="state.tab = 'shipped'"
                 />
-                <FilterKpi
-                    icon="check"
-                    :label="t('deliveries.kpi.collectedToday')"
-                    :value="
-                        store.shippedAndDone.filter(
-                            (o) => o.collectedAt?.iso === isoDaysAgo(0),
-                        ).length
-                    "
-                    :active="false"
-                    @click="state.tab = 'shipped'"
-                />
             </div>
 
             <div class="dv-scan">

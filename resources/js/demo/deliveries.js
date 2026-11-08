@@ -6,26 +6,56 @@ import { COURIERS } from '@/config';
 import { at, pickFrom } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
 
+/** A courier connected via `config/org.js`'s `hasApi` gets real-looking
+ * day-to-day settings; one every pharmacy actually uses is the default. */
+const COURIER_TEXTURE = {
+    tapuz: {
+        isDefault: true,
+        contactName: 'מוקד תפוז',
+        lastPickupTime: '15:00',
+        lastSuccessDaysAgo: 1,
+    },
+    special_delivery: {
+        contactName: 'דנה, מוקד Special Delivery',
+        lastPickupTime: '14:30',
+        lastSuccessDaysAgo: 1,
+    },
+    focus: {
+        contactName: 'מוקד פוקוס',
+        lastPickupTime: '16:00',
+        lastSuccessDaysAgo: 2,
+    },
+    yarden: {
+        contactName: 'משה, מוקד ירדן',
+        lastPickupTime: '13:45',
+        lastSuccessDaysAgo: 3,
+    },
+};
+
 /**
- * One row per courier the pharmacy could ship with. Only Tapuz is connected
- * and active on day one — the rest show "אין חיבור" until a driver exists.
+ * One row per courier the pharmacy could ship with. A company with no API
+ * connection yet shows "אין חיבור" and cannot be made active — see
+ * `CourierSettingsTab.vue`.
  */
 export function buildCourierSettings() {
-    return COURIERS.map((courier) => ({
-        code: courier.id,
-        isActive: courier.id === 'tapuz',
-        isDefault: courier.id === 'tapuz',
-        phone: courier.phone || '',
-        contactName: courier.id === 'tapuz' ? 'מוקד תפוז' : '',
-        lastPickupTime: courier.id === 'tapuz' ? '15:00' : null,
-        notes:
-            courier.id === 'tapuz'
-                ? ''
-                : 'אין חיבור API — תוכנן לשלב הבא',
-        lastSuccessAt: courier.id === 'tapuz' ? at(1, 16, 5) : null,
-        lastErrorAt: null,
-        lastError: null,
-    }));
+    return COURIERS.map((courier) => {
+        const texture = COURIER_TEXTURE[courier.id] || null;
+
+        return {
+            code: courier.id,
+            isActive: Boolean(texture),
+            isDefault: Boolean(texture?.isDefault),
+            phone: courier.phone || '',
+            contactName: texture?.contactName || '',
+            lastPickupTime: texture?.lastPickupTime || null,
+            notes: texture ? '' : 'אין חיבור API — תוכנן לשלב הבא',
+            lastSuccessAt: texture
+                ? at(texture.lastSuccessDaysAgo, 16, 5)
+                : null,
+            lastErrorAt: null,
+            lastError: null,
+        };
+    });
 }
 
 /** A handful of pickup lists already handed to the driver, for "נשלחו". */
