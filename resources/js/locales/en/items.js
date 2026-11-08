@@ -253,11 +253,6 @@ export default {
         produce: 'New production order',
         count: 'Count',
         wasteOf: 'of which waste: {n}',
-        mergeWaste: 'Merge waste',
-        mergeTitle: 'Merge waste batches',
-        mergeBody:
-            '{n} waste batches ({qty}) fold into one new batch. It keeps the earliest expiry; the originals stay in the ledger.',
-        mergeConfirm: 'Merge',
         remove: 'Delete item',
         removeTitle: 'Delete item',
         removeBody:

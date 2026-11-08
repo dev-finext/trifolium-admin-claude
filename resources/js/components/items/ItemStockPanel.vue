@@ -12,7 +12,6 @@ import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { fmtISO } from '@/lib/dates';
@@ -82,19 +81,10 @@ const liveBatches = computed(
     () => batches.value.filter((batch) => batch.remaining > 0).length,
 );
 
-/** Waste of this item still on the shelf, and the batches it sits in. */
-const wasteBatches = computed(() =>
-    props.row ? inventory.wasteBatchesOf(props.row.sku) : [],
-);
+/** Waste of this item still on the shelf. */
 const waste = computed(() =>
     props.row ? inventory.wasteOf(props.row.sku) : 0,
 );
-const askMerge = ref(false);
-
-async function mergeWaste() {
-    askMerge.value = false;
-    await inventory.mergeWaste(props.row.sku);
-}
 
 const committedCols = computed(() => [
     { k: 'order', label: t('items.card.colOrder'), nowrap: true },
@@ -134,14 +124,6 @@ const batchCols = computed(() => [
                     </div>
                     <div v-if="waste > 0" class="tile-s">
                         {{ t('items.card.wasteOf', { n: num(waste, 2) }) }}
-                        <button
-                            v-if="wasteBatches.length > 1"
-                            type="button"
-                            class="a-linkbtn"
-                            @click="askMerge = true"
-                        >
-                            {{ t('items.card.mergeWaste') }}
-                        </button>
                     </div>
                 </div>
                 <button
@@ -334,19 +316,6 @@ const batchCols = computed(() => [
             </ADataTable>
         </template>
         <p v-else class="t-sub">{{ t('items.card.notTracked') }}</p>
-        <ConfirmDialog
-            :open="askMerge"
-            :title="t('items.card.mergeTitle')"
-            :body="
-                t('items.card.mergeBody', {
-                    n: wasteBatches.length,
-                    qty: num(waste, 2),
-                })
-            "
-            :confirm-label="t('items.card.mergeConfirm')"
-            @close="askMerge = false"
-            @confirm="mergeWaste"
-        />
     </ACard>
 </template>
 

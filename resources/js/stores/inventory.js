@@ -7,22 +7,19 @@
 //   1. Stock enters ONLY through a goods receipt. Each receipt line opens one
 //      batch with its own number and expiry, so every gram in stock can be
 //      traced back to a delivery note and forward to the customer who got it.
-//   2. Batches are consumed nearest-expiry-first (config BATCH_PICK is `fifo`).
-//      A count adjustment that finds less than the books say deducts the gap
-//      from the batches themselves, FIFO, spilling into the next batch — so the
-//      item total and the sum of its batches never drift apart.
+//   2. Batches are consumed nearest-expiry-first — FEFO, the only rule
+//      (DEMO_INVENTORY_FIXES_PROMPT.md §5.1). Expired and waste batches are
+//      skipped; a plan that spills past one batch moves into the next.
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
 import {
-    ADJUST_REASON,
     BATCH_EXPIRY_WARN_DAYS,
     batchNumberFor,
-    BATCH_PICK,
-    DEFAULT_BATCH_NUMBER_SCHEME,
     DEFAULT_WAREHOUSE,
     HOUSE_SERIES_NEXT,
     INVENTORY_DOC_SERIES,
+    REASON,
 } from '@/config';
 import { persist } from '@/data/source';
 import { daysSince, fmtISO, hm, isoDaysAgo, now, stamp } from '@/lib/dates';
@@ -318,32 +315,20 @@ export const useInventoryStore = defineStore('inventory', () => {
         batches.value.filter((batch) => batch.sku === sku);
 
     /**
-     * FEFO by expiry — the pharmacy's rule — or FIFO by receipt date. A setting
-     * the console edits since V2 (inventorySettings.pickMode); config is the default.
-     */
-    const pickMode = computed(
-        () => dataset.data.inventorySettings?.pickMode || BATCH_PICK.mode,
-    );
-
-    /**
-     * Batches of one item that may still be drawn from, in pick order. Waste
-     * batches stay out unless the caller's preparation type accepts waste.
+     * Batches of one item that may still be drawn from, nearest expiry first —
+     * FEFO is the only rule (DEMO_INVENTORY_FIXES_PROMPT.md §5.1; FIFO and the
+     * pharmacist-approval toggle are retired). Expired and waste batches stay
+     * out unless the caller's preparation type accepts waste.
      */
     const openBatchesOf = (sku, { allowWaste = false } = {}) =>
         batchesOf(sku)
             .filter(
                 (batch) =>
                     batch.remaining > 0 &&
-                    batch.state !== 'rejected' &&
+                    batch.state !== 'expired' &&
                     (allowWaste || !batch.waste),
             )
-            .sort((a, b) =>
-                pickMode.value === 'fifo'
-                    ? String(a.received?.iso || '').localeCompare(
-                          String(b.received?.iso || ''),
-                      )
-                    : a.daysToExp - b.daysToExp,
-            );
+            .sort((a, b) => a.daysToExp - b.daysToExp);
 
     const useOfBatch = (id) => batchUse.value.filter((row) => row.batch === id);
 
@@ -383,23 +368,6 @@ export const useInventoryStore = defineStore('inventory', () => {
     /** How much of an item's stock is waste — "of which waste: N". */
     const wasteOf = (sku) =>
         wasteBatchesOf(sku).reduce((sum, batch) => sum + batch.remaining, 0);
-
-    /**
-     * When time-consumed stock runs out at the current pace, as an ISO date —
-     * or null when the item is not consumed by the calendar.
-     */
-    const runOutOn = (sku, consumption) => {
-        const row = itemBySku(sku);
-
-        if (!row || !consumption?.qty || !consumption?.periodDays) {
-            return null;
-        }
-
-        const perDay = consumption.qty / consumption.periodDays;
-        const days = Math.floor(Math.max(0, row.onHand) / perDay);
-
-        return isoDaysAgo(-days);
-    };
 
     /** How many batches of an item still hold quantity. */
     const liveBatchCount = (sku) =>
@@ -480,24 +448,6 @@ export const useInventoryStore = defineStore('inventory', () => {
     );
 
     /**
-     * How many batches an item has already had this year — the serial inside a
-     * structured number, for the scheme Yaron proposed.
-     */
-    const yearSerialOf = (sku, year) =>
-        batches.value.filter(
-            (batch) =>
-                batch.sku === sku &&
-                String(batch.number || '').startsWith(`${year}${sku}`),
-        ).length + 1;
-
-    /** The numbering scheme in force — a setting, because it is not settled. */
-    const batchScheme = computed(
-        () =>
-            dataset.data.inventorySettings?.batchScheme ||
-            DEFAULT_BATCH_NUMBER_SCHEME,
-    );
-
-    /**
      * The number and the key a new batch opens under. V3.
      *
      * `ahead` lets one screen number several new batches in one go — a receipt
@@ -505,22 +455,16 @@ export const useInventoryStore = defineStore('inventory', () => {
      * answer.
      */
     const nextBatchNumber = ({
-        sku,
         kind = 'production',
         supplierBatch = '',
         production = '',
         ahead = 0,
     } = {}) => {
-        const year = String(isoDaysAgo(0).slice(2, 4));
         const number = batchNumberFor({
             kind,
-            sku,
-            scheme: batchScheme.value,
             serial: houseSerial.value + 1 + ahead,
-            yearSerial: yearSerialOf(sku, year) + ahead,
             supplierBatch,
             production,
-            year,
         });
 
         if (!number) {
@@ -609,11 +553,14 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
 
     /**
-     * A batch's state follows from what is left in it and how far off its expiry
-     * is. A rejected batch stays rejected whatever its quantity.
+     * A batch's state follows from what is left in it and how far off its
+     * expiry is. A waste batch stays `waste` whatever its quantity or date —
+     * it never re-reads as active (config.batchState mirrors this rule).
      */
     function syncBatch(batch) {
-        if (batch.state === 'rejected') {
+        if (batch.waste) {
+            batch.state = 'waste';
+
             return;
         }
 
@@ -888,18 +835,6 @@ export const useInventoryStore = defineStore('inventory', () => {
         return { id, batches: lines.map((line) => line.batch) };
     }
 
-    /**
-     * The one stock adjustment, with the three reasons of ADJUST_REASONS.
-     *
-     * `count` SETS the quantity to what was physically found and records the
-     * variance; `damage` and `reject` DEDUCT a quantity from a named batch. A
-     * rejection also blocks the batch from compounding, whatever is left in it.
-     *
-     * @param {{sku: string, reason: string, qty: number, batch?: string,
-     *          note: string}} form
-     * @returns {Promise<{before: number, after: number, diff: number,
-     *                    moved: Array<{id: string, delta: number}>}>}
-     */
     /**
      * Correct a batch's two dates. V3.
      *
@@ -1198,7 +1133,7 @@ export const useInventoryStore = defineStore('inventory', () => {
             return batch;
         }
 
-        // A rejected batch stays rejected whatever its dates now say; anything
+        // A waste batch stays `waste` whatever its dates now say; anything
         // else is re-read against the new expiry.
         syncBatch(batch);
 
@@ -1256,106 +1191,6 @@ export const useInventoryStore = defineStore('inventory', () => {
         bag('batches').unshift(batch);
 
         return batch;
-    }
-
-    /**
-     * Fold every open waste batch of an item into one new W- batch, so the
-     * pile of small ones a year of grinding leaves behind reads as one line.
-     * The merged batch keeps the earliest expiry and remembers its parts.
-     */
-    async function mergeWaste(sku) {
-        const parts = wasteBatchesOf(sku);
-
-        if (parts.length < 2) {
-            return null;
-        }
-
-        const row = itemBySku(sku);
-        const { id, number } = nextBatchNumber({
-            sku,
-            kind: 'waste',
-            production: parts[0]?.production || '',
-        });
-        const qty = parts.reduce((sum, batch) => sum + batch.remaining, 0);
-        const earliest = parts.reduce((best, batch) =>
-            batch.daysToExp < best.daysToExp ? batch : best,
-        );
-        const when = moment();
-        const by = dataset.me?.name || null;
-
-        parts.forEach((batch) => {
-            writeMovement({
-                id: `mv-merge-${batch.id}`,
-                kind: 'waste_merge',
-                sku,
-                name: batch.name,
-                unit: batch.unit,
-                wh: batch.wh,
-                qty: -batch.remaining,
-                batch: batch.id,
-                ref: id,
-                when,
-                by,
-            });
-            batch.remaining = 0;
-            syncBatch(batch);
-        });
-
-        const merged = {
-            id,
-            number,
-            sku,
-            name: row ? row.name : earliest.name,
-            unit: earliest.unit,
-            wh: earliest.wh,
-            source: 'waste',
-            receipt: null,
-            production: parts[0]?.production || null,
-            supplier: null,
-            supplierBatch: null,
-            received: when,
-            qty,
-            remaining: qty,
-            expiry: earliest.expiry,
-            daysToExp: earliest.daysToExp,
-            state: 'active',
-            waste: true,
-            unitCost: null,
-            components: parts.map((batch) => ({
-                sku,
-                batch: batch.id,
-                qty: batch.qty,
-            })),
-            by,
-        };
-
-        syncBatch(merged);
-        bag('batches').unshift(merged);
-        writeMovement({
-            id: `mv-merge-in-${id}`,
-            kind: 'waste_merge',
-            sku,
-            name: merged.name,
-            unit: merged.unit,
-            wh: merged.wh,
-            qty,
-            batch: id,
-            ref: null,
-            when,
-            by,
-        });
-        writeLog({
-            act: 'stock_adjust',
-            entType: 'batch',
-            ent: id,
-            from: parts.map((batch) => batch.id).join(', '),
-            to: String(qty),
-        });
-        await persist(`inventory/waste/${sku}/merge`, {
-            batches: parts.map((batch) => batch.id),
-        });
-
-        return merged;
     }
 
     /**
@@ -1426,103 +1261,76 @@ export const useInventoryStore = defineStore('inventory', () => {
         return { counted, delta, countedOn: when.iso };
     }
 
-    async function adjustStock(form) {
+    /**
+     * A manual stock issue: deduct a quantity from one named batch, for one of
+     * the fixed OUT reasons (DEMO_INVENTORY_FIXES_PROMPT.md rule 4 / §6.4). The
+     * batch caps how much can be taken — a batch-managed item never goes below
+     * zero. Replaces the old count/damage/reject adjustment: a count's own
+     * variance is a count document (`recordCount`), not this.
+     */
+    async function manualIssue(form) {
         const item = itemBySku(form.sku);
-        const rule = ADJUST_REASON[form.reason];
+        const batch = batchById(form.batch);
+        const rule = REASON[form.reason];
 
-        if (!item || !rule) {
-            throw new Error(`Cannot adjust ${form.sku} for ${form.reason}`);
+        if (!item || !batch || !rule || rule.dir === 'in') {
+            throw new Error(`Cannot issue ${form.sku} for ${form.reason}`);
         }
 
-        const qty = Math.max(0, Number(form.qty) || 0);
+        const qty = Math.min(
+            batch.remaining,
+            Math.max(0, Number(form.qty) || 0),
+        );
         const before = item.onHand;
-        const moved = [];
 
-        if (rule.mode === 'set') {
-            item.onHand = qty;
-
-            const gap = before - qty;
-
-            if (gap > 0) {
-                fifoPlan(item.sku, gap).steps.forEach(({ batch, take }) => {
-                    batch.remaining -= take;
-                    syncBatch(batch);
-                    moved.push({ id: batch.id, delta: -take });
-                });
-            } else if (gap < 0) {
-                const [nearest] = openBatchesOf(item.sku);
-
-                if (nearest) {
-                    nearest.remaining += -gap;
-                    syncBatch(nearest);
-                    moved.push({ id: nearest.id, delta: -gap });
-                }
-            }
-        } else {
-            item.onHand = Math.max(0, before - qty);
-
-            const batch = batchById(form.batch);
-
-            if (batch) {
-                batch.remaining = Math.max(0, batch.remaining - qty);
-
-                if (form.reason === 'reject') {
-                    batch.state = 'rejected';
-                } else {
-                    syncBatch(batch);
-                }
-
-                moved.push({ id: batch.id, delta: -qty });
-            }
-        }
-
+        batch.remaining = Math.round((batch.remaining - qty) * 1000) / 1000;
+        syncBatch(batch);
+        item.onHand = Math.max(
+            0,
+            Math.round((item.onHand - qty) * 1000) / 1000,
+        );
         syncRow(item);
 
         const after = item.onHand;
 
-        // SAP has no "adjustment": stock that appears is a goods receipt and
-        // stock that disappears is a goods issue, and both are documents.
-        const adjustment = moved.length
-            ? postDoc({
-                  type:
-                      moved.reduce((sum, row) => sum + row.delta, 0) >= 0
-                          ? 'goods_receipt'
-                          : 'goods_issue',
-                  warehouse: item.wh,
-                  remarks: form.note.trim() || null,
-                  lines: moved.map(({ id, delta }) => ({
-                      sku: item.sku,
-                      name: item.name,
-                      unit: item.unit,
-                      qty: delta,
-                      wh: item.wh,
-                      batch: id,
-                      price: null,
-                  })),
-              })
-            : null;
+        // SAP has no "adjustment": stock that disappears is a goods issue, and
+        // it is a document like any other.
+        const doc = postDoc({
+            type: 'goods_issue',
+            reason: form.reason,
+            warehouse: batch.wh,
+            remarks: form.note.trim() || null,
+            lines: [
+                {
+                    sku: item.sku,
+                    name: item.name,
+                    unit: item.unit,
+                    qty: -qty,
+                    wh: batch.wh,
+                    batch: batch.id,
+                    price: null,
+                },
+            ],
+        });
 
-        moved.forEach(({ id, delta }) =>
-            writeMovement({
-                id: `mv-adj-${id}-${movements.value.length}`,
-                kind: 'adjustment',
-                sku: item.sku,
-                name: item.name,
-                unit: item.unit,
-                wh: item.wh,
-                qty: delta,
-                batch: id,
-                ref: adjustment ? adjustment.id : null,
-                by: dataset.me?.name || null,
-            }),
-        );
+        writeMovement({
+            id: `mv-manual-${batch.id}-${movements.value.length}`,
+            kind: 'manual_out',
+            sku: item.sku,
+            name: item.name,
+            unit: item.unit,
+            wh: batch.wh,
+            qty: -qty,
+            batch: batch.id,
+            reason: form.reason,
+            ref: doc.id,
+            by: dataset.me?.name || null,
+        });
 
         writeLog({
-            act: form.reason === 'reject' ? 'batch_reject' : 'stock_adjust',
-            // A count is an adjustment of the item, not of one batch; the log
-            // taxonomy has no stock-item entity, so it is filed under `system`.
-            entType: rule.mode === 'set' ? 'system' : 'batch',
-            ent: rule.mode === 'set' ? item.sku : form.batch,
+            act: 'stock_adjust',
+            entType: 'batch',
+            ent: batch.id,
             from: String(before),
             to: String(after),
             note: form.note.trim(),
@@ -1532,10 +1340,10 @@ export const useInventoryStore = defineStore('inventory', () => {
             sku: item.sku,
             reason: form.reason,
             qty,
-            batch: form.batch || null,
+            batch: batch.id,
         });
 
-        return { before, after, diff: after - before, moved };
+        return { before, after, diff: after - before };
     }
 
     // ---- ingredient catalogue ----------------------------------------------
@@ -1754,9 +1562,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         supplierHints,
         batchNo,
         houseSerial,
-        batchScheme,
         nextBatchNumber,
-        pickMode,
 
         itemBySku,
         batchById,
@@ -1769,8 +1575,6 @@ export const useInventoryStore = defineStore('inventory', () => {
         writeMovement,
         wasteBatchesOf,
         wasteOf,
-        runOutOn,
-        mergeWaste,
         recordCount,
         useOfBatch,
         movementsOfBatch,
@@ -1780,7 +1584,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         fifoPlan,
 
         receiveGoods,
-        adjustStock,
+        manualIssue,
 
         skuTaken,
         ingredientBlock,

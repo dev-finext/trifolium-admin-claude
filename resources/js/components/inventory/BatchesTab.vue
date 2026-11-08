@@ -8,7 +8,6 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import BatchPickPanel from '@/components/inventory/BatchPickPanel.vue';
 import BatchSettingsCard from '@/components/inventory/BatchSettingsCard.vue';
 import SearchBox from '@/components/inventory/SearchBox.vue';
 import AButton from '@/components/ui/AButton.vue';
@@ -61,8 +60,6 @@ const view = useUrlState({
     bq: '',
     ...filterDefaults(SPEC),
     ...PAGE_DEFAULTS,
-    pick: '',
-    pickQty: '',
 });
 
 const term = computed(() => view.bq.trim().toLowerCase());
@@ -358,13 +355,6 @@ const { paged, total } = usePaged(sorted, view);
             @clear="clear"
             @patch="filters.patch"
             @save="savedViews?.openSave()"
-        />
-
-        <BatchPickPanel
-            v-model:sku="view.pick"
-            v-model:qty="view.pickQty"
-            controls
-            approval
         />
 
         <BatchSettingsCard />

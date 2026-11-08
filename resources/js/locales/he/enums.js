@@ -219,32 +219,54 @@ export default {
         expiring: 'תוקף מתקרב',
         expired: 'פג תוקף',
         depleted: 'אזלה',
-        rejected: 'נפסלה',
+        waste: 'פחת',
     },
     stockMove: {
         goods_in: 'קליטת סחורה',
         allocated_to_compounding: 'שיוך לרקיחה',
         released_on_cancel: 'ביטול הזמנה — שחרור מלאי',
-        adjustment: 'התאמת מלאי',
+        manual_in: 'כניסה ידנית',
+        manual_out: 'יציאה ידנית',
+        transfer_out: 'העברה — יוצא',
+        transfer_in: 'העברה — נכנס',
         production_out: 'צריכה בייצור',
         production_in: 'תפוקת ייצור',
+        production_return: 'החזרת רכיבים מייצור',
         waste_in: 'פחת מייצור',
-        waste_merge: 'איחוד פחת',
-        time_consumption: 'צריכה לפי זמן',
         count: 'ספירת מלאי',
     },
-    adjustReason: {
-        count: {
-            name: 'ספירת מלאי',
-            hint: 'הזנת הכמות שנמצאה בפועל — המערכת רושמת את הפער',
+    reason: {
+        po_receipt: {
+            name: 'קבלה מהזמנת רכש',
+            hint: 'כניסת מלאי מקליטת סחורה מול הזמנת רכש',
         },
-        damage: {
-            name: 'שבר או שפיכה',
-            hint: 'גריעה מאצווה מסוימת',
+        purchase_no_order: {
+            name: 'קנייה בלי הזמנה',
+            hint: 'כניסת מלאי מקנייה שלא מול הזמנת רכש',
         },
-        reject: {
-            name: 'פסילה',
-            hint: 'גריעה וסימון האצווה כנפסלה',
+        patient_return: {
+            name: 'החזרה ממטופל',
+            hint: 'פריט שחזר מהמטופל אל המלאי',
+        },
+        count_correction: {
+            name: 'תיקון ספירה',
+            hint: 'התאמת המלאי לממצא בפועל בספירה',
+        },
+        waste: {
+            name: 'פחת',
+            hint: 'גריעת חומר שאבד בתהליך',
+        },
+        spill_damage: {
+            name: 'נשפך/נפגם',
+            hint: 'גריעה בעקבות נזק או שפיכה',
+        },
+        sample_use: {
+            name: 'דוגמה/שימוש עצמי',
+            hint: 'גריעה לדוגמה או לשימוש פנימי',
+        },
+        mistake_fix: {
+            name: 'תיקון טעות',
+            hint: 'תיקון רישום שגוי קודם',
         },
     },
     preparationForm: {

@@ -261,13 +261,6 @@ export const SUPPLIER_PAYMENT_FILTER_FIELDS = [
 
 export const SUPPLIER_PAYMENT_FILTER_GROUPS = ['who', 'size'];
 
-/**
- * How batches are drawn for compounding. FEFO — first expired, first out — is
- * what the pharmacy works by; FIFO by receipt date is kept as an option because
- * the specification asked for the switch.
- */
-export const PICK_MODE_IDS = ['fefo', 'fifo'];
-
 /** Where a batch comes from; each source numbers its batches under its own prefix. */
 export const BATCH_SOURCE_IDS = ['supplier', 'production', 'waste'];
 

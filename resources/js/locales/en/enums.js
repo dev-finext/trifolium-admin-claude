@@ -219,32 +219,54 @@ export default {
         expiring: 'Expiring soon',
         expired: 'Expired',
         depleted: 'Depleted',
-        rejected: 'Rejected',
+        waste: 'Waste',
     },
     stockMove: {
         goods_in: 'Goods in',
         allocated_to_compounding: 'Allocated to compounding',
         released_on_cancel: 'Order cancelled — stock released',
-        adjustment: 'Stock adjustment',
+        manual_in: 'Manual receipt',
+        manual_out: 'Manual issue',
+        transfer_out: 'Transfer — out',
+        transfer_in: 'Transfer — in',
         production_out: 'Consumed in production',
         production_in: 'Production output',
+        production_return: 'Returned from production',
         waste_in: 'Production waste',
-        waste_merge: 'Waste merged',
-        time_consumption: 'Consumption over time',
         count: 'Stock count',
     },
-    adjustReason: {
-        count: {
-            name: 'Stock count',
-            hint: 'Enter the quantity actually found — the system records the variance',
+    reason: {
+        po_receipt: {
+            name: 'Receipt against a purchase order',
+            hint: 'Stock in from a goods receipt against a purchase order',
         },
-        damage: {
-            name: 'Breakage or spillage',
-            hint: 'Deducts from a named batch',
+        purchase_no_order: {
+            name: 'Purchase without an order',
+            hint: 'Stock in from a purchase not against an order',
         },
-        reject: {
-            name: 'Rejection',
-            hint: 'Deducts and marks the batch as rejected',
+        patient_return: {
+            name: 'Returned by a patient',
+            hint: 'An item the patient returned, back into stock',
+        },
+        count_correction: {
+            name: 'Count correction',
+            hint: 'Adjusting stock to what a count actually found',
+        },
+        waste: {
+            name: 'Waste',
+            hint: 'Material lost in the process',
+        },
+        spill_damage: {
+            name: 'Spilled/damaged',
+            hint: 'Deducted after damage or a spill',
+        },
+        sample_use: {
+            name: 'Sample/internal use',
+            hint: 'Deducted for a sample or internal use',
+        },
+        mistake_fix: {
+            name: 'Correcting a mistake',
+            hint: 'Fixing an earlier wrong entry',
         },
     },
     preparationForm: {

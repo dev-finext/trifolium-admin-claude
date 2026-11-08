@@ -757,7 +757,6 @@ export const usePurchasingStore = defineStore('purchasing', () => {
     async function updateSettings(patch, label) {
         if (!dataset.data.inventorySettings) {
             dataset.data.inventorySettings = {
-                pickMode: 'fefo',
                 defaultExpiryMonths: {},
             };
         }

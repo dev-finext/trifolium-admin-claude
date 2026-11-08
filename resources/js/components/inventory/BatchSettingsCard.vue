@@ -1,15 +1,15 @@
 <script setup>
-// The batch-handling settings, edited where batches live: the pick rule (FEFO
-// by expiry, or FIFO by receipt) and the default shelf life per item family
-// that a new batch takes unless overridden. Batch numbers are not a setting:
-// they run per item family, and the card says so.
+// The batch-handling settings, edited where batches live: the default shelf
+// life per item family that a new batch takes unless overridden. Batch
+// selection is always FEFO (no longer a setting) and batch numbers are not a
+// setting either: they run per item family, and the card says so.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import ACard from '@/components/ui/ACard.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
-import { BATCH_KIND_IDS, ITEM_FAMILY_IDS, PICK_MODE_IDS } from '@/config';
+import { BATCH_KIND_IDS, ITEM_FAMILY_IDS } from '@/config';
 import { useInventoryStore } from '@/stores/inventory';
 import { usePurchasingStore } from '@/stores/purchasing';
 
@@ -27,21 +27,6 @@ const families = computed(() =>
         (id) => !['admin', 'workshop', 'labour'].includes(id),
     ),
 );
-
-async function setMode(mode) {
-    if (settings.value?.pickMode === mode) {
-        return;
-    }
-
-    await store.updateSettings(
-        { pickMode: mode },
-        t(`inventory.pickMode.${mode}`),
-    );
-    push({
-        title: t('inventory.settings.saved'),
-        body: t(`inventory.pickMode.${mode}`),
-    });
-}
 
 async function setExpiry(family, value) {
     const months =
@@ -82,23 +67,6 @@ async function setExpiry(family, value) {
         <div class="grid">
             <section>
                 <div class="a-sect-t">
-                    {{ t('inventory.settings.pickTitle') }}
-                </div>
-                <div class="a-seg">
-                    <button
-                        v-for="mode in PICK_MODE_IDS"
-                        :key="mode"
-                        type="button"
-                        class="a-seg-b"
-                        :class="{ 'is-on': settings.pickMode === mode }"
-                        @click="setMode(mode)"
-                    >
-                        {{ t(`inventory.pickMode.${mode}`) }}
-                    </button>
-                </div>
-                <p class="a-hint">{{ t('inventory.settings.pickHint') }}</p>
-
-                <div class="a-sect-t series-t">
                     {{ t('inventory.settings.seriesTitle') }}
                 </div>
                 <dl class="series">

@@ -1,19 +1,12 @@
 <script setup>
-// One stock adjustment, three reasons — and the distinction between them is the
-// whole point of this dialog:
-//
-//   count  SETS the quantity to what was physically found and records the
-//          variance. A shortfall comes out of the batches themselves, nearest
-//          expiry first, so item and batch quantities never drift apart.
-//   damage
-//   reject DEDUCT a quantity from one named batch. A rejection also blocks that
-//          batch from compounding, whatever is left in it.
-//
-// The written explanation is mandatory because it is what the log row carries.
+// A manual stock issue: deduct a quantity from one named batch, for one of the
+// fixed OUT reasons (DEMO_INVENTORY_FIXES_PROMPT.md rule 4 / §6.4). The batch
+// caps how much can be taken, and the explanation is mandatory because it is
+// what the log row carries. A count's own variance is recorded through a
+// count, not here.
 import { computed, ref, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import BatchPickPanel from '@/components/inventory/BatchPickPanel.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
@@ -21,7 +14,7 @@ import AModal from '@/components/ui/AModal.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { ADJUST_REASON, ADJUST_REASONS } from '@/config';
+import { REASONS_OUT } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { num } from '@/lib/money';
 import { useInventoryStore } from '@/stores/inventory';
@@ -30,7 +23,7 @@ import { useInventoryStore } from '@/stores/inventory';
 const WIDTH = 680;
 
 const props = defineProps({
-    /** The stock row being adjusted, or null while the dialog is closed. */
+    /** The stock row being issued from, or null while the dialog is closed. */
     item: { type: Object, default: null },
 });
 
@@ -41,19 +34,17 @@ const { loc } = useLocalized();
 const inventory = useInventoryStore();
 const uid = useId();
 
-const reason = ref(ADJUST_REASONS[0].id);
+const reason = ref(REASONS_OUT[0].id);
 const qty = ref('');
 const batch = ref('');
 const why = ref('');
 
 const open = computed(() => Boolean(props.item));
-const rule = computed(() => ADJUST_REASON[reason.value]);
-const isSet = computed(() => rule.value.mode === 'set');
 
 const reasons = computed(() =>
-    ADJUST_REASONS.map((entry) => ({
+    REASONS_OUT.map((entry) => ({
         value: entry.id,
-        label: t(`adjustReason.${entry.id}.name`),
+        label: t(`reason.${entry.id}.name`),
     })),
 );
 
@@ -62,21 +53,14 @@ const batches = computed(() =>
 );
 
 const asked = computed(() => Number(qty.value));
-const diff = computed(() => {
-    if (!props.item || qty.value === '') {
-        return 0;
-    }
-
-    return isSet.value ? asked.value - props.item.onHand : -asked.value;
-});
 
 const valid = computed(
     () =>
         Boolean(props.item) &&
         qty.value !== '' &&
-        asked.value >= 0 &&
-        Boolean(why.value.trim()) &&
-        (isSet.value || (asked.value > 0 && Boolean(batch.value))),
+        asked.value > 0 &&
+        Boolean(batch.value) &&
+        Boolean(why.value.trim()),
 );
 
 watch(
@@ -86,25 +70,20 @@ watch(
             return;
         }
 
-        reason.value = ADJUST_REASONS[0].id;
-        qty.value = String(item.onHand);
+        reason.value = REASONS_OUT[0].id;
+        qty.value = '';
         batch.value = '';
         why.value = '';
     },
     { immediate: true },
 );
 
-/** Switching to a count pre-fills what the books say; the other two start empty. */
-function onReason(value) {
-    reason.value = value;
-    qty.value =
-        ADJUST_REASON[value].mode === 'set' && props.item
-            ? String(props.item.onHand)
-            : '';
-}
-
 function onQty(value) {
-    qty.value = String(value).replace(/\D/g, '');
+    // A quantity in kg or litres carries a decimal point — stripping anything
+    // but digits turned 2.5 into 25 (DEMO_INVENTORY_FIXES_PROMPT.md §5.4.6).
+    qty.value = String(value)
+        .replace(/[^\d.]/g, '')
+        .replace(/(\..*)\./g, '$1');
 }
 
 function unitLabel() {
@@ -113,7 +92,7 @@ function unitLabel() {
 
 function batchLabel(row) {
     return t('inventory.adjust.batchOption', {
-        id: row.id,
+        id: inventory.batchNo(row),
         left: num(row.remaining),
         expiry: fmtISO(row.expiry),
     });
@@ -125,7 +104,7 @@ async function save() {
     }
 
     const item = props.item;
-    const result = await inventory.adjustStock({
+    const result = await inventory.manualIssue({
         sku: item.sku,
         reason: reason.value,
         qty: asked.value,
@@ -179,8 +158,7 @@ async function save() {
                     <select
                         :id="`${uid}-r`"
                         class="a-select a-w100"
-                        :value="reason"
-                        @change="onReason($event.target.value)"
+                        v-model="reason"
                     >
                         <option
                             v-for="entry in reasons"
@@ -191,18 +169,14 @@ async function save() {
                         </option>
                     </select>
                     <div class="a-adj-hint">
-                        {{ t(`adjustReason.${reason}.hint`) }}
+                        {{ t(`reason.${reason}.hint`) }}
                     </div>
                 </div>
 
                 <div class="a-2col a-adj-2col">
                     <div>
                         <label class="a-lbl" :for="`${uid}-q`">
-                            {{
-                                isSet
-                                    ? t('inventory.adjust.qtySet')
-                                    : t('inventory.adjust.qtyDeduct')
-                            }}
+                            {{ t('inventory.adjust.qtyDeduct') }}
                             <span class="a-req">{{
                                 t('labels.required')
                             }}</span>
@@ -210,14 +184,14 @@ async function save() {
                         <AInput
                             :id="`${uid}-q`"
                             class="a-w100"
-                            inputmode="numeric"
+                            inputmode="decimal"
                             :model-value="qty"
                             :placeholder="unitLabel()"
                             @update:model-value="onQty"
                         />
                     </div>
 
-                    <div v-if="!isSet">
+                    <div>
                         <label class="a-lbl" :for="`${uid}-b`">
                             {{ t('inventory.adjust.batch') }}
                             <span class="a-req">{{
@@ -241,24 +215,6 @@ async function save() {
                             </option>
                         </select>
                     </div>
-
-                    <div v-else>
-                        <span class="a-lbl">
-                            {{ t('inventory.adjust.diff') }}
-                        </span>
-                        <div
-                            class="a-input a-w100 a-adj-diff"
-                            :class="{
-                                'is-down': diff < 0,
-                                'is-up': diff > 0,
-                            }"
-                        >
-                            <span class="num">
-                                {{ diff > 0 ? '+' : '' }}{{ num(diff) }}
-                            </span>
-                            <span class="a-adj-diff-u">{{ unitLabel() }}</span>
-                        </div>
-                    </div>
                 </div>
 
                 <div>
@@ -270,62 +226,13 @@ async function save() {
                         :id="`${uid}-w`"
                         v-model="why"
                         :rows="2"
-                        :placeholder="
-                            isSet
-                                ? t('inventory.adjust.whyPhCount')
-                                : t('inventory.adjust.whyPhDeduct')
-                        "
+                        :placeholder="t('inventory.adjust.whyPhDeduct')"
                     />
                 </div>
             </div>
 
-            <div
-                v-if="!isSet && !batches.length"
-                class="a-note a-note--warn a-adj-note"
-            >
+            <div v-if="!batches.length" class="a-note a-note--warn a-adj-note">
                 {{ t('inventory.adjust.noBatches') }}
-            </div>
-
-            <div v-if="isSet && diff < 0" class="a-adj-note">
-                <div class="a-note a-note--warn">
-                    {{
-                        batches.length
-                            ? t('inventory.adjust.shortfall', {
-                                  qty: num(Math.abs(diff)),
-                                  unit: unitLabel(),
-                              })
-                            : t('inventory.adjust.shortfallNone')
-                    }}
-                </div>
-                <BatchPickPanel
-                    v-if="batches.length"
-                    class="a-adj-plan"
-                    :sku="item.sku"
-                    :qty="Math.abs(diff)"
-                    :unit="item.unit"
-                />
-            </div>
-
-            <div
-                v-if="isSet && diff > 0"
-                class="a-note a-note--info a-adj-note"
-            >
-                {{
-                    batches.length
-                        ? t('inventory.adjust.surplus', {
-                              qty: num(diff),
-                              unit: unitLabel(),
-                              batch: batches[0].id,
-                          })
-                        : t('inventory.adjust.surplusNone')
-                }}
-            </div>
-
-            <div
-                v-if="reason === 'reject'"
-                class="a-note a-note--danger a-adj-note"
-            >
-                {{ t('inventory.adjust.rejectNote') }}
             </div>
         </template>
 
@@ -355,31 +262,7 @@ async function save() {
     color: var(--a-ink-4);
 }
 
-.a-adj-diff {
-    display: flex;
-    align-items: center;
-    font-weight: 700;
-    color: var(--a-ink-4);
-}
-
-.a-adj-diff.is-down {
-    color: var(--a-red);
-}
-
-.a-adj-diff.is-up {
-    color: var(--a-accent);
-}
-
-.a-adj-diff-u {
-    margin-inline-start: 6px;
-    font-weight: 400;
-}
-
 .a-adj-note {
     margin-top: 16px;
-}
-
-.a-adj-plan {
-    margin-top: 12px;
 }
 </style>

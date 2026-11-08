@@ -7,9 +7,17 @@
  * one. The lab, the materials room, the herb room and the counter were opened
  * and never used — they are here because SAP has them and a migration carries
  * them, and they read as empty because they are.
+ *
+ * `01` is the one main warehouse (DEMO_INVENTORY_FIXES_PROMPT.md rule 1):
+ * selling, holding stock and batch capture for orders count and take from it
+ * only. Stock elsewhere shows everywhere but isn't sold until transferred in —
+ * real data confirms this: every one of the 700 real batches sits in `01`,
+ * `02`/`05` carry quantity-only stock (no batches), the 06/2026 real data has.
+ * An inactive warehouse with no stock in it can be deactivated; one holding
+ * stock can't.
  */
 export const WAREHOUSES = [
-    { id: '01', inUse: true },
+    { id: '01', inUse: true, isMain: true },
     { id: '02', inUse: true },
     { id: '5', inUse: true },
     { id: '1' },
@@ -20,6 +28,11 @@ export const WAREHOUSES = [
 
 /** The default a receipt, an issue or a new stock row lands in. */
 export const DEFAULT_WAREHOUSE = '01';
+
+/** The one main warehouse — selling and batch capture never look elsewhere. */
+export const MAIN_WAREHOUSE = WAREHOUSES.find(
+    (warehouse) => warehouse.isMain,
+).id;
 
 /** The warehouses stock actually moves through — the pickers offer these. */
 export const WAREHOUSES_IN_USE = WAREHOUSES.filter(
@@ -64,13 +77,18 @@ export const INVENTORY_DOC_BASES = ['manual', 'production', 'purchase_order'];
 /** The block inventory documents are numbered in — SAP's own 26xxxxx. */
 export const INVENTORY_DOC_SERIES = 2600000;
 
-/** Batch states and their chip tone. */
+/**
+ * Batch states and their chip tone. Always computed from today's date and the
+ * batch's quantity/kind — never stored (DEMO_INVENTORY_FIXES_PROMPT.md §5.1).
+ * `rejected` is gone: damage now leaves stock through the `spill_damage`
+ * reason below, not through a batch state.
+ */
 export const BATCH_STATES = {
     active: { tone: 'green' },
     expiring: { tone: 'amber' },
     expired: { tone: 'red' },
     depleted: { tone: 'gray' },
-    rejected: { tone: 'red' },
+    waste: { tone: 'red' },
 };
 
 export const BATCH_STATE_IDS = Object.keys(BATCH_STATES);
@@ -79,21 +97,57 @@ export const BATCH_STATE_IDS = Object.keys(BATCH_STATES);
 export const BATCH_EXPIRY_WARN_DAYS = 90;
 
 /**
- * Kinds of stock movement written to the ledger, and the chip tone each is shown
- * in. The first four are the receipt-and-compounding cycle; production adds a
- * consumption and an output pair, waste its own entry and the monthly merge, and
- * the two counting kinds close the loop for items nobody weighs per order.
+ * A batch's state, computed fresh every time — never read from a stored
+ * field. `kind: 'waste'` always wins: a waste batch is never "expiring" or
+ * "active" for FEFO purposes, whatever its date says.
+ */
+export function batchState(batch, today = new Date()) {
+    if (batch.kind === 'waste') {
+        return 'waste';
+    }
+
+    if ((batch.qty ?? batch.quantity ?? 0) <= 0) {
+        return 'depleted';
+    }
+
+    if (batch.expiresOn) {
+        const days = Math.floor(
+            (new Date(batch.expiresOn) - today) / (1000 * 60 * 60 * 24),
+        );
+
+        if (days < 0) {
+            return 'expired';
+        }
+
+        if (days <= BATCH_EXPIRY_WARN_DAYS) {
+            return 'expiring';
+        }
+    }
+
+    return 'active';
+}
+
+/** Kinds of batch (`stock_batches.kind`, DEMO_INVENTORY_FIXES_PROMPT.md §3). */
+export const BATCH_KINDS = ['purchase', 'production', 'waste', 'opening'];
+
+/**
+ * Kinds of stock movement written to the ledger, and the chip tone each is
+ * shown in. Only `allocated_to_compounding` (batch capture for an order) and
+ * `production_out` count as consumption — every other kind is excluded from
+ * stock analysis (DEMO_INVENTORY_FIXES_PROMPT.md §10.2).
  */
 export const STOCK_MOVES = [
     { id: 'goods_in', tone: 'green' },
-    { id: 'allocated_to_compounding', tone: 'blue' },
+    { id: 'allocated_to_compounding', tone: 'blue', consumption: true },
     { id: 'released_on_cancel', tone: 'gray' },
-    { id: 'adjustment', tone: 'amber' },
-    { id: 'production_out', tone: 'purple' },
+    { id: 'manual_in', tone: 'green' },
+    { id: 'manual_out', tone: 'amber' },
+    { id: 'transfer_out', tone: 'blue' },
+    { id: 'transfer_in', tone: 'blue' },
+    { id: 'production_out', tone: 'purple', consumption: true },
     { id: 'production_in', tone: 'teal' },
+    { id: 'production_return', tone: 'teal' },
     { id: 'waste_in', tone: 'red' },
-    { id: 'waste_merge', tone: 'gray' },
-    { id: 'time_consumption', tone: 'blue' },
     { id: 'count', tone: 'amber' },
 ];
 
@@ -138,27 +192,38 @@ export function convertQty(qty, from, to) {
 }
 
 /**
- * One adjustment action, three reasons. A count adjustment *sets* the quantity to
- * what was physically found; damage and rejection *deduct* a quantity from a
- * named batch.
+ * The fixed reason list for every manual stock document
+ * (DEMO_INVENTORY_FIXES_PROMPT.md rule 4). `dir` says which manual documents
+ * offer it: `in` on a manual receipt, `out` on a manual issue, `both` on
+ * either (a count correction can go either way). Only `capture`/`production`
+ * — the two reasons sales and production write for themselves — count as
+ * consumption; nothing in this list does.
  */
-export const ADJUST_REASONS = [
-    { id: 'count', mode: 'set' },
-    { id: 'damage', mode: 'deduct' },
-    { id: 'reject', mode: 'deduct' },
+export const REASONS = [
+    { id: 'po_receipt', dir: 'in' },
+    { id: 'purchase_no_order', dir: 'in' },
+    { id: 'patient_return', dir: 'in' },
+    { id: 'count_correction', dir: 'both' },
+    { id: 'waste', dir: 'out' },
+    { id: 'spill_damage', dir: 'out' },
+    { id: 'sample_use', dir: 'out' },
+    { id: 'mistake_fix', dir: 'out' },
 ];
 
-export const ADJUST_REASON = Object.fromEntries(
-    ADJUST_REASONS.map((reason) => [reason.id, reason]),
+export const REASON = Object.fromEntries(
+    REASONS.map((reason) => [reason.id, reason]),
 );
 
+export const REASONS_IN = REASONS.filter((reason) => reason.dir !== 'out');
+export const REASONS_OUT = REASONS.filter((reason) => reason.dir !== 'in');
+
 /**
- * Batch selection for compounding is automatic, nearest expiry first — FEFO,
- * first expired, first out. The pharmacist approves the pick before stock is
- * deducted and may override it in the lab. Since V2 the mode is a setting the
- * console edits (inventorySettings.pickMode); this is the default.
+ * Batch selection is always FEFO — nearest expiry first, expired and waste
+ * batches skipped. FIFO and a pharmacist-approval step existed as a toggle
+ * through V2; DEMO_INVENTORY_FIXES_PROMPT.md §5.1 retires both, so this is no
+ * longer a setting the console edits.
  */
-export const BATCH_PICK = { mode: 'fefo', requiresPharmacistApproval: true };
+export const BATCH_PICK = { mode: 'fefo' };
 
 /** Units stock is held in. */
 export const STOCK_UNITS = ['g', 'kg', 'ml', 'l', 'unit'];

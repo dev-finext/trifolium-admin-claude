@@ -34,60 +34,20 @@ export const BATCH_KIND_IDS = ['production', 'purchase', 'waste'];
 export const HOUSE_SERIES_NEXT = 16942;
 
 /**
- * How a batch number is formed.
+ * How a batch number is formed — the pharmacy's single running series.
  *
- * `running` is what the pharmacy does today and what Natalie asked for — "סדר רץ
- * של ספרור אצוות בקבלה מיצור צריך להתקבל אוטומטית מהמערכת ללא יכולת שינוי ידנית
- * כדי למנוע כפילויות".
- *
- * `structured` is what Yaron asked for instead — "ניהול סיפרור אצוות לא צריך
- * בהכרח להיות מספר רץ אפילו מומלץ שלא ... צריך היגיון לוגי שתוכל להסתכל ולהבין".
- * His worked example is a shelf product: two digits of year, the item number,
- * and three digits of serial within that year — `26500034001`. That much is
- * complete and is implemented. The rest of his scheme is not: the prefix for an
- * intermediate, the two-digit form code for a personal preparation and the fixed
- * waste prefix were never given, so those kinds fall back to the running series
- * under this scheme too rather than being guessed at.
- *
- * The two are mutually exclusive and the pharmacy has not chosen between them.
- * The console ships on `running`, because that is what the pharmacy is provably
- * doing, and the choice is a setting so the decision can be made on screen.
- */
-export const BATCH_NUMBER_SCHEME_IDS = ['running', 'structured'];
-
-export const DEFAULT_BATCH_NUMBER_SCHEME = 'running';
-
-/** Digits of serial in a structured number, per Yaron's "999 פעמים בשנה". */
-export const STRUCTURED_SERIAL_DIGITS = 3;
-
-/**
- * The number a new batch opens under.
- *
- * `kind`      production | purchase | waste
- * `sku`       the item the batch belongs to
- * `scheme`    running | structured
- * `serial`    the next number in the house series
- * `yearSerial` how many batches this item has already had this year
- * `supplierBatch` the supplier's own code, for a purchase
- * `production` the production order's number, for waste
- * `year`      two digits, e.g. '26'
- *
- * A purchase keeps the supplier's code verbatim — "אם חומר גלם מגיע מספק המוצר
- * מקבל אצוות ספק תמיד לא משנה אם מספר קיים במערכת" (Yaron). Waste keeps the
- * production order's number, which is how the pharmacy tells waste from whole
- * herb today. Neither is ours to invent, so neither falls back to a house
- * number: a purchase with no supplier code has no batch number, and the receipt
- * screen refuses to save until one is typed.
+ * Yaron proposed a structured, year+item+serial form instead ("ניהול סיפרור
+ * אצוות לא צריך בהכרח להיות מספר רץ"), but his scheme was never completed (no
+ * prefix for an intermediate, no form code for a personal preparation, no
+ * waste prefix) and DEMO_INVENTORY_FIXES_PROMPT.md §2 rule "מספור אצוות"
+ * settles on the running series the pharmacy actually uses — "השיטה המובנית
+ * יורדת". It is no longer a choice the console offers.
  */
 export function batchNumberFor({
     kind,
-    sku,
-    scheme = DEFAULT_BATCH_NUMBER_SCHEME,
     serial,
-    yearSerial = 1,
     supplierBatch = '',
     production = '',
-    year = '',
 }) {
     if (kind === 'purchase') {
         return String(supplierBatch || '').trim();
@@ -95,13 +55,6 @@ export function batchNumberFor({
 
     if (kind === 'waste') {
         return String(production || '').trim();
-    }
-
-    if (scheme === 'structured' && sku && year) {
-        return `${year}${sku}${String(yearSerial).padStart(
-            STRUCTURED_SERIAL_DIGITS,
-            '0',
-        )}`;
     }
 
     return String(serial);

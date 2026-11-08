@@ -214,32 +214,15 @@ function onReceived({ id, batches }) {
     });
 }
 
-/** `B-2611 −40 · B-2612 −12` — which batches the adjustment moved. */
-function movedNote(moved) {
-    return moved
-        .map(
-            ({ id, delta }) =>
-                `${id} ${delta < 0 ? '−' : '+'}${num(Math.abs(delta))}`,
-        )
-        .join(' · ');
-}
-
-function onAdjusted({ item, reason, diff, moved }) {
-    const params = {
-        item: loc(item.name),
-        reason: t(`adjustReason.${reason}.name`),
-        diff: `${diff > 0 ? '+' : ''}${num(diff)}`,
-        unit: t(`inventory.unit.${item.unit}`),
-    };
-
+function onAdjusted({ item, reason, diff }) {
     push({
         title: t('inventory.toast.adjusted.title'),
-        body: moved.length
-            ? t('inventory.toast.adjusted.bodyBatches', {
-                  ...params,
-                  batches: movedNote(moved),
-              })
-            : t('inventory.toast.adjusted.body', params),
+        body: t('inventory.toast.adjusted.body', {
+            item: loc(item.name),
+            reason: t(`reason.${reason}.name`),
+            diff: `${diff > 0 ? '+' : ''}${num(diff)}`,
+            unit: t(`inventory.unit.${item.unit}`),
+        }),
     });
 }
 

@@ -97,12 +97,7 @@ export default {
         adjusted: {
             title: 'Stock updated',
             body: '{item} · {reason} · {diff} {unit}',
-            bodyBatches: '{item} · {reason} · {diff} {unit} · {batches}',
         },
-    },
-    pickMode: {
-        fefo: 'FEFO — by expiry',
-        fifo: 'FIFO — by receipt order',
     },
     batchSource: {
         supplier: 'Goods receipt',
@@ -113,9 +108,6 @@ export default {
         title: 'Batch settings',
         updated: 'Updated {when} · {by}',
         saved: 'Setting saved',
-        pickTitle: 'Batch selection rule',
-        pickHint:
-            'FEFO is how the pharmacy works — the batch nearest to expiry goes first. FIFO is kept as an option, as the specification asked.',
         expiryTitle: 'Default shelf life by item family',
         expiryHint:
             'The expiry is suggested automatically on receipt from in-house production only, from the item’s family, and can be changed on any batch. On goods received from a supplier the expiry comes from the supplier’s certificate and is not calculated. Powder — two years, tincture — three, as stated; the rest are the console’s defaults and await confirmation.',
@@ -446,57 +438,22 @@ export default {
         open: 'New goods receipt',
     },
     adjust: {
-        title: 'Stock adjustment · {item}',
+        title: 'Manual stock issue · {item}',
         kv: {
             sku: 'Item code',
             onHand: 'On hand now',
             alloc: 'Allocated to orders',
             batches: 'Batches with quantity',
         },
-        reason: 'Reason for the adjustment',
-        qtySet: 'Quantity actually found',
+        reason: 'Reason for the issue',
         qtyDeduct: 'Quantity to deduct',
         batch: 'Batch',
         batchPick: '— pick a batch —',
         batchOption: '{id} · {left} left · expires {expiry}',
-        diff: 'Variance',
         why: 'Explanation (required — written to the log)',
-        whyPhCount:
-            'For example: quarterly stock count — less found than recorded',
         whyPhDeduct: 'For example: a bottle broke on the way to the lab',
-        save: 'Save adjustment',
-        noBatches:
-            'This item has no open batch in stock, so breakage or rejection cannot be recorded against it. If the quantity is wrong, choose a stock count instead.',
-        shortfall:
-            'The variance — {qty} {unit} — is deducted from the batches nearest to expiry first (FEFO), spilling over to the next batch when it exceeds what is left.',
-        shortfallNone:
-            'This item has no batch with quantity left, so only the item total is updated.',
-        surplus:
-            'The surplus — {qty} {unit} — is credited to batch {batch}, the one nearest to expiry.',
-        surplusNone:
-            'This item has no open batch — better to receive the goods on the goods-receipt screen, so a batch with an expiry date is opened.',
-        rejectNote:
-            'The batch will be marked rejected and blocked from compounding, even if quantity is left in it.',
-    },
-    pick: {
-        title: 'Batch selection for compounding',
-        rule: {
-            fefo: 'The selection is automatic, nearest expiry first — FEFO, first expired, first out.',
-            fifo: 'The selection is automatic, in order of receipt — FIFO, first in, first out.',
-        },
-        approval: 'The pharmacist approves the pick before stock is deducted.',
-        item: 'Item',
-        qty: 'Quantity needed',
-        col: {
-            batch: 'Batch',
-            expiry: 'Expiry',
-            take: 'Deducted',
-            after: 'Left after',
-        },
-        idle: 'Pick an item and a quantity to see which batches the system would deduct from.',
-        covered: 'Covered by 1 batch | Covered by {n} batches',
-        short: '{qty} {unit} short — the open batches of this item do not hold enough.',
-        noBatches: 'This item has no open batch with quantity left.',
+        save: 'Save issue',
+        noBatches: 'This item has no open batch in stock.',
     },
     picker: {
         placeholder: 'Search an item — name · item code · latin name',
