@@ -57,14 +57,13 @@ export default {
     },
 
     col: {
+        select: 'Select',
+        actions: 'Actions',
         order: 'Order',
         sentToLab: 'Sent to the lab',
         practitioner: 'Practitioner',
         recipient: 'Recipient',
         city: 'City',
-        ship: 'Fulfilment',
-        containers: 'Containers',
-        gate: 'Gate',
         scanned: 'Scanned',
         courier: 'Company',
         packages: 'Packages',
@@ -80,22 +79,26 @@ export default {
         by: 'By',
     },
 
-    gate: {
-        ok: '✓',
-        noAddress: 'No address',
-        noPoa: 'No POA',
-    },
-
     ship: {
-        courier: 'Courier',
         pickup: 'Self pickup',
     },
 
+    select: {
+        all: 'Select every shown row',
+        row: 'Select order {id}',
+    },
+
+    bulk: {
+        selected: 'One order selected | {n} orders selected',
+        clear: 'Clear selection',
+        movedToPacking: 'One order moved to packing | {n} orders moved to packing',
+    },
+
     action: {
+        moveToPacking: 'Move to packing',
         linkCourier: 'Link to courier',
         retry: 'Retry',
         manualTracking: 'Enter tracking number by hand',
-        sendPoaRequest: 'Send request to patient',
         editAddress: 'Edit address',
         open: 'Open',
         markReady: 'Ready for pickup',
@@ -116,7 +119,7 @@ export default {
 
     toast: {
         readyForPickup: 'Marked as ready for pickup',
-        poaRequested: 'Power-of-attorney request sent to the patient',
+        movedToPacking: 'Moved to packing',
         linked: 'Linked to courier',
         linkFailed: 'The link failed',
     },
@@ -139,9 +142,7 @@ export default {
         poa: 'Power of attorney',
         poaSigned: 'Signed',
         poaMissing: 'Missing',
-        poaRequested: 'Request sent',
         poaRequestedAt: 'Sent on {stamp}',
-        requestPoa: 'Send request to patient',
         shipTo: {
             me: 'To me (the practitioner)',
             patient: 'To the patient',

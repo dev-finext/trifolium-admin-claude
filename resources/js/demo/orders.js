@@ -167,17 +167,6 @@ function buildStationState(order, slot) {
 
     if (!isPickup && (courierLinked || order.status === 'cancelled')) {
         const manual = chance(`${slot}:ship:manual`, 0.15);
-        const failedFirst = !manual && rareChance(`${slot}:ship:retry`, 0.2);
-
-        if (failedFirst) {
-            events.push({
-                type: 'shipment_link_failed',
-                at: at(Math.max(0, order.daysAgo - 1), 11, 0),
-                user: DEMO_ACTORS.ellaSupport,
-                data: { message: 'תקלה מס׳ -3 מתפוז: עיר יעד לא מוכרת' },
-                visibleToCustomer: false,
-            });
-        }
 
         shipments.push({
             id: `sh-${order.id}`,
@@ -390,6 +379,19 @@ const DELIVERY_STREETS = [
     L('הגלבוע', 'HaGilboa'),
     L('רוטשילד', 'Rothschild'),
     L('הכרמל', 'HaCarmel'),
+];
+
+/** A free-text instruction for the courier, as a patient actually leaves one
+ * at checkout — present on some orders, absent on most, same as real life. */
+const DELIVERY_NOTES = [
+    L('נא להשאיר ליד הדלת', 'Please leave by the door'),
+    L('להתקשר לפני ההגעה', 'Call before arrival'),
+    L('הכניסה מהצד האחורי של הבניין', 'Entrance from the back of the building'),
+    L('אין מעלית בבניין', 'No elevator in the building'),
+    L('להשאיר אצל השכנים מול, דירה סמוכה', 'Leave with the neighbors across the hall'),
+    L('המטופל/ת מוגבל/ת בניידות — נא להמתין בסבלנות בדלת', 'The patient has limited mobility — please wait patiently at the door'),
+    L('יש כלב בחצר, נא לא להיכנס דרך השער הראשי', "There's a dog in the yard — please don't enter through the main gate"),
+    L('ניתן להשאיר בתיבת הדואר', 'May be left in the mailbox'),
 ];
 
 /** Card three times over: the mix a pharmacy of this size actually collects. */
@@ -1104,6 +1106,10 @@ function realOrder(source, practitioners, patients) {
             floor: String(spread(`${slot}:floor`, 0, 8)),
             entry: pickFrom(`${slot}:entry`, ENTRY_LETTERS),
         },
+        deliveryNotes:
+            deliveryType === 'courier' && chance(`${slot}:dlvnote`, 0.4)
+                ? pickFrom(`${slot}:dlvnote:which`, DELIVERY_NOTES)
+                : null,
         payMethod,
         // Where the payment was taken. A web payment is on the storefront of
         // whoever ordered; cash is the counter; the rest is the fixture's, with
@@ -1281,30 +1287,6 @@ export function buildOrders(practitioners, patients) {
         }
 
         return found;
-    }
-
-    // A real, named courier failure: the order is fully packed but stuck —
-    // its last courier link failed and nothing has succeeded since.
-    const stuckOnShipment = claimOrder(
-        (order) => order.shipTo !== 'pickup' && totalContainers(order) > 0,
-    );
-
-    if (stuckOnShipment) {
-        stuckOnShipment.status = 'packing';
-        fillPackChecks(stuckOnShipment);
-        stuckOnShipment.shipments = [];
-        stuckOnShipment.events = [
-            ...stuckOnShipment.events.filter(
-                (event) => event.type !== 'shipment_link_failed',
-            ),
-            {
-                type: 'shipment_link_failed',
-                at: at(Math.max(0, stuckOnShipment.daysAgo - 1), 11, 0),
-                user: DEMO_ACTORS.ellaSupport,
-                data: { message: 'תקלה מס׳ -3 מתפוז: עיר יעד לא מוכרת' },
-                visibleToCustomer: false,
-            },
-        ];
     }
 
     // A partial scan — the checklist's own k/N-not-yet-N case.

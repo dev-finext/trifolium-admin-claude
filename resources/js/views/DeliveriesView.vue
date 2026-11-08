@@ -14,8 +14,8 @@
 //   deliveries.filter.gate.{ok,blocked}
 // Two keys from the first pass are now dead and should be removed, not
 // reauthored: deliveries.card.urgent, deliveries.export.*.
-import { computed, nextTick, onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { I18nT, useI18n } from 'vue-i18n';
 
 import CollectModal from '@/components/deliveries/CollectModal.vue';
 import CourierSettingsTab from '@/components/deliveries/CourierSettingsTab.vue';
@@ -49,7 +49,6 @@ import { ACTIVE_COURIER_IDS } from '@/config';
 import { totalContainers } from '@/lib/containers';
 import { inRange, presetRange } from '@/lib/dateRange';
 import { durationParts } from '@/lib/dates';
-import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import {
     STATION_FILTER_FIELDS,
@@ -205,36 +204,80 @@ function ageText(order) {
     return t(`duration.${parts.unit}`, { a: parts.a, b: parts.b });
 }
 
-function gateState(order) {
-    const exceptions = store.stationExceptionsOf(order);
-
-    if (exceptions.includes('address')) {
-        return { label: t('deliveries.gate.noAddress'), tone: 'red' };
-    }
-
-    if (exceptions.includes('poa')) {
-        return { label: t('deliveries.gate.noPoa'), tone: 'red' };
-    }
-
-    return { label: t('deliveries.gate.ok'), tone: 'green' };
-}
-
 // ---- tab 1: בהכנה ------------------------------------------------------------
 
 const inProductionRows = computed(() =>
     state.tab === 'in_production' ? filters.rows : [],
 );
 
-const inProductionCols = computed(() => [
+/** The columns every station tab's table shares. */
+const sharedCols = computed(() => [
     { k: 'order', label: t('deliveries.col.order'), nowrap: true },
     { k: 'sentToLab', label: t('deliveries.col.sentToLab'), nowrap: true },
     { k: 'practitioner', label: t('deliveries.col.practitioner') },
     { k: 'recipient', label: t('deliveries.col.recipient') },
     { k: 'city', label: t('deliveries.col.city') },
-    { k: 'ship', label: t('deliveries.col.ship'), nowrap: true },
-    { k: 'containers', label: t('deliveries.col.containers'), nowrap: true },
-    { k: 'gate', label: t('deliveries.col.gate'), nowrap: true },
 ]);
+
+const inProductionCols = computed(() => [
+    { k: 'sel', label: t('deliveries.col.select'), w: '40px' },
+    ...sharedCols.value,
+    { k: 'act', label: '', nowrap: true },
+]);
+
+/** Ids ticked in the "בהכנה" tab, for the bulk "העבר לאריזה" bar. Scratch
+ * state, not URL state — it means nothing once the tab or the filter changes. */
+const inProductionSelection = ref([]);
+
+watch(
+    () => state.tab,
+    (tab) => {
+        if (tab !== 'in_production') {
+            inProductionSelection.value = [];
+        }
+    },
+);
+
+const isTicked = (order) => inProductionSelection.value.includes(order.id);
+
+const allTicked = computed(
+    () =>
+        inProductionRows.value.length > 0 &&
+        inProductionRows.value.every((order) => isTicked(order)),
+);
+
+function toggleSelected(id) {
+    inProductionSelection.value = inProductionSelection.value.includes(id)
+        ? inProductionSelection.value.filter((row) => row !== id)
+        : [...inProductionSelection.value, id];
+}
+
+function toggleAllSelected() {
+    const ids = inProductionRows.value.map((order) => order.id);
+    const all = ids.every((id) => inProductionSelection.value.includes(id));
+
+    inProductionSelection.value = all ? [] : ids;
+}
+
+async function onMoveToPacking(order) {
+    await store.startPacking(order);
+    push({ title: t('deliveries.toast.movedToPacking'), body: order.id });
+}
+
+async function onBulkMoveToPacking() {
+    const ids = [...inProductionSelection.value];
+
+    await Promise.all(
+        ids
+            .map((id) => orders.byId(id))
+            .filter(Boolean)
+            .map((order) => store.startPacking(order)),
+    );
+    inProductionSelection.value = [];
+    push({
+        title: t('deliveries.bulk.movedToPacking', { n: ids.length }, ids.length),
+    });
+}
 
 // ---- tab 2: באריזה ------------------------------------------------------------
 
@@ -243,7 +286,7 @@ const packingRows = computed(() =>
 );
 
 const packingCols = computed(() => [
-    ...inProductionCols.value,
+    ...sharedCols.value,
     { k: 'scanned', label: t('deliveries.col.scanned'), nowrap: true },
     { k: 'courier', label: t('deliveries.col.courier'), nowrap: true },
     { k: 'packages', label: t('deliveries.col.packages'), nowrap: true },
@@ -339,11 +382,6 @@ const exceptionCols = computed(() => [
 ]);
 
 const manualTrackingModal = ref({ open: false, order: null });
-
-async function onRequestPoa(order) {
-    await store.requestPoa(order);
-    push({ title: t('deliveries.toast.poaRequested'), body: order.id });
-}
 
 async function onRetry(order) {
     const result = await store.retryLink(order);
@@ -565,51 +603,101 @@ async function onScanEnter() {
             </template>
 
             <!-- in production -->
-            <ADataTable
-                v-if="state.tab === 'in_production'"
-                :cols="inProductionCols"
-                :rows="inProductionRows"
-                row-key="id"
-                :selected="state.order"
-                @row="state.order = $event.id"
-            >
-                <template #cell-order="{ row }">
-                    <div class="t-strong">{{ row.id }}</div>
-                </template>
-                <template #cell-sentToLab="{ row }"
-                    ><ANum>{{ ageText(row) }}</ANum></template
+            <template v-if="state.tab === 'in_production'">
+                <div
+                    v-if="inProductionSelection.length"
+                    class="a-card a-bulkbar"
                 >
-                <template #cell-practitioner="{ row }">{{
-                    loc(row.practitioner.name)
-                }}</template>
-                <template #cell-recipient="{ row }">{{
-                    loc(row.patient.name)
-                }}</template>
-                <template #cell-city="{ row }">{{
-                    loc(row.address?.city)
-                }}</template>
-                <template #cell-ship="{ row }">
-                    {{
-                        row.shipTo === 'pickup'
-                            ? t('deliveries.ship.pickup')
-                            : t('deliveries.ship.courier')
-                    }}
-                </template>
-                <template #cell-containers="{ row }"
-                    ><ANum>{{ num(totalContainers(row)) }}</ANum></template
+                    <I18nT
+                        keypath="deliveries.bulk.selected"
+                        tag="strong"
+                        scope="global"
+                        :plural="inProductionSelection.length"
+                    >
+                        <template #n>
+                            <ANum>{{ inProductionSelection.length }}</ANum>
+                        </template>
+                    </I18nT>
+
+                    <AButton sm icon="package" @click="onBulkMoveToPacking">
+                        {{ t('deliveries.action.moveToPacking') }}
+                    </AButton>
+                    <AButton
+                        sm
+                        kind="ghost"
+                        @click="inProductionSelection = []"
+                    >
+                        {{ t('deliveries.bulk.clear') }}
+                    </AButton>
+                </div>
+
+                <ADataTable
+                    :cols="inProductionCols"
+                    :rows="inProductionRows"
+                    row-key="id"
+                    :selected="state.order"
+                    @row="state.order = $event.id"
                 >
-                <template #cell-gate="{ row }">
-                    <AChip :tone="gateState(row).tone" size="sm" :dot="false">
-                        {{ gateState(row).label }}
-                    </AChip>
-                </template>
-                <template #empty>
-                    <AEmpty
-                        icon="clipboard_list"
-                        :title="t('deliveries.empty.title')"
-                    />
-                </template>
-            </ADataTable>
+                    <template #head-sel>
+                        <input
+                            type="checkbox"
+                            class="a-check"
+                            :checked="allTicked"
+                            :aria-label="t('deliveries.select.all')"
+                            @change="toggleAllSelected"
+                        />
+                    </template>
+                    <template #head-act>
+                        <span class="a-sr">{{
+                            t('deliveries.col.actions')
+                        }}</span>
+                    </template>
+                    <template #cell-sel="{ row }">
+                        <input
+                            type="checkbox"
+                            class="a-check"
+                            :checked="isTicked(row)"
+                            :aria-label="
+                                t('deliveries.select.row', { id: row.id })
+                            "
+                            @click.stop
+                            @change="toggleSelected(row.id)"
+                        />
+                    </template>
+                    <template #cell-order="{ row }">
+                        <div class="t-strong">{{ row.id }}</div>
+                    </template>
+                    <template #cell-sentToLab="{ row }"
+                        ><ANum>{{ ageText(row) }}</ANum></template
+                    >
+                    <template #cell-practitioner="{ row }">{{
+                        loc(row.practitioner.name)
+                    }}</template>
+                    <template #cell-recipient="{ row }">{{
+                        loc(row.patient.name)
+                    }}</template>
+                    <template #cell-city="{ row }">{{
+                        loc(row.address?.city)
+                    }}</template>
+                    <template #cell-act="{ row }">
+                        <div class="a-rowbtns" @click.stop>
+                            <AButton
+                                sm
+                                icon="package"
+                                @click="onMoveToPacking(row)"
+                            >
+                                {{ t('deliveries.action.moveToPacking') }}
+                            </AButton>
+                        </div>
+                    </template>
+                    <template #empty>
+                        <AEmpty
+                            icon="clipboard_list"
+                            :title="t('deliveries.empty.title')"
+                        />
+                    </template>
+                </ADataTable>
+            </template>
 
             <!-- packing -->
             <ADataTable
@@ -635,21 +723,6 @@ async function onScanEnter() {
                 <template #cell-city="{ row }">{{
                     loc(row.address?.city)
                 }}</template>
-                <template #cell-ship="{ row }">
-                    {{
-                        row.shipTo === 'pickup'
-                            ? t('deliveries.ship.pickup')
-                            : t('deliveries.ship.courier')
-                    }}
-                </template>
-                <template #cell-containers="{ row }"
-                    ><ANum>{{ num(totalContainers(row)) }}</ANum></template
-                >
-                <template #cell-gate="{ row }">
-                    <AChip :tone="gateState(row).tone" size="sm" :dot="false">
-                        {{ gateState(row).label }}
-                    </AChip>
-                </template>
                 <template #cell-scanned="{ row }">
                     <ANum
                         >{{ store.packedCount(row) }}/{{
@@ -870,16 +943,6 @@ async function onScanEnter() {
                             @click="state.order = row.id"
                         >
                             {{ t('deliveries.action.editAddress') }}
-                        </AButton>
-                        <AButton
-                            v-if="
-                                store.stationExceptionsOf(row).includes('poa')
-                            "
-                            sm
-                            icon="whatsapp"
-                            @click="onRequestPoa(row)"
-                        >
-                            {{ t('deliveries.action.sendPoaRequest') }}
                         </AButton>
                         <template
                             v-if="

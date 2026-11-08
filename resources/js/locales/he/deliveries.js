@@ -55,14 +55,13 @@ export default {
     },
 
     col: {
+        select: 'בחירה',
+        actions: 'פעולות',
         order: 'הזמנה',
         sentToLab: 'נשלחה למעבדה ב-',
         practitioner: 'מטפל',
         recipient: 'מקבל',
         city: 'עיר',
-        ship: 'אופן מסירה',
-        containers: 'מכלים',
-        gate: 'מצב השער',
         scanned: 'נסרקו',
         courier: 'חברה',
         packages: 'חבילות',
@@ -78,22 +77,26 @@ export default {
         by: 'על ידי',
     },
 
-    gate: {
-        ok: '✓',
-        noAddress: 'חסרה כתובת',
-        noPoa: 'חסר ייפוי כוח',
-    },
-
     ship: {
-        courier: 'שליח',
         pickup: 'איסוף עצמי',
     },
 
+    select: {
+        all: 'בחר את כל השורות המוצגות',
+        row: 'בחר את הזמנה {id}',
+    },
+
+    bulk: {
+        selected: 'הזמנה אחת נבחרה | {n} הזמנות נבחרו',
+        clear: 'נקה בחירה',
+        movedToPacking: 'הזמנה אחת הועברה לאריזה | {n} הזמנות הועברו לאריזה',
+    },
+
     action: {
+        moveToPacking: 'העבר לאריזה',
         linkCourier: 'שייך לשליח',
         retry: 'נסה שוב',
         manualTracking: 'הזנת מספר מעקב ידנית',
-        sendPoaRequest: 'שלח בקשה למטופל',
         editAddress: 'עריכת כתובת',
         open: 'פתח',
         markReady: 'מוכן לאיסוף',
@@ -114,7 +117,7 @@ export default {
 
     toast: {
         readyForPickup: 'ההזמנה סומנה כמוכנה לאיסוף',
-        poaRequested: 'בקשת ייפוי כוח נשלחה למטופל',
+        movedToPacking: 'ההזמנה הועברה לאריזה',
         linked: 'שויך לשליח',
         linkFailed: 'השיוך נכשל',
     },
@@ -137,9 +140,7 @@ export default {
         poa: 'ייפוי כוח',
         poaSigned: 'חתום',
         poaMissing: 'חסר',
-        poaRequested: 'בקשה נשלחה',
         poaRequestedAt: 'נשלחה ב-{stamp}',
-        requestPoa: 'שלח בקשה למטופל',
         shipTo: {
             me: 'אליי (המטפל)',
             patient: 'אל המטופל/ת',

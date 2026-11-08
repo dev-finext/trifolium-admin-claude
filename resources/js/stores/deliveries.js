@@ -667,9 +667,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
 
     // ---- courier link (SHIPPING_STATION_SPEC.md §7) --------------------------
 
-    /** A realistic, named reason a link can fail — the same cities every time. */
-    const UNKNOWN_CITIES = ['כפר סבא עילית', 'רמת ישי החדשה'];
-
     function linkPreconditions(order) {
         if (statusOf(order) !== 'packing') {
             return 'wrongStatus';
@@ -714,24 +711,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         // The call to the courier's API — simulated, but felt: a short wait,
         // then a real answer.
         await new Promise((resolve) => setTimeout(resolve, 900));
-
-        const cityKnown = !UNKNOWN_CITIES.includes(order.address?.city?.he);
-
-        if (!cityKnown) {
-            pushEvent(order, {
-                type: 'shipment_link_failed',
-                data: { message: 'תקלה מס׳ -3 מתפוז: עיר יעד לא מוכרת' },
-            });
-            company.lastErrorAt = moment();
-            company.lastError = 'תקלה מס׳ -3: עיר יעד לא מוכרת';
-            await persist(`couriers/${courierCode}`, company, 'PUT');
-
-            return {
-                ok: false,
-                reason: 'apiError',
-                message: company.lastError,
-            };
-        }
 
         const tracking = `${COURIER[company.code]?.code || 'T'}${Math.floor(1000000 + Math.random() * 8999999)}IL`;
 
@@ -947,48 +926,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         pushEvent(order, { type: 'collected', visibleToCustomer: true });
     }
 
-    // ---- power of attorney (SHIPPING_STATION_SPEC.md §11) ---------------------
-
-    /**
-     * "שלח בקשה למטופל" — only the patient signs their own power of attorney.
-     * When `shipTo === 'me'` the gate is the practitioner's own cart consent
-     * (`courierAuth`), which this station cannot request — the fix there is a
-     * phone call, not a message, per spec §5.7's own exceptions table.
-     */
-    async function requestPoa(order) {
-        if (order.shipTo !== 'patient') {
-            return;
-        }
-
-        const when = moment();
-
-        order.poa = {
-            ...(order.poa || {}),
-            status: 'missing',
-            requestedAt: when,
-        };
-
-        pushEvent(order, {
-            type: 'delivery_auth_requested',
-            visibleToCustomer: false,
-        });
-
-        messaging.sendNow({
-            templateId: 't9',
-            recipient: {
-                name: order.patient.name,
-                type: 'patient',
-                phone: order.recipientPhone || order.patient.phone,
-            },
-            order: order.id,
-            values: {
-                name: order.patient.name,
-                order_no: order.id,
-                pay_link: `https://pay.trifolium.co.il/a/${order.id.replace('TF-', '')}`,
-            },
-        });
-    }
-
     async function updateAddress(order, address) {
         order.address = { ...order.address, ...address };
         order.addressProvided = Boolean(
@@ -1134,7 +1071,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         markReadyForPickup,
         markCollected,
 
-        requestPoa,
         updateAddress,
         setShipTo,
 

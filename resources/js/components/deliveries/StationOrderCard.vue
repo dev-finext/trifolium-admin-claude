@@ -10,6 +10,7 @@ import { useRouter } from 'vue-router';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
+import AComboSelect from '@/components/ui/AComboSelect.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
@@ -313,13 +314,6 @@ async function confirmCollect() {
     collectedByName.value = '';
 }
 
-// ---- POA ----------------------------------------------------------------------
-
-async function doRequestPoa() {
-    await store.requestPoa(props.order);
-    push({ title: t('deliveries.card.poaRequested') });
-}
-
 // ---- step back / cancel --------------------------------------------------------
 
 const stepBackAsk = ref(false);
@@ -518,15 +512,6 @@ function eventSentence(row) {
                                         })
                                     }}
                                 </div>
-                                <AButton
-                                    v-if="order.poa?.status !== 'signed'"
-                                    sm
-                                    kind="ghost"
-                                    icon="whatsapp"
-                                    @click="doRequestPoa"
-                                >
-                                    {{ t('deliveries.card.requestPoa') }}
-                                </AButton>
                             </template>
                             <span v-else>—</span>
                         </template>
@@ -684,7 +669,7 @@ function eventSentence(row) {
                             <label class="a-lbl">{{
                                 t('deliveries.card.courier')
                             }}</label>
-                            <ASelect
+                            <AComboSelect
                                 v-model="courierCode"
                                 :options="
                                     store.activeCouriers.map((c) => ({
@@ -917,7 +902,7 @@ function eventSentence(row) {
         @confirm="confirmManualTracking"
     >
         <div class="soc-row">
-            <ASelect
+            <AComboSelect
                 v-model="manualForm.courierCode"
                 :options="
                     store.activeCouriers.map((c) => ({
