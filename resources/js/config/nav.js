@@ -29,15 +29,23 @@ export const NAV_GROUPS = [
             // products and bills of materials are sections of the card.
             { id: 'items', icon: 'tag' },
             { id: 'pricing', icon: 'layers' },
-            { id: 'suppliers', icon: 'truck', ready: true },
             // V2 — the stickers module: template editor, print run, notes pool, log
             { id: 'stickers', icon: 'printer', v2: 'labels' },
+        ],
+    },
+    {
+        // The purchasing/inventory cluster, on its own: suppliers, stock and
+        // batches, purchase orders, production orders and the stock-analysis
+        // report — everything that moves or counts stock.
+        id: 'purchasing_inventory',
+        items: [
+            { id: 'suppliers', icon: 'truck', ready: true },
             { id: 'inventory', icon: 'grid' },
             // V2 — purchase orders, supplier delivery notes, consumption report
             { id: 'purchasing', icon: 'inbox', v2: 'purchase-orders' },
-            { id: 'stockAnalysis', icon: 'chart', v3: true },
             // V2 — production orders: a recipe run that opens a batch
             { id: 'production', icon: 'beaker' },
+            { id: 'stockAnalysis', icon: 'chart', v3: true },
         ],
     },
     {

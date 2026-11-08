@@ -7,6 +7,7 @@ export default {
         daily_ops: 'תפעול יומי',
         customers: 'לקוחות',
         operations: 'ניהול שוטף',
+        purchasing_inventory: 'רכש ומלאי',
         knowledge: 'ידע ותוכן',
         system: 'הגדרות מערכת',
     },

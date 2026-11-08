@@ -4,6 +4,7 @@ export default {
         daily_ops: 'Daily operations',
         customers: 'Customers',
         operations: 'Ongoing management',
+        purchasing_inventory: 'Purchasing & inventory',
         knowledge: 'Knowledge & content',
         system: 'System settings',
     },
