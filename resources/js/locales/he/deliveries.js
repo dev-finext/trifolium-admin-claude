@@ -16,15 +16,6 @@ export default {
         couriers: 'חברות משלוחים',
     },
 
-    kpi: {
-        inProduction: 'בהכנה',
-        packing: 'באריזה',
-        awaitingCourier: 'ממתין לשליח',
-        readyForPickup: 'מוכן לאיסוף',
-        exceptions: 'חריגים',
-        shippedToday: 'נשלחו היום',
-    },
-
     scanLabel: 'סריקה',
     scanPlaceholder: 'סרקו ברקוד הזמנה או מכל',
     search: 'הזמנה · מקבל · עיר · מספר מעקב',

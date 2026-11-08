@@ -16,15 +16,6 @@ export default {
         couriers: 'Courier companies',
     },
 
-    kpi: {
-        inProduction: 'In production',
-        packing: 'Packing',
-        awaitingCourier: 'Awaiting courier',
-        readyForPickup: 'Ready for pickup',
-        exceptions: 'Exceptions',
-        shippedToday: 'Shipped today',
-    },
-
     scanLabel: 'Scan',
     scanPlaceholder: 'Scan an order or container barcode',
     search: 'Order · recipient · city · tracking number',

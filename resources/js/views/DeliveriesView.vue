@@ -38,7 +38,6 @@ import ExceptionChip from '@/components/ui/ExceptionChip.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
-import FilterKpi from '@/components/ui/FilterKpi.vue';
 import SavedViews from '@/components/ui/SavedViews.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import { filterDefaults, useListFilters } from '@/composables/useListFilters';
@@ -49,7 +48,7 @@ import { useUrlState } from '@/composables/useUrlState';
 import { ACTIVE_COURIER_IDS } from '@/config';
 import { totalContainers } from '@/lib/containers';
 import { inRange, presetRange } from '@/lib/dateRange';
-import { durationParts, isoDaysAgo } from '@/lib/dates';
+import { durationParts } from '@/lib/dates';
 import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import {
@@ -500,66 +499,6 @@ async function onScanEnter() {
         <ASkeleton v-if="dataset.isBusy" :rows="6" />
 
         <template v-else>
-            <div class="a-kpis dv-kpis">
-                <FilterKpi
-                    icon="clipboard_list"
-                    :label="t('deliveries.kpi.inProduction')"
-                    :value="store.inProduction.length"
-                    :active="state.tab === 'in_production'"
-                    @click="state.tab = 'in_production'"
-                />
-                <FilterKpi
-                    icon="package"
-                    :label="t('deliveries.kpi.packing')"
-                    :value="store.packing.length"
-                    :active="state.tab === 'packing'"
-                    @click="state.tab = 'packing'"
-                />
-                <FilterKpi
-                    icon="truck"
-                    :label="t('deliveries.kpi.awaitingCourier')"
-                    :value="store.awaitingCourier.length"
-                    :active="state.tab === 'awaiting_courier'"
-                    @click="state.tab = 'awaiting_courier'"
-                >
-                    <template v-if="awaitingGroups.length" #sub>
-                        <span
-                            v-for="group in awaitingGroups"
-                            :key="group.code"
-                            class="dv-kpi-sub"
-                        >
-                            {{ courierName(group.code) }}
-                            {{ group.orders.length }}
-                        </span>
-                    </template>
-                </FilterKpi>
-                <FilterKpi
-                    icon="map_pin"
-                    :label="t('deliveries.kpi.readyForPickup')"
-                    :value="store.readyForPickup.length"
-                    :active="state.tab === 'pickup'"
-                    @click="state.tab = 'pickup'"
-                />
-                <FilterKpi
-                    icon="alert"
-                    :label="t('deliveries.kpi.exceptions')"
-                    :value="store.exceptionOrders.length"
-                    :active="state.tab === 'exceptions'"
-                    @click="state.tab = 'exceptions'"
-                />
-                <FilterKpi
-                    icon="send"
-                    :label="t('deliveries.kpi.shippedToday')"
-                    :value="
-                        store.shippedAndDone.filter(
-                            (o) => o.shippedAt?.iso === isoDaysAgo(0),
-                        ).length
-                    "
-                    :active="false"
-                    @click="state.tab = 'shipped'"
-                />
-            </div>
-
             <div class="dv-scan">
                 <label class="a-lbl" for="dv-scan-input">
                     {{ t('deliveries.scanLabel') }}
