@@ -214,6 +214,17 @@ const canLink = computed(
     () => Boolean(props.order) && store.linkPreconditions(props.order) === null,
 );
 
+/** Why the link button is disabled right now, or null when it isn't. */
+const linkBlockReason = computed(() => {
+    if (!props.order) {
+        return null;
+    }
+
+    const problem = store.linkPreconditions(props.order);
+
+    return problem ? t(`deliveries.card.linkBlocked.${problem}`) : null;
+});
+
 async function doLink() {
     if (!props.order || linking.value) {
         return;
@@ -221,9 +232,10 @@ async function doLink() {
 
     linking.value = true;
 
+    // The package count is never taken from a free field at link time — it is
+    // set in advance and changed only through the admin-code dialog below.
     const result = await store.linkCourier(props.order, {
         courierCode: courierCode.value,
-        packagesCount: packagesInput.value,
     });
 
     linking.value = false;
@@ -240,7 +252,9 @@ async function doLink() {
     } else {
         push({
             title: t('deliveries.card.linkFailed'),
-            body: result.message || '',
+            body: result.reason
+                ? t(`deliveries.card.linkBlocked.${result.reason}`)
+                : '',
             bad: true,
         });
     }
@@ -259,7 +273,9 @@ async function doRetry() {
     } else {
         push({
             title: t('deliveries.card.linkFailed'),
-            body: result.message || '',
+            body: result.reason
+                ? t(`deliveries.card.linkBlocked.${result.reason}`)
+                : '',
             bad: true,
         });
     }
@@ -295,6 +311,37 @@ function printShippingLabels() {
     if (template) {
         printStickers(template, labels, props.order.id);
     }
+}
+
+// ---- package count: known in advance, changed only with the system password ---
+
+const editingPackages = ref(false);
+const packagesDraft = ref(1);
+
+function openPackagesEditor() {
+    packagesDraft.value = props.order?.packagesCount || 1;
+    editingPackages.value = true;
+}
+
+async function confirmPackagesEdit(reason) {
+    editingPackages.value = false;
+    await store.setPackagesCount(props.order, packagesDraft.value, reason);
+    packagesInput.value = props.order?.packagesCount || 1;
+}
+
+// ---- power of attorney ----------------------------------------------------
+
+const requestingPoa = ref(false);
+
+async function doRequestPoa() {
+    if (!props.order || requestingPoa.value) {
+        return;
+    }
+
+    requestingPoa.value = true;
+    await store.requestPoa(props.order);
+    requestingPoa.value = false;
+    push({ title: t('deliveries.card.poaRequestSent') });
 }
 
 // ---- self pickup --------------------------------------------------------------
@@ -392,6 +439,24 @@ function eventSentence(row) {
                         </div>
                     </div>
                     <div class="a-dhead-a">
+                        <AButton
+                            v-if="
+                                order.shipTo !== 'pickup' &&
+                                !activeShipment &&
+                                !handedShipment
+                            "
+                            sm
+                            kind="p"
+                            icon="truck"
+                            :disabled="!canLink || linking"
+                            @click="doLink"
+                        >
+                            {{
+                                linking
+                                    ? t('deliveries.card.linking')
+                                    : t('deliveries.card.link')
+                            }}
+                        </AButton>
                         <AButton sm icon="x" @click="emit('close')">
                             {{ t('actions.cancel') }}
                         </AButton>
@@ -502,16 +567,30 @@ function eventSentence(row) {
                                     {{ maskedId(order.poa.idNumber) }} ·
                                     {{ order.poa.signedAt?.stamp }}
                                 </div>
-                                <div
-                                    v-else-if="order.poa?.requestedAt"
-                                    class="t-sub"
-                                >
-                                    {{
-                                        t('deliveries.card.poaRequestedAt', {
-                                            stamp: order.poa.requestedAt.stamp,
-                                        })
-                                    }}
-                                </div>
+                                <template v-else>
+                                    <div
+                                        v-if="order.poa?.requestedAt"
+                                        class="t-sub"
+                                    >
+                                        {{
+                                            t(
+                                                'deliveries.card.poaRequestedAt',
+                                                {
+                                                    stamp: order.poa
+                                                        .requestedAt.stamp,
+                                                },
+                                            )
+                                        }}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        class="a-linkbtn"
+                                        :disabled="requestingPoa"
+                                        @click="doRequestPoa"
+                                    >
+                                        {{ t('deliveries.card.requestPoa') }}
+                                    </button>
+                                </template>
                             </template>
                             <span v-else>—</span>
                         </template>
@@ -683,25 +762,23 @@ function eventSentence(row) {
                             <label class="a-lbl">{{
                                 t('deliveries.card.packages')
                             }}</label>
-                            <AInput
-                                v-model="packagesInput"
-                                type="number"
-                                ltr
-                                class="soc-pkg"
-                            />
+                            <span class="t-strong soc-pkg-val">
+                                <ANum>{{ packagesInput }}</ANum>
+                            </span>
+                            <button
+                                type="button"
+                                class="a-linkbtn"
+                                @click="openPackagesEditor"
+                            >
+                                {{ t('deliveries.card.editPackages') }}
+                            </button>
                         </div>
-                        <AButton
-                            kind="p"
-                            icon="truck"
-                            :disabled="!canLink || linking"
-                            @click="doLink"
+                        <div
+                            v-if="linkBlockReason"
+                            class="a-note a-note--warn soc-gap"
                         >
-                            {{
-                                linking
-                                    ? t('deliveries.card.linking')
-                                    : t('deliveries.card.link')
-                            }}
-                        </AButton>
+                            {{ linkBlockReason }}
+                        </div>
                         <div
                             v-if="
                                 (order.events || []).some(
@@ -920,6 +997,23 @@ function eventSentence(row) {
     </ConfirmDialog>
 
     <ConfirmDialog
+        :open="editingPackages"
+        :pin="pin"
+        reason
+        :title="t('deliveries.card.editPackages')"
+        @close="editingPackages = false"
+        @confirm="confirmPackagesEdit"
+    >
+        <AInput
+            v-model="packagesDraft"
+            type="number"
+            ltr
+            class="soc-pkg"
+            :placeholder="t('deliveries.card.packages')"
+        />
+    </ConfirmDialog>
+
+    <ConfirmDialog
         :open="collectAsk"
         :title="t('deliveries.card.markCollected')"
         @close="collectAsk = false"
@@ -1012,6 +1106,11 @@ function eventSentence(row) {
 
 .soc-pkg {
     width: 80px;
+}
+
+.soc-pkg-val {
+    min-width: 24px;
+    text-align: center;
 }
 
 .soc-footer {

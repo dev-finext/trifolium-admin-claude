@@ -19,7 +19,6 @@ import { I18nT, useI18n } from 'vue-i18n';
 
 import CollectModal from '@/components/deliveries/CollectModal.vue';
 import CourierSettingsTab from '@/components/deliveries/CourierSettingsTab.vue';
-import ManualTrackingModal from '@/components/deliveries/ManualTrackingModal.vue';
 import PickupListModal from '@/components/deliveries/PickupListModal.vue';
 import StationOrderCard from '@/components/deliveries/StationOrderCard.vue';
 import { useCourierName } from '@/components/deliveries/useCourierName';
@@ -34,7 +33,6 @@ import ASelect from '@/components/ui/ASelect.vue';
 import ASkeleton from '@/components/ui/ASkeleton.vue';
 import ATabs from '@/components/ui/ATabs.vue';
 import DateRangeBar from '@/components/ui/DateRangeBar.vue';
-import ExceptionChip from '@/components/ui/ExceptionChip.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
@@ -113,7 +111,6 @@ const TABS = [
     { id: 'packing', icon: 'package' },
     { id: 'awaiting_courier', icon: 'truck' },
     { id: 'pickup', icon: 'map_pin' },
-    { id: 'exceptions', icon: 'alert' },
     { id: 'shipped', icon: 'check' },
     { id: 'couriers', icon: 'phone' },
 ];
@@ -137,8 +134,6 @@ function countFor(id) {
             return store.awaitingCourier.length;
         case 'pickup':
             return store.pickupOrders.length;
-        case 'exceptions':
-            return store.exceptionOrders.length;
         default:
             return undefined;
     }
@@ -184,7 +179,6 @@ const TAB_SOURCE = {
     packing: () => store.packing,
     awaiting_courier: () => store.awaitingCourier,
     pickup: () => store.pickupOrders,
-    exceptions: () => store.exceptionOrders,
     shipped: () => store.shippedAndDone,
 };
 
@@ -367,41 +361,7 @@ function onMarkCollected(order) {
     collectModal.value = { open: true, order };
 }
 
-// ---- tab 5: חריגים ------------------------------------------------------------
-
-const exceptionRows = computed(() =>
-    state.tab === 'exceptions' ? filters.rows : [],
-);
-
-const exceptionCols = computed(() => [
-    { k: 'order', label: t('deliveries.col.order'), nowrap: true },
-    { k: 'status', label: t('deliveries.col.status'), nowrap: true },
-    { k: 'problem', label: t('deliveries.col.problem') },
-    { k: 'since', label: t('deliveries.col.since'), nowrap: true },
-    { k: 'act', label: '', nowrap: true },
-]);
-
-const manualTrackingModal = ref({ open: false, order: null });
-
-async function onRetry(order) {
-    const result = await store.retryLink(order);
-
-    push(
-        result.ok
-            ? { title: t('deliveries.toast.linked'), body: result.tracking }
-            : {
-                  title: t('deliveries.toast.linkFailed'),
-                  body: result.message || '',
-                  bad: true,
-              },
-    );
-}
-
-function onManualTracking(order) {
-    manualTrackingModal.value = { open: true, order };
-}
-
-// ---- tab 6: נשלחו --------------------------------------------------------------
+// ---- tab 5: נשלחו --------------------------------------------------------------
 
 const shippedRange = computed({
     get: () => ({
@@ -906,88 +866,6 @@ async function onScanEnter() {
                 </template>
             </ADataTable>
 
-            <!-- exceptions -->
-            <ADataTable
-                v-else-if="state.tab === 'exceptions'"
-                :cols="exceptionCols"
-                :rows="exceptionRows"
-                row-key="id"
-                :selected="state.order"
-                @row="state.order = $event.id"
-            >
-                <template #cell-order="{ row }">{{ row.id }}</template>
-                <template #cell-status="{ row }"
-                    ><StatusChip :status="statusOf(row)"
-                /></template>
-                <template #cell-problem="{ row }">
-                    <ExceptionChip
-                        v-for="id in store.stationExceptionsOf(row)"
-                        :key="id"
-                        :id="id"
-                        size="sm"
-                    />
-                </template>
-                <template #cell-since="{ row }"
-                    ><ANum>{{ ageText(row) }}</ANum></template
-                >
-                <template #cell-act="{ row }">
-                    <div class="a-rowbtns" @click.stop>
-                        <AButton
-                            v-if="
-                                store
-                                    .stationExceptionsOf(row)
-                                    .includes('address')
-                            "
-                            sm
-                            icon="map_pin"
-                            @click="state.order = row.id"
-                        >
-                            {{ t('deliveries.action.editAddress') }}
-                        </AButton>
-                        <template
-                            v-if="
-                                store
-                                    .stationExceptionsOf(row)
-                                    .includes('shipment_error')
-                            "
-                        >
-                            <AButton sm icon="refresh" @click="onRetry(row)">
-                                {{ t('deliveries.action.retry') }}
-                            </AButton>
-                            <AButton
-                                sm
-                                icon="edit"
-                                @click="onManualTracking(row)"
-                            >
-                                {{ t('deliveries.action.manualTracking') }}
-                            </AButton>
-                        </template>
-                        <AButton
-                            v-if="
-                                store
-                                    .stationExceptionsOf(row)
-                                    .some((id) =>
-                                        ['unknown_recipient', 'stuck'].includes(
-                                            id,
-                                        ),
-                                    )
-                            "
-                            sm
-                            icon="external"
-                            @click="state.order = row.id"
-                        >
-                            {{ t('deliveries.action.open') }}
-                        </AButton>
-                    </div>
-                </template>
-                <template #empty>
-                    <AEmpty
-                        icon="alert"
-                        :title="t('deliveries.exceptions.empty')"
-                    />
-                </template>
-            </ADataTable>
-
             <!-- shipped -->
             <template v-else-if="state.tab === 'shipped'">
                 <div class="dv-shipped-filters">
@@ -1071,12 +949,6 @@ async function onScanEnter() {
             :courier-code="pickupListModal.code"
             :orders="pickupListModal.orders"
             @close="pickupListModal.open = false"
-        />
-
-        <ManualTrackingModal
-            :open="manualTrackingModal.open"
-            :order="manualTrackingModal.order"
-            @close="manualTrackingModal.open = false"
         />
 
         <CollectModal

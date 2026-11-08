@@ -11,9 +11,8 @@ export default {
         packing: 'Packing',
         awaiting_courier: 'Awaiting courier',
         pickup: 'Self pickup',
-        exceptions: 'Exceptions',
         shipped: 'Shipped',
-        couriers: 'Courier companies',
+        couriers: 'Courier company management',
     },
 
     scanLabel: 'Scan',
@@ -70,8 +69,6 @@ export default {
         trackingNumber: 'Tracking number',
         linkedAt: 'Linked on',
         status: 'Status',
-        problem: 'Problem',
-        since: 'Since',
         payer: 'Practitioner / payer',
         phone: 'Phone',
         readySince: 'Ready since',
@@ -97,10 +94,6 @@ export default {
     action: {
         moveToPacking: 'Move to packing',
         linkCourier: 'Link to courier',
-        retry: 'Retry',
-        manualTracking: 'Enter tracking number by hand',
-        editAddress: 'Edit address',
-        open: 'Open',
         markReady: 'Ready for pickup',
         markCollected: 'Collected',
         reprintLabel: 'Reprint shipping labels',
@@ -113,15 +106,9 @@ export default {
         title: 'No orders in this tab',
     },
 
-    exceptions: {
-        empty: 'No exceptions right now',
-    },
-
     toast: {
         readyForPickup: 'Marked as ready for pickup',
         movedToPacking: 'Moved to packing',
-        linked: 'Linked to courier',
-        linkFailed: 'The link failed',
     },
 
     // StationOrderCard.vue — the order card at the station
@@ -143,6 +130,8 @@ export default {
         poaSigned: 'Signed',
         poaMissing: 'Missing',
         poaRequestedAt: 'Sent on {stamp}',
+        requestPoa: 'Send request to patient',
+        poaRequestSent: 'Power-of-attorney request sent',
         shipTo: {
             me: 'To me (the practitioner)',
             patient: 'To the patient',
@@ -164,6 +153,16 @@ export default {
         shipmentTitle: 'Shipment',
         courier: 'Courier company',
         packages: 'Number of packages',
+        editPackages: 'Change package count',
+        linkBlocked: {
+            wrongStatus: "The order isn't in packing yet — it can't be linked to a courier.",
+            notFullyPacked:
+                'Not every item has been scanned — finish packing first.',
+            isPickupOrder: 'This is a self-pickup order — no courier link applies.',
+            gateBlocked:
+                'The order is blocked: the address is incomplete, or the power of attorney has not been signed yet.',
+            noCourier: 'No active courier company to link to.',
+        },
         link: 'Link to courier',
         linking: 'Linking to courier…',
         linked: 'Linked to courier',
@@ -214,6 +213,7 @@ export default {
         delivery_auth_signed: 'The power of attorney was signed',
         status_reverted: 'Stepped back one stage',
         cancelled_by_station: 'The order was cancelled at the station',
+        packages_count_changed: 'The package count was changed',
     },
 
     history: {
@@ -222,7 +222,7 @@ export default {
 
     // CourierSettingsTab.vue
     courierTab: {
-        title: 'Courier companies',
+        title: 'Courier company management',
         col: {
             name: 'Company',
             connection: 'Connection',
@@ -262,14 +262,6 @@ export default {
         handOver: 'Handed to courier',
         handedTitle: 'Handed to courier',
         handedBody: 'One order was handed over | {n} orders were handed over',
-    },
-
-    // ManualTrackingModal.vue
-    manualTracking: {
-        title: 'Enter tracking number by hand',
-        courier: 'Courier company',
-        tracking: 'Tracking number',
-        save: 'Save',
     },
 
     // CollectModal.vue

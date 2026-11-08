@@ -376,18 +376,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         }));
     }
 
-    // ---- exceptions (SHIPPING_STATION_SPEC.md §5.7) ------------------------
-    // `stationExceptionsOf` itself is a module-level export above, shared with
-    // config/deliveries.js's filter fields.
-
-    const exceptionOrders = computed(() =>
-        sortStation(
-            stationOrders.value.filter(
-                (order) => stationExceptionsOf(order).length,
-            ),
-        ),
-    );
-
     // ---- writing: events & history ------------------------------------------
 
     function pushEvent(
@@ -658,10 +646,26 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         await persist(`orders/${order.id}/pack-checks`, { barcode });
     }
 
-    async function setPackagesCount(order, count) {
+    /**
+     * The number of packages is known in advance, not guessed at link time —
+     * changing it takes the system password and a reason, the same as any
+     * other correction the station logs.
+     */
+    async function setPackagesCount(order, count, reason = '') {
+        const before = order.packagesCount || 1;
+
         order.packagesCount = Math.min(20, Math.max(1, Number(count) || 1));
+
+        if (order.packagesCount !== before) {
+            pushEvent(order, {
+                type: 'packages_count_changed',
+                data: { from: before, to: order.packagesCount, reason },
+            });
+        }
+
         await persist(`orders/${order.id}/packages`, {
             count: order.packagesCount,
+            reason,
         });
     }
 
@@ -941,6 +945,20 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         await persist(`orders/${order.id}/ship-to`, { shipTo }, 'PUT');
     }
 
+    /** (Re)send the power-of-attorney request to the patient. */
+    async function requestPoa(order) {
+        if (!order.poa || order.poa.status === 'signed') {
+            return;
+        }
+
+        order.poa.requestedAt = moment();
+        pushEvent(order, {
+            type: 'delivery_auth_requested',
+            visibleToCustomer: true,
+        });
+        await persist(`orders/${order.id}/poa-request`, {});
+    }
+
     // ---- corrections (SHIPPING_STATION_SPEC.md §3.3, §3.4) --------------------
 
     /** "החזר צעד" — one step back, with the system password and a reason. */
@@ -1042,7 +1060,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         readyForPickup,
         pickupOrders,
         shippedAndDone,
-        exceptionOrders,
         stationExceptionsOf,
         stationGateOf,
 
@@ -1073,6 +1090,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
 
         updateAddress,
         setShipTo,
+        requestPoa,
 
         stepBack,
         cancelFromStation,

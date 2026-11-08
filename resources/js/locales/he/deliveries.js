@@ -11,9 +11,8 @@ export default {
         packing: 'באריזה',
         awaiting_courier: 'ממתין לשליח',
         pickup: 'איסוף עצמי',
-        exceptions: 'חריגים',
         shipped: 'נשלחו',
-        couriers: 'חברות משלוחים',
+        couriers: 'ניהול חברות משלוחים',
     },
 
     scanLabel: 'סריקה',
@@ -68,8 +67,6 @@ export default {
         trackingNumber: 'מספר מעקב',
         linkedAt: 'שויך ב-',
         status: 'סטטוס',
-        problem: 'הבעיה',
-        since: 'ממתי',
         payer: 'מטפל / משלם',
         phone: 'טלפון',
         readySince: 'מוכן מ-',
@@ -95,10 +92,6 @@ export default {
     action: {
         moveToPacking: 'העבר לאריזה',
         linkCourier: 'שייך לשליח',
-        retry: 'נסה שוב',
-        manualTracking: 'הזנת מספר מעקב ידנית',
-        editAddress: 'עריכת כתובת',
-        open: 'פתח',
         markReady: 'מוכן לאיסוף',
         markCollected: 'נאסף',
         reprintLabel: 'הדפס מדבקות משלוח',
@@ -111,15 +104,9 @@ export default {
         title: 'אין הזמנות בטאב הזה',
     },
 
-    exceptions: {
-        empty: 'אין חריגים כרגע',
-    },
-
     toast: {
         readyForPickup: 'ההזמנה סומנה כמוכנה לאיסוף',
         movedToPacking: 'ההזמנה הועברה לאריזה',
-        linked: 'שויך לשליח',
-        linkFailed: 'השיוך נכשל',
     },
 
     // StationOrderCard.vue — כרטיס ההזמנה בעמדה
@@ -141,6 +128,8 @@ export default {
         poaSigned: 'חתום',
         poaMissing: 'חסר',
         poaRequestedAt: 'נשלחה ב-{stamp}',
+        requestPoa: 'שלח בקשה למטופל',
+        poaRequestSent: 'בקשת ייפוי כוח נשלחה',
         shipTo: {
             me: 'אליי (המטפל)',
             patient: 'אל המטופל/ת',
@@ -161,6 +150,15 @@ export default {
         shipmentTitle: 'משלוח',
         courier: 'חברת שליחויות',
         packages: 'מספר חבילות',
+        editPackages: 'שינוי מספר חבילות',
+        linkBlocked: {
+            wrongStatus: 'ההזמנה עדיין לא באריזה — אי אפשר לשייך לשליח.',
+            notFullyPacked: 'לא כל הפריטים נסרקו — יש לסיים את האריזה קודם.',
+            isPickupOrder: 'זו הזמנה לאיסוף עצמי — אין שיוך לשליח.',
+            gateBlocked:
+                'ההזמנה חסומה: חסרה כתובת מלאה או שטרם התקבל ייפוי כוח.',
+            noCourier: 'אין חברת משלוחים פעילה לשיוך.',
+        },
         link: 'שייך לשליח',
         linking: 'משייך לשליח…',
         linked: 'שויך לשליח',
@@ -211,6 +209,7 @@ export default {
         delivery_auth_signed: 'ייפוי הכוח נחתם',
         status_reverted: 'הוחזר צעד אחד אחורה',
         cancelled_by_station: 'ההזמנה בוטלה מהעמדה',
+        packages_count_changed: 'מספר החבילות עודכן',
     },
 
     history: {
@@ -219,7 +218,7 @@ export default {
 
     // CourierSettingsTab.vue
     courierTab: {
-        title: 'חברות משלוחים',
+        title: 'ניהול חברות משלוחים',
         col: {
             name: 'חברה',
             connection: 'חיבור',
@@ -259,14 +258,6 @@ export default {
         handOver: 'נמסר לשליח',
         handedTitle: 'נמסר לשליח',
         handedBody: 'הזמנה אחת נמסרה | {n} הזמנות נמסרו',
-    },
-
-    // ManualTrackingModal.vue
-    manualTracking: {
-        title: 'הזנת מספר מעקב ידנית',
-        courier: 'חברת שליחויות',
-        tracking: 'מספר מעקב',
-        save: 'שמור',
     },
 
     // CollectModal.vue
