@@ -481,12 +481,6 @@ async function reset() {
                         />
                     </div>
                     <p class="a-hint">{{ t('stickers.editor.note') }}</p>
-                    <p
-                        v-if="view.tpl === 'shipping'"
-                        class="a-note a-note--warn"
-                    >
-                        {{ t('stickers.editor.shippingNote') }}
-                    </p>
                 </ACard>
             </div>
         </div>

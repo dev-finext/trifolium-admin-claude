@@ -16,7 +16,9 @@ export const STICKER_SIZES = {
     // V3 — the batch label, at the size the pharmacy prints it. Natalie's note
     // shows the label and says "גודל 120-60 בדומה לשאר המדבקות שלנו כיום".
     item: { w: 120, h: 60 },
-    shipping: { w: 100, h: 60 },
+    // Spec §8: 100×100 or 100×150 mm, final size per the office's own label
+    // stock (§20.2) — 100×100 until that's confirmed.
+    shipping: { w: 100, h: 100 },
 };
 
 /** What an element on a label is. */

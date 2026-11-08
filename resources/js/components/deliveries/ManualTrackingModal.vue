@@ -112,7 +112,6 @@ async function submit() {
                     v-model="tracking"
                     ltr
                     class="a-w100"
-                    maxlength="30"
                 />
             </div>
             <div>

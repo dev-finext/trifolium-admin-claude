@@ -20,12 +20,14 @@ import { computed } from 'vue';
 
 import { COURIER, DELIVERY_STATUS_IDS, STATION_STUCK_DAYS } from '@/config';
 import { persist } from '@/data/source';
+import i18n from '@/i18n';
 import {
     containerBarcode,
     orderContainers,
     totalContainers,
 } from '@/lib/containers';
 import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
+import { FALLBACK_LOCALE, loc } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useMessagingStore } from '@/stores/messaging';
@@ -48,6 +50,156 @@ function moment() {
         stamp: stamp(0),
     };
 }
+
+// ---- pure order predicates ---------------------------------------------
+//
+// Exported at module level, not inside the store, so `config/deliveries.js`'s
+// own filter fields (the "problem"/"gate" filters a saved view can narrow by)
+// read exactly the same rule the station itself acts on — one definition of
+// "gated" or "an exception", not two that can drift apart.
+
+export function activeShipmentOf(order) {
+    return (order.shipments || []).find((s) => s.status === 'active') || null;
+}
+
+export function handedShipmentOf(order) {
+    return (order.shipments || []).find((s) => s.status === 'handed') || null;
+}
+
+export function packedCount(order) {
+    return (order.packChecks || []).length;
+}
+
+export function allPacked(order) {
+    const total = totalContainers(order);
+
+    return total > 0 && packedCount(order) >= total;
+}
+
+/** How long (days) this order has sat in its current status — approximated
+ * from the order's own age, since the fixture does not track a per-status
+ * clock separately. */
+function ageInStatus(order) {
+    return order.daysAgo || 0;
+}
+
+/** Statuses still open to station action — a shipped/collected/cancelled
+ * order has nothing left to fix. */
+const STATION_OPEN = [
+    'in_production',
+    'packing',
+    'awaiting_courier',
+    'ready_for_pickup',
+];
+
+/** Every exception id this order carries right now (spec §5.7). */
+export function stationExceptionsOf(order) {
+    const status = statusOf(order);
+    const list = [];
+
+    if (
+        order.shipTo === 'patient' &&
+        !order.addressProvided &&
+        STATION_OPEN.includes(status)
+    ) {
+        list.push('address');
+    }
+
+    if (
+        order.shipTo &&
+        order.shipTo !== 'pickup' &&
+        ['in_production', 'packing'].includes(status)
+    ) {
+        const gated =
+            order.shipTo === 'me'
+                ? !order.courierAuth
+                : order.poa?.status !== 'signed';
+
+        if (gated) {
+            list.push('poa');
+        }
+    }
+
+    if (!order.shipTo && STATION_OPEN.includes(status)) {
+        list.push('unknown_recipient');
+    }
+
+    if (
+        status === 'packing' &&
+        allPacked(order) &&
+        !activeShipmentOf(order) &&
+        (order.events || []).some((e) => e.type === 'shipment_link_failed')
+    ) {
+        list.push('shipment_error');
+    }
+
+    const limit = STATION_STUCK_DAYS[status];
+
+    if (limit && ageInStatus(order) >= limit) {
+        list.push('stuck');
+    }
+
+    return list;
+}
+
+/** `'ok'` while nothing blocks a courier link; `'blocked'` otherwise. */
+export function stationGateOf(order) {
+    return stationExceptionsOf(order).some((id) =>
+        ['address', 'poa', 'unknown_recipient'].includes(id),
+    )
+        ? 'blocked'
+        : 'ok';
+}
+
+/**
+ * What a station list may be narrowed by, and saved as a view (addendum §2.1
+ * — every list tab works to the console's own list standard, which includes
+ * saved views, scoped to this screen as `shipping-<tab>`). One shared field
+ * set: a dimension that does not apply in a given tab just never varies
+ * there, which is harmless, not wrong.
+ */
+export const STATION_FILTER_FIELDS = [
+    {
+        key: 'gate',
+        group: 'state',
+        kind: 'set',
+        prefix: 'deliveries.filter.gate',
+        values: (order) => [stationGateOf(order)],
+    },
+    {
+        key: 'problem',
+        group: 'state',
+        kind: 'set',
+        optionLabel: (id) => i18n.global.t(`exception.${id}.short`),
+        values: (order) => stationExceptionsOf(order),
+    },
+    {
+        key: 'shipTo',
+        group: 'where',
+        kind: 'set',
+        prefix: 'deliveries.card.shipTo',
+        values: (order) => [order.shipTo || 'none'],
+    },
+    {
+        // Keyed by the record's Hebrew source text, so a filtered link opens on
+        // the same city whichever language the reader is in.
+        key: 'city',
+        group: 'where',
+        kind: 'set',
+        values: (order) =>
+            order.address?.city
+                ? [loc(order.address.city, FALLBACK_LOCALE)]
+                : [],
+    },
+    {
+        key: 'courier',
+        group: 'where',
+        kind: 'set',
+        values: (order) => [order.courier || 'none'],
+    },
+];
+
+export const STATION_FILTER_GROUPS = ['state', 'where'];
 
 export const useDeliveriesStore = defineStore('deliveries', () => {
     const dataset = useDatasetStore();
@@ -129,15 +281,12 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         ),
     );
 
-    /** Urgent first, then oldest-in-its-current-status first. */
+    /**
+     * Oldest-in-its-current-status first (spec §5.3). The station does not
+     * know about urgency — see DEMO_SHIPPING_STATION_ADDENDUM.md §1.1.
+     */
     function sortStation(list) {
-        return [...list].sort((a, b) => {
-            if (Boolean(b.urgent) !== Boolean(a.urgent)) {
-                return b.urgent ? 1 : -1;
-            }
-
-            return (b.daysAgo || 0) - (a.daysAgo || 0);
-        });
+        return [...list].sort((a, b) => (b.daysAgo || 0) - (a.daysAgo || 0));
     }
 
     const inProduction = computed(() =>
@@ -212,18 +361,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         }));
     });
 
-    function activeShipmentOf(order) {
-        return (
-            (order.shipments || []).find((s) => s.status === 'active') || null
-        );
-    }
-
-    function handedShipmentOf(order) {
-        return (
-            (order.shipments || []).find((s) => s.status === 'handed') || null
-        );
-    }
-
     /** Containers, merged with what has actually been scanned so far. */
     function packingOf(order) {
         const checked = new Set((order.packChecks || []).map((c) => c.barcode));
@@ -239,82 +376,9 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         }));
     }
 
-    function packedCount(order) {
-        return (order.packChecks || []).length;
-    }
-
-    function allPacked(order) {
-        const total = totalContainers(order);
-
-        return total > 0 && packedCount(order) >= total;
-    }
-
     // ---- exceptions (SHIPPING_STATION_SPEC.md §5.7) ------------------------
-
-    /** How long (days) this order has sat in its current status — approximated
-     * from the order's own age, since the fixture does not track a per-status
-     * clock separately. */
-    function ageInStatus(order) {
-        return order.daysAgo || 0;
-    }
-
-    /** Statuses still open to station action — a shipped/collected/cancelled
-     * order has nothing left to fix. */
-    const STATION_OPEN = [
-        'in_production',
-        'packing',
-        'awaiting_courier',
-        'ready_for_pickup',
-    ];
-
-    function stationExceptionsOf(order) {
-        const status = statusOf(order);
-        const list = [];
-
-        if (
-            order.shipTo === 'patient' &&
-            !order.addressProvided &&
-            STATION_OPEN.includes(status)
-        ) {
-            list.push('address');
-        }
-
-        if (
-            order.shipTo &&
-            order.shipTo !== 'pickup' &&
-            ['in_production', 'packing'].includes(status)
-        ) {
-            const gated =
-                order.shipTo === 'me'
-                    ? !order.courierAuth
-                    : order.poa?.status !== 'signed';
-
-            if (gated) {
-                list.push('poa');
-            }
-        }
-
-        if (!order.shipTo && STATION_OPEN.includes(status)) {
-            list.push('unknown_recipient');
-        }
-
-        if (
-            status === 'packing' &&
-            allPacked(order) &&
-            !activeShipmentOf(order) &&
-            (order.events || []).some((e) => e.type === 'shipment_link_failed')
-        ) {
-            list.push('shipment_error');
-        }
-
-        const limit = STATION_STUCK_DAYS[status];
-
-        if (limit && ageInStatus(order) >= limit) {
-            list.push('stuck');
-        }
-
-        return list;
-    }
+    // `stationExceptionsOf` itself is a module-level export above, shared with
+    // config/deliveries.js's filter fields.
 
     const exceptionOrders = computed(() =>
         sortStation(
@@ -943,13 +1007,19 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
     // ---- corrections (SHIPPING_STATION_SPEC.md §3.3, §3.4) --------------------
 
     /** "החזר צעד" — one step back, with the system password and a reason. */
-    async function stepBack(order, reason) {
+    async function stepBack(order, reason, { phoneConfirmed = false } = {}) {
         const status = statusOf(order);
 
         if (status === 'packing') {
             order.packChecks = [];
             await orders.setStatus(order.id, 'in_production', reason);
         } else if (status === 'awaiting_courier') {
+            // Tapuz has no cancel call yet (spec §3.3, §7.4) — the agent has
+            // to actually call them, and says so before this can proceed.
+            if (!phoneConfirmed) {
+                return;
+            }
+
             const shipment = activeShipmentOf(order);
 
             if (shipment) {
@@ -986,12 +1056,22 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
 
     /** "ביטול הזמנה" from the station — cancel the shipment, return the stock,
      * then the order's own existing cancellation. */
-    async function cancelFromStation(order, reason) {
+    async function cancelFromStation(
+        order,
+        reason,
+        { phoneConfirmed = false } = {},
+    ) {
         if (!STATION_CANCELLABLE.includes(statusOf(order))) {
             return;
         }
 
         const shipment = activeShipmentOf(order);
+
+        // An active Tapuz shipment has no cancel call yet — same rule as
+        // stepBack. An order with nothing shipped yet needs no such call.
+        if (shipment && !phoneConfirmed) {
+            return;
+        }
 
         if (shipment) {
             shipment.status = 'cancelled';
@@ -1027,6 +1107,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         shippedAndDone,
         exceptionOrders,
         stationExceptionsOf,
+        stationGateOf,
 
         activeShipmentOf,
         handedShipmentOf,

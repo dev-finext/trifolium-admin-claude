@@ -30,6 +30,28 @@ export default {
     scanPlaceholder: 'סרקו ברקוד הזמנה או מכל',
     search: 'הזמנה · מקבל · עיר · מספר מעקב',
 
+    // תקן הרשימות של הדמו: סינון, שבבי סינון ותצוגות שמורות — אותו מנוע
+    // שמסכי הדמו האחרים משתמשים בו (useListFilters.js).
+    filter: {
+        noun: 'הזמנות',
+        field: {
+            gate: 'מצב השער',
+            problem: 'חריג',
+            shipTo: 'נמען',
+            city: 'עיר',
+            courier: 'חברת שליחויות',
+        },
+        gate: {
+            ok: 'תקין',
+            blocked: 'חסום',
+        },
+    },
+
+    filterGroup: {
+        state: 'מצב',
+        where: 'יעד',
+    },
+
     scan: {
         orderNotFound: 'הזמנה לא נמצאה',
         orderNotInStation: 'ההזמנה במצב {status} — לא בעמדה',
@@ -107,14 +129,8 @@ export default {
         linkFailed: 'השיוך נכשל',
     },
 
-    export: {
-        none: 'אין טבלה לייצוא בטאב הזה',
-        file: '{tab}-{date}.xlsx',
-    },
-
     // StationOrderCard.vue — כרטיס ההזמנה בעמדה
     card: {
-        urgent: 'דחוף',
         recipientTitle: 'מקבל וכתובת',
         recipient: 'מקבל',
         phone: 'טלפון',
@@ -138,6 +154,7 @@ export default {
             me: 'אליי (המטפל)',
             patient: 'אל המטופל/ת',
             pickup: 'איסוף עצמי',
+            none: 'לא ידוע',
         },
 
         packingTitle: 'רשימת בדיקה לאריזה',
@@ -164,12 +181,17 @@ export default {
         manual: 'ידני',
         retry: 'נסה שוב',
         manualTracking: 'הזנת מספר מעקב ידנית',
+        trackingRequired: 'יש להזין מספר מעקב',
         reprintLabel: 'הדפס מדבקות משלוח',
 
         contentTitle: 'תוכן ההזמנה',
 
         historyTitle: 'היסטוריה',
         visibleToCustomer: 'הלקוח רואה',
+
+        // לתפוז אין ביטול דרך ה-API — הסוכן באמת מתקשר (אפיון §3.3, §7.4),
+        // ובלי הסימון הזה אי אפשר להמשיך.
+        phoneConfirm: 'ביטלתי מול חברת המשלוחים בטלפון',
 
         stepBack: 'החזר צעד',
         stepBackDestroyLabel:

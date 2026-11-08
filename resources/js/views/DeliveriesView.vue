@@ -1,31 +1,19 @@
 <script setup>
 // עמדת משלוחים — the shipping station (SHIPPING_STATION_SPEC.md,
-// DEMO_SHIPPING_STATION_PROMPT.md). One page: the worker never leaves it. The
-// dashboard counts and opens tabs; the scan bar drives packing; each tab is
-// the one list that status needs; the order card (StationOrderCard) is a
-// drawer over the page, never a navigation.
+// DEMO_SHIPPING_STATION_PROMPT.md, DEMO_SHIPPING_STATION_ADDENDUM.md). One
+// page: the worker never leaves it. The dashboard counts and opens tabs; the
+// scan bar drives packing; each tab is the one list that status needs, now
+// with the console's own list standard (search, field filters, saved views —
+// addendum §2.1); the order card (StationOrderCard) is a drawer over the
+// page, never a navigation.
 //
-// New locale keys this file and its small modals reference (none exist yet —
-// a later pass authors `locales/{he,en}/deliveries.js` for the whole screen):
-//   deliveries.title, deliveries.sub
-//   deliveries.tab.{in_production,packing,awaiting_courier,pickup,exceptions,shipped,couriers}
-//   deliveries.kpi.{inProduction,packing,awaitingCourier,readyForPickup,exceptions,shippedToday,collectedToday}
-//   deliveries.scanLabel, deliveries.scanPlaceholder
-//   deliveries.scan.{orderNotFound,orderNotInStation,orderOpened,containerScanned,
-//     alreadyScanned,belongsToAnotherOrder,badBarcode,allScannedShipping,allScannedPickup}
-//   deliveries.col.{order,sentToLab,practitioner,recipient,city,ship,containers,gate,
-//     scanned,courier,packages,trackingNumber,linkedAt,manual,status,problem,since,
-//     lastAction,payer,phone,readySince,handedAt,by}
-//   deliveries.gate.{ok,noAddress,noPoa}
-//   deliveries.ship.courier, deliveries.ship.pickup
-//   deliveries.action.{linkCourier,retry,manualTracking,sendPoaRequest,editAddress,
-//     open,markReady,markCollected,reprintLabel}
-//   deliveries.export.file
-//   deliveries.pickupList.* (used by PickupListModal.vue)
-//   deliveries.manualTracking.* (used by ManualTrackingModal.vue)
-//   deliveries.collect.* (used by CollectModal.vue)
-//   deliveries.courierTab.* (used by CourierSettingsTab.vue)
-//   exception.{poa,unknown_recipient,shipment_error,stuck,address}.short (config/exceptions.js ids)
+// New locale keys this addendum pass adds, on top of what the first pass
+// already authored in locales/{he,en}/deliveries.js:
+//   deliveries.filter.noun, deliveries.filterGroup.{state,where}
+//   deliveries.filter.field.{gate,problem,shipTo,city,courier}
+//   deliveries.filter.gate.{ok,blocked}
+// Two keys from the first pass are now dead and should be removed, not
+// reauthored: deliveries.card.urgent, deliveries.export.*.
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -40,14 +28,20 @@ import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
+import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import ASkeleton from '@/components/ui/ASkeleton.vue';
 import ATabs from '@/components/ui/ATabs.vue';
 import DateRangeBar from '@/components/ui/DateRangeBar.vue';
 import ExceptionChip from '@/components/ui/ExceptionChip.vue';
+import FilterBar from '@/components/ui/FilterBar.vue';
+import FilterChips from '@/components/ui/FilterChips.vue';
+import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import FilterKpi from '@/components/ui/FilterKpi.vue';
+import SavedViews from '@/components/ui/SavedViews.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
+import { filterDefaults, useListFilters } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useStickerData } from '@/composables/useStickerData';
 import { useToast } from '@/composables/useToast';
@@ -57,9 +51,12 @@ import { totalContainers } from '@/lib/containers';
 import { inRange, presetRange } from '@/lib/dateRange';
 import { durationParts, isoDaysAgo } from '@/lib/dates';
 import { num } from '@/lib/money';
-import { downloadXlsx } from '@/lib/xlsx';
 import { useDatasetStore } from '@/stores/dataset';
-import { useDeliveriesStore } from '@/stores/deliveries';
+import {
+    STATION_FILTER_FIELDS,
+    STATION_FILTER_GROUPS,
+    useDeliveriesStore,
+} from '@/stores/deliveries';
 import { statusOf, useOrdersStore } from '@/stores/orders';
 
 const { t } = useI18n();
@@ -71,15 +68,47 @@ const dataset = useDatasetStore();
 const orders = useOrdersStore();
 const store = useDeliveriesStore();
 
+/** One shared field set for every list tab (addendum §2.1) — the "list
+ * standard" this console's other screens already follow: filters in the URL,
+ * and saved views, scoped to this screen alone (`shipping`). */
+const SPEC = { fields: STATION_FILTER_FIELDS };
+
 const state = useUrlState({
     tab: 'in_production',
     order: '',
     q: '',
+    ...filterDefaults(SPEC),
     shippedFrom: presetRange('7').from,
     shippedTo: presetRange('7').to,
     shippedPreset: '7',
     shippedCourier: '',
 });
+
+/** The filter drawer, and the saved-views strip's exposed "save" action. */
+const drawerOpen = ref(false);
+const savedViews = ref(null);
+
+const spec = computed(() => ({
+    id: 'shipping',
+    ns: 'deliveries',
+    noun: t('deliveries.filter.noun'),
+    groups: STATION_FILTER_GROUPS,
+    fields: STATION_FILTER_FIELDS,
+}));
+
+function applyView(patch) {
+    Object.assign(state, filterDefaults(SPEC), patch);
+}
+
+function removeChip(chip) {
+    if (chip.value === null) {
+        filters.clearField(chip.key);
+
+        return;
+    }
+
+    filters.toggle(chip.key, chip.value);
+}
 
 const TABS = [
     { id: 'in_production', icon: 'clipboard_list' },
@@ -144,6 +173,31 @@ function matchesSearch(order) {
     return haystack.includes(q);
 }
 
+// ---- the shared field filter + saved views, over whichever tab is open -----
+//
+// One filter engine, one saved-views scope, for the whole station — the same
+// shape the console's other screens use (useListFilters.js), with "which tab"
+// standing in for the stage selector the old single-list desk had. A field
+// that does not vary within a tab (e.g. "courier" before anything is linked)
+// is simply inactive there, not broken.
+
+const TAB_SOURCE = {
+    in_production: () => store.inProduction,
+    packing: () => store.packing,
+    awaiting_courier: () => store.awaitingCourier,
+    pickup: () => store.pickupOrders,
+    exceptions: () => store.exceptionOrders,
+    shipped: () => store.shippedAndDone,
+};
+
+const currentTabRows = computed(() => {
+    const source = TAB_SOURCE[state.tab];
+
+    return source ? source().filter(matchesSearch) : [];
+});
+
+const filters = useListFilters(SPEC, state, currentTabRows);
+
 // ---- age -------------------------------------------------------------------
 
 function ageText(order) {
@@ -169,7 +223,7 @@ function gateState(order) {
 // ---- tab 1: בהכנה ------------------------------------------------------------
 
 const inProductionRows = computed(() =>
-    store.inProduction.filter(matchesSearch),
+    state.tab === 'in_production' ? filters.rows : [],
 );
 
 const inProductionCols = computed(() => [
@@ -185,7 +239,9 @@ const inProductionCols = computed(() => [
 
 // ---- tab 2: באריזה ------------------------------------------------------------
 
-const packingRows = computed(() => store.packing.filter(matchesSearch));
+const packingRows = computed(() =>
+    state.tab === 'packing' ? filters.rows : [],
+);
 
 const packingCols = computed(() => [
     ...inProductionCols.value,
@@ -201,14 +257,28 @@ function openForLink(order) {
 
 // ---- tab 3: ממתין לשליח, grouped by company ----------------------------------
 
-const awaitingGroups = computed(() =>
-    store.awaitingByCourier
-        .map((group) => ({
-            ...group,
-            orders: group.orders.filter(matchesSearch),
-        }))
-        .filter((group) => group.orders.length),
-);
+const awaitingGroups = computed(() => {
+    if (state.tab !== 'awaiting_courier') {
+        return [];
+    }
+
+    const byCompany = new Map();
+
+    filters.rows.forEach((order) => {
+        const code = store.activeShipmentOf(order)?.courierCode || 'tapuz';
+
+        if (!byCompany.has(code)) {
+            byCompany.set(code, []);
+        }
+
+        byCompany.get(code).push(order);
+    });
+
+    return [...byCompany.entries()].map(([code, list]) => ({
+        code,
+        orders: list,
+    }));
+});
 
 const awaitingCols = computed(() => [
     { k: 'order', label: t('deliveries.col.order'), nowrap: true },
@@ -232,7 +302,7 @@ function openPickupList(group) {
 
 // ---- tab 4: איסוף עצמי --------------------------------------------------------
 
-const pickupRows = computed(() => store.pickupOrders.filter(matchesSearch));
+const pickupRows = computed(() => (state.tab === 'pickup' ? filters.rows : []));
 
 const pickupCols = computed(() => [
     { k: 'order', label: t('deliveries.col.order'), nowrap: true },
@@ -258,7 +328,7 @@ function onMarkCollected(order) {
 // ---- tab 5: חריגים ------------------------------------------------------------
 
 const exceptionRows = computed(() =>
-    store.exceptionOrders.filter(matchesSearch),
+    state.tab === 'exceptions' ? filters.rows : [],
 );
 
 const exceptionCols = computed(() => [
@@ -309,9 +379,12 @@ const shippedRange = computed({
     },
 });
 
-const shippedRows = computed(() =>
-    store.shippedAndDone
-        .filter(matchesSearch)
+const shippedRows = computed(() => {
+    if (state.tab !== 'shipped') {
+        return [];
+    }
+
+    return filters.rows
         .filter((order) => {
             const at =
                 order.collectedAt?.iso || order.shippedAt?.iso || order.iso;
@@ -321,8 +394,8 @@ const shippedRows = computed(() =>
         .filter(
             (order) =>
                 !state.shippedCourier || order.courier === state.shippedCourier,
-        ),
-);
+        );
+});
 
 const shippedCols = computed(() => [
     { k: 'order', label: t('deliveries.col.order'), nowrap: true },
@@ -355,61 +428,6 @@ async function reprintLabel(order) {
     }
 
     await printStickers(template, labels, order.id);
-}
-
-// ---- export ------------------------------------------------------------------
-
-function exportActive() {
-    const sheets = {
-        in_production: {
-            cols: inProductionCols.value,
-            rows: inProductionRows.value,
-        },
-        packing: { cols: packingCols.value, rows: packingRows.value },
-        pickup: { cols: pickupCols.value, rows: pickupRows.value },
-        exceptions: { cols: exceptionCols.value, rows: exceptionRows.value },
-        shipped: { cols: shippedCols.value, rows: shippedRows.value },
-    };
-    const sheet = sheets[state.tab];
-
-    if (!sheet) {
-        push({ title: t('deliveries.export.none'), bad: true });
-
-        return;
-    }
-
-    const header = sheet.cols.filter((c) => c.k !== 'act').map((c) => c.label);
-    const rows = sheet.rows.map((order) => [
-        order.id,
-        loc(order.patient?.name) || '',
-        loc(order.address?.city) || '',
-        statusOf(order),
-        order.courier ? courierName(order.courier) : '',
-        order.tracking || '',
-    ]);
-
-    downloadXlsx(
-        t('deliveries.export.file', {
-            tab: t(`deliveries.tab.${state.tab}`),
-            date: isoDaysAgo(0),
-        }),
-        {
-            name: t(`deliveries.tab.${state.tab}`),
-            rows: [
-                header.length
-                    ? header
-                    : [
-                          'order',
-                          'recipient',
-                          'city',
-                          'status',
-                          'courier',
-                          'tracking',
-                      ],
-                ...rows,
-            ],
-        },
-    );
 }
 
 // ---- the scan bar --------------------------------------------------------------
@@ -477,13 +495,7 @@ async function onScanEnter() {
         <PageHead
             :crumbs="[t('nav.group.daily_ops'), t('nav.item.deliveries')]"
             :title="t('deliveries.title')"
-        >
-            <template #actions>
-                <AButton icon="download" @click="exportActive">
-                    {{ t('ui.exportExcel') }}
-                </AButton>
-            </template>
-        </PageHead>
+        />
 
         <ASkeleton v-if="dataset.isBusy" :rows="6" />
 
@@ -583,12 +595,46 @@ async function onScanEnter() {
 
             <ATabs v-model="state.tab" :tabs="tabs" />
 
-            <input
-                v-if="state.tab !== 'couriers'"
-                v-model="state.q"
-                class="a-input dv-search"
-                :placeholder="t('deliveries.search')"
-            />
+            <template v-if="state.tab !== 'couriers'">
+                <SavedViews
+                    ref="savedViews"
+                    :spec="spec"
+                    :filters="state"
+                    :rows="currentTabRows"
+                    @apply="applyView"
+                />
+
+                <FilterBar
+                    :count="filters.rows.length"
+                    :total="currentTabRows.length"
+                    :label="t('deliveries.filter.noun')"
+                    :dirty="filters.dirty"
+                    @clear="filters.clear"
+                >
+                    <AInput
+                        v-model="state.q"
+                        class="dv-search"
+                        :placeholder="t('deliveries.search')"
+                    />
+                    <AButton icon="layers" @click="drawerOpen = true">
+                        {{
+                            filters.active.length
+                                ? t('filters.openWith', {
+                                      n: filters.active.length,
+                                  })
+                                : t('filters.open')
+                        }}
+                    </AButton>
+                </FilterBar>
+
+                <FilterChips
+                    :spec="spec"
+                    :filters="state"
+                    :rows="currentTabRows"
+                    @remove="removeChip"
+                    @clear="filters.clear"
+                />
+            </template>
 
             <!-- in production -->
             <ADataTable
@@ -601,9 +647,6 @@ async function onScanEnter() {
             >
                 <template #cell-order="{ row }">
                     <div class="t-strong">{{ row.id }}</div>
-                    <AChip v-if="row.urgent" tone="red" size="sm" :dot="false">
-                        {{ t('orders.detail.urgent') }}
-                    </AChip>
                 </template>
                 <template #cell-sentToLab="{ row }"
                     ><ANum>{{ ageText(row) }}</ANum></template
@@ -651,9 +694,6 @@ async function onScanEnter() {
             >
                 <template #cell-order="{ row }">
                     <div class="t-strong">{{ row.id }}</div>
-                    <AChip v-if="row.urgent" tone="red" size="sm" :dot="false">
-                        {{ t('orders.detail.urgent') }}
-                    </AChip>
                 </template>
                 <template #cell-sentToLab="{ row }"
                     ><ANum>{{ ageText(row) }}</ANum></template
@@ -1053,6 +1093,19 @@ async function onScanEnter() {
             :order="collectModal.order"
             @close="collectModal.open = false"
         />
+
+        <FilterDrawer
+            v-if="state.tab !== 'couriers'"
+            :open="drawerOpen"
+            :spec="spec"
+            :filters="state"
+            :rows="currentTabRows"
+            :result-count="filters.rows.length"
+            @close="drawerOpen = false"
+            @clear="filters.clear"
+            @patch="filters.patch"
+            @save="savedViews?.openSave()"
+        />
     </div>
 </template>
 
@@ -1094,8 +1147,8 @@ async function onScanEnter() {
 }
 
 .dv-search {
-    max-width: 360px;
-    margin: 12px 0;
+    width: 320px;
+    flex: none;
 }
 
 .dv-group {

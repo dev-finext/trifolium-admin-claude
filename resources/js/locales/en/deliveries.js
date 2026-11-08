@@ -30,6 +30,28 @@ export default {
     scanPlaceholder: 'Scan an order or container barcode',
     search: 'Order · recipient · city · tracking number',
 
+    // The demo's own list standard: filters, filter chips and saved views —
+    // the same engine every other screen uses (useListFilters.js).
+    filter: {
+        noun: 'orders',
+        field: {
+            gate: 'Gate state',
+            problem: 'Exception',
+            shipTo: 'Recipient',
+            city: 'City',
+            courier: 'Courier',
+        },
+        gate: {
+            ok: 'Clear',
+            blocked: 'Blocked',
+        },
+    },
+
+    filterGroup: {
+        state: 'State',
+        where: 'Destination',
+    },
+
     scan: {
         orderNotFound: 'Order not found',
         orderNotInStation: 'The order is {status} — not at the station',
@@ -109,14 +131,8 @@ export default {
         linkFailed: 'The link failed',
     },
 
-    export: {
-        none: 'There is no table to export on this tab',
-        file: '{tab}-{date}.xlsx',
-    },
-
     // StationOrderCard.vue — the order card at the station
     card: {
-        urgent: 'Urgent',
         recipientTitle: 'Recipient and address',
         recipient: 'Recipient',
         phone: 'Phone',
@@ -140,6 +156,7 @@ export default {
             me: 'To me (the practitioner)',
             patient: 'To the patient',
             pickup: 'Self pickup',
+            none: 'Unknown',
         },
 
         packingTitle: 'Packing checklist',
@@ -167,12 +184,17 @@ export default {
         manual: 'Manual',
         retry: 'Retry',
         manualTracking: 'Enter tracking number by hand',
+        trackingRequired: 'Enter a tracking number',
         reprintLabel: 'Reprint shipping labels',
 
         contentTitle: "The order's content",
 
         historyTitle: 'History',
         visibleToCustomer: 'Customer sees this',
+
+        // Tapuz has no cancel call yet — the agent really does call them
+        // (spec §3.3, §7.4), and this can't proceed without that checked.
+        phoneConfirm: 'I cancelled this with the courier company by phone',
 
         stepBack: 'Step back',
         stepBackDestroyLabel:

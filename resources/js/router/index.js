@@ -31,10 +31,18 @@ const routes = [
         component: () => import('@/views/StockAnalysisView.vue'),
     },
     {
-        path: '/deliveries',
+        // Spec §5.1: `/admin/shipping` in production — `/shipping` here. The
+        // route keeps its old name/id (`deliveries`) so the nav item and its
+        // locale keys need no change; only the address moves.
+        path: '/shipping',
         name: 'deliveries',
         meta: { titleKey: 'nav.item.deliveries' },
         component: () => import('@/views/DeliveriesView.vue'),
+    },
+    {
+        // The old address, kept working rather than broken.
+        path: '/deliveries',
+        redirect: (to) => ({ name: 'deliveries', query: to.query }),
     },
     {
         path: '/messaging',

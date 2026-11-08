@@ -102,8 +102,6 @@ export default {
         dirty: 'Unsaved changes',
         updated: 'Saved {stamp} · {by}',
         note: 'Positions are millimetres from the top-right corner of the label. A field that is empty on the order does not print. The logo is a placeholder — the logo file comes with the API. The barcode is real Code 39, readable by any scanner.',
-        shippingNote:
-            'The parcel label is under review — the courier’s own label may replace it (see “decisions” in the progress article).',
         empty: 'No elements — add a field, text, logo or barcode',
     },
 

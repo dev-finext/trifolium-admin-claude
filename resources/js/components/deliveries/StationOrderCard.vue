@@ -272,6 +272,12 @@ function openManualTracking() {
 }
 
 async function confirmManualTracking(reason) {
+    if (!manualForm.trackingNumber.trim()) {
+        push({ title: t('deliveries.card.trackingRequired'), bad: true });
+
+        return;
+    }
+
     manualTrackingOpen.value = false;
     await store.enterManualTracking(props.order, {
         courierCode: manualForm.courierCode,
@@ -333,12 +339,16 @@ const canCancel = computed(() =>
 
 async function confirmStepBack(reason) {
     stepBackAsk.value = false;
-    await store.stepBack(props.order, reason);
+    await store.stepBack(props.order, reason, {
+        phoneConfirmed: status.value === 'awaiting_courier',
+    });
 }
 
 async function confirmCancelOrder(reason) {
     cancelAsk.value = false;
-    await store.cancelFromStation(props.order, reason);
+    await store.cancelFromStation(props.order, reason, {
+        phoneConfirmed: status.value === 'awaiting_courier',
+    });
     emit('close');
 }
 
@@ -369,9 +379,6 @@ function eventSentence(row) {
                                 <span class="a-code a-tag">{{ order.id }}</span>
                             </h2>
                             <StatusChip :status="status" size="lg" />
-                            <AChip v-if="order.urgent" tone="red" :dot="false">
-                                {{ t('deliveries.card.urgent') }}
-                            </AChip>
                             <ExceptionChip
                                 v-for="id in exceptions"
                                 :key="id"
@@ -922,7 +929,6 @@ function eventSentence(row) {
             <AInput
                 v-model="manualForm.trackingNumber"
                 ltr
-                maxlength="30"
                 :placeholder="t('deliveries.card.trackingNumber')"
             />
         </div>
@@ -951,6 +957,11 @@ function eventSentence(row) {
                 ? [t('deliveries.card.stepBackDestroyLabel')]
                 : []
         "
+        :confirm-check="
+            status === 'awaiting_courier'
+                ? t('deliveries.card.phoneConfirm')
+                : ''
+        "
         @close="stepBackAsk = false"
         @confirm="confirmStepBack"
     />
@@ -961,6 +972,11 @@ function eventSentence(row) {
         reason
         danger
         :title="t('deliveries.card.cancelOrder')"
+        :confirm-check="
+            status === 'awaiting_courier'
+                ? t('deliveries.card.phoneConfirm')
+                : ''
+        "
         @close="cancelAsk = false"
         @confirm="confirmCancelOrder"
     />

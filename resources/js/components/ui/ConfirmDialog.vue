@@ -39,6 +39,13 @@ const props = defineProps({
     choices: { type: Array, default: () => [] },
     choiceLabel: { type: String, default: '' },
     choiceHint: { type: String, default: '' },
+    /**
+     * A required acknowledgement checkbox, its label the text itself (e.g. "I
+     * cancelled this with the courier by phone") — for a step taken outside
+     * the system that nothing here can verify, so the dialog blocks on the
+     * agent's own word instead of pretending to confirm it automatically.
+     */
+    confirmCheck: { type: String, default: '' },
 });
 
 const emit = defineEmits(['confirm', 'close']);
@@ -49,6 +56,7 @@ const uid = useId();
 const why = ref('');
 const code = ref('');
 const choice = ref('');
+const checked = ref(false);
 const wrong = ref(false);
 const pinInput = ref(null);
 
@@ -65,6 +73,7 @@ const blocked = computed(
     () =>
         (props.reason && !why.value.trim()) ||
         (props.choices.length > 0 && !choice.value) ||
+        (props.confirmCheck && !checked.value) ||
         (needsPin.value && !code.value),
 );
 
@@ -76,6 +85,7 @@ watch(
         why.value = '';
         code.value = '';
         choice.value = '';
+        checked.value = false;
         wrong.value = false;
 
         if (open && needsPin.value) {
@@ -150,6 +160,13 @@ function submit() {
             />
         </div>
 
+        <div v-if="confirmCheck" class="a-confirm-r a-confirm-check">
+            <label class="a-confirm-checklbl">
+                <input type="checkbox" class="a-check" v-model="checked" />
+                <span>{{ confirmCheck }}</span>
+            </label>
+        </div>
+
         <div v-if="needsPin" class="a-pinbox">
             <label class="a-lbl" :for="`${uid}-pin`">
                 {{ t('ui.pinLabel') }}
@@ -199,6 +216,14 @@ function submit() {
 .a-confirm-nt {
     margin-bottom: 6px;
     font-weight: 700;
+}
+
+.a-confirm-checklbl {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    font-size: 14.5px;
+    cursor: pointer;
 }
 
 .a-pin.is-wrong {
