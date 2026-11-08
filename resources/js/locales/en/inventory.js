@@ -1,6 +1,6 @@
 // English mirror of he/inventory.js — same keys, real translations.
 export default {
-    title: 'Stock, goods receipt and batches',
+    title: 'Stock & batches',
     sub: '{items} items · {batches} batches with quantity left · {receipts} goods receipts',
     filterGroup: {
         what: 'What and where',
@@ -60,10 +60,8 @@ export default {
     },
     tab: {
         stock: 'Stock',
-        receipts: 'Goods receipt',
         batches: 'Batches and expiry',
         movements: 'Stock movements',
-        docs: 'Inventory documents',
     },
     action: {
         export: 'Export stock',
@@ -130,22 +128,8 @@ export default {
         },
     },
     stock: {
-        lowTitle: '{n} items below their minimum',
-        lowNames: '— {names}.',
-        lowMore: 'and {n} more',
-        lowOn: 'The table is filtered to these items · click to undo',
-        lowOff: 'Click to filter the table to these items',
-        allAbove: 'Every item is above its minimum level.',
         count: 'items',
         search: 'Item name · item code · latin name',
-        kpi: {
-            all: 'All items',
-            allSub: 'Click to show everything',
-            low: 'Below minimum',
-            lowSub: 'Click to filter the table',
-            expiring: 'Batches expiring soon',
-            expiringSub: 'Less than {days} days',
-        },
         filter: {
             kind: 'Kind — all',
             wh: 'Warehouse — all',
@@ -231,20 +215,9 @@ export default {
         },
     },
     batches: {
-        warn: '{expiring} batches expiring soon and {expired} already expired',
-        warnBody:
-            '— an expired batch is automatically blocked from being allocated to compounding.',
-        ok: 'No batches are expiring soon.',
+        dash: '{all} batches · {expiring} expiring soon (within {days} days) · {expired} expired',
         count: 'batches · click a row to open its trace',
         search: 'Batch number · item · item code · supplier',
-        kpi: {
-            all: 'All batches',
-            allSub: 'Click to show everything',
-            expiring: 'Expiring soon',
-            expiringSub: 'Less than {days} days',
-            expired: 'Expired',
-            expiredSub: 'Blocked from allocation',
-        },
         filter: {
             state: 'State — all',
             expiry: 'Expiry — all',
@@ -435,7 +408,6 @@ export default {
             price: 'Price on line {n}',
             labels: 'Labels on line {n}',
         },
-        open: 'New goods receipt',
     },
     adjust: {
         title: 'Manual stock issue · {item}',
@@ -483,30 +455,8 @@ export default {
         purchase_order: 'Purchase order',
     },
     docs: {
-        filter: {
-            field: {
-                type: 'Document type',
-                base: 'Source',
-                wh: 'Warehouse',
-            },
-        },
-        noun: 'documents',
-        count: 'documents · of {total}',
-        search: 'Document number · production order · supplier · item · remark',
-        empty: 'No document matches the filter',
-        linesN: '{n} lines',
-        sub: {
-            goods_receipt: 'Came in',
-            goods_issue: 'Went out',
-            count: 'Corrected by a count',
-            transfer: 'Between warehouses',
-        },
         col: {
-            number: 'Number',
-            type: 'Type',
-            when: 'Date',
             base: 'Raised against',
-            lines: 'Lines',
             wh: 'Warehouse',
             remarks: 'Remarks',
         },
@@ -518,15 +468,6 @@ export default {
             qty: 'Movement',
             batch: 'Batch',
             price: 'Price',
-        },
-        field: {
-            type: 'Document type',
-            base: 'Raised against',
-            wh: 'Warehouse',
-        },
-        group: {
-            what: 'What',
-            where: 'Where',
         },
     },
 };

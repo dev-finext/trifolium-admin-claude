@@ -1,6 +1,6 @@
 // מלאי, קליטת סחורה ואצוות — מסך המלאי ומסמכיו.
 export default {
-    title: 'מלאי, קליטת סחורה ואצוות',
+    title: 'מלאי ואצוות',
     sub: '{items} פריטים · {batches} אצוות עם יתרה · {receipts} תעודות קליטה',
     filterGroup: {
         what: 'מה ואיפה',
@@ -60,10 +60,8 @@ export default {
     },
     tab: {
         stock: 'מלאי',
-        receipts: 'קליטת סחורה',
         batches: 'אצוות ותוקף',
         movements: 'תנועות מלאי',
-        docs: 'מסמכי מלאי',
     },
     action: {
         export: 'ייצוא מלאי',
@@ -130,22 +128,8 @@ export default {
         },
     },
     stock: {
-        lowTitle: '{n} פריטים מתחת למינימום',
-        lowNames: '— {names}.',
-        lowMore: 'ועוד {n}',
-        lowOn: 'הטבלה מסוננת לפריטים אלה · לחיצה מבטלת',
-        lowOff: 'לחיצה מסננת את הטבלה לפריטים אלה',
-        allAbove: 'כל הפריטים מעל מפלס המינימום.',
         count: 'פריטים',
         search: 'שם פריט · מק״ט · שם לטיני',
-        kpi: {
-            all: 'כל הפריטים',
-            allSub: 'לחיצה מציגה הכל',
-            low: 'מתחת למינימום',
-            lowSub: 'לחיצה מסננת את הטבלה',
-            expiring: 'אצוות בתוקף מתקרב',
-            expiringSub: 'פחות מ-{days} יום',
-        },
         filter: {
             kind: 'סוג — הכל',
             wh: 'מחסן — הכל',
@@ -231,19 +215,9 @@ export default {
         },
     },
     batches: {
-        warn: '{expiring} אצוות בתוקף מתקרב ו-{expired} שפג תוקפן',
-        warnBody: '— אצווה שפג תוקפה נחסמת אוטומטית לשיוך לרקיחה.',
-        ok: 'אין אצוות בתוקף מתקרב.',
+        dash: '{all} אצוות · {expiring} בתוקף מתקרב (תוך {days} יום) · {expired} פגות תוקף',
         count: 'אצוות · לחיצה על שורה פותחת שרשרת מעקב',
         search: 'מספר אצווה · פריט · מק״ט · ספק',
-        kpi: {
-            all: 'כל האצוות',
-            allSub: 'לחיצה מציגה הכל',
-            expiring: 'תוקף מתקרב',
-            expiringSub: 'פחות מ-{days} יום',
-            expired: 'פג תוקף',
-            expiredSub: 'חסומות לשיוך',
-        },
         filter: {
             state: 'מצב — הכל',
             expiry: 'תוקף — הכל',
@@ -433,7 +407,6 @@ export default {
             price: 'מחיר בשורה {n}',
             labels: 'מדבקות בשורה {n}',
         },
-        open: 'קליטת סחורה חדשה',
     },
     adjust: {
         title: 'יציאת מלאי ידנית · {item}',
@@ -481,30 +454,8 @@ export default {
         purchase_order: 'הזמנת רכש',
     },
     docs: {
-        filter: {
-            field: {
-                type: 'סוג המסמך',
-                base: 'מקור',
-                wh: 'מחסן',
-            },
-        },
-        noun: 'מסמכים',
-        count: 'מסמכים · מתוך {total}',
-        search: 'מספר מסמך · הוראת ייצור · ספק · פריט · הערה',
-        empty: 'אין מסמכים התואמים לסינון',
-        linesN: '{n} שורות',
-        sub: {
-            goods_receipt: 'נכנס למלאי',
-            goods_issue: 'יצא מהמלאי',
-            count: 'תיקון לפי ספירה',
-            transfer: 'בין מחסנים',
-        },
         col: {
-            number: 'מספר',
-            type: 'סוג',
-            when: 'תאריך',
             base: 'מקור',
-            lines: 'שורות',
             wh: 'מחסן',
             remarks: 'הערות',
         },
@@ -516,15 +467,6 @@ export default {
             qty: 'תנועה',
             batch: 'אצווה',
             price: 'מחיר',
-        },
-        field: {
-            type: 'סוג מסמך',
-            base: 'מקור',
-            wh: 'מחסן',
-        },
-        group: {
-            what: 'מה זה',
-            where: 'היכן',
         },
     },
 };

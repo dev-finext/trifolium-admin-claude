@@ -9,14 +9,17 @@
 // Making something here instead of buying it is a production order, and
 // production orders have their own screen — הוראות ייצור. It was a third tab
 // here for a while, which put the same job in two places.
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import GoodsReceiptModal from '@/components/inventory/GoodsReceiptModal.vue';
 import PageHead from '@/components/layout/PageHead.vue';
 import BuyingTab from '@/components/purchasing/BuyingTab.vue';
+import AButton from '@/components/ui/AButton.vue';
 import AErrorState from '@/components/ui/AErrorState.vue';
 import ASkeleton from '@/components/ui/ASkeleton.vue';
 import ATabs from '@/components/ui/ATabs.vue';
+import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { BUYING_KIND_IDS } from '@/config';
 import { useDatasetStore } from '@/stores/dataset';
@@ -25,7 +28,25 @@ import { useDatasetStore } from '@/stores/dataset';
 const SKELETON_ROWS = 8;
 
 const { t } = useI18n();
+const { push } = useToast();
 const dataset = useDatasetStore();
+
+// Receiving without a purchase order — "קנייה בלי הזמנה". Receiving against
+// one happens on that order's own sheet (BuyingSheetView/BuyingReceive); this
+// is the only other door, and it is the only door now — goods receipt no
+// longer lives on the Inventory screen (DEMO_INVENTORY_FIXES_PROMPT.md §5).
+const receiving = ref(false);
+
+function onReceived({ id, batches }) {
+    push({
+        title: t('inventory.toast.received.title'),
+        body: t(
+            'inventory.toast.received.body',
+            { id, n: batches.length },
+            batches.length,
+        ),
+    });
+}
 
 const view = useUrlState({ tab: 'request' });
 
@@ -52,7 +73,13 @@ const tabs = computed(() => [
         :crumbs="[t('buying.crumb'), t('buying.title')]"
         :title="t('buying.title')"
         :sub="t('buying.sub')"
-    />
+    >
+        <template #actions>
+            <AButton icon="plus" @click="receiving = true">
+                {{ t('buying.action.receiveNoOrder') }}
+            </AButton>
+        </template>
+    </PageHead>
 
     <ATabs v-model="view.tab" :tabs="tabs" />
 
@@ -60,4 +87,10 @@ const tabs = computed(() => [
     <ASkeleton v-else-if="dataset.isBusy" :rows="SKELETON_ROWS" />
 
     <BuyingTab v-else :key="view.tab" :kind="view.tab" />
+
+    <GoodsReceiptModal
+        :open="receiving"
+        @close="receiving = false"
+        @saved="onReceived"
+    />
 </template>

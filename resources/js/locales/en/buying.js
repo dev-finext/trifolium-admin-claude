@@ -2,13 +2,19 @@
 // config/buying.js: they are what is written to the Excel file, not what is
 // shown on screen.
 export default {
-    crumb: 'Daily operations',
+    crumb: 'Purchasing & inventory',
     title: 'Purchasing',
     sub: 'Purchase requests and supplier orders',
 
     tab: {
         request: 'Purchase request',
         order: 'Purchase order',
+    },
+
+    action: {
+        // The no-PO receipt — the only other door into stock besides
+        // receiving against a specific order on its own sheet.
+        receiveNoOrder: 'Purchase without an order',
     },
 
     request: {

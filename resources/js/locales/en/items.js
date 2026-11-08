@@ -1,6 +1,6 @@
 // English mirror of he/items.js — same keys, real translations.
 export default {
-    title: 'Items',
+    title: 'Item card',
     sub: '{total} items · one item card, exactly as SAP holds it',
     tab: {
         items: 'Items',

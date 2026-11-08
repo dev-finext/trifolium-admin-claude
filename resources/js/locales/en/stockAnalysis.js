@@ -1,7 +1,7 @@
 // The stock-analysis report. The table's own headers are not here — they are
 // SAP's field names and must stay exactly as they are.
 export default {
-    crumb: 'Daily operations',
+    crumb: 'Purchasing & inventory',
     title: 'Stock analysis',
     sub: "Yaron's report, as it comes out of SAP",
     lede: 'The report saved in SAP as "דוח ירון ניתוח מלאי — ללא ספירת מלאי", in the same columns and the same order. Consumption is every stock movement in the period except counts and manual issues, plus what production consumed. Stock, on-order and committed are read from the item card now rather than at the report dates, exactly as in SAP. An item with no movement in the period does not appear.',

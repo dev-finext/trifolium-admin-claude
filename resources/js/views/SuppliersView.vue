@@ -39,7 +39,7 @@ function confirmAsk(reason, code) {
 
 <template>
     <PageHead
-        :crumbs="[t('nav.group.operations'), t('nav.item.suppliers')]"
+        :crumbs="[t('nav.group.purchasing_inventory'), t('nav.item.suppliers')]"
         :title="t('suppliers.title')"
         :sub="sub"
     />

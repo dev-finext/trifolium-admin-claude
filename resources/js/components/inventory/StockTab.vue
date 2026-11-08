@@ -16,7 +16,6 @@ import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
-import FilterKpi from '@/components/ui/FilterKpi.vue';
 import SavedViews from '@/components/ui/SavedViews.vue';
 import {
     filterDefaults,
@@ -27,7 +26,6 @@ import {
 } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
-import { BATCH_EXPIRY_WARN_DAYS } from '@/config';
 import { searchHaystack } from '@/lib/localized';
 import { num } from '@/lib/money';
 import {
@@ -37,15 +35,12 @@ import {
 } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 
-/** How many item names the low-stock banner lists before it counts the rest. */
-const LOW_PREVIEW = 4;
-
 defineProps({
     /** The sku whose drawer is open, so its row reads as selected. */
     selected: { type: String, default: '' },
 });
 
-const emit = defineEmits(['adjust', 'open', 'open-batches', 'open-expiring']);
+const emit = defineEmits(['adjust', 'open', 'open-batches']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -113,22 +108,6 @@ function removeChip(chip) {
 
 const dirty = computed(() => filters.dirty || Boolean(view.q));
 
-/** The low-stock banner and its tile are one value of the state field. */
-const lowOnly = computed(() => view.state.includes('low'));
-
-const lowNames = computed(() => {
-    const names = inventory.lowStock
-        .slice(0, LOW_PREVIEW)
-        .map((row) => loc(row.name));
-    const rest = inventory.lowStock.length - names.length;
-
-    if (rest > 0) {
-        names.push(t('inventory.stock.lowMore', { n: rest }));
-    }
-
-    return names.join(' · ');
-});
-
 const cols = computed(() => [
     {
         k: 'sku',
@@ -179,68 +158,6 @@ const { paged, total } = usePaged(sorted, view);
 
 <template>
     <div class="a-grid a-tabbody">
-        <div
-            v-if="inventory.lowStock.length"
-            class="a-note a-note--warn a-note--btn"
-            :class="{ 'is-on': lowOnly }"
-            role="button"
-            tabindex="0"
-            :aria-pressed="lowOnly"
-            @click="filters.toggle('state', 'low')"
-            @keydown.enter.prevent="filters.toggle('state', 'low')"
-            @keydown.space.prevent="filters.toggle('state', 'low')"
-        >
-            <strong>
-                {{
-                    t('inventory.stock.lowTitle', {
-                        n: inventory.lowStock.length,
-                    })
-                }}
-            </strong>
-            {{ t('inventory.stock.lowNames', { names: lowNames }) }}
-            <span class="a-note-a">
-                {{
-                    lowOnly
-                        ? t('inventory.stock.lowOn')
-                        : t('inventory.stock.lowOff')
-                }}
-            </span>
-        </div>
-        <div v-else class="a-note a-note--ok">
-            {{ t('inventory.stock.allAbove') }}
-        </div>
-
-        <div class="a-kpis">
-            <FilterKpi
-                icon="grid"
-                :active="!filters.dirty"
-                :label="t('inventory.stock.kpi.all')"
-                :value="inventory.stock.length"
-                :sub="t('inventory.stock.kpi.allSub')"
-                @click="filters.clear"
-            />
-            <FilterKpi
-                icon="alert"
-                :active="lowOnly"
-                :label="t('inventory.stock.kpi.low')"
-                :value="inventory.lowStock.length"
-                :sub="t('inventory.stock.kpi.lowSub')"
-                @click="filters.toggle('state', 'low')"
-            />
-            <FilterKpi
-                icon="clock"
-                :active="false"
-                :label="t('inventory.stock.kpi.expiring')"
-                :value="inventory.expiringBatches.length"
-                :sub="
-                    t('inventory.stock.kpi.expiringSub', {
-                        days: BATCH_EXPIRY_WARN_DAYS,
-                    })
-                "
-                @click="emit('open-expiring')"
-            />
-        </div>
-
         <SavedViews
             ref="savedViews"
             :spec="spec"

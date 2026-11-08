@@ -19,7 +19,6 @@ import APagination from '@/components/ui/APagination.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
-import FilterKpi from '@/components/ui/FilterKpi.vue';
 import SavedViews from '@/components/ui/SavedViews.vue';
 import {
     filterDefaults,
@@ -84,9 +83,6 @@ const filters = useListFilters(SPEC, view, searched);
 const rows = computed(() => filters.rows);
 
 const dirty = computed(() => filters.dirty || Boolean(view.bq));
-
-/** The two warning tiles are values of the state field. */
-const stateOnly = (id) => view.bstate.length === 1 && view.bstate[0] === id;
 
 const spec = computed(() => ({
     id: 'batches',
@@ -186,57 +182,16 @@ const { paged, total } = usePaged(sorted, view);
 
 <template>
     <div class="a-grid a-tabbody">
-        <div
-            v-if="
-                inventory.expiringBatches.length +
-                inventory.expiredBatches.length
-            "
-            class="a-note a-note--warn"
-        >
-            <strong>
-                {{
-                    t('inventory.batches.warn', {
-                        expiring: inventory.expiringBatches.length,
-                        expired: inventory.expiredBatches.length,
-                    })
-                }}
-            </strong>
-            {{ t('inventory.batches.warnBody') }}
-        </div>
-        <div v-else class="a-note a-note--ok">
-            {{ t('inventory.batches.ok') }}
-        </div>
-
-        <div class="a-kpis">
-            <FilterKpi
-                icon="layers"
-                :active="!filters.dirty"
-                :label="t('inventory.batches.kpi.all')"
-                :value="inventory.batches.length"
-                :sub="t('inventory.batches.kpi.allSub')"
-                @click="filters.clear"
-            />
-            <FilterKpi
-                icon="clock"
-                :active="stateOnly('expiring')"
-                :label="t('inventory.batches.kpi.expiring')"
-                :value="inventory.expiringBatches.length"
-                :sub="
-                    t('inventory.batches.kpi.expiringSub', {
-                        days: BATCH_EXPIRY_WARN_DAYS,
-                    })
-                "
-                @click="filters.toggle('bstate', 'expiring')"
-            />
-            <FilterKpi
-                icon="alert"
-                :active="stateOnly('expired')"
-                :label="t('inventory.batches.kpi.expired')"
-                :value="inventory.expiredBatches.length"
-                :sub="t('inventory.batches.kpi.expiredSub')"
-                @click="filters.toggle('bstate', 'expired')"
-            />
-        </div>
+        <p class="a-batch-dash">
+            {{
+                t('inventory.batches.dash', {
+                    all: inventory.batches.length,
+                    expiring: inventory.expiringBatches.length,
+                    expired: inventory.expiredBatches.length,
+                    days: BATCH_EXPIRY_WARN_DAYS,
+                })
+            }}
+        </p>
 
         <SavedViews
             ref="savedViews"
@@ -368,5 +323,11 @@ const { paged, total } = usePaged(sorted, view);
 
 .a-muted {
     color: var(--a-ink-4);
+}
+
+.a-batch-dash {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--a-ink-3);
 }
 </style>

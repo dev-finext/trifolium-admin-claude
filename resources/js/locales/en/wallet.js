@@ -1,7 +1,7 @@
 // Wallet & loyalty points — one point is one shekel, and the ledger is the only
 // source of truth for a balance.
 export default {
-    title: 'Wallet & loyalty points',
+    title: 'Wallet & points',
     sub: '1 point = ₪1 · the points ledger in the database is the only source of truth',
 
     noun: {

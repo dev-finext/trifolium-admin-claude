@@ -1,13 +1,19 @@
 // רכש — שני הטאבים. הכותרות של עמודות הגיליון עצמו אינן כאן אלא ב-
 // config/buying.js, כי הן מה שנכתב לקובץ האקסל ולא מה שמוצג על המסך.
 export default {
-    crumb: 'ניהול שוטף',
+    crumb: 'רכש ומלאי',
     title: 'רכש',
     sub: 'בקשות רכש והזמנות לספקים',
 
     tab: {
         request: 'בקשת רכש',
         order: 'הזמנת רכש',
+    },
+
+    action: {
+        // The no-PO receipt — the only other door into stock besides
+        // receiving against a specific order on its own sheet.
+        receiveNoOrder: 'קנייה בלי הזמנה',
     },
 
     request: {

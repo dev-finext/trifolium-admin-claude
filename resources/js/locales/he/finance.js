@@ -4,7 +4,7 @@
 // a document kind from `docType.*`, an aging bucket from `agingBucket.*`, a
 // payment method from `paymentMethod.*` and a recipient from `payer.*`.
 export default {
-    title: 'כספים — יתרות, גבייה ומסמכים',
+    title: 'כספים',
     sub: 'ספר החשבונות של המערכת · {n} מטפלים במסלול הקפה · מסמכי מס מופקים אוטומטית ב-{provider}',
 
     tab: {

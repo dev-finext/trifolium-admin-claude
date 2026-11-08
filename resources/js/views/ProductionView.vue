@@ -250,7 +250,10 @@ async function confirmCancel(reason) {
 <template>
     <div>
         <PageHead
-            :crumbs="[t('nav.group.operations'), t('nav.item.production')]"
+            :crumbs="[
+                t('nav.group.purchasing_inventory'),
+                t('nav.item.production'),
+            ]"
             :title="t('production.title')"
             :sub="
                 t('production.sub', {

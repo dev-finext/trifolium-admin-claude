@@ -4,7 +4,7 @@
 // a document kind from `docType.*`, an aging bucket from `agingBucket.*`, a
 // payment method from `paymentMethod.*` and a recipient from `payer.*`.
 export default {
-    title: 'Finance — balances, collection and documents',
+    title: 'Finance',
     sub: "The system's book of account · {n} practitioners on credit terms · tax documents issued automatically by {provider}",
 
     tab: {

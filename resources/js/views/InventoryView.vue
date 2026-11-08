@@ -1,14 +1,14 @@
 <script setup>
-// Inventory — stock, goods receipt, batches and the stock ledger.
+// Inventory — stock, batches and the stock ledger.
 //
-// Stock enters ONLY through a goods receipt: each receipt line opens one batch
-// with its own number and expiry, and every batch is traceable forward to the
-// customer who received part of it. There is no vendor management and no
-// purchase orders here — the supplier is recorded as plain data on the receipt.
+// Goods receipt lives in Purchasing now, not here (DEMO_INVENTORY_FIXES_PROMPT.md
+// §5 rule: receiving stock only happens against "רכש", never from this screen).
+// Every batch stays traceable forward to the customer who received part of it
+// all the same — this screen reads that history, it just doesn't create it.
 //
 // The active tab and the open drawer live in the query string, so a filtered
-// view or one batch's trace can be pasted to a colleague. The receipt form and
-// the adjustment dialog are actions, not addresses, and stay local.
+// view or one batch's trace can be pasted to a colleague. The adjustment
+// dialog is an action, not an address, and stays local.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
@@ -17,8 +17,6 @@ import AdjustStockModal from '@/components/inventory/AdjustStockModal.vue';
 import BatchesTab from '@/components/inventory/BatchesTab.vue';
 import BatchTraceDrawer from '@/components/inventory/BatchTraceDrawer.vue';
 import DocumentDrawer from '@/components/inventory/DocumentDrawer.vue';
-import DocumentsTab from '@/components/inventory/DocumentsTab.vue';
-import GoodsReceiptModal from '@/components/inventory/GoodsReceiptModal.vue';
 import MovementsTab from '@/components/inventory/MovementsTab.vue';
 import ReceiptDrawer from '@/components/inventory/ReceiptDrawer.vue';
 import StockDrawer from '@/components/inventory/StockDrawer.vue';
@@ -69,8 +67,7 @@ const tab = computed({
     },
 });
 
-/** The receipt form and the adjustment are actions, not addresses. */
-const receiving = ref(false);
+/** The adjustment dialog is an action, not an address. */
 const adjusting = ref(null);
 
 const tabs = computed(() => [
@@ -79,12 +76,6 @@ const tabs = computed(() => [
         label: t('inventory.tab.stock'),
         icon: 'grid',
         n: inventory.lowStock.length || undefined,
-    },
-    {
-        id: 'docs',
-        label: t('inventory.tab.docs'),
-        icon: 'package',
-        n: inventory.inventoryDocs.length,
     },
     {
         id: 'batches',
@@ -197,23 +188,6 @@ function openItemBatches(sku) {
     goto('batches', { bq: sku, bstate: '', bexp: '' });
 }
 
-/** From the stock KPI into the batches tab, filtered to the expiring ones. */
-function openExpiring() {
-    goto('batches', { bstate: 'expiring', bexp: '', bq: '', bwh: '' });
-}
-
-function onReceived({ id, batches }) {
-    view.tab = 'receipts';
-    push({
-        title: t('inventory.toast.received.title'),
-        body: t(
-            'inventory.toast.received.body',
-            { id, n: batches.length },
-            batches.length,
-        ),
-    });
-}
-
 function onAdjusted({ item, reason, diff }) {
     push({
         title: t('inventory.toast.adjusted.title'),
@@ -267,7 +241,7 @@ function exportStock() {
 
 <template>
     <PageHead
-        :crumbs="[t('nav.group.operations'), t('nav.item.inventory')]"
+        :crumbs="[t('nav.group.purchasing_inventory'), t('nav.item.inventory')]"
         :title="t('inventory.title')"
         :sub="
             t('inventory.sub', {
@@ -285,9 +259,6 @@ function exportStock() {
             >
                 {{ t('inventory.action.export') }}
             </AButton>
-            <AButton kind="p" icon="plus" @click="receiving = true">
-                {{ t('inventory.action.newReceipt') }}
-            </AButton>
         </template>
     </PageHead>
 
@@ -302,12 +273,6 @@ function exportStock() {
             @open="openStock"
             @adjust="adjusting = $event"
             @open-batches="openItemBatches"
-            @open-expiring="openExpiring"
-        />
-        <DocumentsTab
-            v-else-if="view.tab === 'docs'"
-            @open="openDoc"
-            @receive="receiving = true"
         />
         <BatchesTab
             v-else-if="view.tab === 'batches'"
@@ -323,11 +288,6 @@ function exportStock() {
         />
     </template>
 
-    <GoodsReceiptModal
-        :open="receiving"
-        @close="receiving = false"
-        @saved="onReceived"
-    />
     <AdjustStockModal
         :item="adjusting"
         @close="adjusting = null"
