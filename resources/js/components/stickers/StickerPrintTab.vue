@@ -1,7 +1,8 @@
 <script setup>
 // The print run: pick what the labels are for — an order on the bench, a goods
-// receipt, a parcel going out — see how many labels that is and why, look at
-// them, and send them to the print dialog. Every run is logged.
+// receipt or a receipt from production, a parcel going out, a production order
+// on its way to the lab — see how many labels that is and why, look at them,
+// and send them to the print dialog. Every run is logged.
 import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -18,6 +19,7 @@ import { useUrlState } from '@/composables/useUrlState';
 import { STICKER_RULES, STICKER_TEMPLATE_IDS } from '@/config';
 import { useInventoryStore } from '@/stores/inventory';
 import { statusOf, trackedItems, useOrdersStore } from '@/stores/orders';
+import { useProductionStore } from '@/stores/production';
 import { useStickersStore } from '@/stores/stickers';
 
 const PREVIEW_LIMIT = 8;
@@ -28,8 +30,16 @@ const { push } = useToast();
 const stickers = useStickersStore();
 const orders = useOrdersStore();
 const inventory = useInventoryStore();
-const { labelsForOrder, labelsForReceipt, labelsForShipping, printStickers } =
-    useStickerData();
+const production = useProductionStore();
+const {
+    labelsForOrder,
+    labelsForReceipt,
+    labelsForShipping,
+    labelsForProduction,
+    labelsForProductionReceipt,
+    productionLabelCount,
+    printStickers,
+} = useStickerData();
 
 const view = useUrlState({ src: 'prep', ref: '' });
 
@@ -67,13 +77,42 @@ const parcelOrders = computed(() =>
 
 const receipts = computed(() => inventory.receipts);
 
+/**
+ * The batches a production run brought back — a batch label source like a
+ * goods receipt, one entry per receipt that opened or topped up a batch.
+ */
+const productionReceipts = computed(() =>
+    production.orders.flatMap((order) =>
+        (order.receipts || [])
+            .filter((receipt) => receipt.batch)
+            .map((receipt) => ({ order, receipt })),
+    ),
+);
+
 /** What can be picked for the chosen source, newest or most urgent first. */
 const targets = computed(() => {
     if (view.src === 'item') {
-        return receipts.value.map((receipt) => ({
-            value: receipt.id,
-            label: `${receipt.id} · ${loc(receipt.supplier)} · ${receipt.when?.stamp || ''}`,
-            record: receipt,
+        return [
+            ...receipts.value.map((receipt) => ({
+                value: receipt.id,
+                label: `${receipt.id} · ${loc(receipt.supplier)} · ${receipt.when?.stamp || ''}`,
+                when: receipt.when?.iso || '',
+                record: { kind: 'receipt', receipt },
+            })),
+            ...productionReceipts.value.map(({ order, receipt }) => ({
+                value: `${order.id}/${receipt.n}`,
+                label: `${order.id}/${receipt.n} · ${loc(order.name)} · ${inventory.batchNo(receipt.batch)} · ${receipt.when?.stamp || ''}`,
+                when: receipt.when?.iso || '',
+                record: { kind: 'production', order, receipt },
+            })),
+        ].sort((a, b) => b.when.localeCompare(a.when));
+    }
+
+    if (view.src === 'production') {
+        return production.openOrders.map((order) => ({
+            value: order.id,
+            label: `${order.id} · ${loc(order.name)} · ${t(`production.state.${order.state}`)}`,
+            record: order,
         }));
     }
 
@@ -105,7 +144,15 @@ const labels = computed(() => {
     }
 
     if (view.src === 'item') {
-        return labelsForReceipt(selected.value.record);
+        const { kind, receipt, order } = selected.value.record;
+
+        return kind === 'production'
+            ? labelsForProductionReceipt(order, receipt)
+            : labelsForReceipt(receipt);
+    }
+
+    if (view.src === 'production') {
+        return labelsForProduction(selected.value.record);
     }
 
     return labelsForShipping(selected.value.record);
@@ -137,9 +184,22 @@ const ruleLines = computed(() => {
     }
 
     if (view.src === 'item') {
+        const { kind, receipt, order } = selected.value.record;
+
+        if (kind === 'production') {
+            return [
+                t('stickers.print.ruleProductionReceipt'),
+                t('stickers.print.line', {
+                    i: 1,
+                    name: inventory.batchNo(receipt.batch),
+                    n: productionLabelCount(order, receipt),
+                }),
+            ];
+        }
+
         return [
             t('stickers.print.ruleItem'),
-            ...(selected.value.record.lines || []).map((line, i) =>
+            ...(receipt.lines || []).map((line, i) =>
                 t('stickers.print.line', {
                     i: i + 1,
                     name: line.batch || line.sku,
@@ -147,6 +207,10 @@ const ruleLines = computed(() => {
                 }),
             ),
         ];
+    }
+
+    if (view.src === 'production') {
+        return [t('stickers.print.ruleProduction')];
     }
 
     return [t('stickers.print.ruleShipping')];

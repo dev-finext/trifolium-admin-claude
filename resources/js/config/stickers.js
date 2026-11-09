@@ -7,8 +7,14 @@
 // print run to the TSC printer is out of scope; the browser's print dialog is
 // the output.
 
-/** The three label templates: a preparation, a stock item, a parcel. */
-export const STICKER_TEMPLATE_IDS = ['prep', 'item', 'shipping'];
+/**
+ * The label templates: a preparation, a stock item (the batch label), a
+ * parcel, and a production order — the label that names material at the bench
+ * until it has a batch. Noam, in the internal-production note: "זו לא מדבקה
+ * זמנית אלא מדבקה של הוראת היצור, עם מספר המסמך של הוראת היצור ... תמיד חייבת
+ * להיות מדבקה מזהה לכל חומר בכל שלב בית המרקחת".
+ */
+export const STICKER_TEMPLATE_IDS = ['prep', 'item', 'shipping', 'production'];
 
 /** Default label sizes, millimetres. The template carries its own copy. */
 export const STICKER_SIZES = {
@@ -19,6 +25,8 @@ export const STICKER_SIZES = {
     // Spec §8: 100×100 or 100×150 mm, final size per the office's own label
     // stock (§20.2) — 100×100 until that's confirmed.
     shipping: { w: 100, h: 100 },
+    // The pharmacy's own production-order label is the same 120×60 stock.
+    production: { w: 120, h: 60 },
 };
 
 /** What an element on a label is. */
@@ -32,8 +40,11 @@ export const STICKER_ALIGN_IDS = ['start', 'center', 'end'];
  * Labels at `stickers.field.<id>`; the value comes from useStickerData.
  */
 export const STICKER_FIELDS = [
-    { id: 'pharmacy', templates: ['prep', 'item', 'shipping'] },
-    { id: 'pharmacyPhone', templates: ['prep', 'item', 'shipping'] },
+    { id: 'pharmacy', templates: ['prep', 'item', 'shipping', 'production'] },
+    {
+        id: 'pharmacyPhone',
+        templates: ['prep', 'item', 'shipping', 'production'],
+    },
     { id: 'patient', templates: ['prep', 'shipping'] },
     { id: 'practitioner', templates: ['prep'] },
     { id: 'formula', templates: ['prep'] },
@@ -48,12 +59,12 @@ export const STICKER_FIELDS = [
     { id: 'expiry', templates: ['prep', 'item'] },
     { id: 'orderId', templates: ['prep', 'shipping'] },
     { id: 'split', templates: ['prep', 'item'] },
-    { id: 'itemName', templates: ['item'] },
+    { id: 'itemName', templates: ['item', 'production'] },
     // V3 — the label in Natalie's note carries the botanical name and the
     // Chinese name under the item's own, and the production date beside the
     // expiry. Both are on the item card already; neither was on the label.
-    { id: 'foreignName', templates: ['item'] },
-    { id: 'itemCode', templates: ['item'] },
+    { id: 'foreignName', templates: ['item', 'production'] },
+    { id: 'itemCode', templates: ['item', 'production'] },
     { id: 'batch', templates: ['item'] },
     { id: 'supplierBatch', templates: ['item'] },
     { id: 'supplier', templates: ['item'] },
@@ -63,6 +74,12 @@ export const STICKER_FIELDS = [
     { id: 'phone', templates: ['shipping'] },
     { id: 'courier', templates: ['shipping'] },
     { id: 'tracking', templates: ['shipping'] },
+    // The production order's label: its number, the day it went to the lab,
+    // and the target date Yaron asks to see beside it ("התוית תכלול את תאריך
+    // הייצור בפועל ואת תאריך היעד שמוגדר").
+    { id: 'productionOrder', templates: ['production'] },
+    { id: 'productionDate', templates: ['production'] },
+    { id: 'dueOn', templates: ['production'] },
 ];
 
 export const STICKER_FIELD_IDS = STICKER_FIELDS.map((field) => field.id);

@@ -44,11 +44,13 @@ import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import {
+    isOverdue,
     PRODUCTION_FILTER_FIELDS,
     PRODUCTION_FILTER_GROUPS,
     PRODUCTION_STATE,
+    receivedQty,
 } from '@/config';
-import { isoDaysAgo } from '@/lib/dates';
+import { fmtISO, isoDaysAgo } from '@/lib/dates';
 import { num, pct } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
@@ -75,11 +77,14 @@ const state = useUrlState({
     ...PAGE_DEFAULTS,
     order: '',
     bom: '',
+    // `issued` when the create form was opened to send a run straight to the
+    // lab — the stock analysis does that.
+    start: '',
 });
 
 const tabs = computed(() => [
     { id: 'orders', label: t('production.tab.orders'), icon: 'clipboard_list' },
-    { id: 'lead', label: t('items.lead.title'), icon: 'clock' },
+    { id: 'lead', label: t('production.tab.lead'), icon: 'clock' },
 ]);
 
 /** The order whose completion form is open, and the one being cancelled. */
@@ -111,7 +116,12 @@ const searched = computed(() => {
     }
 
     return store.orders.filter((order) =>
-        searchHaystack(order.id, order.name, order.parentSku, order.outputBatch)
+        searchHaystack(
+            order.id,
+            order.name,
+            order.parentSku,
+            ...outputBatches(order).map((id) => inventory.batchNo(id)),
+        )
             .toLowerCase()
             .includes(term),
     );
@@ -190,9 +200,34 @@ const cols = computed(() => [
     { k: 'qty', label: t('production.col.planned'), nowrap: true },
     { k: 'state', label: t('production.col.state'), nowrap: true },
     { k: 'when', label: t('production.col.when'), nowrap: true },
+    {
+        k: 'due',
+        label: t('production.col.due'),
+        nowrap: true,
+        sortable: true,
+        sortValue: (row) => row.dueOn || '',
+    },
     { k: 'output', label: t('production.col.output'), nowrap: true },
     { k: 'by', label: t('production.col.by'), nowrap: true },
 ]);
+
+const today = isoDaysAgo(0);
+
+/**
+ * Every batch a run opened, in the order its receipts opened them — one for
+ * a run received whole, one per part for a run received in parts unless a
+ * part went into the batch before it — plus the waste batch.
+ */
+function outputBatches(order) {
+    const ids = (order.receipts || [])
+        .map((receipt) => receipt.batch)
+        .filter(Boolean);
+    const out = [...new Set(ids.length ? ids : [order.outputBatch])].filter(
+        Boolean,
+    );
+
+    return order.wasteBatch ? [...out, order.wasteBatch] : out;
+}
 
 const { sort, sorted } = useSorted(rows, state, () => cols.value);
 const { paged, total } = usePaged(sorted, state);
@@ -212,6 +247,7 @@ function whenOf(order) {
 async function onCreated(order) {
     state.order = order.id;
     state.bom = '';
+    state.start = '';
     push({
         title: t('production.toast.created'),
         body: t('production.toast.createdBody', {
@@ -226,24 +262,40 @@ async function issue(order) {
     push({ title: t('production.toast.issued'), body: order.id });
 }
 
-async function onCompleted(order) {
+async function onCompleted({ order, receipt }) {
     completing.value = null;
     push({
-        title: t('production.toast.completed'),
-        body: t('production.toast.completedBody', {
-            batch: order.outputBatch,
-            qty: num(order.yieldQty),
-            uom: t(`inventory.unit.${order.uom}`),
-        }),
+        title: receipt.final
+            ? t('production.toast.completed')
+            : t('production.toast.received'),
+        body: receipt.batch
+            ? t('production.toast.completedBody', {
+                  batch: inventory.batchNo(receipt.batch),
+                  qty: num(receipt.qty),
+                  uom: t(`inventory.unit.${order.uom}`),
+              })
+            : order.id,
     });
 }
 
+/** A run part of which already came back closes short instead of cancelling. */
+const closingShort = computed(() =>
+    Boolean(cancelling.value?.receipts?.length),
+);
+
 async function confirmCancel(reason) {
     const order = cancelling.value;
+    const short = closingShort.value;
 
     cancelling.value = null;
     await store.cancelOrder(order.id, reason);
-    push({ title: t('production.toast.cancelled'), body: order.id, bad: true });
+    push({
+        title: short
+            ? t('production.toast.closedShort')
+            : t('production.toast.cancelled'),
+        body: order.id,
+        bad: !short,
+    });
 }
 </script>
 
@@ -375,7 +427,18 @@ async function confirmCancel(reason) {
                 <template #cell-qty="{ row }">
                     <ANum>{{ num(row.plannedQty) }}</ANum>
                     {{ t(`inventory.unit.${row.uom}`) }}
-                    <div v-if="row.yieldQty != null" class="t-sub">
+                    <div
+                        v-if="row.state === 'issued' && row.receipts?.length"
+                        class="t-sub"
+                    >
+                        {{
+                            t('production.cell.received', {
+                                qty: num(receivedQty(row)),
+                                uom: t(`inventory.unit.${row.uom}`),
+                            })
+                        }}
+                    </div>
+                    <div v-else-if="row.yieldQty != null" class="t-sub">
                         {{
                             t('production.cell.yielded', {
                                 qty: num(row.yieldQty),
@@ -389,18 +452,36 @@ async function confirmCancel(reason) {
                     <AChip :tone="PRODUCTION_STATE[row.state]?.tone || 'gray'">
                         {{ t(`production.state.${row.state}`) }}
                     </AChip>
+                    <div
+                        v-if="row.state === 'issued' && row.receipts?.length"
+                        class="t-sub"
+                    >
+                        {{ t('production.partial') }}
+                    </div>
+                </template>
+                <template #cell-due="{ row }">
+                    <template v-if="row.dueOn">
+                        <ANum :class="{ 'pv-late': isOverdue(row, today) }">{{
+                            fmtISO(row.dueOn)
+                        }}</ANum>
+                        <div v-if="isOverdue(row, today)" class="pv-late-t">
+                            {{ t('production.overdue') }}
+                        </div>
+                    </template>
+                    <span v-else class="t-sub">—</span>
                 </template>
                 <template #cell-when="{ row }">
                     <ANum>{{ whenOf(row)?.stamp }}</ANum>
                 </template>
                 <template #cell-output="{ row }">
-                    <template v-if="row.outputBatch">
-                        <span class="a-code a-tag">{{
-                            inventory.batchNo(row.outputBatch)
-                        }}</span>
-                        <span v-if="row.wasteBatch" class="a-code a-tag pv-gap">
-                            {{ inventory.batchNo(row.wasteBatch) }}
-                        </span>
+                    <template v-if="outputBatches(row).length">
+                        <span
+                            v-for="(id, i) in outputBatches(row)"
+                            :key="id"
+                            class="a-code a-tag"
+                            :class="{ 'pv-gap': i > 0 }"
+                            >{{ inventory.batchNo(id) }}</span
+                        >
                     </template>
                     <span v-else class="t-sub">—</span>
                 </template>
@@ -444,7 +525,8 @@ async function confirmCancel(reason) {
         <CreateProductionModal
             v-if="creating"
             :bom-id="state.bom"
-            @close="((state.order = ''), (state.bom = ''))"
+            :start="state.start"
+            @close="((state.order = ''), (state.bom = ''), (state.start = ''))"
             @created="onCreated"
         />
 
@@ -457,21 +539,40 @@ async function confirmCancel(reason) {
 
         <ConfirmDialog
             :open="Boolean(cancelling)"
-            :title="t('production.cancel.title')"
+            :title="
+                closingShort
+                    ? t('production.cancel.restTitle')
+                    : t('production.cancel.title')
+            "
             :body="
                 cancelling
-                    ? t('production.cancel.body', {
-                          id: cancelling.id,
-                          name: loc(cancelling.name),
-                      })
+                    ? t(
+                          closingShort
+                              ? 'production.cancel.restBody'
+                              : 'production.cancel.body',
+                          {
+                              id: cancelling.id,
+                              name: loc(cancelling.name),
+                              qty: num(receivedQty(cancelling)),
+                              uom: t(`inventory.unit.${cancelling.uom}`),
+                          },
+                      )
                     : ''
             "
             :effects="
                 cancelling?.state === 'issued'
-                    ? [t('production.cancel.releases')]
+                    ? [
+                          t('production.cancel.releases'),
+                          cancelling.receipts?.length &&
+                              t('production.cancel.keepsReceived'),
+                      ].filter(Boolean)
                     : []
             "
-            :confirm-label="t('production.cancel.confirm')"
+            :confirm-label="
+                closingShort
+                    ? t('production.cancel.restConfirm')
+                    : t('production.cancel.confirm')
+            "
             danger
             reason
             @close="cancelling = null"
@@ -492,5 +593,16 @@ async function confirmCancel(reason) {
 
 .pv-gap {
     margin-inline-start: 6px;
+}
+
+/* A run still open past its target date. */
+.pv-late {
+    color: var(--a-red);
+    font-weight: 600;
+}
+
+.pv-late-t {
+    font-size: 12px;
+    color: var(--a-red);
 }
 </style>

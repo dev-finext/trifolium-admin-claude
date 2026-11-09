@@ -27,6 +27,7 @@ import {
 } from '@/config';
 import { useInventoryStore } from '@/stores/inventory';
 import { statusOf, trackedItems, useOrdersStore } from '@/stores/orders';
+import { useProductionStore } from '@/stores/production';
 import { useStickersStore } from '@/stores/stickers';
 
 /** CSS pixels per millimetre, for sizing the preview to its column. */
@@ -39,8 +40,13 @@ const { push } = useToast();
 const stickers = useStickersStore();
 const orders = useOrdersStore();
 const inventory = useInventoryStore();
-const { labelsForOrder, labelsForReceipt, labelsForShipping } =
-    useStickerData();
+const production = useProductionStore();
+const {
+    labelsForOrder,
+    labelsForReceipt,
+    labelsForShipping,
+    labelsForProduction,
+} = useStickerData();
 
 const view = useUrlState({ tpl: 'prep' });
 
@@ -96,8 +102,16 @@ const fieldOptions = computed(() =>
     })),
 );
 
-/** A real record to draw the preview from: the first order on the bench, the newest receipt, the first parcel. */
+/** A real record to draw the preview from: the first order on the bench, the newest receipt, the first parcel, the first production order at the lab. */
 const sample = computed(() => {
+    if (view.tpl === 'production') {
+        const order = production.openOrders[0];
+
+        return order
+            ? { ref: order.id, data: labelsForProduction(order)[0].data }
+            : null;
+    }
+
     if (view.tpl === 'prep') {
         const order = orders.all.find(
             (row) =>

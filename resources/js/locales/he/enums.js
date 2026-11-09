@@ -354,6 +354,8 @@ export default {
         buying_convert: 'העברת שורות מבקשת רכש להזמנת רכש',
         production_create: 'פתיחת הוראת ייצור',
         production_issue: 'הוצאת הוראת ייצור',
+        production_due: 'שינוי תאריך יעד של הוראת ייצור',
+        production_receive: 'קליטה חלקית מהוראת ייצור',
         production_complete: 'השלמת הוראת ייצור',
         production_cancel: 'ביטול הוראת ייצור',
         supplier_note_close: 'סגירת תעודת משלוח ספק בחשבונית',

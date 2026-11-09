@@ -65,6 +65,11 @@ export const PREP_TYPES = [
         id: 'tincture',
         // V3 — how long producing this takes: בקבוק מטינקטורה שכבר במלאי.
         lead: { amount: 3, unit: 'day' },
+        // The production order's target, which is another thing: making the
+        // tincture itself — "טינקטורה זה 21 ימי מיצוי" (internal-production
+        // note). The only figure the note gives; the other types have none
+        // until the pharmacy states one.
+        productionDays: 21,
         sap: 1,
         legacy: true,
         name: L('טינקטורה', 'Tincture'),
@@ -520,6 +525,16 @@ function itemOf(real, supplierByCode) {
             priceUnit: real.priceUnit ?? -1,
             packUom: real.packUom || null,
             packQty: numberOf(real.packQty),
+            // SAP's sales packaging (`SalPackMsr` / `SalPackUn`): how much of
+            // the sales unit goes into one jar or bottle. Empty on every item
+            // in the live database — `SalPackUn` sits at SAP's default of 1
+            // with no packaging unit named — so an unnamed 1 is read as unset.
+            // It is what overrides the family's container when batch labels
+            // are counted (config/batches.js `labelPackOf`).
+            salesPackUom: real.salesPackUom || null,
+            salesPackQty: real.salesPackUom
+                ? numberOf(real.salesPackQty)
+                : null,
         },
         levels: {
             min: numberOf(real.minLevel),

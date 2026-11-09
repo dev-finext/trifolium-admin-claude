@@ -438,9 +438,21 @@ export const useInventoryStore = defineStore('inventory', () => {
      * no number is ever handed out twice and an old label still means what it
      * meant. Natalie: "סדר רץ של ספרור אצוות בקבלה מיצור צריך להתקבל אוטומטית
      * מהמערכת ללא יכולת שינוי ידנית כדי למנוע כפילויות".
+     *
+     * Where SAP and the workbook stopped is HOUSE_SERIES_NEXT, read off the
+     * database once; from there the series grows only by the batches a
+     * production order opened here. It is not the highest number on any batch:
+     * SAP's batch table holds suppliers' own numeric lot codes too — eleven
+     * digits on an extract, 7,528,252 on a herb — and production orders'
+     * numbers on waste, and the first of those would have sent the series
+     * from 16,942 to forty billion.
      */
     const houseSerial = computed(() =>
         batches.value.reduce((top, batch) => {
+            if (batch.source !== 'production' || !batch.production) {
+                return top;
+            }
+
             const n = Number(batch.number ?? batch.id);
 
             return Number.isInteger(n) && n > top ? n : top;

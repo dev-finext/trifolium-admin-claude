@@ -1,8 +1,13 @@
 <script setup>
 // One production order: where it stands, what it makes, what it draws from
-// which batches, and what came out. The buttons follow the state — a planned
-// run can be issued or cancelled, an issued run completed or cancelled, a
-// finished one only read and printed.
+// which batches, what came back and when it is due. The buttons follow the
+// state — a planned run can be issued or cancelled, an issued run received
+// (in parts or whole) or cancelled, a finished one only read and printed.
+//
+// Two things go to the lab with the order and are printed from here: the work
+// sheet and the order label, the one that names the material on the bench until
+// it has a batch ("כדי שלא יעמוד מוצר ללא מדבקה במעבדה, עד שהמוצר יתקבל למלאי
+// ויקבל אצווה ותוקף").
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -10,16 +15,25 @@ import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
+import AInput from '@/components/ui/AInput.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { useProductionLabels } from '@/composables/useProductionLabels';
 import { useProductionSheet } from '@/composables/useProductionSheet';
+import { useStickerData } from '@/composables/useStickerData';
 import { useToast } from '@/composables/useToast';
-import { PRODUCTION_STATE } from '@/config';
-import { fmtISO } from '@/lib/dates';
+import {
+    isOverdue,
+    PRODUCTION_OPEN_STATE_IDS,
+    PRODUCTION_STATE,
+    receivedQty,
+} from '@/config';
+import { fmtISO, isoDaysAgo } from '@/lib/dates';
 import { ils, num } from '@/lib/money';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
+import { useProductionStore } from '@/stores/production';
 
 const props = defineProps({
     /** The order, or null while the drawer is closed. */
@@ -47,11 +61,16 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
 const { printProductionSheet } = useProductionSheet();
+const { printOrderLabel, printBatchLabels } = useProductionLabels();
+const { productionLabelCount } = useStickerData();
 const items = useItemsStore();
 const inventory = useInventoryStore();
+const store = useProductionStore();
 
 /** The three states a run passes through, in order, for the rail. */
 const RAIL = ['planned', 'issued', 'completed'];
+
+const unit = (uom) => t(`inventory.unit.${uom || 'unit'}`);
 
 const prepName = computed(() => {
     const type = props.order ? items.prepTypeById(props.order.prepType) : null;
@@ -60,6 +79,28 @@ const prepName = computed(() => {
 });
 
 const railIndex = computed(() => RAIL.indexOf(props.order?.state));
+
+const isOpen = computed(() =>
+    PRODUCTION_OPEN_STATE_IDS.includes(props.order?.state),
+);
+
+const overdue = computed(() =>
+    props.order ? isOverdue(props.order, isoDaysAgo(0)) : false,
+);
+
+/** Whole days past the target date. */
+const lateDays = computed(() =>
+    overdue.value
+        ? Math.round(
+              (new Date(`${isoDaysAgo(0)}T00:00:00`) -
+                  new Date(`${props.order.dueOn}T00:00:00`)) /
+                  86400000,
+          )
+        : 0,
+);
+
+const received = computed(() => receivedQty(props.order));
+const receipts = computed(() => props.order?.receipts || []);
 
 const batchExpiry = (id) => inventory.batchById(id)?.expiry || null;
 
@@ -72,7 +113,7 @@ const details = computed(() => {
     const rows = [
         [
             t('production.drawer.planned'),
-            `${num(order.plannedQty)} ${t(`inventory.unit.${order.uom}`)}`,
+            `${num(order.plannedQty)} ${unit(order.uom)}`,
         ],
         [
             t('production.drawer.recipe'),
@@ -85,33 +126,55 @@ const details = computed(() => {
         rows.push([t('production.drawer.issuedOn'), order.issuedOn.stamp]);
     }
 
+    // The target date is edited below while the order is open; once it is
+    // closed it is a fact on the record.
+    if (!isOpen.value && order.dueOn) {
+        rows.push([t('production.drawer.due'), fmtISO(order.dueOn)]);
+    }
+
+    if (order.state === 'issued' && receipts.value.length) {
+        rows.push([
+            t('production.drawer.received'),
+            t('production.drawer.receivedOf', {
+                qty: num(received.value),
+                planned: num(order.plannedQty),
+                uom: unit(order.uom),
+            }),
+        ]);
+    }
+
     if (order.state === 'completed') {
         rows.push(
             [t('production.drawer.completedOn'), order.completedOn?.stamp],
             [
                 t('production.drawer.yield'),
-                `${num(order.yieldQty)} ${t(`inventory.unit.${order.uom}`)}`,
+                `${num(order.yieldQty)} ${unit(order.uom)}`,
             ],
             [
                 t('production.drawer.waste'),
                 order.wasteQty
-                    ? `${num(order.wasteQty)} ${t(
-                          `inventory.unit.${order.uom}`,
-                      )}`
+                    ? `${num(order.wasteQty)} ${unit(order.uom)}`
                     : t('production.drawer.noWaste'),
             ],
-            [t('production.drawer.expiry'), fmtISO(order.expiresOn)],
             [
                 t('production.drawer.cost'),
                 order.cost
                     ? t('production.drawer.costValue', {
                           total: ils(order.cost.components, 2),
                           unit: ils(order.cost.perUnit ?? 0, 2),
-                          uom: t(`inventory.unit.${order.uom}`),
+                          uom: unit(order.uom),
                       })
                     : '—',
             ],
         );
+    }
+
+    // Closed before the whole quantity came back: what was not made, and why.
+    if (order.state === 'completed' && order.closedShort) {
+        rows.push([
+            t('production.drawer.closedShort'),
+            loc(order.reason) || '—',
+        ]);
     }
 
     if (order.state === 'cancelled') {
@@ -123,6 +186,38 @@ const details = computed(() => {
 
     return rows;
 });
+
+/** Where the target date came from, said under the field. */
+const dueHint = computed(() => {
+    const order = props.order;
+
+    if (!order) {
+        return '';
+    }
+
+    if (!order.dueOn) {
+        return t('production.drawer.dueNone');
+    }
+
+    return order.dueDays
+        ? t('production.drawer.dueByType', {
+              n: order.dueDays,
+              type: prepName.value,
+          })
+        : t('production.drawer.dueManual');
+});
+
+async function onDue(value) {
+    await store.setDueOn(props.order.id, value || null);
+}
+
+const standing = computed(() => props.order?.standing || {});
+const hasNotes = computed(
+    () =>
+        Boolean(props.order?.labNote) ||
+        Boolean(standing.value.item) ||
+        Boolean(standing.value.recipe),
+);
 
 /**
  * The bench paper for this run.
@@ -137,6 +232,24 @@ function print() {
     if (!printProductionSheet(props.order)) {
         push({ title: t('production.action.printFailed'), bad: true });
     }
+}
+
+async function printLabel() {
+    if (!(await printOrderLabel(props.order))) {
+        push({ title: t('production.action.printFailed'), bad: true });
+    }
+}
+
+async function reprint(receipt) {
+    const count = receipt.labels ?? productionLabelCount(props.order, receipt);
+
+    if (!(await printBatchLabels(props.order, receipt, count))) {
+        push({ title: t('production.action.printFailed'), bad: true });
+
+        return;
+    }
+
+    await store.setReceiptLabels(props.order.id, receipt.n, count);
 }
 </script>
 
@@ -158,6 +271,17 @@ function print() {
                                 "
                             >
                                 {{ t(`production.state.${order.state}`) }}
+                            </AChip>
+                            <AChip
+                                v-if="
+                                    order.state === 'issued' && receipts.length
+                                "
+                                tone="blue"
+                            >
+                                {{ t('production.partial') }}
+                            </AChip>
+                            <AChip v-if="overdue" tone="red">
+                                {{ t('production.overdue') }}
                             </AChip>
                             <AChip tone="gray" :dot="false">{{
                                 prepName
@@ -189,19 +313,31 @@ function print() {
                             icon="check"
                             @click="emit('complete', order)"
                         >
-                            {{ t('production.action.complete') }}
+                            {{ t('production.action.receive') }}
                         </AButton>
                         <AButton sm icon="printer" @click="print">
                             {{ t('production.action.print') }}
                         </AButton>
                         <AButton
-                            v-if="['planned', 'issued'].includes(order.state)"
+                            v-if="isOpen"
+                            sm
+                            icon="tag"
+                            @click="printLabel"
+                        >
+                            {{ t('production.action.printLabel') }}
+                        </AButton>
+                        <AButton
+                            v-if="isOpen"
                             sm
                             kind="ghost"
                             icon="x"
                             @click="emit('cancel', order)"
                         >
-                            {{ t('production.action.cancel') }}
+                            {{
+                                receipts.length
+                                    ? t('production.action.cancelRest')
+                                    : t('production.action.cancel')
+                            }}
                         </AButton>
                     </div>
                 </div>
@@ -229,8 +365,64 @@ function print() {
             <div class="a-dbody pd-grid">
                 <ACard :title="t('production.drawer.details')" icon="file_text">
                     <AKeyValue :rows="details" />
-                    <div v-if="order.notes" class="a-note a-note--info pd-note">
-                        {{ loc(order.notes) }}
+                    <div v-if="isOpen" class="pd-due">
+                        <label class="a-lbl" for="pd-due">{{
+                            t('production.drawer.due')
+                        }}</label>
+                        <AInput
+                            id="pd-due"
+                            :model-value="order.dueOn || ''"
+                            type="date"
+                            ltr
+                            class="pd-due-in"
+                            @change="onDue($event.target.value)"
+                        />
+                        <div class="a-hint" :class="{ 'pd-late': overdue }">
+                            {{
+                                overdue
+                                    ? t(
+                                          'production.drawer.dueLate',
+                                          { n: lateDays },
+                                          lateDays,
+                                      )
+                                    : dueHint
+                            }}
+                        </div>
+                    </div>
+                </ACard>
+
+                <ACard
+                    :title="t('production.notes.title')"
+                    icon="clipboard_list"
+                >
+                    <div v-if="hasNotes" class="pd-notes">
+                        <div v-if="order.labNote" class="pd-note-block">
+                            <div class="a-lbl">
+                                {{ t('production.notes.labShort') }}
+                            </div>
+                            <div class="a-note a-note--warn pd-text">
+                                {{ loc(order.labNote) }}
+                            </div>
+                        </div>
+                        <div v-if="standing.item" class="pd-note-block">
+                            <div class="a-lbl">
+                                {{ t('production.notes.fromItemLong') }}
+                            </div>
+                            <div class="a-note a-note--info pd-text">
+                                {{ standing.item }}
+                            </div>
+                        </div>
+                        <div v-if="standing.recipe" class="pd-note-block">
+                            <div class="a-lbl">
+                                {{ t('production.notes.fromRecipeLong') }}
+                            </div>
+                            <div class="a-note a-note--info pd-text">
+                                {{ loc(standing.recipe) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="t-sub">
+                        {{ t('production.notes.none') }}
                     </div>
                 </ACard>
 
@@ -248,6 +440,20 @@ function print() {
                                 </th>
                                 <th scope="col" class="nowrap">
                                     {{ t('production.drawer.compPlanned') }}
+                                </th>
+                                <th
+                                    v-if="order.state === 'planned'"
+                                    scope="col"
+                                    class="nowrap pd-n"
+                                >
+                                    {{ t('production.stock.avail') }}
+                                </th>
+                                <th
+                                    v-if="order.state === 'planned'"
+                                    scope="col"
+                                    class="nowrap pd-n"
+                                >
+                                    {{ t('production.stock.onOrder') }}
                                 </th>
                                 <th scope="col">
                                     {{ t('production.drawer.compPicks') }}
@@ -272,7 +478,7 @@ function print() {
                                 </td>
                                 <td class="nowrap">
                                     <ANum>{{ num(component.plannedQty) }}</ANum>
-                                    {{ t(`inventory.unit.${component.uom}`) }}
+                                    {{ unit(component.uom) }}
                                     <AChip
                                         v-if="component.issue === 'manual'"
                                         tone="gray"
@@ -282,6 +488,32 @@ function print() {
                                     >
                                         {{ t('items.bom.issue.manual') }}
                                     </AChip>
+                                </td>
+                                <td
+                                    v-if="order.state === 'planned'"
+                                    class="nowrap pd-n"
+                                >
+                                    <ANum>{{
+                                        num(
+                                            items.rowBySku(component.sku)
+                                                ?.avail ?? 0,
+                                            3,
+                                        )
+                                    }}</ANum>
+                                    {{ unit(component.stockUnit) }}
+                                </td>
+                                <td
+                                    v-if="order.state === 'planned'"
+                                    class="nowrap pd-n"
+                                >
+                                    <ANum>{{
+                                        num(
+                                            items.rowBySku(component.sku)
+                                                ?.onOrder ?? 0,
+                                            3,
+                                        )
+                                    }}</ANum>
+                                    {{ unit(component.stockUnit) }}
                                 </td>
                                 <td>
                                     <div
@@ -293,11 +525,7 @@ function print() {
                                             inventory.batchNo(pick.batch)
                                         }}</span>
                                         <ANum>{{ num(pick.qty, 2) }}</ANum>
-                                        {{
-                                            t(
-                                                `inventory.unit.${component.stockUnit}`,
-                                            )
-                                        }}
+                                        {{ unit(component.stockUnit) }}
                                         <span
                                             v-if="batchExpiry(pick.batch)"
                                             class="t-sub"
@@ -305,6 +533,20 @@ function print() {
                                             ·
                                             {{
                                                 fmtISO(batchExpiry(pick.batch))
+                                            }}
+                                        </span>
+                                        <span
+                                            v-if="
+                                                order.state === 'issued' &&
+                                                pick.taken
+                                            "
+                                            class="t-sub"
+                                        >
+                                            ·
+                                            {{
+                                                t('production.drawer.taken', {
+                                                    qty: num(pick.taken, 2),
+                                                })
                                             }}
                                         </span>
                                     </div>
@@ -321,9 +563,7 @@ function print() {
                                         {{
                                             t('production.drawer.short', {
                                                 qty: num(component.short, 2),
-                                                uom: t(
-                                                    `inventory.unit.${component.stockUnit}`,
-                                                ),
+                                                uom: unit(component.stockUnit),
                                             })
                                         }}
                                     </div>
@@ -335,9 +575,7 @@ function print() {
                                         <ANum>{{
                                             num(component.actualQty)
                                         }}</ANum>
-                                        {{
-                                            t(`inventory.unit.${component.uom}`)
-                                        }}
+                                        {{ unit(component.uom) }}
                                     </template>
                                     <span v-else class="t-sub">—</span>
                                 </td>
@@ -347,28 +585,124 @@ function print() {
                 </ACard>
 
                 <ACard
-                    v-if="order.state === 'completed'"
-                    :title="t('production.drawer.output')"
+                    v-if="receipts.length"
+                    :title="t('production.drawer.receipts')"
                     icon="package"
+                    class="span2"
+                    :pad="false"
                 >
-                    <AKeyValue
-                        :rows="[
-                            [
-                                t('production.drawer.outputBatch'),
-                                inventory.batchNo(order.outputBatch),
-                            ],
-                            [
-                                t('production.drawer.wasteBatch'),
-                                order.wasteBatch
-                                    ? inventory.batchNo(order.wasteBatch)
-                                    : t('production.drawer.noWaste'),
-                            ],
-                            [
-                                t('production.drawer.expiry'),
-                                fmtISO(order.expiresOn),
-                            ],
-                        ]"
-                    />
+                    <table class="a-table">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nowrap">
+                                    {{ t('production.drawer.rcptWhen') }}
+                                </th>
+                                <th scope="col" class="nowrap">
+                                    {{ t('production.drawer.rcptQty') }}
+                                </th>
+                                <th scope="col" class="nowrap">
+                                    {{ t('production.drawer.outputBatch') }}
+                                </th>
+                                <th scope="col" class="nowrap">
+                                    {{ t('production.drawer.expiry') }}
+                                </th>
+                                <th scope="col" class="nowrap">
+                                    {{ t('production.drawer.wasteBatch') }}
+                                </th>
+                                <th scope="col" class="nowrap">
+                                    {{ t('production.drawer.rcptLabels') }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="receipt in receipts" :key="receipt.n">
+                                <td class="nowrap">
+                                    <ANum>{{ receipt.when?.stamp }}</ANum>
+                                    <div class="t-sub">
+                                        {{
+                                            receipt.final
+                                                ? t(
+                                                      'production.drawer.rcptFinal',
+                                                  )
+                                                : t(
+                                                      'production.drawer.rcptPart',
+                                                      { n: receipt.n },
+                                                  )
+                                        }}
+                                    </div>
+                                </td>
+                                <td class="nowrap">
+                                    <ANum>{{ num(receipt.qty) }}</ANum>
+                                    {{ unit(order.uom) }}
+                                    <div v-if="receipt.wasteQty" class="t-sub">
+                                        {{
+                                            t('production.drawer.rcptWaste', {
+                                                qty: num(receipt.wasteQty),
+                                                uom: unit(order.uom),
+                                            })
+                                        }}
+                                    </div>
+                                </td>
+                                <td class="nowrap">
+                                    <span
+                                        v-if="receipt.batch"
+                                        class="a-code a-tag"
+                                        >{{
+                                            inventory.batchNo(receipt.batch)
+                                        }}</span
+                                    >
+                                    <span v-else class="t-sub">—</span>
+                                    <div v-if="receipt.added" class="t-sub">
+                                        {{ t('production.drawer.rcptAdded') }}
+                                    </div>
+                                </td>
+                                <td class="nowrap">
+                                    <ANum v-if="receipt.batch">{{
+                                        fmtISO(
+                                            batchExpiry(receipt.batch) ||
+                                                receipt.expiresOn,
+                                        )
+                                    }}</ANum>
+                                    <span v-else class="t-sub">—</span>
+                                </td>
+                                <td class="nowrap">
+                                    <span
+                                        v-if="receipt.wasteBatch"
+                                        class="a-code a-tag"
+                                        >{{
+                                            inventory.batchNo(
+                                                receipt.wasteBatch,
+                                            )
+                                        }}</span
+                                    >
+                                    <span v-else class="t-sub">{{
+                                        receipt.wasteQty
+                                            ? t('production.drawer.wasteKept')
+                                            : t('production.drawer.noWaste')
+                                    }}</span>
+                                </td>
+                                <td class="nowrap">
+                                    <template v-if="receipt.batch">
+                                        <ANum>{{ receipt.labels ?? '—' }}</ANum>
+                                        <AButton
+                                            sm
+                                            kind="ghost"
+                                            icon="printer"
+                                            class="pd-gap"
+                                            :aria-label="
+                                                t('production.drawer.reprint')
+                                            "
+                                            :title="
+                                                t('production.drawer.reprint')
+                                            "
+                                            @click="reprint(receipt)"
+                                        />
+                                    </template>
+                                    <span v-else class="t-sub">—</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </ACard>
             </div>
         </template>
@@ -425,8 +759,33 @@ function print() {
     grid-column: 1 / -1;
 }
 
-.pd-note {
-    margin-top: 10px;
+.pd-due {
+    margin-top: 12px;
+}
+
+.pd-due-in {
+    width: 180px;
+}
+
+.pd-late {
+    color: var(--a-red);
+    font-weight: 600;
+}
+
+.pd-notes {
+    display: grid;
+    gap: 10px;
+}
+
+.pd-note-block .a-lbl {
+    margin-bottom: 4px;
+}
+
+/* A note keeps its own line breaks, and a Latin reference inside a Hebrew
+   note keeps its own direction. */
+.pd-text {
+    white-space: pre-line;
+    unicode-bidi: plaintext;
 }
 
 .pd-pick {
@@ -438,6 +797,10 @@ function print() {
 
 .pd-pick + .pd-pick {
     margin-top: 4px;
+}
+
+.pd-n {
+    text-align: end;
 }
 
 /* How much of a component has no open batch to draw from. A statement, not a

@@ -31,7 +31,7 @@ import {
     SAFETY_LEVEL,
 } from '@/config';
 import { fmtISO } from '@/lib/dates';
-import { ils, num } from '@/lib/money';
+import { ils, num, qtyText } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
 import { useProductionStore } from '@/stores/production';
@@ -448,6 +448,18 @@ const categories = computed(() =>
                                     n: num(row.uom?.numInSale ?? 1, 3),
                                     unit: uomLabel(row.uom?.stock),
                                 }),
+                            ],
+                            [
+                                t('items.card.salesPack'),
+                                row.uom?.salesPackQty
+                                    ? t('items.card.salesPackText', {
+                                          n: qtyText(row.uom.salesPackQty, 3),
+                                          unit: uomLabel(row.uom?.sales),
+                                          name:
+                                              row.uom.salesPackUom ||
+                                              t('items.card.salesPackDefault'),
+                                      })
+                                    : t('items.card.salesPackNone'),
                             ],
                             [
                                 t('items.card.lastPurchase'),

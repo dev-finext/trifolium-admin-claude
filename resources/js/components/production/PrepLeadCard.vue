@@ -15,6 +15,12 @@
 // one arrangement the console does not use, with the name of the preparation
 // pushed to the far side of an empty stripe. In a table the column says what
 // the cell is, once, and the rows line up underneath it.
+//
+// The last column is another figure that lives on the preparation type: the
+// production order's target — how many days after it is opened a run of this
+// preparation is due back from the lab. Not the same as the lead time beside
+// it: a tincture for a customer is three days (a bottle from stock), making
+// the tincture is 21 days of maceration (the internal-production note).
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -26,11 +32,13 @@ import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { leadDays, LEAD_UNIT_IDS } from '@/config';
 import { useItemsStore } from '@/stores/items';
+import { useProductionStore } from '@/stores/production';
 
 const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
 const store = useItemsStore();
+const production = useProductionStore();
 
 /**
  * How many items are produced each way, counted once for the whole table
@@ -60,6 +68,7 @@ const rows = computed(() =>
             amount: type.lead?.amount ?? null,
             unit: type.lead?.unit || 'week',
             days: leadDays(type.lead),
+            target: type.productionDays ?? null,
         }))
         .sort((a, b) => a.name.localeCompare(b.name, 'he')),
 );
@@ -82,6 +91,7 @@ const cols = computed(() => [
         nowrap: true,
         sortable: true,
     },
+    { k: 'target', label: t('production.target.col'), nowrap: true },
 ]);
 
 const unitOptions = computed(() =>
@@ -101,11 +111,18 @@ function setLead(type, patch) {
 
     push({ title: t('items.lead.saved'), body: loc(type.name) });
 }
+
+async function setTarget(type, value) {
+    if (await production.setPrepTarget(type.id, value)) {
+        push({ title: t('production.target.saved'), body: loc(type.name) });
+    }
+}
 </script>
 
 <template>
     <div class="pl">
         <p class="a-hint pl-lede">{{ t('items.lead.hint') }}</p>
+        <p class="a-hint pl-lede">{{ t('production.target.hint') }}</p>
 
         <ADataTable :cols="cols" :rows="rows" row-key="id">
             <template #cell-name="{ row }">
@@ -139,6 +156,20 @@ function setLead(type, patch) {
                     row.days ? t('items.lead.days', { n: row.days }) : '—'
                 }}</ANum>
             </template>
+            <template #cell-target="{ row }">
+                <span class="pl-target">
+                    <input
+                        class="a-input a-ltr-input pl-amount"
+                        type="number"
+                        min="0"
+                        :value="row.target ?? ''"
+                        :placeholder="t('production.target.none')"
+                        :aria-label="t('production.target.col')"
+                        @change="setTarget(row.type, $event.target.value)"
+                    />
+                    <span class="t-sub">{{ t('production.target.days') }}</span>
+                </span>
+            </template>
         </ADataTable>
     </div>
 </template>
@@ -161,6 +192,12 @@ function setLead(type, patch) {
 
 .pl-unit {
     width: 124px;
+}
+
+.pl-target {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 /* A preparation nothing is made by, or one with no figure yet. */

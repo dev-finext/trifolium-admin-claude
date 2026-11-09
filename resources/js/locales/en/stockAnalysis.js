@@ -8,6 +8,8 @@ export default {
     from: 'From',
     to: 'To',
     count: 'no rows · {m} months | one row · {m} months | {n} rows · {m} months',
+    produceCol: 'Production',
+    produce: 'Production order',
     export: 'Export to Excel',
     exported: 'one row exported | {n} rows exported',
     emptyTitle: 'Nothing moved in this period',

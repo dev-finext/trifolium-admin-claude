@@ -1,6 +1,6 @@
 // The stickers module — second-version fixture content.
 //
-// Three templates as data, a pool of notes keyed by preparation type, and a
+// Four templates as data, a pool of notes keyed by preparation type, and a
 // print log. The layout is mine from scratch: Natalie asked "how do you see
 // it", and the existing SAP stickers were not available as text.
 import { STICKER_SIZES } from '@/config/stickers';
@@ -278,6 +278,70 @@ export const STICKER_TEMPLATES = [
             }),
         ],
         updated: at(60, 14, 5),
+        updatedBy: DEMO_ACTORS.orit,
+    },
+    {
+        // The production order's label, after the pharmacy's own (the
+        // internal-production note): item code large across the top with its
+        // caption in the corner, the item's name under it, the order's number
+        // and date, and the order's number as the barcode. No batch and no
+        // expiry — those come when the run is received. The target date is
+        // Yaron's addition.
+        id: 'production',
+        size: { ...STICKER_SIZES.production },
+        elements: [
+            el('codeCaption', 'text', {
+                text: L('קוד פריט', 'Item code'),
+                x: 3,
+                y: 2.5,
+                w: 22,
+                size: 6.5,
+            }),
+            field('code', 'itemCode', {
+                x: 4,
+                y: 3,
+                w: 112,
+                size: 20,
+                bold: true,
+                align: 'center',
+            }),
+            field('name', 'itemName', {
+                x: 4,
+                y: 13,
+                w: 112,
+                size: 12,
+                bold: true,
+                align: 'center',
+            }),
+            field('order', 'productionOrder', {
+                x: 40,
+                y: 27,
+                w: 76,
+                size: 10,
+                bold: true,
+                align: 'end',
+                label: true,
+            }),
+            field('made', 'productionDate', {
+                x: 40,
+                y: 33,
+                w: 76,
+                size: 10,
+                bold: true,
+                align: 'end',
+                label: true,
+            }),
+            field('due', 'dueOn', {
+                x: 40,
+                y: 39,
+                w: 76,
+                size: 9,
+                align: 'end',
+                label: true,
+            }),
+            el('barcode', 'barcode', { x: 30, y: 47, w: 60, h: 9 }),
+        ],
+        updated: at(1, 9, 0),
         updatedBy: DEMO_ACTORS.orit,
     },
 ];

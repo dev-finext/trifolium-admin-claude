@@ -111,6 +111,11 @@ export default {
             'The expiry is suggested automatically on receipt from in-house production only, from the item’s family, and can be changed on any batch. On goods received from a supplier the expiry comes from the supplier’s certificate and is not calculated. Powder — two years, tincture — three, as stated; the rest are the console’s defaults and await confirmation.',
         months: 'months',
         none: 'None',
+        packTitle: 'One container per item family — for counting batch labels',
+        packAria: 'How much a container of {family} holds',
+        packUnit: 'Unit',
+        packHint:
+            'On a receipt from production the number of batch labels is the quantity received over the container: 1.2 kg of powder in 300 g jars — 4 labels. An item whose sales packaging is set on its card overrides its family. Powder — 300 g and tincture — one litre, as stated; the other families await the split you will send.',
         seriesTitle: 'Batch numbering',
         seriesHint:
             'The running series carries on from where the workbook and SAP stopped rather than restarting. The next number to be issued: {next}.',

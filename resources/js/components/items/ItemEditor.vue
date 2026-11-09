@@ -120,6 +120,8 @@ const form = reactive({
         group: source.uom?.group ?? -1,
         packUom: source.uom?.packUom || '',
         packQty: text(source.uom?.packQty),
+        salesPackUom: source.uom?.salesPackUom || '',
+        salesPackQty: text(source.uom?.salesPackQty),
     },
     levels: {
         min: text(source.levels?.min),
@@ -353,6 +355,11 @@ const draft = computed(() => ({
         priceUnit: form.uom.price,
         packUom: form.uom.packUom.trim() || null,
         packQty: numberOrNull(form.uom.packQty),
+        salesPackUom: form.uom.salesPackUom.trim() || null,
+        salesPackQty:
+            Number(form.uom.salesPackQty) > 0
+                ? Number(form.uom.salesPackQty)
+                : null,
     },
     levels: {
         min: numberOrNull(form.levels.min),
@@ -985,6 +992,42 @@ const win = computed(() => ({
                             />
                             <div v-if="show('numIn')" class="a-inv">
                                 {{ show('numIn') }}
+                            </div>
+                        </div>
+                        <!-- SAP's sales packaging (SalPackMsr / SalPackUn):
+                             what one jar or bottle holds. Not tied to the
+                             website like the sales unit — a batch made here is
+                             labelled whether or not the site sells it. -->
+                        <div>
+                            <label class="a-lbl" for="ie-salespack-uom">{{
+                                t('items.card.salesPackUom')
+                            }}</label>
+                            <AInput
+                                id="ie-salespack-uom"
+                                v-model="form.uom.salesPackUom"
+                                :placeholder="
+                                    t('items.editor.salesPackUomHint')
+                                "
+                                class="a-w100"
+                            />
+                        </div>
+                        <div>
+                            <label class="a-lbl" for="ie-salespack-qty">{{
+                                t('items.card.salesPackQty', {
+                                    unit: unitLabel(form.uom.sales),
+                                })
+                            }}</label>
+                            <AInput
+                                id="ie-salespack-qty"
+                                v-model="form.uom.salesPackQty"
+                                type="number"
+                                min="0"
+                                step="0.001"
+                                ltr
+                                class="a-w100"
+                            />
+                            <div class="a-hint">
+                                {{ t('items.editor.salesPackHint') }}
                             </div>
                         </div>
                     </div>

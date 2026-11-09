@@ -280,7 +280,9 @@ export function buildBatches(stock = []) {
         const row = bySku.get(real.code);
         const name = row ? row.name : { he: real.itemName, en: real.itemName };
         const unit = row ? row.unit : 'kg';
-        const source = numericNumber.test(real.batch) ? 'production' : 'supplier';
+        const source = numericNumber.test(real.batch)
+            ? 'production'
+            : 'supplier';
         const remaining = real.quantity;
         const daysToExp = -daysSince(real.expiresOn);
 
@@ -446,26 +448,31 @@ export function buildInventoryDocs({ receipts, production, stock }) {
         });
 
     // A production run issues its components and receives what it made. SAP
-    // posts two documents per run and links both to the order.
-    [...(production || [])]
-        .filter((order) => order.state === 'completed')
-        .sort((a, b) => b.completedOn.daysAgo - a.completedOn.daysAgo)
-        .forEach((order) => {
-            const issued = order.components.flatMap((component) =>
-                component.picks.map((pick) => {
-                    const row = bySku.get(component.sku) || null;
+    // posts two documents per receipt and links both to the order — once for
+    // a run that came back whole, once per part for one that came back in
+    // parts.
+    (production || [])
+        .flatMap((order) =>
+            (order.receipts || []).map((receipt) => ({ order, receipt })),
+        )
+        .sort((a, b) => b.receipt.when.daysAgo - a.receipt.when.daysAgo)
+        .forEach(({ order, receipt }) => {
+            const componentOf = (sku) =>
+                order.components.find((component) => component.sku === sku);
+            const issued = (receipt.drew || []).map((line) => {
+                const row = bySku.get(line.sku) || null;
+                const component = componentOf(line.sku);
 
-                    return {
-                        sku: component.sku,
-                        name: component.name,
-                        unit: row?.unit || component.uom,
-                        qty: pick.qty,
-                        wh: row?.wh || DEFAULT_WAREHOUSE,
-                        batch: pick.batch,
-                        price: null,
-                    };
-                }),
-            );
+                return {
+                    sku: line.sku,
+                    name: component?.name || line.sku,
+                    unit: row?.unit || component?.stockUnit || 'unit',
+                    qty: line.qty,
+                    wh: row?.wh || DEFAULT_WAREHOUSE,
+                    batch: line.batch,
+                    price: null,
+                };
+            });
 
             if (issued.length) {
                 docs.push({
@@ -481,30 +488,32 @@ export function buildInventoryDocs({ receipts, production, stock }) {
                         `נוצר באופן אוטומטי על-ידי הוראת ייצור ${order.id}`,
                         `Created automatically by production order ${order.id}`,
                     ),
-                    when: order.completedOn,
-                    by: order.by,
+                    when: receipt.when,
+                    by: receipt.by || order.by,
                     lines: issued,
                 });
             }
 
+            // In the unit the item is held in — a tincture made in millilitres
+            // is stocked in litres.
             const parent = bySku.get(order.parentSku) || null;
             const made = [
-                order.outputBatch && {
+                receipt.batch && {
                     sku: order.parentSku,
                     name: parent ? parent.name : order.name,
                     unit: parent?.unit || order.uom,
-                    qty: order.yieldQty,
+                    qty: receipt.stockQty ?? receipt.qty,
                     wh: parent?.wh || DEFAULT_WAREHOUSE,
-                    batch: order.outputBatch,
+                    batch: receipt.batch,
                     price: order.cost?.perUnit ?? null,
                 },
-                order.wasteBatch && {
+                receipt.wasteBatch && {
                     sku: order.parentSku,
                     name: parent ? parent.name : order.name,
                     unit: parent?.unit || order.uom,
-                    qty: order.wasteQty,
+                    qty: receipt.wasteStock ?? receipt.wasteQty,
                     wh: parent?.wh || DEFAULT_WAREHOUSE,
-                    batch: order.wasteBatch,
+                    batch: receipt.wasteBatch,
                     price: null,
                 },
             ].filter(Boolean);
@@ -523,8 +532,8 @@ export function buildInventoryDocs({ receipts, production, stock }) {
                         `קבלה מהייצור · הוראת ייצור ${order.id}`,
                         `Receipt from production · order ${order.id}`,
                     ),
-                    when: order.completedOn,
-                    by: order.by,
+                    when: receipt.when,
+                    by: receipt.by || order.by,
                     lines: made,
                 });
             }
@@ -737,8 +746,9 @@ function historicalMovements(batches) {
             return null;
         }
 
-        const kind =
-            (DOC_TYPE_KIND[real.docType] || DOC_TYPE_KIND[60])(real.quantity);
+        const kind = (DOC_TYPE_KIND[real.docType] || DOC_TYPE_KIND[60])(
+            real.quantity,
+        );
 
         return {
             id: `mv-hist-${i}`,

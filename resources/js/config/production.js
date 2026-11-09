@@ -56,6 +56,50 @@ export function resolveExpiryMonths({ item, prepType, settings }) {
     return settings?.defaultExpiryMonths?.[item?.family] ?? null;
 }
 
+/**
+ * תאריך יעד — how many days after it is opened a production order is due back
+ * from the lab, by the preparation it makes.
+ *
+ * The internal-production note: "לכל תצורה ישנה הגדרה של ׳תאריך יעד׳ לדוגמא:
+ * טינקטורה זה 21 ימי מיצוי". It is not the preparation type's lead time: that
+ * one says how long a personal preparation for a customer takes (a tincture
+ * mixed from stock, three days), this one how long making the batch itself
+ * takes (three weeks of maceration). The person opening the order may move the
+ * date — "כאן אנחנו רוצים לקחת בחשבון שיקולים שלנו כמו עומס במעבדה" — so this is
+ * where the date starts, not where it must stay.
+ *
+ * SAP is no guide here: 161 of its 180 orders carry the opening date plus 42
+ * days, one default for every preparation. A type with no figure of its own
+ * gives no date rather than a borrowed one; setting the figure by item group is
+ * the note's second phase.
+ */
+export function productionDueDays(prepType) {
+    const days = Number(prepType?.productionDays);
+
+    return Number.isFinite(days) && days > 0 ? days : null;
+}
+
+/**
+ * How much of an order has come back into stock so far, in the order's own
+ * unit — the sum of its receipts. An order may be received in parts and stays
+ * open until the last one ("קליטה חלקית למלאי ... ושאר ההוראה נשארת פתוחה").
+ */
+export function receivedQty(order) {
+    return (order?.receipts || []).reduce(
+        (sum, receipt) => sum + (Number(receipt.qty) || 0),
+        0,
+    );
+}
+
+/** Whether an order still open is past its target date. */
+export function isOverdue(order, todayIso) {
+    return (
+        PRODUCTION_OPEN_STATE_IDS.includes(order?.state) &&
+        Boolean(order?.dueOn) &&
+        order.dueOn < todayIso
+    );
+}
+
 /** What the production-order list may be narrowed by. */
 export const PRODUCTION_FILTER_FIELDS = [
     {

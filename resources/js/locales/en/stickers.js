@@ -15,6 +15,7 @@ export default {
         prep: 'Preparation label',
         item: 'Item label',
         shipping: 'Parcel label',
+        production: 'Production order label',
     },
 
     // STICKER_KIND_IDS
@@ -62,6 +63,9 @@ export default {
         phone: 'Phone',
         courier: 'Courier',
         tracking: 'Tracking no.',
+        productionOrder: 'Production order',
+        productionDate: 'Production date',
+        dueOn: 'Target date',
     },
 
     editor: {
@@ -115,6 +119,10 @@ export default {
         ruleCapsule: ' (including {spare} spare for capsules)',
         ruleItem: 'By the label count set on each receipt line',
         ruleShipping: 'One label per parcel',
+        ruleProduction:
+            'One label per order — it names the material at the lab until it has a batch and an expiry',
+        ruleProductionReceipt:
+            'By the containers: the quantity received over what one container holds (batch settings, or the sales packaging on the item card), or what was printed at the receipt',
         line: 'Line {i} · {name} × {n}',
         print: 'Print {n} labels',
         printed: 'Sent to print',

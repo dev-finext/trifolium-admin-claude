@@ -16,6 +16,7 @@
 //     40, 41, 47). The pharmacy's practice and Yaron's instruction agree.
 //
 // Display text lives in the locale catalogs under `batches.*`.
+import { convertQty } from '@/lib/units';
 
 /**
  * Where a batch comes from. The number is formed differently for each, and so
@@ -102,3 +103,73 @@ export const BATCH_FILE_GATE = 'batch_analyses';
  * a division note and a barcode — 120 × 60 mm, "בדומה לשאר המדבקות שלנו".
  */
 export const BATCH_LABEL_SIZE = { w: 120, h: 60 };
+
+/**
+ * How much of an item one labelled container holds, for counting the batch
+ * labels a receipt from production needs.
+ *
+ * The internal-production note: "כל צנצנת מכילה כ-300 גרם אבקה ... כל בקבוק מכיל
+ * ליטר נוזל", and Yaron's reply under it: "לכל זה צריך להיות משפחה ואז אפשרות
+ * להתאים למק״ט החרגה (בגלל משקל סגולי לעומת נפח)". So two places, the item
+ * first:
+ *
+ *   item    SAP's sales packaging on the item card — `OITM.SalPackMsr` and
+ *           `SalPackUn`, the field SAP has for how much goes into one package,
+ *           counted in the item's sales unit. Empty on every item today
+ *           (checked against the live database), so nothing is overridden
+ *           until somebody fills it in.
+ *   family  the batch settings' `labelPack`, one figure per numbering block.
+ *
+ * Null when neither says anything: the screen then asks for the count instead
+ * of inventing a container.
+ *
+ * @returns {{qty: number, uom: string, name: string|null, source: 'item'|'family'}|null}
+ */
+export function labelPackOf({ item, settings }) {
+    const own = Number(item?.uom?.salesPackQty);
+
+    if (own > 0) {
+        return {
+            qty: own,
+            uom: item.uom.sales || item.uom.stock || 'unit',
+            name: item.uom.salesPackUom || null,
+            source: 'item',
+        };
+    }
+
+    const family = settings?.labelPack?.[item?.family];
+
+    if (family && Number(family.qty) > 0) {
+        return {
+            qty: Number(family.qty),
+            uom: family.uom || 'unit',
+            name: null,
+            source: 'family',
+        };
+    }
+
+    return null;
+}
+
+/**
+ * The batch labels a quantity needs: one per full container and one for the
+ * part-filled last one. "קלטתי למלאי מייצור 1.200 ק״ג של אבקה — המערכת תדע
+ * להדפיס לי 4 מדבקות". Null when the quantity cannot be put in the container's
+ * unit (grams against a bottle counted in units) — the screen asks instead.
+ */
+export function labelCount(qty, uom, pack) {
+    const n = Number(qty);
+
+    if (!pack || !(n > 0)) {
+        return null;
+    }
+
+    const inPack = convertQty(n, uom, pack.uom);
+
+    if (inPack === null) {
+        return null;
+    }
+
+    // A rounding hair over a whole container is still that many containers.
+    return Math.max(1, Math.ceil(inPack / pack.qty - 1e-9));
+}

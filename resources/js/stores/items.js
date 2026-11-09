@@ -671,6 +671,8 @@ export const useItemsStore = defineStore('items', () => {
                 group: numberOrNull(form.uom?.group) ?? -1,
                 packUom: form.uom?.packUom || null,
                 packQty: numberOrNull(form.uom?.packQty),
+                salesPackUom: form.uom?.salesPackUom || null,
+                salesPackQty: numberOrNull(form.uom?.salesPackQty),
             },
             levels: {
                 min: numberOrNull(form.levels?.min),

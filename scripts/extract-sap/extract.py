@@ -310,6 +310,7 @@ ITEM_COLUMNS = """
     SalUnitMsr AS salesUom, NumInSale AS numInSale, CntUnitMsr AS countUom,
     UgpEntry AS uomGroup, PriceUnit AS priceUnit,
     PurPackMsr AS packUom, PurPackUn AS packQty,
+    SalPackMsr AS salesPackUom, SalPackUn AS salesPackQty,
     OnHand AS onHand, IsCommited AS committed, OnOrder AS onOrder,
     MinLevel AS minLevel, MaxLevel AS maxLevel, ReorderQty AS reorderQty,
     MinOrdrQty AS minOrderQty, LeadTime AS leadTime,

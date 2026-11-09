@@ -46,6 +46,26 @@ export function useProductionSheet() {
         </tr>`;
     }
 
+    /**
+     * What the lab is told about this run: the note written for it alone,
+     * first and marked, then the standing ones from the item card.
+     */
+    function notes(order) {
+        const standing = order.standing || {};
+        const blocks = [
+            order.labNote &&
+                `<div class="warn"><strong>${esc(t('production.notes.labShort'))}</strong><div style="white-space:pre-line">${text(order.labNote)}</div></div>`,
+            standing.item &&
+                `<div class="box"><strong>${esc(t('production.notes.fromItemLong'))}</strong><div style="white-space:pre-line;unicode-bidi:plaintext">${esc(standing.item)}</div></div>`,
+            standing.recipe &&
+                `<div class="box"><strong>${esc(t('production.notes.fromRecipeLong'))}</strong><div style="white-space:pre-line">${text(standing.recipe)}</div></div>`,
+        ].filter(Boolean);
+
+        return blocks.length
+            ? `<h2>${esc(t('production.notes.title'))}</h2>${blocks.join('')}`
+            : '';
+    }
+
     /** The whole document for one run, as body markup. */
     function build(order) {
         const card = items.rowBySku(order.parentSku);
@@ -77,7 +97,11 @@ export function useProductionSheet() {
                 <div class="box"><strong>${esc(t('production.sheet.opened'))}</strong>
                     <div>${esc(order.createdOn?.stamp || '')}</div>
                     <div class="small">${text(order.by)}</div></div>
+                <div class="box"><strong>${esc(t('production.sheet.due'))}</strong>
+                    <div class="num">${esc(order.dueOn ? fmtISO(order.dueOn) : '—')}</div></div>
             </div>
+
+            ${notes(order)}
 
             <h2>${esc(t('production.sheet.components'))}</h2>
             <table>

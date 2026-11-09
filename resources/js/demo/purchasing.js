@@ -46,6 +46,16 @@ export const INVENTORY_SETTINGS = {
         workshop: null,
         labour: null,
     },
+    // How much one labelled container of a family holds, for counting batch
+    // labels on a receipt from production. The two figures the internal-
+    // production note gives — "כל צנצנת מכילה כ-300 גרם אבקה", "כל בקבוק מכיל
+    // ליטר נוזל" — and nothing else: Natalie will send the rest per category
+    // ("אני אשלח כל קטגוריה והחלוקה הרלוונטית לה"). An item's own packaging on
+    // its card overrides its family (config/batches.js `labelPackOf`).
+    labelPack: {
+        herb_1to1: { qty: 300, uom: 'g' },
+        tincture: { qty: 1, uom: 'l' },
+    },
     updated: at(40, 11, 20),
     updatedBy: DEMO_ACTORS.orit,
 };

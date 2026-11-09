@@ -349,6 +349,13 @@ export default {
         numInText: '{n} {unit}',
         packUom: 'יחידת אריזה',
         packQty: 'כמות באריזה',
+        // SAP's sales packaging — what one jar or bottle holds.
+        salesPack: 'אריזת מכירה',
+        salesPackUom: 'אריזת מכירה',
+        salesPackQty: 'כמות באריזת מכירה ({unit})',
+        salesPackText: '{name} של {n} {unit}',
+        salesPackDefault: 'אריזה',
+        salesPackNone: 'לא נקבעה — מדבקות לפי המשפחה',
         evalPrice: 'מחיר הערכה אחרון',
         prices: 'מחירונים',
         priceList: 'מחירון',
@@ -469,6 +476,9 @@ export default {
         pictureHint: 'ב-SAP השדה קיים ואינו מלא באף פריט — כאן אפשר להעלות',
         trade: 'רכש ומכירות',
         numInHint: 'כמה {unit} יש ביחידה אחת',
+        salesPackUomHint: 'צנצנת, בקבוק…',
+        salesPackHint:
+            'כמה נכנס בצנצנת או בבקבוק אחד. קובע כמה מדבקות אצווה יודפסו בקליטה מייצור; ריק — לפי הגדרת המשפחה בהגדרות האצוות.',
         inventory: 'מלאי',
         planning: 'תכנון וייצור',
         properties: 'מאפיינים ובטיחות',

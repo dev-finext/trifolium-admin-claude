@@ -1,19 +1,24 @@
 // Production: the orders that turn a bill of materials into a batch of the
 // parent item. Second-version material.
 //
-// The four moves of a run and what each does to stock:
+// The moves of a run and what each does to stock:
 //   create   — the recipe is scaled to the planned quantity and a FEFO plan
-//              is drawn for every component; nothing moves yet.
+//              is drawn for every component; nothing moves yet. The order
+//              takes its target date and the standing lab notes of the item
+//              it makes.
 //   issue    — the plan is reserved: each component's stock row shows the
 //              quantity as committed, so the buyer sees it before it leaves.
-//   complete — the components leave their batches, the parent gets a new
-//              `P-` batch with the recipe's shelf life, and the cost of the
-//              run is the cost of what went in. What came out as waste gets a
-//              `W-` batch beside it only when the preparation type accepts
-//              waste (grinding a plant leaves a real remainder; a tincture's
-//              extraction loss does not) — otherwise the quantity is kept on
-//              the order for the record and nothing moves in stock.
-//   cancel   — the reservation is released.
+//   receive  — what came back from the lab goes into stock, all of it or a
+//              part ("לפעמים מוצר רק חלק מכמות המוצר שהזמנתי ואני מכניסה למלאי
+//              רק את החלק הזה ושאר ההוראה נשארת פתוחה"). Each receipt draws its
+//              share of the components off their batches and opens a batch of
+//              the parent — or tops up the one the order's previous receipt
+//              opened — with the recipe's shelf life. Waste gets a batch of its
+//              own only when the preparation type accepts waste (grinding a
+//              plant leaves a real remainder; a tincture's extraction loss does
+//              not). The last receipt draws whatever is left of the
+//              components and completes the order.
+//   cancel   — the reservation still standing is released.
 //
 // Every mutation is optimistic and calls persist(), a no-op against the fixture.
 import { defineStore } from 'pinia';
@@ -24,11 +29,13 @@ import {
     PRODUCTION_MOVE_KINDS,
     PRODUCTION_OPEN_STATE_IDS,
     PRODUCTION_SERIES,
+    productionDueDays,
     resolveExpiryMonths,
 } from '@/config/production';
 import { persist } from '@/data/source';
 import { componentUnitCost, toStockUnits } from '@/demo/production';
 import {
+    addDays,
     addMonths,
     daysSince,
     fmtISO,
@@ -43,6 +50,8 @@ import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 
 const round2 = (value) => Math.round(value * 100) / 100;
+const round3 = (value) => Math.round(value * 1000) / 1000;
+const round4 = (value) => Math.round(value * 10000) / 10000;
 
 /** This moment, in the shape every record's `when` field carries. */
 function moment(iso = null) {
@@ -66,6 +75,25 @@ function nextSerial(ids, series) {
     }, 0);
 
     return `${series}${highest + 1}`;
+}
+
+/**
+ * The notes an order carries to the bench that are not about this run alone,
+ * copied when the order is opened — what the paper said is what the lab read.
+ *
+ * Two sources, both on the item card:
+ *   item    the card's own remarks (`OITM.UserText`). For the items the
+ *           pharmacy makes this is where the standing instructions already
+ *           live — "להשרות את השמן במשך שבוע עם הצמחים", "לא לנדף את הפרופוליס",
+ *           a pharmacopoeia reference — 82 of the 120 items SAP has production
+ *           orders for carry one.
+ *   recipe  the note on the recipe section of the card.
+ */
+export function standingNotesOf(item, bom) {
+    const text = (value) => String(value ?? '').trim() || null;
+    const recipe = bom?.notes?.he?.trim() ? { ...bom.notes } : null;
+
+    return { item: text(item?.remarks), recipe };
 }
 
 export const useProductionStore = defineStore('production', () => {
@@ -102,7 +130,7 @@ export const useProductionStore = defineStore('production', () => {
 
     /** The last unit cost a run of this item came out at. */
     const lastUnitCost = (sku) =>
-        ordersOf(sku).find((order) => order.state === 'completed')?.cost
+        ordersOf(sku).find((order) => order.cost?.perUnit != null)?.cost
             ?.perUnit ?? null;
 
     /**
@@ -133,6 +161,13 @@ export const useProductionStore = defineStore('production', () => {
                 }),
             ),
         );
+    };
+
+    /** The target date an order opened today on this recipe would carry. */
+    const dueOnFor = (bom) => {
+        const days = productionDueDays(items.prepTypeById(bom?.prepType));
+
+        return days ? addDays(null, days) : null;
     };
 
     /**
@@ -198,6 +233,7 @@ export const useProductionStore = defineStore('production', () => {
                 picks,
                 short: left > 0 ? round2(left) : 0,
                 actualQty: null,
+                consumedQty: 0,
             };
         });
     }
@@ -227,8 +263,13 @@ export const useProductionStore = defineStore('production', () => {
         });
     }
 
-    /** Move a component's reservation on or off its stock row. */
-    function reserve(order, sign) {
+    /**
+     * Move a share of a run's reservation on or off its components' stock
+     * rows: the whole of it when the order is issued, each receipt's share as
+     * it comes back, and whatever is left when the order completes or is
+     * cancelled.
+     */
+    function reserve(order, share) {
         order.components.forEach((component) => {
             const row = inventory.itemBySku(component.sku);
 
@@ -237,7 +278,7 @@ export const useProductionStore = defineStore('production', () => {
                     0,
                     round2(
                         row.alloc +
-                            sign *
+                            share *
                                 toStockUnits(
                                     component.plannedQty,
                                     component.uom,
@@ -255,7 +296,8 @@ export const useProductionStore = defineStore('production', () => {
     /**
      * Open a production order on a recipe.
      *
-     * @param {{ bomId: string, plannedQty: number, notes?: string,
+     * @param {{ bomId: string, plannedQty: number, labNote?: string,
+     *          dueOn?: string,
      *          overrides?: Record<string, {batch: string, qty: number}[]> }} form
      */
     async function createOrder(form) {
@@ -267,6 +309,7 @@ export const useProductionStore = defineStore('production', () => {
         }
 
         const rows = bag('productionOrders');
+        const dueDays = productionDueDays(items.prepTypeById(bom.prepType));
         const order = {
             id: nextSerial(
                 rows.map((row) => row.id),
@@ -281,6 +324,18 @@ export const useProductionStore = defineStore('production', () => {
             uom: bom.yield?.uom || 'unit',
             state: 'planned',
             components: planComponents(bom, plannedQty, form.overrides),
+            // תאריך יעד — the preparation's own figure, or the date the person
+            // opening the order chose over it.
+            // A form that sent the field decides, even when it cleared it.
+            dueOn:
+                form.dueOn !== undefined ? form.dueOn || null : dueOnFor(bom),
+            dueDays,
+            // A note for this run only — "שלא נגררות להוראה הבאה" — and the
+            // standing ones the item card carries, copied as they read today.
+            labNote: form.labNote?.trim() || null,
+            standing: standingNotesOf(items.itemBySku(bom.parentSku), bom),
+            receipts: [],
+            drawn: 0,
             yieldQty: null,
             wasteQty: null,
             outputBatch: null,
@@ -293,7 +348,6 @@ export const useProductionStore = defineStore('production', () => {
             completedOn: null,
             cancelledOn: null,
             reason: null,
-            notes: form.notes?.trim() || null,
         };
 
         rows.unshift(order);
@@ -333,6 +387,32 @@ export const useProductionStore = defineStore('production', () => {
         );
     }
 
+    /** Move an open order's target date — the lab's load is the person's call. */
+    async function setDueOn(id, dueOn) {
+        const order = orderById(id);
+
+        if (
+            !order ||
+            !PRODUCTION_OPEN_STATE_IDS.includes(order.state) ||
+            (dueOn || null) === (order.dueOn || null)
+        ) {
+            return null;
+        }
+
+        writeLog({
+            act: 'production_due',
+            entType: 'production_order',
+            ent: order.id,
+            valueType: 'date',
+            from: order.dueOn || null,
+            to: dueOn || null,
+        });
+        order.dueOn = dueOn || null;
+        await persist(`production-orders/${id}`, order, 'PUT');
+
+        return order;
+    }
+
     /** Issue: the components are reserved and the sheet goes to the bench. */
     async function issueOrder(id) {
         const order = orderById(id);
@@ -355,26 +435,42 @@ export const useProductionStore = defineStore('production', () => {
     }
 
     /**
-     * Complete: what came out, what went to waste, when it expires.
+     * Receive what came back from the lab: all of what is left, or a part.
+     *
+     * A part draws its share of the run off the components — the share being
+     * what came out plus what went to waste, against the planned quantity — and
+     * leaves the order open. The last receipt draws everything still standing,
+     * whatever the yield: the run is over, and what is not in the jar is in the
+     * waste or lost to the process. That last one may bring nothing back at all
+     * when earlier receipts already took the whole yield.
      *
      * @param {{ yieldQty: number, wasteQty?: number, expiresOn?: string,
-     *          actual?: Record<string, number>, note?: string }} form
+     *          final?: boolean, batchMode?: 'new'|'add',
+     *          actual?: Record<string, number>, note?: string,
+     *          labels?: number|null }} form
      */
-    async function completeOrder(id, form) {
+    async function receiveOrder(id, form) {
         const order = orderById(id);
 
         if (!order || order.state !== 'issued') {
             return null;
         }
 
+        const final = form.final !== false;
         const bom = items.bomById(order.bomId);
         const item = items.itemBySku(order.parentSku);
         const parent = inventory.itemBySku(order.parentSku);
         const prepType = items.prepTypeById(order.prepType);
-        const yieldQty = round2(Number(form.yieldQty) || 0);
-        // What the run took off the shelf, for the goods issue it posts.
-        const issued = [];
+        const yieldQty = round2(Math.max(0, Number(form.yieldQty) || 0));
         const wasteQty = round2(Math.max(0, Number(form.wasteQty) || 0));
+        const receipts = Array.isArray(order.receipts)
+            ? order.receipts
+            : (order.receipts = []);
+
+        if (!yieldQty && !(final && receipts.length)) {
+            return null;
+        }
+
         // Whether this preparation type's waste is a physical remainder worth a
         // batch of its own (grinding a plant into powder leaves one) or a pure
         // process loss with nothing to receive (a tincture's extraction loss is
@@ -386,6 +482,7 @@ export const useProductionStore = defineStore('production', () => {
         const wasteReceivable = wasteQty > 0 && Boolean(prepType?.acceptsWaste);
         const when = moment();
         const by = dataset.me?.name || null;
+        const n = receipts.length + 1;
         const months = resolveExpiryMonths({
             item,
             prepType,
@@ -396,22 +493,59 @@ export const useProductionStore = defineStore('production', () => {
         // pharmacy expects on the batch label.
         const expiresOn = form.expiresOn || addMonths(null, months || 24);
 
-        // Release the reservation, then take the real quantities out.
-        reserve(order, -1);
+        // How much of the run this receipt accounts for.
+        const drawn = Number(order.drawn) || 0;
+        const left = Math.max(0, round4(1 - drawn));
+        const share = final
+            ? left
+            : Math.min(
+                  left,
+                  order.plannedQty
+                      ? round4((yieldQty + wasteQty) / order.plannedQty)
+                      : 0,
+              );
 
+        // Release this share of the reservation, then take the real quantities
+        // out.
+        reserve(order, -share);
+
+        // What the run took off the shelf, for the goods issue it posts.
+        const issued = [];
         let cost = 0;
 
         order.components.forEach((component) => {
             const row = inventory.itemBySku(component.sku);
-            const actual =
-                component.issue === 'manual' && form.actual?.[component.sku]
+            const consumed = Number(component.consumedQty) || 0;
+            const counted =
+                final &&
+                component.issue === 'manual' &&
+                form.actual?.[component.sku] !== undefined &&
+                form.actual[component.sku] !== ''
                     ? round2(Number(form.actual[component.sku]))
-                    : component.plannedQty;
+                    : null;
+            const take = final
+                ? round2(
+                      Math.max(0, (counted ?? component.plannedQty) - consumed),
+                  )
+                : round2(component.plannedQty * share);
             const unitCost = componentUnitCost(items.itemBySku(component.sku));
-
-            component.actualQty = actual;
+            // A part draws its share off the batches in the order the plan
+            // listed them; the last receipt empties what the plan set aside.
+            let fromBatches = final
+                ? Infinity
+                : toStockUnits(take, component.uom, component.stockUnit);
 
             component.picks.forEach((pick) => {
+                const open = round2((pick.qty || 0) - (pick.taken || 0));
+                const qty = round2(Math.min(open, fromBatches));
+
+                if (qty <= 0) {
+                    return;
+                }
+
+                fromBatches = round2(fromBatches - qty);
+                pick.taken = round2((pick.taken || 0) + qty);
+
                 const batch = inventory.batchById(pick.batch);
 
                 if (!batch) {
@@ -422,44 +556,49 @@ export const useProductionStore = defineStore('production', () => {
                     sku: component.sku,
                     name: batch.name,
                     unit: batch.unit,
-                    qty: pick.qty,
+                    qty,
                     wh: batch.wh,
                     batch: batch.id,
                     price: unitCost || null,
                 });
 
-                batch.remaining = Math.max(
-                    0,
-                    round2(batch.remaining - pick.qty),
-                );
+                batch.remaining = Math.max(0, round2(batch.remaining - qty));
                 inventory.syncBatch(batch);
                 inventory.writeMovement({
-                    id: `mv-prod-out-${order.id}-${batch.id}`,
+                    id: `mv-prod-out-${order.id}-${n}-${batch.id}`,
                     kind: PRODUCTION_MOVE_KINDS.consume,
                     sku: component.sku,
                     name: batch.name,
                     unit: batch.unit,
                     wh: batch.wh,
-                    qty: -pick.qty,
+                    qty: -qty,
                     batch: batch.id,
                     ref: order.id,
                     when,
                     by,
                 });
-                cost += unitCost * pick.qty;
+                cost += unitCost * qty;
             });
 
-            if (row) {
+            component.consumedQty = round2(consumed + take);
+
+            if (final) {
+                component.actualQty = component.consumedQty;
+            }
+
+            if (row && take > 0) {
                 row.onHand = Math.max(
                     0,
                     round2(
                         row.onHand -
-                            toStockUnits(actual, component.uom, row.unit),
+                            toStockUnits(take, component.uom, row.unit),
                     ),
                 );
                 inventory.syncRow(row);
             }
         });
+
+        order.drawn = round4(drawn + share);
 
         // SAP posts a goods issue for what the run consumed and a goods
         // receipt for what it made, both against the order.
@@ -480,83 +619,123 @@ export const useProductionStore = defineStore('production', () => {
         }
 
         const stockUnit = parent?.unit || order.uom;
-        const outputQty = round2(toStockUnits(yieldQty, order.uom, stockUnit));
-        // V3 — the output takes the next number in the pharmacy's own running
-        // series, allocated by the system and not editable.
-        const outputNo = inventory.nextBatchNumber({
-            sku: order.parentSku,
-            kind: 'production',
-        });
-        const output = inventory.openBatch({
-            ...outputNo,
-            sku: order.parentSku,
-            name: parent ? parent.name : order.name,
-            unit: stockUnit,
-            wh: parent?.wh || DEFAULT_WAREHOUSE,
-            source: 'production',
-            production: order.id,
-            received: when,
-            qty: outputQty,
-            expiry: expiresOn,
-            unitCost: outputQty ? round2(cost / outputQty) : null,
-            components: order.components.flatMap((component) =>
-                component.picks.map((pick) => ({
-                    sku: component.sku,
-                    batch: pick.batch,
-                    qty: pick.qty,
+        const outputQty = round3(toStockUnits(yieldQty, order.uom, stockUnit));
+        const previous = [...receipts]
+            .reverse()
+            .map((receipt) => inventory.batchById(receipt.batch))
+            .find(Boolean);
+        let output = null;
+
+        if (outputQty > 0 && form.batchMode === 'add' && previous) {
+            // The same lot, brought back in two goes — the batch the previous
+            // receipt opened grows, and keeps its number and its dates.
+            const before = previous.qty || 0;
+
+            previous.qty = round3(before + outputQty);
+            previous.remaining = round3((previous.remaining || 0) + outputQty);
+            previous.unitCost = previous.qty
+                ? round2(
+                      ((previous.unitCost || 0) * before + cost) / previous.qty,
+                  )
+                : previous.unitCost;
+            previous.components = [
+                ...(previous.components || []),
+                ...issued.map((line) => ({
+                    sku: line.sku,
+                    batch: line.batch,
+                    qty: line.qty,
                 })),
-            ),
-            by,
-        });
-
-        inventory.writeMovement({
-            id: `mv-prod-in-${output.id}`,
-            kind: PRODUCTION_MOVE_KINDS.output,
-            sku: order.parentSku,
-            name: output.name,
-            unit: stockUnit,
-            wh: output.wh,
-            qty: outputQty,
-            batch: output.id,
-            ref: order.id,
-            when,
-            by,
-        });
-
-        let waste = null;
-
-        if (wasteReceivable) {
-            const wasteStock = round2(
-                toStockUnits(wasteQty, order.uom, stockUnit),
-            );
-
-            // V3 — waste carries the production order's own number, which is
-            // how the pharmacy tells ground waste from whole herb today.
-            waste = inventory.openBatch({
+            ];
+            inventory.syncBatch(previous);
+            output = previous;
+        } else if (outputQty > 0) {
+            // V3 — the output takes the next number in the pharmacy's own
+            // running series, allocated by the system and not editable.
+            output = inventory.openBatch({
                 ...inventory.nextBatchNumber({
                     sku: order.parentSku,
-                    kind: 'waste',
-                    production: order.id,
+                    kind: 'production',
                 }),
                 sku: order.parentSku,
-                name: output.name,
+                name: parent ? parent.name : order.name,
                 unit: stockUnit,
-                wh: output.wh,
-                source: 'waste',
+                wh: parent?.wh || DEFAULT_WAREHOUSE,
+                source: 'production',
                 production: order.id,
                 received: when,
-                qty: wasteStock,
+                qty: outputQty,
                 expiry: expiresOn,
-                waste: true,
+                unitCost: round2(cost / outputQty),
+                components: issued.map((line) => ({
+                    sku: line.sku,
+                    batch: line.batch,
+                    qty: line.qty,
+                })),
                 by,
             });
+        }
+
+        if (output) {
             inventory.writeMovement({
-                id: `mv-waste-in-${waste.id}`,
-                kind: PRODUCTION_MOVE_KINDS.waste,
+                id: `mv-prod-in-${order.id}-${n}-${output.id}`,
+                kind: PRODUCTION_MOVE_KINDS.output,
                 sku: order.parentSku,
                 name: output.name,
                 unit: stockUnit,
                 wh: output.wh,
+                qty: outputQty,
+                batch: output.id,
+                ref: order.id,
+                when,
+                by,
+            });
+        }
+
+        let waste = null;
+        let wasteStock = 0;
+
+        if (wasteReceivable) {
+            wasteStock = round3(toStockUnits(wasteQty, order.uom, stockUnit));
+            waste = order.wasteBatch
+                ? inventory.batchById(order.wasteBatch)
+                : null;
+
+            if (waste) {
+                // V3 — one waste batch per order: it carries the order's
+                // number, so a second part of the run tops it up.
+                waste.qty = round3((waste.qty || 0) + wasteStock);
+                waste.remaining = round3((waste.remaining || 0) + wasteStock);
+                inventory.syncBatch(waste);
+            } else {
+                // V3 — waste carries the production order's own number, which
+                // is how the pharmacy tells ground waste from whole herb today.
+                waste = inventory.openBatch({
+                    ...inventory.nextBatchNumber({
+                        sku: order.parentSku,
+                        kind: 'waste',
+                        production: order.id,
+                    }),
+                    sku: order.parentSku,
+                    name: parent ? parent.name : order.name,
+                    unit: stockUnit,
+                    wh: parent?.wh || DEFAULT_WAREHOUSE,
+                    source: 'waste',
+                    production: order.id,
+                    received: when,
+                    qty: wasteStock,
+                    expiry: expiresOn,
+                    waste: true,
+                    by,
+                });
+            }
+
+            inventory.writeMovement({
+                id: `mv-waste-in-${order.id}-${n}-${waste.id}`,
+                kind: PRODUCTION_MOVE_KINDS.waste,
+                sku: order.parentSku,
+                name: waste.name,
+                unit: stockUnit,
+                wh: waste.wh,
                 qty: wasteStock,
                 batch: waste.id,
                 ref: order.id,
@@ -565,78 +744,127 @@ export const useProductionStore = defineStore('production', () => {
             });
         }
 
-        if (parent) {
-            parent.onHand = round2(
-                parent.onHand + outputQty + (waste ? waste.qty : 0),
-            );
+        if (parent && (outputQty > 0 || wasteStock > 0)) {
+            parent.onHand = round3(parent.onHand + outputQty + wasteStock);
             inventory.syncRow(parent);
         }
 
-        inventory.postDoc({
-            type: 'goods_receipt',
-            base: 'production',
-            baseRef: order.id,
-            warehouse: output.wh,
-            remarks: L(
-                `קבלה מהייצור · הוראת ייצור ${order.id}`,
-                `Receipt from production · order ${order.id}`,
-            ),
+        const made = [
+            output && {
+                sku: order.parentSku,
+                name: output.name,
+                unit: stockUnit,
+                qty: outputQty,
+                wh: output.wh,
+                batch: output.id,
+                price: output.unitCost ?? null,
+            },
+            waste && {
+                sku: order.parentSku,
+                name: waste.name,
+                unit: stockUnit,
+                qty: wasteStock,
+                wh: waste.wh,
+                batch: waste.id,
+                price: null,
+            },
+        ].filter(Boolean);
+
+        if (made.length) {
+            inventory.postDoc({
+                type: 'goods_receipt',
+                base: 'production',
+                baseRef: order.id,
+                warehouse: made[0].wh,
+                remarks: L(
+                    `קבלה מהייצור · הוראת ייצור ${order.id}`,
+                    `Receipt from production · order ${order.id}`,
+                ),
+                when,
+                by,
+                lines: made,
+            });
+        }
+
+        const receipt = {
+            n,
+            qty: yieldQty,
+            stockQty: outputQty,
+            wasteQty,
+            wasteStock,
+            batch: output ? output.id : null,
+            added: Boolean(output && output === previous),
+            wasteBatch: waste ? waste.id : null,
+            expiresOn: output ? output.expiry : null,
+            labels:
+                form.labels != null && Number(form.labels) >= 0
+                    ? Math.round(Number(form.labels))
+                    : null,
+            // What this receipt drew off the component batches — its own goods
+            // issue, line by line.
+            drew: issued.map((line) => ({
+                sku: line.sku,
+                batch: line.batch,
+                qty: line.qty,
+            })),
+            cost: round2(cost),
+            final,
+            note: form.note?.trim() || null,
             when,
             by,
-            lines: [
-                {
-                    sku: order.parentSku,
-                    name: output.name,
-                    unit: stockUnit,
-                    qty: outputQty,
-                    wh: output.wh,
-                    batch: output.id,
-                    price: output.unitCost ?? null,
-                },
-                waste && {
-                    sku: order.parentSku,
-                    name: output.name,
-                    unit: stockUnit,
-                    qty: waste.qty,
-                    wh: waste.wh,
-                    batch: waste.id,
-                    price: null,
-                },
-            ].filter(Boolean),
-        });
+        };
+
+        receipts.push(receipt);
+
+        const totalYield = round2(
+            receipts.reduce((sum, row) => sum + (row.qty || 0), 0),
+        );
+        const totalCost = round2((order.cost?.components || 0) + cost);
 
         Object.assign(order, {
-            state: 'completed',
-            yieldQty,
-            wasteQty,
-            outputBatch: output.id,
-            wasteBatch: waste ? waste.id : null,
-            expiresOn,
+            yieldQty: totalYield,
+            wasteQty: round2(
+                receipts.reduce((sum, row) => sum + (row.wasteQty || 0), 0),
+            ),
+            outputBatch:
+                receipts.find((row) => row.batch)?.batch || order.outputBatch,
+            wasteBatch: waste ? waste.id : order.wasteBatch,
+            expiresOn: receipt.expiresOn || order.expiresOn,
             cost: {
-                components: round2(cost),
-                perUnit: yieldQty ? round2(cost / yieldQty) : null,
+                components: totalCost,
+                perUnit: totalYield ? round2(totalCost / totalYield) : null,
             },
-            completedOn: when,
-            notes: form.note?.trim() || order.notes,
         });
+
+        if (final) {
+            order.state = 'completed';
+            order.completedOn = when;
+        }
 
         writeLog({
-            act: 'production_complete',
+            act: final ? 'production_complete' : 'production_receive',
             entType: 'production_order',
             ent: order.id,
-            to: `${output.id} · ${yieldQty} ${order.uom}`,
+            to: output
+                ? `${inventory.batchNo(output)} · ${yieldQty} ${order.uom}`
+                : null,
             note: bom ? null : 'recipe missing',
         });
-        await persist(`production-orders/${id}/complete`, {
-            yieldQty,
-            wasteQty,
-            expiresOn,
-        });
+        await persist(`production-orders/${id}/receive`, receipt);
 
-        return order;
+        return { order, receipt };
     }
 
-    /** Cancel a planned or issued run; a reservation is released. */
+    /**
+     * Cancel a planned or issued run; the reservation still standing is
+     * released.
+     *
+     * A run part of which already came back is not cancelled — the stock it
+     * delivered is real — but closed short: it completes on what it brought,
+     * and only what was never drawn goes back to being available. That is what
+     * SAP shows too: ten of its 180 orders closed with less received than
+     * planned.
+     */
     async function cancelOrder(id, reason = '') {
         const order = orderById(id);
 
@@ -645,11 +873,24 @@ export const useProductionStore = defineStore('production', () => {
         }
 
         if (order.state === 'issued') {
-            reserve(order, -1);
+            reserve(
+                order,
+                -Math.max(0, round4(1 - (Number(order.drawn) || 0))),
+            );
         }
 
-        order.state = 'cancelled';
-        order.cancelledOn = moment();
+        if (order.receipts?.length) {
+            order.components.forEach((component) => {
+                component.actualQty = component.consumedQty || 0;
+            });
+            order.state = 'completed';
+            order.completedOn = moment();
+            order.closedShort = true;
+        } else {
+            order.state = 'cancelled';
+            order.cancelledOn = moment();
+        }
+
         order.reason = reason.trim() || null;
         writeLog({
             act: 'production_cancel',
@@ -662,6 +903,52 @@ export const useProductionStore = defineStore('production', () => {
         return order;
     }
 
+    /**
+     * How many batch labels a receipt went out with — the count the person
+     * printed, which may differ from the one the containers suggested.
+     */
+    async function setReceiptLabels(id, n, count) {
+        const order = orderById(id);
+        const receipt = order?.receipts?.find((row) => row.n === n);
+        const next = Math.max(0, Math.round(Number(count) || 0));
+
+        if (!receipt || receipt.labels === next) {
+            return null;
+        }
+
+        receipt.labels = next;
+        await persist(`production-orders/${id}`, order, 'PUT');
+
+        return receipt;
+    }
+
+    /**
+     * The target-date figure of a preparation type, in days. The note's
+     * example is the tincture's 21 days of maceration.
+     */
+    async function setPrepTarget(typeId, days) {
+        const type = items.prepTypeById(typeId);
+        const next =
+            days === '' || days === null || !(Number(days) > 0)
+                ? null
+                : Math.round(Number(days));
+
+        if (!type || (type.productionDays ?? null) === next) {
+            return null;
+        }
+
+        type.productionDays = next;
+        writeLog({
+            act: 'prep_type_update',
+            entType: 'catalog_item',
+            ent: type.id,
+            to: `${type.name?.he || type.id}: ${next ?? '—'}`,
+        });
+        await persist(`prep-types/${type.id}`, type, 'PUT');
+
+        return type;
+    }
+
     return {
         orders,
         openOrders,
@@ -670,11 +957,15 @@ export const useProductionStore = defineStore('production', () => {
         ordersUsingBatch,
         lastUnitCost,
         canProduce,
+        dueOnFor,
         planComponents,
         createOrder,
         setPick,
+        setDueOn,
         issueOrder,
-        completeOrder,
+        receiveOrder,
+        setReceiptLabels,
         cancelOrder,
+        setPrepTarget,
     };
 });

@@ -12,6 +12,11 @@
 // the shelf is answered for when the goods issue is posted and not when the
 // order is written. What the preview shows is what would be drawn — a
 // statement, not a verdict.
+//
+// The preview carries each component's stock the way SAP's own production
+// order does — on hand, available and on order — because that is what the
+// decision is made from: "רואים את כל הפרטי בנים ... ואת מצב המלאי שלהם, כולל
+// פרטים על כמות מוזמנת".
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -24,15 +29,22 @@ import ANum from '@/components/ui/ANum.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import { useLocalized } from '@/composables/useLocalized';
+import { productionDueDays } from '@/config';
 import { toStockUnits } from '@/demo/production';
 import { num } from '@/lib/money';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
-import { useProductionStore } from '@/stores/production';
+import { standingNotesOf, useProductionStore } from '@/stores/production';
 
 const props = defineProps({
     /** A recipe to start from, when the page was reached from one. */
     bomId: { type: String, default: '' },
+    /**
+     * Where the order starts — `issued` when the person came from the stock
+     * analysis to send a run to the lab ("נוכל לעבור ישירות לשליחת ההוראה
+     * למעבדה").
+     */
+    start: { type: String, default: 'planned' },
 });
 
 const emit = defineEmits(['close', 'created']);
@@ -45,7 +57,8 @@ const store = useProductionStore();
 
 const bomId = ref(props.bomId || '');
 const qty = ref('');
-const notes = ref('');
+const labNote = ref('');
+const dueOn = ref('');
 const saving = ref(false);
 
 /**
@@ -70,7 +83,7 @@ watch(bomId, () => {
  * almost entirely released (149 against 2 planned), but both exist and the
  * screen should not decide for the person opening it.
  */
-const startState = ref('planned');
+const startState = ref(props.start === 'issued' ? 'issued' : 'planned');
 
 const startOptions = computed(() => [
     { value: 'planned', label: t('production.state.planned') },
@@ -78,6 +91,50 @@ const startOptions = computed(() => [
 ]);
 
 const bom = computed(() => (bomId.value ? items.bomById(bomId.value) : null));
+
+/** The preparation type's own target figure, when it has one. */
+const dueDays = computed(() =>
+    bom.value
+        ? productionDueDays(items.prepTypeById(bom.value.prepType))
+        : null,
+);
+
+const prepName = computed(() => {
+    const type = bom.value ? items.prepTypeById(bom.value.prepType) : null;
+
+    return type ? loc(type.name) : '';
+});
+
+// The date starts where the preparation's figure puts it and is the person's
+// to move; picking another product starts it over.
+watch(
+    bom,
+    (next) => {
+        dueOn.value = next ? store.dueOnFor(next) || '' : '';
+    },
+    { immediate: true },
+);
+
+/**
+ * What the item card says to every run of this item — copied onto the order
+ * when it is saved, and shown here so nobody types it again as a one-off.
+ */
+const standing = computed(() =>
+    bom.value
+        ? standingNotesOf(items.itemBySku(bom.value.parentSku), bom.value)
+        : { item: null, recipe: null },
+);
+
+/** A component's stock as the item card has it, in the unit it is held in. */
+function stockOf(sku) {
+    const row = items.rowBySku(sku);
+
+    return {
+        onHand: row?.onHand ?? null,
+        avail: row?.avail ?? null,
+        onOrder: row?.onOrder ?? 0,
+    };
+}
 
 /** Every product the pharmacy has a recipe for, searchable by name or SKU. */
 const productOptions = computed(() =>
@@ -144,7 +201,8 @@ async function save() {
     const order = await store.createOrder({
         bomId: bom.value.id,
         plannedQty: qtyNumber.value,
-        notes: notes.value,
+        labNote: labNote.value,
+        dueOn: dueOn.value || null,
         overrides: manualPicks.value,
     });
 
@@ -163,7 +221,7 @@ async function save() {
     <AModal
         open
         :title="t('production.create.title')"
-        :width="760"
+        :width="940"
         @close="emit('close')"
     >
         <div class="cp-grid">
@@ -225,16 +283,68 @@ async function save() {
                     {{ t(`production.create.startHint.${startState}`) }}
                 </div>
             </div>
+            <div>
+                <label class="a-lbl" for="cp-due">{{
+                    t('production.create.due')
+                }}</label>
+                <AInput
+                    id="cp-due"
+                    v-model="dueOn"
+                    type="date"
+                    ltr
+                    class="a-w100"
+                />
+                <div v-if="bom" class="a-hint">
+                    {{
+                        dueDays
+                            ? t('production.create.dueHint', {
+                                  n: dueDays,
+                                  type: prepName,
+                              })
+                            : t('production.create.dueNone', {
+                                  type: prepName,
+                              })
+                    }}
+                </div>
+            </div>
+            <div v-if="bom" class="cp-wide">
+                <div class="a-lbl">{{ t('production.notes.standing') }}</div>
+                <div
+                    v-if="standing.item || standing.recipe"
+                    class="a-note a-note--info cp-standing"
+                >
+                    <div v-if="standing.item">
+                        <span class="cp-src">{{
+                            t('production.notes.fromItem')
+                        }}</span>
+                        <span class="cp-text">{{ standing.item }}</span>
+                    </div>
+                    <div v-if="standing.recipe">
+                        <span class="cp-src">{{
+                            t('production.notes.fromRecipe')
+                        }}</span>
+                        <span class="cp-text">{{ loc(standing.recipe) }}</span>
+                    </div>
+                </div>
+                <div v-else class="t-sub">
+                    {{ t('production.notes.standingNone') }}
+                </div>
+                <div class="a-hint">
+                    {{ t('production.notes.standingHint') }}
+                </div>
+            </div>
             <div class="cp-wide">
                 <label class="a-lbl" for="cp-notes">{{
-                    t('production.create.notes')
+                    t('production.notes.lab')
                 }}</label>
                 <ATextarea
                     id="cp-notes"
-                    v-model="notes"
+                    v-model="labNote"
                     class="a-w100"
                     :rows="2"
+                    :placeholder="t('production.notes.labPlaceholder')"
                 />
+                <div class="a-hint">{{ t('production.notes.labHint') }}</div>
             </div>
         </div>
 
@@ -248,6 +358,15 @@ async function save() {
                         </th>
                         <th scope="col" class="nowrap">
                             {{ t('production.drawer.compPlanned') }}
+                        </th>
+                        <th scope="col" class="nowrap cp-n">
+                            {{ t('production.stock.onHand') }}
+                        </th>
+                        <th scope="col" class="nowrap cp-n">
+                            {{ t('production.stock.avail') }}
+                        </th>
+                        <th scope="col" class="nowrap cp-n">
+                            {{ t('production.stock.onOrder') }}
                         </th>
                         <th scope="col">
                             {{ t('production.drawer.compPicks') }}
@@ -264,6 +383,48 @@ async function save() {
                             <td class="nowrap">
                                 <ANum>{{ num(row.plannedQty) }}</ANum>
                                 {{ t(`inventory.unit.${row.uom}`) }}
+                            </td>
+                            <td class="nowrap cp-n">
+                                <template
+                                    v-if="stockOf(row.sku).onHand != null"
+                                >
+                                    <ANum>{{
+                                        num(stockOf(row.sku).onHand, 3)
+                                    }}</ANum>
+                                    {{ t(`inventory.unit.${row.stockUnit}`) }}
+                                </template>
+                                <span v-else class="t-sub">—</span>
+                            </td>
+                            <td class="nowrap cp-n">
+                                <template v-if="stockOf(row.sku).avail != null">
+                                    <ANum
+                                        :class="{
+                                            'cp-low':
+                                                stockOf(row.sku).avail <
+                                                toStockUnits(
+                                                    row.plannedQty,
+                                                    row.uom,
+                                                    row.stockUnit,
+                                                ),
+                                        }"
+                                        >{{
+                                            num(stockOf(row.sku).avail, 3)
+                                        }}</ANum
+                                    >
+                                    {{ t(`inventory.unit.${row.stockUnit}`) }}
+                                </template>
+                                <span v-else class="t-sub">—</span>
+                            </td>
+                            <td class="nowrap cp-n">
+                                <ANum
+                                    :class="{
+                                        't-sub': !stockOf(row.sku).onOrder,
+                                    }"
+                                    >{{
+                                        num(stockOf(row.sku).onOrder, 3)
+                                    }}</ANum
+                                >
+                                {{ t(`inventory.unit.${row.stockUnit}`) }}
                             </td>
                             <td>
                                 <span
@@ -309,7 +470,7 @@ async function save() {
                             </td>
                         </tr>
                         <tr v-if="expandedSku === row.sku" class="cp-pick-row">
-                            <td colspan="3">
+                            <td colspan="6">
                                 <ComponentBatchPicker
                                     :name="row.name"
                                     :batches="batchesFor(row.sku)"
@@ -360,6 +521,8 @@ async function save() {
 
 .cp-plan {
     margin-top: 18px;
+    /* Six columns do not fit a phone; the table scrolls, the form does not. */
+    overflow-x: auto;
 }
 
 .cp-pick {
@@ -383,6 +546,32 @@ async function save() {
 .cp-uncovered {
     margin-inline-start: 4px;
     color: var(--a-ink-4);
+}
+
+.cp-n {
+    text-align: end;
+}
+
+/* Less available than this run needs — the reason to look at "on order". */
+.cp-low {
+    color: var(--a-red);
+    font-weight: 600;
+}
+
+.cp-standing {
+    display: grid;
+    gap: 6px;
+    margin-top: 4px;
+    white-space: pre-line;
+}
+
+.cp-src {
+    font-weight: 600;
+    margin-inline-end: 6px;
+}
+
+.cp-text {
+    unicode-bidi: plaintext;
 }
 
 .t-sub {

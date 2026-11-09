@@ -64,6 +64,15 @@ export function addMonths(fromIso, months) {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+/** The ISO date `days` after another one, or after today. */
+export function addDays(fromIso, days) {
+    const d = fromIso ? new Date(`${fromIso}T00:00:00`) : now();
+
+    d.setDate(d.getDate() + (Number(days) || 0));
+
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 /** How many days the month a Date falls in actually has. */
 function daysInMonth(d) {
     return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();

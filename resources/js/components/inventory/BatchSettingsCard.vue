@@ -3,10 +3,17 @@
 // life per item family that a new batch takes unless overridden. Batch
 // selection is always FEFO (no longer a setting) and batch numbers are not a
 // setting either: they run per item family, and the card says so.
-import { computed } from 'vue';
+//
+// The third column is how much one labelled container of a family holds, which
+// is what counts the batch labels a receipt from production prints ("כל צנצנת
+// מכילה כ-300 גרם אבקה ... כל בקבוק מכיל ליטר נוזל"). An item's own sales
+// packaging on its card overrides its family — Yaron: "משפחה ואז אפשרות להתאים
+// למק״ט החרגה".
+import { computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import ACard from '@/components/ui/ACard.vue';
+import ASelect from '@/components/ui/ASelect.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { BATCH_KIND_IDS, ITEM_FAMILY_IDS } from '@/config';
@@ -27,6 +34,60 @@ const families = computed(() =>
         (id) => !['admin', 'workshop', 'labour'].includes(id),
     ),
 );
+
+/** The units a container can be stated in. */
+const PACK_UNITS = ['g', 'kg', 'ml', 'l', 'unit'];
+
+const packUnitOptions = computed(() =>
+    PACK_UNITS.map((id) => ({ value: id, label: t(`inventory.unit.${id}`) })),
+);
+
+/**
+ * A unit picked on a family that has no quantity yet: held on screen until
+ * the quantity is typed, since a unit alone is not a container.
+ */
+const draftUnit = reactive({});
+
+/** A family's container, or an empty one to fill in. */
+const packOf = (family) =>
+    settings.value?.labelPack?.[family] || {
+        qty: null,
+        uom: draftUnit[family] || 'g',
+    };
+
+async function setPack(family, patch) {
+    const was = packOf(family);
+    const next = { ...was, ...patch };
+    const qty = Number(next.qty) > 0 ? Number(next.qty) : null;
+    const value = qty ? { qty, uom: next.uom || 'g' } : null;
+
+    if (!value) {
+        draftUnit[family] = next.uom || 'g';
+
+        // Nothing saved, so nothing to clear.
+        if (!was.qty) {
+            return;
+        }
+    }
+
+    if (
+        (was.qty || null) === (value?.qty ?? null) &&
+        (!value || was.uom === value.uom)
+    ) {
+        return;
+    }
+
+    await store.updateSettings(
+        { labelPack: { [family]: value } },
+        `${t(`items.family.${family}`)}: ${
+            value ? `${value.qty} ${t(`inventory.unit.${value.uom}`)}` : '—'
+        }`,
+    );
+    push({
+        title: t('inventory.settings.saved'),
+        body: t(`items.family.${family}`),
+    });
+}
 
 async function setExpiry(family, value) {
     const months =
@@ -113,6 +174,47 @@ async function setExpiry(family, value) {
                 </div>
                 <p class="a-hint">{{ t('inventory.settings.expiryHint') }}</p>
             </section>
+
+            <section class="pack-sect">
+                <div class="a-sect-t">
+                    {{ t('inventory.settings.packTitle') }}
+                </div>
+                <div class="expiry">
+                    <div
+                        v-for="family in families"
+                        :key="family"
+                        class="pack-row"
+                    >
+                        <span>{{ t(`items.family.${family}`) }}</span>
+                        <input
+                            class="a-input a-ltr-input months"
+                            type="number"
+                            min="0"
+                            step="any"
+                            :value="packOf(family).qty ?? ''"
+                            :placeholder="t('inventory.settings.none')"
+                            :aria-label="
+                                t('inventory.settings.packAria', {
+                                    family: t(`items.family.${family}`),
+                                })
+                            "
+                            @change="
+                                setPack(family, { qty: $event.target.value })
+                            "
+                        />
+                        <ASelect
+                            :model-value="packOf(family).uom"
+                            :options="packUnitOptions"
+                            class="pack-unit"
+                            :aria-label="t('inventory.settings.packUnit')"
+                            @update:model-value="
+                                setPack(family, { uom: $event })
+                            "
+                        />
+                    </div>
+                </div>
+                <p class="a-hint">{{ t('inventory.settings.packHint') }}</p>
+            </section>
         </div>
     </ACard>
 </template>
@@ -148,6 +250,37 @@ async function setExpiry(family, value) {
     gap: 10px;
     align-items: center;
     font-size: 14px;
+}
+
+/* The containers run the full width under the other two. */
+.pack-sect {
+    grid-column: 1 / -1;
+}
+
+.pack-sect .expiry {
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    column-gap: 22px;
+}
+
+.pack-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 110px 120px;
+    gap: 10px;
+    align-items: center;
+    font-size: 14px;
+}
+
+/* The console's inputs carry a minimum width of their own; here each one
+   stays inside its column instead of riding over the next. */
+.expiry-row .a-input,
+.pack-row .a-input,
+.pack-row .pack-unit {
+    width: 100%;
+    min-width: 0;
+}
+
+.pack-unit {
+    height: 32px;
 }
 
 .prefix,

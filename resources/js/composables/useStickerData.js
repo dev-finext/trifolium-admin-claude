@@ -4,17 +4,28 @@
 // a preparation label the order line, the preparation type's fixed text and
 // shelf life, the notes pool and the lab's regulatory text; for an item label
 // the goods-receipt line and its batch; for a parcel the order's address and
-// courier. The same markup renders the on-screen preview and the print run.
+// courier; for a production order its number and dates. A receipt from
+// production prints the item label too — it is a batch like any other — one
+// per container. The same markup renders the on-screen preview and the print
+// run.
 import { useI18n } from 'vue-i18n';
 
 import { useCourierName } from '@/components/deliveries/useCourierName';
 import { formatAddress } from '@/components/users/address';
 import { useLocalized } from '@/composables/useLocalized';
-import { batchBarcode, ITEM_UOM_IDS, ORG, STICKER_RULES } from '@/config';
+import {
+    batchBarcode,
+    ITEM_UOM_IDS,
+    labelCount,
+    labelPackOf,
+    ORG,
+    STICKER_RULES,
+} from '@/config';
 import { code39Svg, code39Value } from '@/lib/barcode';
 import { containerBarcode, orderContainers } from '@/lib/containers';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
 import { esc, printHtml } from '@/lib/print';
+import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 import { trackedItems, useOrdersStore } from '@/stores/orders';
@@ -37,6 +48,7 @@ export function useStickerData() {
     const orders = useOrdersStore();
     const inventory = useInventoryStore();
     const stickers = useStickersStore();
+    const dataset = useDatasetStore();
 
     const pharmacy = () => ({
         pharmacy: loc(ORG.name),
@@ -134,6 +146,96 @@ export function useStickerData() {
                 inventory.batchNo(line.batch) || line.batch,
             ),
         };
+    }
+
+    /** Field values for a production order's own label. */
+    function productionData(order) {
+        const card = items.itemBySku(order.parentSku);
+
+        return {
+            ...pharmacy(),
+            itemName: card
+                ? loc({ he: card.names.he, en: card.names.en || card.names.he })
+                : loc(order.name),
+            foreignName: card?.names?.en || '',
+            itemCode: card?.code || order.parentSku,
+            productionOrder: order.id,
+            // The day the run went to the bench — the order's date, which is
+            // what the pharmacy's label calls "תאריך ייצור".
+            productionDate: fmtISO(order.issuedOn?.iso || order.createdOn?.iso),
+            dueOn: order.dueOn ? fmtISO(order.dueOn) : '',
+            barcode: order.id,
+        };
+    }
+
+    /** The production order's label — one, or as many as the lab asks for. */
+    function labelsForProduction(order, copies = 1) {
+        const total = Math.max(1, Math.round(Number(copies) || 1));
+        const data = productionData(order);
+
+        return Array.from({ length: total }, (_, i) => ({
+            key: `${order.id}-${i + 1}`,
+            data,
+        }));
+    }
+
+    /**
+     * How many batch labels one receipt from production needs: what the person
+     * printed, or else what its containers come to (config/batches.js).
+     */
+    function productionLabelCount(order, receipt) {
+        if (receipt.labels != null) {
+            return receipt.labels;
+        }
+
+        const stock = inventory.itemBySku(order.parentSku);
+
+        return (
+            labelCount(
+                receipt.stockQty ?? receipt.qty,
+                stock?.unit || order.uom,
+                labelPackOf({
+                    item: items.itemBySku(order.parentSku),
+                    settings: dataset.data.inventorySettings,
+                }),
+            ) || 1
+        );
+    }
+
+    /**
+     * The batch labels for one receipt from production — the item label, one
+     * per jar or bottle, numbered 1/n … n/n like a goods receipt's. The
+     * quantity on each is what one container holds when that is known.
+     */
+    function labelsForProductionReceipt(order, receipt, count = null) {
+        const total = Math.max(
+            1,
+            Math.round(
+                Number(count ?? productionLabelCount(order, receipt)) || 1,
+            ),
+        );
+        const batch = inventory.batchById(receipt.batch);
+        const stock = inventory.itemBySku(order.parentSku);
+        const pack = labelPackOf({
+            item: items.itemBySku(order.parentSku),
+            settings: dataset.data.inventorySettings,
+        });
+        const line = {
+            sku: order.parentSku,
+            batch: receipt.batch,
+            supplierBatch: '',
+            madeOn: batch?.madeOn || receipt.when?.iso || null,
+            expiry: batch?.expiry || receipt.expiresOn || null,
+            qty: pack ? pack.qty : (receipt.stockQty ?? receipt.qty),
+            unit: pack ? pack.uom : stock?.unit || order.uom,
+        };
+        const source = { supplier: null, when: receipt.when };
+
+        return Array.from({ length: total }, (_, i) => ({
+            key: `${order.id}-${receipt.n}-${i + 1}`,
+            line,
+            data: itemData(source, line, i + 1, total),
+        }));
     }
 
     /** Field values for package `index` of `total` on one order's shipment. */
@@ -287,9 +389,13 @@ export function useStickerData() {
         prepData,
         itemData,
         shippingData,
+        productionData,
         labelsForOrder,
         labelsForReceipt,
         labelsForShipping,
+        labelsForProduction,
+        labelsForProductionReceipt,
+        productionLabelCount,
         stickerHtml,
         printStickers,
     };

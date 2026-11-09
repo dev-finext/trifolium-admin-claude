@@ -14,8 +14,16 @@
 // The dates are the whole input, and they are required, exactly as in SAP —
 // there is no report without a period to read. They live in the query string,
 // so a range can be sent to a colleague and opens the same.
+//
+// One column is the console's own and never reaches the file: for an item the
+// pharmacy makes, a way straight to a production order. The internal-
+// production note: "אנחנו רוצים הפניה ישירה לייצור מהדוח ניתוח מלאי ... נזין
+// ידני את הכמות שנרצה לייצר ונוכל לעבור ישירות לשליחת ההוראה למעבדה". The
+// order opens on the item's recipe, ready to go to the lab, with the quantity
+// typed by hand; a recommended quantity is the note's second phase.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
 import PageHead from '@/components/layout/PageHead.vue';
 import AButton from '@/components/ui/AButton.vue';
@@ -45,6 +53,7 @@ const SKELETON_ROWS = 10;
 const MAX_MONTHS = 36;
 
 const { t } = useI18n();
+const router = useRouter();
 const { push } = useToast();
 const dataset = useDatasetStore();
 const items = useItemsStore();
@@ -138,7 +147,20 @@ const cols = computed(() => [
         nowrap: true,
     })),
     { k: 'total', label: 'TotalOutQty', align: 'end', nowrap: true },
+    { k: 'produce', label: t('stockAnalysis.produceCol'), nowrap: true },
 ]);
+
+/** The recipe an item is made from, when the pharmacy makes it. */
+const recipeOf = (code) => items.bomsOfParent(code)[0] || null;
+
+function produce(row) {
+    const bom = recipeOf(row.code);
+
+    router.push({
+        name: 'production',
+        query: { order: 'new', bom: bom.id, start: 'issued' },
+    });
+}
 
 function exportSheet() {
     busy.value = true;
@@ -247,6 +269,16 @@ function exportSheet() {
         </template>
         <template #cell-total="{ row }">
             <ANum class="t-strong">{{ num(row.total, 3) }}</ANum>
+        </template>
+        <template #cell-produce="{ row }">
+            <AButton
+                v-if="recipeOf(row.code)"
+                sm
+                icon="beaker"
+                @click.stop="produce(row)"
+            >
+                {{ t('stockAnalysis.produce') }}
+            </AButton>
         </template>
     </ADataTable>
 </template>

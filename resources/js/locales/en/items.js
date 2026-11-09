@@ -352,6 +352,13 @@ export default {
         numInText: '{n} {unit}',
         packUom: 'Packaging UoM',
         packQty: 'Quantity per package',
+        // SAP's sales packaging — what one jar or bottle holds.
+        salesPack: 'Sales packaging',
+        salesPackUom: 'Sales packaging',
+        salesPackQty: 'Quantity per sales package ({unit})',
+        salesPackText: '{name} of {n} {unit}',
+        salesPackDefault: 'Package',
+        salesPackNone: 'Not set — labels follow the family',
         evalPrice: 'Last evaluated price',
         prices: 'Price lists',
         priceList: 'Price list',
@@ -478,6 +485,9 @@ export default {
             'The field exists in SAP and no item fills it — here one can be uploaded',
         trade: 'Purchasing and sales',
         numInHint: 'How many {unit} one unit holds',
+        salesPackUomHint: 'Jar, bottle…',
+        salesPackHint:
+            'How much goes into one jar or bottle. Sets how many batch labels a receipt from production prints; empty follows the family in the batch settings.',
         inventory: 'Inventory',
         planning: 'Planning and production',
         properties: 'Properties and safety',

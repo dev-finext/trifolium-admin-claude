@@ -15,6 +15,7 @@ export default {
         prep: 'מדבקת הכנה',
         item: 'מדבקת פריט',
         shipping: 'מדבקת משלוח',
+        production: 'מדבקת הוראת ייצור',
     },
 
     // STICKER_KIND_IDS
@@ -62,6 +63,9 @@ export default {
         phone: 'טלפון',
         courier: 'חברת שליחויות',
         tracking: 'מספר מעקב',
+        productionOrder: 'הוראת ייצור',
+        productionDate: 'תאריך ייצור',
+        dueOn: 'תאריך יעד',
     },
 
     editor: {
@@ -115,6 +119,10 @@ export default {
         ruleCapsule: ' (כולל {spare} ספייר לקפסולות)',
         ruleItem: 'לפי כמות המדבקות שנקבעה בכל שורת קליטה',
         ruleShipping: 'מדבקה אחת לחבילה',
+        ruleProduction:
+            'מדבקה אחת להוראה — מזהה את החומר במעבדה עד שיקבל אצווה ותוקף',
+        ruleProductionReceipt:
+            'לפי המכלים: הכמות שנקלטה חלקי מה שמכיל מכל אחד (הגדרות האצוות או אריזת המכירה בכרטיס הפריט), או מה שהודפס בקליטה',
         line: 'שורה {i} · {name} × {n}',
         print: 'הדפס {n} מדבקות',
         printed: 'נשלח להדפסה',
