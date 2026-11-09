@@ -76,6 +76,27 @@ const cols = computed(() => [
     { k: 'total', label: t('items.price.table.total'), nowrap: true },
 ]);
 
+/**
+ * What the field shows. A price stored as the result of a division carries a
+ * binary-floating-point tail — 0.7692308000000001 — that nobody typed and no
+ * ladder holds. It is trimmed to the precision a ladder keeps, on screen only:
+ * the value itself is untouched until somebody edits it, and what is typed is
+ * already held to that precision by `onInput`.
+ */
+const shown = computed(() => {
+    const raw = String(props.modelValue ?? '');
+    const decimals = raw.split('.')[1] || '';
+
+    if (!/^\d+(\.\d+)?$/.test(raw) || decimals.length <= LADDER_DECIMALS) {
+        return raw;
+    }
+
+    return Number(raw)
+        .toFixed(LADDER_DECIMALS)
+        .replace(/0+$/, '')
+        .replace(/\.$/, '');
+});
+
 /** Digits, one decimal point, and no more decimals than a ladder holds. */
 function onInput(event) {
     const [whole, ...rest] = event.target.value
@@ -143,7 +164,7 @@ function onInput(event) {
                 :id="`${uid}-price`"
                 class="a-input ip-input"
                 inputmode="decimal"
-                :value="modelValue"
+                :value="shown"
                 :aria-label="t('items.price.aria')"
                 @input="onInput"
             />

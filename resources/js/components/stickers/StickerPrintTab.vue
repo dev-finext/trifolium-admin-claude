@@ -233,11 +233,15 @@ async function print() {
         ok
             ? {
                   title: t('stickers.print.printed'),
-                  body: t('stickers.print.printedBody', {
-                      n: labels.value.length,
-                      template: t(`stickers.template.${view.src}`),
-                      ref: selected.value.value,
-                  }),
+                  body: t(
+                      'stickers.print.printedBody',
+                      {
+                          n: labels.value.length,
+                          template: t(`stickers.template.${view.src}`),
+                          ref: selected.value.value,
+                      },
+                      labels.value.length,
+                  ),
               }
             : { title: t('stickers.print.blocked'), bad: true },
     );
@@ -282,7 +286,13 @@ async function print() {
                         :disabled="!labels.length"
                         @click="print"
                     >
-                        {{ t('stickers.print.print', { n: labels.length }) }}
+                        {{
+                            t(
+                                'stickers.print.print',
+                                { n: labels.length },
+                                labels.length,
+                            )
+                        }}
                     </AButton>
                 </div>
             </div>
@@ -300,7 +310,9 @@ async function print() {
 
         <ACard
             v-if="template && labels.length"
-            :title="t('stickers.print.labels', { n: labels.length })"
+            :title="
+                t('stickers.print.labels', { n: labels.length }, labels.length)
+            "
             icon="tag"
         >
             <div class="pr-grid">
@@ -314,9 +326,11 @@ async function print() {
             </div>
             <p v-if="labels.length > shown.length" class="a-hint">
                 {{
-                    t('stickers.print.more', {
-                        n: labels.length - shown.length,
-                    })
+                    t(
+                        'stickers.print.more',
+                        { n: labels.length - shown.length },
+                        labels.length - shown.length,
+                    )
                 }}
             </p>
         </ACard>

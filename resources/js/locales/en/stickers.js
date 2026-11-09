@@ -77,7 +77,7 @@ export default {
         height: 'Height (mm)',
         mm: 'mm',
         elements: 'Label elements',
-        count: '{n} elements',
+        count: 'One element | {n} elements',
         add: 'Add',
         addField: 'Field',
         addText: 'Text',
@@ -97,7 +97,7 @@ export default {
         remove: 'Remove element',
         save: 'Save template',
         saved: 'Template saved',
-        savedBody: '{n} elements · {w}×{h} mm',
+        savedBody: 'One element · {w}×{h} mm | {n} elements · {w}×{h} mm',
         reset: 'Back to the default',
         resetDone: 'Template reset to the default',
         preview: 'Preview',
@@ -113,7 +113,7 @@ export default {
         source: 'What to print',
         pick: 'For',
         none: 'Nothing to print from this source',
-        labels: '{n} labels to print',
+        labels: 'One label to print | {n} labels to print',
         count: 'How the count is worked out',
         rulePrep: '{packages} units in the preparation → {n} labels',
         ruleCapsule: ' (including {spare} spare for capsules)',
@@ -124,11 +124,12 @@ export default {
         ruleProductionReceipt:
             'By the containers: the quantity received over what one container holds (batch settings, or the sales packaging on the item card), or what was printed at the receipt',
         line: 'Line {i} · {name} × {n}',
-        print: 'Print {n} labels',
+        print: 'Print one label | Print {n} labels',
         printed: 'Sent to print',
-        printedBody: '{n} labels · {template} · {ref}',
+        printedBody:
+            'One label · {template} · {ref} | {n} labels · {template} · {ref}',
         blocked: 'The browser blocked the print window',
-        more: '{n} more labels not shown in the preview',
+        more: 'One more label not shown in the preview | {n} more labels not shown in the preview',
         noLabels: 'No labels to print — the receipt set no label count',
     },
 
@@ -149,7 +150,7 @@ export default {
         removeBody:
             'The note “{text}” will be removed and never print on a label again.',
         removed: 'Note removed',
-        count: '{n} preparation types',
+        count: 'One preparation type | {n} preparation types',
         empty: 'The pool is empty',
     },
 

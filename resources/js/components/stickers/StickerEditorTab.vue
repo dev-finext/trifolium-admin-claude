@@ -222,11 +222,15 @@ async function save() {
     load();
     push({
         title: t('stickers.editor.saved'),
-        body: t('stickers.editor.savedBody', {
-            n: elements.length,
-            w: draft.size.w,
-            h: draft.size.h,
-        }),
+        body: t(
+            'stickers.editor.savedBody',
+            {
+                n: elements.length,
+                w: draft.size.w,
+                h: draft.size.h,
+            },
+            elements.length,
+        ),
     });
 }
 
@@ -305,7 +309,11 @@ async function reset() {
             >
                 <template #right>
                     <span class="t-sub">{{
-                        t('stickers.editor.count', { n: draft.elements.length })
+                        t(
+                            'stickers.editor.count',
+                            { n: draft.elements.length },
+                            draft.elements.length,
+                        )
                     }}</span>
                 </template>
 

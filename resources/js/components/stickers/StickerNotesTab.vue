@@ -204,9 +204,11 @@ const typeCount = (draft) =>
                             }}
                         </AChip>
                         <span class="t-sub">{{
-                            t('stickers.notes.count', {
-                                n: typeCount(draftOf(note)),
-                            })
+                            t(
+                                'stickers.notes.count',
+                                { n: typeCount(draftOf(note)) },
+                                typeCount(draftOf(note)),
+                            )
                         }}</span>
                         <div class="a-push nt-a">
                             <AButton
