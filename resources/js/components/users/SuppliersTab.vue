@@ -31,6 +31,7 @@ import {
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
+import { facetsOf } from '@/lib/facets';
 import {
     SUPPLIER_FILTER_FIELDS,
     SUPPLIER_FILTER_GROUPS,
@@ -79,6 +80,28 @@ const rows = computed(() => filters.rows);
 const { paged, total } = usePaged(rows, view);
 
 const dirty = computed(() => filters.dirty || Boolean(view.sq));
+
+/**
+ * A quick, always-visible way to filter by supplier category — the same
+ * `kind` field the drawer offers, without opening it. Order follows the
+ * pharmacy's own category list, not the count, so the row doesn't reshuffle
+ * as the reader clicks it.
+ */
+const kindFacets = computed(() => {
+    const byValue = new Map(
+        facetsOf(searched.value, SUPPLIER_FILTER_FIELDS, view, 'kind').map(
+            (facet) => [facet.value, facet],
+        ),
+    );
+
+    return system.supplierKindIds.map(
+        (id) => byValue.get(id) || { value: id, n: 0, selected: false },
+    );
+});
+
+function toggleKind(value) {
+    filters.toggle('kind', value);
+}
 
 /** The supplier the drawer is showing — the one whose code is in the address. */
 const openSupplier = computed(
@@ -208,6 +231,24 @@ function lockCards() {
                 </AButton>
             </FilterBar>
 
+            <div class="st-quick" role="group" :aria-label="t('systemContacts.suppliers.filter.field.kind')">
+                <span class="st-quick-label">
+                    {{ t('systemContacts.suppliers.filter.field.kind') }}
+                </span>
+                <button
+                    v-for="facet in kindFacets"
+                    :key="facet.value"
+                    type="button"
+                    class="st-quick-chip"
+                    :class="{ 'st-quick-chip--on': facet.selected }"
+                    :aria-pressed="facet.selected"
+                    @click="toggleKind(facet.value)"
+                >
+                    {{ t(`systemContacts.kind.${facet.value}`) }}
+                    <span class="st-quick-n">{{ facet.n }}</span>
+                </button>
+            </div>
+
             <FilterChips
                 :spec="spec"
                 :filters="view"
@@ -299,5 +340,53 @@ function lockCards() {
     gap: 12px;
     flex-wrap: wrap;
     margin: 18px 0 0;
+}
+
+.st-quick {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.st-quick-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--a-ink-3);
+}
+
+.st-quick-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--a-line);
+    background: var(--a-surface);
+    color: var(--a-ink-2);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.st-quick-chip:hover {
+    border-color: var(--a-accent);
+}
+
+.st-quick-chip--on {
+    border-color: var(--a-accent);
+    background: var(--a-tint);
+    color: var(--a-accent-2);
+}
+
+.st-quick-n {
+    font-size: 11.5px;
+    color: var(--a-ink-4);
+}
+
+.st-quick-chip--on .st-quick-n {
+    color: var(--a-accent-2);
 }
 </style>
