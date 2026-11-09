@@ -16,6 +16,7 @@ import {
     BUYING_SERIES,
     buyingFirstState,
     DEFAULT_WAREHOUSE,
+    groupDoneLines,
     leadTimeOf,
     liveOnly,
     lineFromItem,
@@ -355,11 +356,11 @@ export const useBuyingStore = defineStore('buying', () => {
     }
 
     /**
-     * The file went out, so the order went out.
+     * A copy of the sheet left the console — nothing more.
      *
-     * Exporting an order *is* sending it — the spreadsheet is what the supplier
-     * receives — so a draft becomes sent the moment it is exported, and an
-     * order already further along stays where it is.
+     * Exporting used to be what sent a draft order; it no longer is. A buyer
+     * takes a copy to work from at any stage, draft included, without that
+     * stage changing — sending is its own, deliberate move (`buying.move.sent`).
      */
     function markExported(id) {
         const list = listById(id);
@@ -370,11 +371,69 @@ export const useBuyingStore = defineStore('buying', () => {
 
         writeLog({ act: 'buying_export', ent: list.id, to: list.number });
 
-        if (list.kind === 'order' && list.state === 'draft') {
-            return setState(id, 'sent');
+        return save(list);
+    }
+
+    /**
+     * Push a request's sourced lines into one order per supplier.
+     *
+     * A request is one shopping list and an order is one supplier, so the
+     * split is read off the lines themselves — each already carries the
+     * supplier it was sourced from — rather than asked for again. Only lines
+     * ticked `done` move; everything else stays on the request for later.
+     */
+    function convertToOrders(id) {
+        const list = listById(id);
+
+        if (!list || list.kind !== 'request') {
+            return [];
         }
 
-        return save(list);
+        const groups = groupDoneLines(list, (code) =>
+            dataset.suppliers.find((one) => one.code === code)?.name ?? null,
+        );
+
+        if (!groups.length) {
+            return [];
+        }
+
+        const created = groups.map(({ supplierCode, supplierName, lines }) => {
+            const order = createList('order', {
+                supplierCode: supplierCode || '',
+                supplier: supplierName,
+            });
+
+            order.lines = lines.map((line) => ({
+                ...line,
+                done: false,
+                received: null,
+            }));
+            save(order);
+
+            writeLog({
+                act: 'buying_convert',
+                ent: order.id,
+                from: list.id,
+                to: order.number,
+            });
+
+            return order;
+        });
+
+        const moved = new Set(
+            groups.flatMap((group) => group.lines.map((line) => line.sku)),
+        );
+
+        list.lines = list.lines.filter((line) => !moved.has(line.sku));
+
+        writeLog({
+            act: 'buying_convert',
+            ent: list.id,
+            to: created.map((order) => order.number).join(', '),
+        });
+        save(list);
+
+        return created;
     }
 
     /**
@@ -463,6 +522,7 @@ export const useBuyingStore = defineStore('buying', () => {
         removeList,
         setState,
         markExported,
+        convertToOrders,
         receiveList,
     };
 });

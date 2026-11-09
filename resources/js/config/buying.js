@@ -65,11 +65,14 @@ export const BUYING_RAIL = {
 /**
  * The states a person may move this sheet to by hand.
  *
- * A draft has none: the only way out of a draft is to export it, because the
- * spreadsheet *is* the order and until it exists nothing has been sent. From
- * `sent` the two answers are the two things that can happen — the goods came,
- * or they did not. The way back from either is there for a mistake, and for an
- * order that fell through and was sent again.
+ * A draft is marked sent by hand, once it has a supplier and full quantities
+ * — exporting a copy of the sheet is a separate, always-available action and
+ * does not itself send anything (see `markExported`). From `sent` the only
+ * hand-set outcome is `failed`; `received` is never one of them — the goods
+ * are booked in through the real receiving flow (`receiveList`), the one
+ * place stock actually rises, and nothing short of that may claim they
+ * arrived. A `failed` order can be marked sent again — the same send,
+ * retried.
  */
 export function buyingMoves(list) {
     if (!list) {
@@ -82,9 +85,9 @@ export function buyingMoves(list) {
 
     return (
         {
-            draft: [],
-            sent: ['received', 'failed'],
-            received: ['sent'],
+            draft: ['sent'],
+            sent: ['failed'],
+            received: [],
             failed: ['sent'],
         }[list.state] || []
     );
@@ -226,6 +229,49 @@ export function missingQty(list) {
     }
 
     return (list.lines || []).filter((line) => !(Number(line.qty) > 0));
+}
+
+/**
+ * A request's sourced lines, split the way turning them into orders will
+ * split them — one group per supplier, read off the line itself rather than
+ * asked for again, because it was already captured when the line was added.
+ * A line with no supplier captured on it goes in its own group, last, with
+ * `supplierName: null` — it becomes an order with no supplier either, the
+ * same as any other new order.
+ *
+ * Read both by the confirmation dialog, so what the buyer is shown is
+ * exactly what happens, and by the split itself.
+ *
+ * @param {object} list
+ * @param {(code: string) => unknown} nameOf  A supplier's code to its name.
+ */
+export function groupDoneLines(list, nameOf) {
+    const ready = (list?.lines || []).filter((line) => line.done);
+    const groups = new Map();
+
+    for (const line of ready) {
+        const code = line.supplierCode || '';
+
+        if (!groups.has(code)) {
+            groups.set(code, []);
+        }
+
+        groups.get(code).push(line);
+    }
+
+    return [...groups.entries()]
+        .sort(([a], [b]) => {
+            if (a === b) {
+                return 0;
+            }
+
+            return a === '' ? 1 : b === '' ? -1 : 0;
+        })
+        .map(([supplierCode, lines]) => ({
+            supplierCode,
+            supplierName: supplierCode ? nameOf(supplierCode) : null,
+            lines,
+        }));
 }
 
 /**

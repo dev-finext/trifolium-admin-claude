@@ -351,6 +351,7 @@ export default {
         buying_export: 'ייצוא גיליון רכש',
         buying_state: 'שינוי מצב גיליון רכש',
         buying_receive: 'קבלת סחורה מול הזמנת רכש',
+        buying_convert: 'העברת שורות מבקשת רכש להזמנת רכש',
         production_create: 'פתיחת הוראת ייצור',
         production_issue: 'הוצאת הוראת ייצור',
         production_complete: 'השלמת הוראת ייצור',

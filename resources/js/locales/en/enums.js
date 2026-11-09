@@ -351,6 +351,7 @@ export default {
         buying_export: 'Buying sheet exported',
         buying_state: 'Buying sheet state changed',
         buying_receive: 'Goods received against a purchase order',
+        buying_convert: 'Lines moved from a purchase request to a purchase order',
         production_create: 'Production order opened',
         production_issue: 'Production order issued',
         production_complete: 'Production order completed',

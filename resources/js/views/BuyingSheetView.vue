@@ -9,16 +9,17 @@
 //
 // The page is laid out around what the buyer is going to do next rather than
 // around the record's fields. The band under the heading says where the sheet
-// stands, what the next step is, and carries the one button that takes it —
-// and the states themselves say the same thing:
+// stands, what the next step is, and carries the button that takes it — and
+// the states themselves say the same thing:
 //
-//   a draft is a draft because the file has not gone out. Exporting it IS
-//   sending it to the supplier, so the export is the only way out of a draft,
-//   and from there the two answers are the two things that can happen.
+//   a draft stays a draft until the buyer marks it sent by hand, once a
+//   supplier and full quantities are on it. Exporting a copy of the sheet is
+//   a separate, always-available action, draft included, and does not itself
+//   send anything — see `markExported` in the store for why.
 //
 // Booking goods in takes over the page body rather than opening over it, and
 // it is an address of its own (`?do=receive`) so it survives a reload.
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -32,6 +33,7 @@ import ASelect from '@/components/ui/ASelect.vue';
 import ASkeleton from '@/components/ui/ASkeleton.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import ChangeLogPanel from '@/components/ui/ChangeLogPanel.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import {
@@ -40,6 +42,7 @@ import {
     buyingMoves,
     buyingSheet,
     canReceive,
+    groupDoneLines,
     missingQty,
 } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -106,9 +109,15 @@ const needsSupplier = computed(
     () => rules.value.supplier && !sheet.value?.supplierCode,
 );
 
-/** Why the file cannot leave yet — the first answer, not all of them. */
-const blocker = computed(() => {
-    if (!sheet.value?.lines.length) {
+/** Nothing to export, and nothing to send — the one check both share. */
+const noLines = computed(() => !sheet.value?.lines.length);
+
+/** Is "mark as sent" one of the moves on offer right now? */
+const canSend = computed(() => moves.value.includes('sent'));
+
+/** Why the order cannot be marked sent yet — the first answer, not all of them. */
+const sendBlocker = computed(() => {
+    if (noLines.value) {
         return t('buying.blocked.noLines');
     }
 
@@ -232,6 +241,81 @@ const settled = computed(() =>
     ['received', 'failed', 'closed'].includes(sheet.value?.state),
 );
 
+// ---- request → order --------------------------------------------------------
+
+/** The request's sourced lines, grouped exactly as the split will group them. */
+const convertGroups = computed(() =>
+    sheet.value?.kind === 'request'
+        ? groupDoneLines(sheet.value, (code) =>
+              dataset.suppliers.find((one) => one.code === code)?.name ??
+              null,
+          )
+        : [],
+);
+
+const canConvert = computed(
+    () =>
+        sheet.value?.kind === 'request' &&
+        !settled.value &&
+        convertGroups.value.length > 0,
+);
+
+const convertOpen = ref(false);
+
+const convertEffects = computed(() => {
+    const out = convertGroups.value.map((group) =>
+        t(
+            'buying.convert.effect.group',
+            {
+                n: group.lines.length,
+                supplier: group.supplierName
+                    ? loc(group.supplierName)
+                    : t('buying.convert.effect.noSupplier'),
+            },
+            group.lines.length,
+        ),
+    );
+
+    const moving = convertGroups.value.reduce(
+        (sum, group) => sum + group.lines.length,
+        0,
+    );
+    const remaining = (sheet.value?.lines.length || 0) - moving;
+
+    out.push(
+        remaining > 0
+            ? t('buying.convert.effect.remain', { n: remaining }, remaining)
+            : t('buying.convert.effect.remainNone'),
+    );
+
+    return out;
+});
+
+function onConvert() {
+    const created = store.convertToOrders(sheet.value.id);
+
+    convertOpen.value = false;
+
+    if (!created.length) {
+        return;
+    }
+
+    push({
+        title: t(
+            'buying.convert.done',
+            { numbers: created.map((order) => order.number).join(', ') },
+            created.length,
+        ),
+    });
+
+    if (created.length === 1) {
+        router.push({
+            name: 'buyingSheet',
+            params: { kind: 'order', id: created[0].id },
+        });
+    }
+}
+
 // ---- out -------------------------------------------------------------------
 
 /** The codes a line stores, as the words a person reads. */
@@ -250,20 +334,13 @@ function exportSheet() {
         name: t(`buying.${one.kind}.one`),
         rows: buyingSheet(one, fmt),
     });
-    // Exporting is sending: the spreadsheet is what the supplier receives, and
-    // a draft has nothing else that could mean "it went out".
+    // A copy, nothing more — see `markExported`.
     store.markExported(one.id);
     push({
         title: t('buying.exported', { n: one.lines.length }, one.lines.length),
         body: file,
     });
 }
-
-const exportLabel = computed(() =>
-    sheet.value?.kind === 'order' && sheet.value.state === 'draft'
-        ? t('buying.exportAndSend')
-        : t('buying.export'),
-);
 
 function onReceived() {
     setMode(null);
@@ -353,31 +430,36 @@ function back() {
                         {{ t('buying.receive.open') }}
                     </AButton>
                     <AButton
+                        v-if="canConvert && !receiving"
+                        icon="send"
+                        @click="convertOpen = true"
+                    >
+                        {{ t('buying.convert.action') }}
+                    </AButton>
+                    <AButton
                         v-if="!receiving"
-                        :kind="
-                            kind === 'order' && sheet.state === 'draft'
-                                ? 'p'
-                                : ''
-                        "
                         icon="download"
-                        :disabled="Boolean(blocker)"
-                        :title="blocker"
+                        :disabled="noLines"
+                        :title="noLines ? t('buying.blocked.noLines') : ''"
                         @click="exportSheet"
                     >
-                        {{ exportLabel }}
+                        {{ t('buying.export') }}
                     </AButton>
                     <AButton
                         v-for="move in moves"
                         :key="move"
                         sm
+                        :kind="move === 'sent' && !sendBlocker ? 'p' : ''"
+                        :disabled="move === 'sent' && Boolean(sendBlocker)"
+                        :title="move === 'sent' ? sendBlocker : ''"
                         @click="store.setState(sheet.id, move)"
                     >
                         {{ t(`buying.move.${move}`) }}
                     </AButton>
                 </div>
 
-                <p v-if="blocker && !receiving" class="bs-blocked">
-                    {{ blocker }}
+                <p v-if="canSend && sendBlocker && !receiving" class="bs-blocked">
+                    {{ sendBlocker }}
                 </p>
 
                 <ul class="bs-facts">
@@ -430,6 +512,16 @@ function back() {
                     :ref-id="sheet.id"
                 />
             </template>
+
+            <ConfirmDialog
+                :open="convertOpen"
+                :title="t('buying.convert.title')"
+                :body="t('buying.convert.body')"
+                :effects="convertEffects"
+                :confirm-label="t('buying.convert.confirm')"
+                @confirm="onConvert"
+                @close="convertOpen = false"
+            />
         </template>
     </div>
 </template>

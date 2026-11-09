@@ -51,7 +51,7 @@ export default {
 
     supplier: 'Supplier',
     pickSupplier: 'Choose a supplier…',
-    needSupplier: 'Choose a supplier before exporting',
+    needSupplier: 'Choose a supplier before marking it sent',
     needQty: 'one line has no quantity | {n} lines have no quantity',
 
     // config/buying.js BUYING_STATES — two states for a request, four for an order
@@ -68,24 +68,38 @@ export default {
     sheetCount: 'no sheets | one sheet | {n} sheets',
 
     // A sheet's state comes from what happened to it, not from what somebody
-    // ticked: an order is a draft while the file has not gone out, exporting is
-    // the sending, and from there by hand — received, or failed.
+    // ticked: an order is a draft until it is marked sent by hand, received is
+    // set only by actually booking the goods in, and failed has no other way
+    // to be reached.
     step: {
         requestOpen:
             'The request is open. Add item codes, tick off what is sourced, and export when you need to.',
         requestClosed: 'The request is finished. It can be reopened.',
-        draft: 'A draft — the file has not gone out. Exporting to Excel is what the supplier receives, and the order is marked Sent after it.',
+        draft: 'A draft — not yet sent to the supplier. Export to Excel at any stage, and mark it Sent once it actually goes out.',
         sent: 'Sent to the supplier on {when}. When the goods arrive, book them in.',
         received: 'Received on {when}; stock was updated.',
-        failed: 'Marked as failed. If it was sent again, move it back to Sent.',
+        failed: 'Marked as failed. If it was sent again, mark it Sent.',
     },
 
     move: {
         open: 'Reopen',
         closed: 'Finish the request',
         sent: 'Mark as sent',
-        received: 'Mark as received',
         failed: 'Mark as failed',
+    },
+
+    convert: {
+        action: 'Move to a purchase order',
+        title: 'Move lines to a purchase order',
+        body: 'Every line ticked "done" moves onto a new purchase order, one per supplier. Lines that were not ticked stay on the request.',
+        confirm: 'Move',
+        effect: {
+            group: 'one line → {supplier} | {n} lines → {supplier}',
+            noSupplier: 'No supplier (chosen on the order)',
+            remain: 'one line stays on the request | {n} lines stay on the request',
+            remainNone: 'Every line moves — the request will be left empty',
+        },
+        done: 'Opened purchase order {numbers} | Opened {n} purchase orders: {numbers}',
     },
 
     // What the row carries is what the decision is made from; the rest of the
@@ -106,14 +120,13 @@ export default {
     },
 
     railAria: 'Sheet stages',
-    exportAndSend: 'Export to Excel and send',
     totalQty: '{n} in total',
     noSupplierYet: 'No supplier chosen yet',
     backToList: 'Back to the list',
     notFound: 'Sheet not found',
     notFoundSub: 'It may have been deleted, or the link may be wrong.',
     blocked: {
-        noLines: 'There are no lines to export',
+        noLines: 'There are no lines on the sheet',
     },
 
     receive: {

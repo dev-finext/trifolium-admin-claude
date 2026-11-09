@@ -18,8 +18,10 @@ import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import ANum from '@/components/ui/ANum.vue';
+import ATabs from '@/components/ui/ATabs.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { buyingStateTone } from '@/config';
+import { useUrlState } from '@/composables/useUrlState';
+import { BUYING_STATES, buyingStateTone } from '@/config';
 import { useBuyingStore } from '@/stores/buying';
 
 const props = defineProps({
@@ -33,6 +35,33 @@ const router = useRouter();
 const store = useBuyingStore();
 
 const sheets = computed(() => store.listsOf(props.kind));
+
+// A status filter only earns its keep on orders: a request has two states and
+// its own progress line already says where it stands (`buying.request.ticked`).
+// `PurchasingView` remounts this component on every tab switch (`:key="view.
+// tab"`), so a request never reads the order tab's `st`.
+const view = useUrlState({ st: '' });
+
+const statusTabs = computed(() => {
+    if (props.kind !== 'order') {
+        return [];
+    }
+
+    const all = sheets.value;
+
+    return [
+        { id: '', label: t('ui.all'), n: all.length },
+        ...BUYING_STATES.order.map((state) => ({
+            id: state.id,
+            label: t(`buying.state.${state.id}`),
+            n: all.filter((row) => row.state === state.id).length,
+        })),
+    ];
+});
+
+const filteredSheets = computed(() =>
+    view.st ? sheets.value.filter((row) => row.state === view.st) : sheets.value,
+);
 
 const openSheet = (id) =>
     router.push({
@@ -105,44 +134,51 @@ function progress(row) {
             :sub="t(`buying.${kind}.emptySub`)"
         />
 
-        <ADataTable
-            v-else
-            :cols="cols"
-            :rows="sheets"
-            row-key="id"
-            @row="openSheet($event.id)"
-        >
-            <template #cell-number="{ row }">
-                <ANum class="a-code">{{ row.number }}</ANum>
-            </template>
-            <template #cell-created="{ row }">
-                <ANum>{{ row.created?.stamp || '—' }}</ANum>
-            </template>
-            <template #cell-by="{ row }">{{
-                row.by ? loc(row.by) : '—'
-            }}</template>
-            <template #cell-supplier="{ row }">
-                <span :class="{ 'bt-nil': !row.supplier }">{{
-                    loc(row.supplier) || '—'
-                }}</span>
-            </template>
-            <template #cell-lines="{ row }">
-                <ANum>{{ row.lines.length }}</ANum>
-                <span v-if="progress(row)" class="bt-progress">{{
-                    progress(row)
-                }}</span>
-            </template>
-            <template #cell-state="{ row }">
-                <AChip :tone="buyingStateTone(row.state)">
-                    {{ t(`buying.state.${row.state}`) }}
-                </AChip>
-            </template>
-            <template #cell-note="{ row }">
-                <span :class="{ 'bt-nil': !row.note }">{{
-                    row.note || '—'
-                }}</span>
-            </template>
-        </ADataTable>
+        <template v-else>
+            <ATabs
+                v-if="kind === 'order'"
+                v-model="view.st"
+                :tabs="statusTabs"
+            />
+
+            <ADataTable
+                :cols="cols"
+                :rows="filteredSheets"
+                row-key="id"
+                @row="openSheet($event.id)"
+            >
+                <template #cell-number="{ row }">
+                    <ANum class="a-code">{{ row.number }}</ANum>
+                </template>
+                <template #cell-created="{ row }">
+                    <ANum>{{ row.created?.stamp || '—' }}</ANum>
+                </template>
+                <template #cell-by="{ row }">{{
+                    row.by ? loc(row.by) : '—'
+                }}</template>
+                <template #cell-supplier="{ row }">
+                    <span :class="{ 'bt-nil': !row.supplier }">{{
+                        loc(row.supplier) || '—'
+                    }}</span>
+                </template>
+                <template #cell-lines="{ row }">
+                    <ANum>{{ row.lines.length }}</ANum>
+                    <span v-if="progress(row)" class="bt-progress">{{
+                        progress(row)
+                    }}</span>
+                </template>
+                <template #cell-state="{ row }">
+                    <AChip :tone="buyingStateTone(row.state)">
+                        {{ t(`buying.state.${row.state}`) }}
+                    </AChip>
+                </template>
+                <template #cell-note="{ row }">
+                    <span :class="{ 'bt-nil': !row.note }">{{
+                        row.note || '—'
+                    }}</span>
+                </template>
+            </ADataTable>
+        </template>
     </div>
 </template>
 
