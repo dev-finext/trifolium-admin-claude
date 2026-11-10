@@ -150,7 +150,10 @@ function warehouseOf(item) {
  */
 function stockRowOf(item) {
     const kind = KIND_BY_FAMILY[item.family] || 'raw';
-    const onHand = Math.max(0, round2(item.onHand || 0));
+    // Grams of a herb held in kilos: SAP keeps three places, and so does the
+    // row — at two, 32.588 kg in batches read as 32.59 on hand and the count
+    // screen found 2 g "in no batch".
+    const onHand = Math.max(0, round3(item.onHand || 0));
     // SAP's foreign-name field holds the pinyin where a herb has one, and
     // repeats the botanical name where it does not. The difference is what
     // makes a herb part of the Chinese materia medica.
@@ -470,7 +473,7 @@ export function buildInventoryDocs({ receipts, production, stock }) {
                     qty: line.qty,
                     wh: row?.wh || DEFAULT_WAREHOUSE,
                     batch: line.batch,
-                    price: null,
+                    price: line.price ?? null,
                 };
             });
 
@@ -505,7 +508,15 @@ export function buildInventoryDocs({ receipts, production, stock }) {
                     qty: receipt.stockQty ?? receipt.qty,
                     wh: parent?.wh || DEFAULT_WAREHOUSE,
                     batch: receipt.batch,
-                    price: order.cost?.perUnit ?? null,
+                    // Per stock unit, like the quantity beside it — the
+                    // order's own cost is per the recipe's unit (ml, g), a
+                    // thousand times smaller than per litre or kilo.
+                    price:
+                        (receipt.stockQty ?? 0) > 0
+                            ? Math.round(
+                                  (receipt.cost / receipt.stockQty) * 100,
+                              ) / 100
+                            : null,
                 },
                 receipt.wasteBatch && {
                     sku: order.parentSku,

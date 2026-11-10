@@ -26,6 +26,7 @@ import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
+import { supplierSelectable } from '@/stores/system';
 
 /** One field to a row, label beside it: the form no longer needs the width. */
 const WIDTH = 860;
@@ -108,9 +109,11 @@ watch(
     { immediate: true },
 );
 
+// A suspended supplier is not offered for a new receipt — that is what its
+// suspension promises.
 const supplierOptions = computed(() => [
     { value: '', label: t('inventory.receipt.supplierPick') },
-    ...dataset.suppliers.map((row) => ({
+    ...dataset.suppliers.filter(supplierSelectable).map((row) => ({
         value: row.code,
         label: loc(row.name),
     })),
@@ -170,7 +173,11 @@ function onItem(line, sku) {
 }
 
 function onQty(line, value) {
-    line.qty = String(value).replace(/\D/g, '');
+    // A delivery in kg or litres carries a decimal point — stripping anything
+    // but digits turned 2.5 into 25 (as AdjustStockModal already learned).
+    line.qty = String(value)
+        .replace(/[^\d.]/g, '')
+        .replace(/(\..*)\./g, '$1');
 }
 
 function existingOptions(line) {
@@ -178,9 +185,13 @@ function existingOptions(line) {
         { value: '', label: t('inventory.receipt.existingNew') },
         ...inventory.openBatchesOf(line.sku).map((batch) => ({
             value: batch.id,
+            // The number the pharmacy calls it, not the record's key — the
+            // two differ whenever a supplier's code is shared.
             label: t('inventory.receipt.existingOption', {
-                id: batch.id,
-                expiry: fmtISO(batch.expiry),
+                id: inventory.batchNo(batch),
+                expiry: batch.expiry
+                    ? fmtISO(batch.expiry)
+                    : t('inventory.batches.noExpiry'),
             }),
         })),
     ];
@@ -378,7 +389,7 @@ async function save() {
                         <ItemPicker
                             :input-id="`${uid}-i${i}`"
                             :model-value="line.sku"
-                            :items="inventory.stock"
+                            :items="inventory.liveStock"
                             @update:model-value="onItem(line, $event)"
                         />
                     </div>
@@ -392,7 +403,7 @@ async function save() {
                         <AInput
                             :id="`${uid}-q${i}`"
                             :model-value="line.qty"
-                            inputmode="numeric"
+                            inputmode="decimal"
                             :aria-label="
                                 t('inventory.receipt.aria.qty', { n: i + 1 })
                             "

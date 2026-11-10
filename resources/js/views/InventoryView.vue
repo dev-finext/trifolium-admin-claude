@@ -155,6 +155,27 @@ function openDoc(id) {
 }
 
 /**
+ * Open whatever a reference names — the one place every drawer and tab sends a
+ * movement's document. The store says what the reference is (a goods receipt,
+ * an inventory document, a production run or a customer's order); a screen
+ * shows a reference it cannot resolve as text, so nothing reaches here that
+ * would open nothing.
+ */
+function openRef(ref) {
+    const kind = inventory.refKind(ref);
+
+    if (kind === 'receipt') {
+        openReceipt(String(ref));
+    } else if (kind === 'doc') {
+        openDoc(String(ref));
+    } else if (kind === 'production') {
+        openProduction(String(ref));
+    } else if (kind === 'order') {
+        router.push({ name: 'order', params: { id: String(ref) } });
+    }
+}
+
+/**
  * Jump to another tab carrying its filters with it. An empty value clears the
  * key instead of writing it, so the target tab opens with exactly the filters
  * named here and no leftovers.
@@ -218,7 +239,7 @@ function exportStock() {
     const n = downloadCsv(
         file,
         header,
-        inventory.stock.map((row) => [
+        inventory.liveStock.map((row) => [
             row.sku,
             loc(row.name),
             row.lat || '',
@@ -245,7 +266,7 @@ function exportStock() {
         :title="t('inventory.title')"
         :sub="
             t('inventory.sub', {
-                items: inventory.stock.length,
+                items: inventory.liveStock.length,
                 batches: inventory.liveBatches.length,
                 receipts: inventory.receipts.length,
             })
@@ -254,7 +275,7 @@ function exportStock() {
         <template #actions>
             <AButton
                 icon="download"
-                :disabled="!inventory.stock.length"
+                :disabled="!inventory.liveStock.length"
                 @click="exportStock"
             >
                 {{ t('inventory.action.export') }}
@@ -278,13 +299,12 @@ function exportStock() {
             v-else-if="view.tab === 'batches'"
             :selected="view.batch"
             @open-batch="openBatch"
-            @open-receipt="openReceipt"
+            @open-ref="openRef"
         />
         <MovementsTab
             v-else-if="view.tab === 'movements'"
             @open-batch="openBatch"
-            @open-production="openProduction"
-            @open-receipt="openReceipt"
+            @open-ref="openRef"
         />
     </template>
 
@@ -299,7 +319,7 @@ function exportStock() {
         @close="view.sku = ''"
         @adjust="adjusting = $event"
         @open-batch="openBatch"
-        @open-doc="openDoc"
+        @open-ref="openRef"
         @open-item="openItemCard"
     />
     <DocumentDrawer
@@ -307,6 +327,7 @@ function exportStock() {
         @close="view.doc = ''"
         @open-batch="openBatch"
         @open-item="openItemBatches"
+        @open-ref="openRef"
     />
     <ReceiptDrawer
         :receipt="shownReceipt"
@@ -316,9 +337,8 @@ function exportStock() {
     <BatchTraceDrawer
         :batch="tracedBatch"
         @close="view.batch = ''"
-        @open-receipt="openReceipt"
         @open-batch="openBatch"
-        @open-production="openProduction"
+        @open-ref="openRef"
         @open-report="openReport"
     />
 </template>

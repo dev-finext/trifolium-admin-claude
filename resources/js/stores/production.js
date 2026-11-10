@@ -116,9 +116,20 @@ export const useProductionStore = defineStore('production', () => {
     const orderById = (id) =>
         orders.value.find((order) => order.id === id) || null;
 
-    /** Runs of one parent item, newest first. */
+    /** An order's own number, for putting runs in the order they were opened. */
+    const serialOf = (order) =>
+        Number(String(order.id).match(/(\d+)\s*$/)?.[1]) || 0;
+
+    /**
+     * Runs of one parent item, newest first. Sorted here: the fixture and the
+     * database both hand the orders over oldest first, and a run opened this
+     * session is put at the front — so without this the item card's "last
+     * runs" would change meaning after a reload.
+     */
     const ordersOf = (sku) =>
-        orders.value.filter((order) => order.parentSku === sku);
+        orders.value
+            .filter((order) => order.parentSku === sku)
+            .sort((a, b) => serialOf(b) - serialOf(a));
 
     /** Runs a batch of a component went into — the forward trace. */
     const ordersUsingBatch = (batchId) =>
@@ -128,10 +139,15 @@ export const useProductionStore = defineStore('production', () => {
             ),
         );
 
-    /** The last unit cost a run of this item came out at. */
+    /** The last unit cost a run of this item came out at — the latest finished. */
     const lastUnitCost = (sku) =>
-        ordersOf(sku).find((order) => order.cost?.perUnit != null)?.cost
-            ?.perUnit ?? null;
+        ordersOf(sku)
+            .filter((order) => order.cost?.perUnit != null)
+            .sort((a, b) =>
+                `${b.completedOn?.iso || ''}${b.completedOn?.time || ''}`.localeCompare(
+                    `${a.completedOn?.iso || ''}${a.completedOn?.time || ''}`,
+                ),
+            )[0]?.cost?.perUnit ?? null;
 
     /**
      * How many full runs of a recipe the components on hand allow — the
@@ -218,8 +234,11 @@ export const useProductionStore = defineStore('production', () => {
 
                         const take = Math.min(batch.remaining, left);
 
-                        picks.push({ batch: batch.id, qty: round2(take) });
-                        left = round2(left - take);
+                        // Four places, not two: a pick rounded to 10 g
+                        // leaves the batches and the stock row a hair apart
+                        // after the run draws it.
+                        picks.push({ batch: batch.id, qty: round4(take) });
+                        left = round4(left - take);
                     });
             }
 
@@ -231,7 +250,7 @@ export const useProductionStore = defineStore('production', () => {
                 stockUnit: row?.unit || component.uom,
                 issue: component.issue,
                 picks,
-                short: left > 0 ? round2(left) : 0,
+                short: left > 0 ? round4(left) : 0,
                 actualQty: null,
                 consumedQty: 0,
             };
@@ -264,28 +283,68 @@ export const useProductionStore = defineStore('production', () => {
     }
 
     /**
-     * Move a share of a run's reservation on or off its components' stock
-     * rows: the whole of it when the order is issued, each receipt's share as
-     * it comes back, and whatever is left when the order completes or is
-     * cancelled.
+     * What a component holds reserved, in its stock row's unit. An order
+     * issued before the amount was kept on the component reads it from the
+     * plan, as it was reserved then.
      */
-    function reserve(order, share) {
+    const reservedOf = (component, row) =>
+        component.reserved ??
+        round4(
+            toStockUnits(
+                component.plannedQty,
+                component.uom,
+                row?.unit || component.stockUnit,
+            ),
+        );
+
+    /** What a component has already handed back, in the same unit. */
+    const releasedOf = (order, component, row) =>
+        component.released ??
+        round4(reservedOf(component, row) * (Number(order.drawn) || 0));
+
+    /**
+     * Reserve a run's components on their stock rows, and remember on each
+     * component exactly how much — so what is handed back later, in parts or
+     * all at once, adds up to what was taken and not to a rounding of it.
+     */
+    function reserveRun(order) {
         order.components.forEach((component) => {
             const row = inventory.itemBySku(component.sku);
 
+            component.reserved = reservedOf(
+                { ...component, reserved: null },
+                row,
+            );
+            component.released = 0;
+
             if (row) {
-                row.alloc = Math.max(
-                    0,
-                    round2(
-                        row.alloc +
-                            share *
-                                toStockUnits(
-                                    component.plannedQty,
-                                    component.uom,
-                                    row.unit,
-                                ),
-                    ),
-                );
+                row.alloc = round4(row.alloc + component.reserved);
+                inventory.syncRow(row);
+            }
+        });
+    }
+
+    /**
+     * Hand back a share of each component's reservation as part of the run
+     * comes back — or, with no share, everything still held, when the run
+     * completes or is cancelled.
+     */
+    function release(order, share = null) {
+        order.components.forEach((component) => {
+            const row = inventory.itemBySku(component.sku);
+            const reserved = reservedOf(component, row);
+            const released = releasedOf(order, component, row);
+            const held = Math.max(0, round4(reserved - released));
+            const amount =
+                share === null
+                    ? held
+                    : Math.min(held, round4(reserved * share));
+
+            component.reserved = reserved;
+            component.released = round4(released + amount);
+
+            if (row && amount > 0) {
+                row.alloc = Math.max(0, round4(row.alloc - amount));
                 inventory.syncRow(row);
             }
         });
@@ -309,7 +368,15 @@ export const useProductionStore = defineStore('production', () => {
         }
 
         const rows = bag('productionOrders');
-        const dueDays = productionDueDays(items.prepTypeById(bom.prepType));
+        const byRule = dueOnFor(bom);
+        // A form that sent the field decides, even when it cleared it.
+        const dueOn = form.dueOn !== undefined ? form.dueOn || null : byRule;
+        // The figure the date came from — only while the date is the one it
+        // gives. A date the person chose is theirs, and says so.
+        const dueDays =
+            dueOn && dueOn === byRule
+                ? productionDueDays(items.prepTypeById(bom.prepType))
+                : null;
         const order = {
             id: nextSerial(
                 rows.map((row) => row.id),
@@ -326,9 +393,7 @@ export const useProductionStore = defineStore('production', () => {
             components: planComponents(bom, plannedQty, form.overrides),
             // תאריך יעד — the preparation's own figure, or the date the person
             // opening the order chose over it.
-            // A form that sent the field decides, even when it cleared it.
-            dueOn:
-                form.dueOn !== undefined ? form.dueOn || null : dueOnFor(bom),
+            dueOn,
             dueDays,
             // A note for this run only — "שלא נגררות להוראה הבאה" — and the
             // standing ones the item card carries, copied as they read today.
@@ -408,6 +473,8 @@ export const useProductionStore = defineStore('production', () => {
             to: dueOn || null,
         });
         order.dueOn = dueOn || null;
+        // Moved by hand: no longer the preparation's figure.
+        order.dueDays = null;
         await persist(`production-orders/${id}`, order, 'PUT');
 
         return order;
@@ -423,7 +490,7 @@ export const useProductionStore = defineStore('production', () => {
 
         order.state = 'issued';
         order.issuedOn = moment();
-        reserve(order, 1);
+        reserveRun(order);
         writeLog({
             act: 'production_issue',
             entType: 'production_order',
@@ -456,7 +523,10 @@ export const useProductionStore = defineStore('production', () => {
             return null;
         }
 
-        const final = form.final !== false;
+        // Once every part of the run has been drawn, whatever comes back is
+        // the last of it — a "part" of nothing would open a batch that drew
+        // nothing and cost nothing.
+        const final = form.final !== false || (Number(order.drawn) || 0) >= 1;
         const bom = items.bomById(order.bomId);
         const item = items.itemBySku(order.parentSku);
         const parent = inventory.itemBySku(order.parentSku);
@@ -505,9 +575,9 @@ export const useProductionStore = defineStore('production', () => {
                       : 0,
               );
 
-        // Release this share of the reservation, then take the real quantities
-        // out.
-        reserve(order, -share);
+        // Hand back this share of the reservation — or all of what is still
+        // held, on the last receipt — then take the real quantities out.
+        release(order, final ? null : share);
 
         // What the run took off the shelf, for the goods issue it posts.
         const issued = [];
@@ -515,36 +585,50 @@ export const useProductionStore = defineStore('production', () => {
 
         order.components.forEach((component) => {
             const row = inventory.itemBySku(component.sku);
+            const unit = row?.unit || component.stockUnit;
+            const toStock = (qty) =>
+                round4(toStockUnits(qty, component.uom, unit));
             const consumed = Number(component.consumedQty) || 0;
+            const consumedStock = component.consumedStock ?? toStock(consumed);
+            // A counted figure is a number the operator typed; an empty field
+            // is no figure, and the recipe's stands.
+            const typed = form.actual?.[component.sku];
             const counted =
                 final &&
                 component.issue === 'manual' &&
-                form.actual?.[component.sku] !== undefined &&
-                form.actual[component.sku] !== ''
-                    ? round2(Number(form.actual[component.sku]))
+                typed !== undefined &&
+                typed !== null &&
+                typed !== '' &&
+                Number.isFinite(Number(typed))
+                    ? round2(Number(typed))
                     : null;
+            const target = counted ?? component.plannedQty;
+            // In the recipe's unit, for the record, and in the stock unit, for
+            // the shelf. The last receipt takes exactly what is left to reach
+            // the run's figure — the recipe's, or the one counted — so the
+            // parts add up to it and not to a rounding of it.
             const take = final
-                ? round2(
-                      Math.max(0, (counted ?? component.plannedQty) - consumed),
-                  )
-                : round2(component.plannedQty * share);
+                ? round4(Math.max(0, target - consumed))
+                : round4(component.plannedQty * share);
+            const takeStock = final
+                ? Math.max(0, round4(toStock(target) - consumedStock))
+                : toStock(component.plannedQty * share);
             const unitCost = componentUnitCost(items.itemBySku(component.sku));
-            // A part draws its share off the batches in the order the plan
-            // listed them; the last receipt empties what the plan set aside.
-            let fromBatches = final
-                ? Infinity
-                : toStockUnits(take, component.uom, component.stockUnit);
+            // The batches give what the shelf gives, in the order the plan
+            // listed them; what the plan set aside and the run did not use
+            // stays in its batch.
+            let fromBatches = takeStock;
 
             component.picks.forEach((pick) => {
-                const open = round2((pick.qty || 0) - (pick.taken || 0));
-                const qty = round2(Math.min(open, fromBatches));
+                const open = round4((pick.qty || 0) - (pick.taken || 0));
+                const qty = round4(Math.min(open, fromBatches));
 
                 if (qty <= 0) {
                     return;
                 }
 
-                fromBatches = round2(fromBatches - qty);
-                pick.taken = round2((pick.taken || 0) + qty);
+                fromBatches = round4(fromBatches - qty);
+                pick.taken = round4((pick.taken || 0) + qty);
 
                 const batch = inventory.batchById(pick.batch);
 
@@ -562,7 +646,7 @@ export const useProductionStore = defineStore('production', () => {
                     price: unitCost || null,
                 });
 
-                batch.remaining = Math.max(0, round2(batch.remaining - qty));
+                batch.remaining = Math.max(0, round4(batch.remaining - qty));
                 inventory.syncBatch(batch);
                 inventory.writeMovement({
                     id: `mv-prod-out-${order.id}-${n}-${batch.id}`,
@@ -580,20 +664,15 @@ export const useProductionStore = defineStore('production', () => {
                 cost += unitCost * qty;
             });
 
-            component.consumedQty = round2(consumed + take);
+            component.consumedQty = round4(consumed + take);
+            component.consumedStock = round4(consumedStock + takeStock);
 
             if (final) {
-                component.actualQty = component.consumedQty;
+                component.actualQty = round2(component.consumedQty);
             }
 
-            if (row && take > 0) {
-                row.onHand = Math.max(
-                    0,
-                    round2(
-                        row.onHand -
-                            toStockUnits(take, component.uom, row.unit),
-                    ),
-                );
+            if (row && takeStock > 0) {
+                row.onHand = Math.max(0, round4(row.onHand - takeStock));
                 inventory.syncRow(row);
             }
         });
@@ -673,6 +752,16 @@ export const useProductionStore = defineStore('production', () => {
                 })),
                 by,
             });
+        } else if (previous && cost > 0) {
+            // The last of a run that brought nothing more back still drew
+            // components, and what they cost belongs to what the run did make:
+            // the batch the previous part opened carries it, so its unit cost
+            // and the order's agree.
+            const qty = Number(previous.qty) || 0;
+
+            previous.unitCost = qty
+                ? round2(((previous.unitCost || 0) * qty + cost) / qty)
+                : previous.unitCost;
         }
 
         if (output) {
@@ -873,15 +962,14 @@ export const useProductionStore = defineStore('production', () => {
         }
 
         if (order.state === 'issued') {
-            reserve(
-                order,
-                -Math.max(0, round4(1 - (Number(order.drawn) || 0))),
-            );
+            release(order);
         }
 
-        if (order.receipts?.length) {
+        const short = Boolean(order.receipts?.length);
+
+        if (short) {
             order.components.forEach((component) => {
-                component.actualQty = component.consumedQty || 0;
+                component.actualQty = round2(component.consumedQty || 0);
             });
             order.state = 'completed';
             order.completedOn = moment();
@@ -893,7 +981,7 @@ export const useProductionStore = defineStore('production', () => {
 
         order.reason = reason.trim() || null;
         writeLog({
-            act: 'production_cancel',
+            act: short ? 'production_close_short' : 'production_cancel',
             entType: 'production_order',
             ent: order.id,
             to: order.reason,

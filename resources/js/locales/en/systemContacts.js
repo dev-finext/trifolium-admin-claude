@@ -179,7 +179,7 @@ export default {
             papers: 'Documents & payment',
         },
         items: {
-            note: 'The items this supplier is the standing supplier for, or that were last bought from it — from the item card, not a separate list.',
+            note: 'The items in the console catalog that name this supplier as their standing supplier — from the item card, not a separate list. SAP’s count also includes item cards that are not in the catalog.',
             empty: 'No items linked to this supplier',
             col: {
                 code: 'Code',
@@ -190,16 +190,16 @@ export default {
         },
         purchasing: {
             open: 'Open orders',
-            closed: 'Completed or cancelled orders',
+            closed: 'Received or failed orders',
             empty: 'No purchase orders for this supplier',
             openIt: 'Open',
             col: {
                 id: 'Order',
                 state: 'State',
                 lines: 'Lines',
-                value: 'Value',
-                eta: 'ETA',
                 created: 'Created',
+                sent: 'Sent',
+                received: 'Received',
             },
         },
         card: {
@@ -237,6 +237,7 @@ export default {
             tradeDisc: 'Trade discount',
             minOrder: 'Minimum order',
             lead: 'Average lead time',
+            leadUnit: 'Lead time unit',
             coa: 'COA with every batch',
             bank: 'Bank',
             branch: 'Branch',
@@ -248,6 +249,7 @@ export default {
         },
         value: {
             skus: 'One item in the catalog | {n} items in the catalog',
+            skusSplit: '{here} in the console catalog · {sap} in SAP',
             serviceNoStock: 'A service — no stock items',
             coaRequired: 'Required and received',
             coaNotRequired: 'Not required',
@@ -269,6 +271,7 @@ export default {
             expired: 'Expired',
             missing: 'Missing',
             exemptUntil: 'Exempt from withholding · valid until {date}',
+            rateUntil: 'Withhold {rate}% at source · valid until {date}',
             withholdRate: 'Withhold {rate}% at source — no valid certificate',
             coaEveryReceipt:
                 'Received with the delivery note on every goods receipt',

@@ -9,6 +9,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import RefLink from '@/components/inventory/RefLink.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
@@ -31,7 +32,7 @@ const emit = defineEmits([
     'close',
     'adjust',
     'open-batch',
-    'open-doc',
+    'open-ref',
     'open-item',
 ]);
 
@@ -88,11 +89,13 @@ const warehouseCols = computed(() => [
     { k: 'max', label: t('items.card.maxLevel'), nowrap: true },
 ]);
 
-/** The batches still holding something, nearest expiry first. */
+/**
+ * The batches still holding something, nearest expiry first — expired ones
+ * included, since they are on the shelf until written off. The same list the
+ * stock table counts, so the two figures agree.
+ */
 const batches = computed(() =>
-    props.row
-        ? inventory.openBatchesOf(props.row.sku, { allowWaste: true })
-        : [],
+    props.row ? inventory.heldBatchesOf(props.row.sku) : [],
 );
 
 const batchCols = computed(() => [
@@ -237,7 +240,12 @@ const movementCols = computed(() => [
                             {{ unit }}
                         </template>
                         <template #cell-expiry="{ row: batch }">
-                            {{ fmtISO(batch.expiry) }}
+                            <template v-if="batch.expiry">{{
+                                fmtISO(batch.expiry)
+                            }}</template>
+                            <span v-else class="t-sub">{{
+                                t('inventory.batches.noExpiry')
+                            }}</span>
                         </template>
                         <template #cell-state="{ row: batch }">
                             <AChip
@@ -300,15 +308,10 @@ const movementCols = computed(() => [
                             <span v-else class="t-sub">—</span>
                         </template>
                         <template #cell-ref="{ row: move }">
-                            <button
-                                v-if="move.ref"
-                                type="button"
-                                class="a-linkish"
-                                @click="emit('open-doc', move.ref)"
-                            >
-                                <span class="a-code a-tag">{{ move.ref }}</span>
-                            </button>
-                            <span v-else class="t-sub">—</span>
+                            <RefLink
+                                :id="move.ref"
+                                @open="emit('open-ref', $event)"
+                            />
                         </template>
                     </ADataTable>
                     <p v-else class="t-sub">

@@ -62,6 +62,7 @@ const OPERATORS = [
 ];
 
 const round2 = (value) => Math.round(value * 100) / 100;
+const round4 = (value) => Math.round(value * 10000) / 10000;
 const round3 = (value) => Math.round(value * 1000) / 1000;
 
 /**
@@ -114,11 +115,11 @@ function planPicks(batches, sku, qty) {
 
             const take = Math.min(batch.remaining, left);
 
-            picks.push({ batch: batch.id, qty: round2(take) });
-            left = round2(left - take);
+            picks.push({ batch: batch.id, qty: round4(take) });
+            left = round4(left - take);
         });
 
-    return { picks, short: left > 0 ? round2(left) : 0 };
+    return { picks, short: left > 0 ? round4(left) : 0 };
 }
 
 function syncRow(row) {
@@ -146,24 +147,37 @@ function drawComponents({
     const drew = [];
     let cost = 0;
 
+    // The same arithmetic as the store's receiveOrder(): exact amounts in the
+    // stock unit, the last receipt taking exactly what is left.
     components.forEach((component) => {
         const row = stockBySku.get(component.sku) || null;
-        const take = round2(component.plannedQty * share);
-        let fromBatches =
+        const unit = row?.unit || component.stockUnit;
+        const toStock = (qty) => round4(toStockUnits(qty, component.uom, unit));
+        const consumed = component.consumedQty || 0;
+        const consumedStock = component.consumedStock || 0;
+        const take =
             share >= 1
-                ? Infinity
-                : toStockUnits(take, component.uom, component.stockUnit);
+                ? round4(Math.max(0, component.plannedQty - consumed))
+                : round4(component.plannedQty * share);
+        const takeStock =
+            share >= 1
+                ? Math.max(
+                      0,
+                      round4(toStock(component.plannedQty) - consumedStock),
+                  )
+                : toStock(component.plannedQty * share);
+        let fromBatches = takeStock;
 
         component.picks.forEach((pick) => {
-            const open = round2(pick.qty - (pick.taken || 0));
-            const qty = round2(Math.min(open, fromBatches));
+            const open = round4(pick.qty - (pick.taken || 0));
+            const qty = round4(Math.min(open, fromBatches));
 
             if (qty <= 0) {
                 return;
             }
 
-            fromBatches = round2(fromBatches - qty);
-            pick.taken = round2((pick.taken || 0) + qty);
+            fromBatches = round4(fromBatches - qty);
+            pick.taken = round4((pick.taken || 0) + qty);
 
             const batch = batches.find((one) => one.id === pick.batch);
 
@@ -171,7 +185,7 @@ function drawComponents({
                 return;
             }
 
-            batch.remaining = round2(batch.remaining - qty);
+            batch.remaining = round4(batch.remaining - qty);
 
             if (batch.remaining <= 0) {
                 batch.remaining = 0;
@@ -191,19 +205,20 @@ function drawComponents({
                 when,
                 by,
             });
-            drew.push({ sku: component.sku, batch: batch.id, qty });
+            drew.push({
+                sku: component.sku,
+                batch: batch.id,
+                qty,
+                price: unitCostOf(component.sku) || null,
+            });
             cost += unitCostOf(component.sku) * qty;
         });
 
-        component.consumedQty = round2((component.consumedQty || 0) + take);
+        component.consumedQty = round4(consumed + take);
+        component.consumedStock = round4(consumedStock + takeStock);
 
         if (row) {
-            row.onHand = Math.max(
-                0,
-                round2(
-                    row.onHand - toStockUnits(take, component.uom, row.unit),
-                ),
-            );
+            row.onHand = Math.max(0, round4(row.onHand - takeStock));
             syncRow(row);
         }
     });
@@ -348,19 +363,23 @@ export function buildProductionOrders({
             return order;
         }
 
-        // Issued: the components are spoken for until the run comes back.
+        // Issued: the components are spoken for until the run comes back —
+        // and each remembers exactly how much, as the store's reserveRun()
+        // does, so what is handed back later adds up to it.
         components.forEach((component) => {
             const row = stockBySku.get(component.sku);
 
+            component.reserved = round4(
+                toStockUnits(
+                    component.plannedQty,
+                    component.uom,
+                    row?.unit || component.stockUnit,
+                ),
+            );
+            component.released = 0;
+
             if (row) {
-                row.alloc = round2(
-                    row.alloc +
-                        toStockUnits(
-                            component.plannedQty,
-                            component.uom,
-                            row.unit,
-                        ),
-                );
+                row.alloc = round4(row.alloc + component.reserved);
                 syncRow(row);
             }
         });
@@ -393,23 +412,18 @@ export function buildProductionOrders({
         // Calendar months, as the store counts them on a live receipt.
         const expiresOn = addMonths(when.iso, months);
 
-        // Release this share of the reservation.
+        // Hand back this share of the reservation (all of it on a full run).
         components.forEach((component) => {
             const row = stockBySku.get(component.sku);
+            const amount =
+                share >= 1
+                    ? round4(component.reserved - component.released)
+                    : round4(component.reserved * share);
+
+            component.released = round4(component.released + amount);
 
             if (row) {
-                row.alloc = Math.max(
-                    0,
-                    round2(
-                        row.alloc -
-                            share *
-                                toStockUnits(
-                                    component.plannedQty,
-                                    component.uom,
-                                    row.unit,
-                                ),
-                    ),
-                );
+                row.alloc = Math.max(0, round4(row.alloc - amount));
                 syncRow(row);
             }
         });
@@ -511,6 +525,9 @@ export function buildProductionOrders({
                 source: 'waste',
                 qty: wasteStock,
                 remaining: wasteStock,
+                // A waste batch reads as waste whatever its dates, as the
+                // store's syncBatch() keeps it.
+                state: 'waste',
                 waste: true,
                 unitCost: null,
                 components: null,

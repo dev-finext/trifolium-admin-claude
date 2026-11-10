@@ -55,7 +55,19 @@ const packOf = (family) =>
         uom: draftUnit[family] || 'g',
     };
 
-async function setPack(family, patch) {
+/**
+ * Put a box back to what is stored. A typed value that saves nothing — "0" on
+ * an empty family, "300.0" over 300 — would otherwise stay on screen as if it
+ * had been kept, because the stored value did not change and so nothing
+ * re-renders the box.
+ */
+function showStored(input, value) {
+    if (input) {
+        input.value = value ?? '';
+    }
+}
+
+async function setPack(family, patch, input = null) {
     const was = packOf(family);
     const next = { ...was, ...patch };
     const qty = Number(next.qty) > 0 ? Number(next.qty) : null;
@@ -66,6 +78,8 @@ async function setPack(family, patch) {
 
         // Nothing saved, so nothing to clear.
         if (!was.qty) {
+            showStored(input, was.qty);
+
             return;
         }
     }
@@ -74,6 +88,8 @@ async function setPack(family, patch) {
         (was.qty || null) === (value?.qty ?? null) &&
         (!value || was.uom === value.uom)
     ) {
+        showStored(input, was.qty);
+
         return;
     }
 
@@ -89,11 +105,17 @@ async function setPack(family, patch) {
     });
 }
 
-async function setExpiry(family, value) {
+async function setExpiry(family, input) {
+    const value = input.value;
     const months =
         value === '' ? null : Math.max(0, Math.round(Number(value))) || null;
+    const stored = settings.value?.defaultExpiryMonths?.[family] ?? null;
 
-    if ((settings.value?.defaultExpiryMonths?.[family] ?? null) === months) {
+    // 24.4 over 24, or 0 over nothing: no change, so the box shows the
+    // stored figure again rather than what was typed.
+    if (stored === months) {
+        showStored(input, stored);
+
         return;
     }
 
@@ -165,7 +187,7 @@ async function setExpiry(family, value) {
                             "
                             :placeholder="t('inventory.settings.none')"
                             :aria-label="t(`items.family.${family}`)"
-                            @change="setExpiry(family, $event.target.value)"
+                            @change="setExpiry(family, $event.target)"
                         />
                         <span class="t-sub">{{
                             t('inventory.settings.months')
@@ -199,7 +221,11 @@ async function setExpiry(family, value) {
                                 })
                             "
                             @change="
-                                setPack(family, { qty: $event.target.value })
+                                setPack(
+                                    family,
+                                    { qty: $event.target.value },
+                                    $event.target,
+                                )
                             "
                         />
                         <ASelect

@@ -9,6 +9,7 @@
 // close several — never off the order, and a supplier card's `open` and
 // `spend12` are read off that chain, never typed.
 import { PAYMENT_TERM, SETTINGS } from '@/config';
+import { supplierMoney } from '@/config/suppliers';
 import { at, chance, pickFrom, spread } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
 import { isoDaysAgo } from '@/lib/dates';
@@ -650,40 +651,10 @@ export function buildSupplierFiles(invoices, payments) {
     return rows;
 }
 
-/** Rough conversion into shekels for a card figure, whatever the invoice currency. */
-const inIls = (amount, currency) => amount * (TO_ILS[currency] || 1);
-
-/**
- * What a supplier's chain says about him: everything billed in the last twelve
- * months and everything still owed. The same two figures the store recomputes
- * after a payment, written the same way.
- */
-export function supplierMoney(code, invoices) {
-    const own = invoices.filter((invoice) => invoice.supplierCode === code);
-
-    return {
-        spend12: Math.round(
-            own
-                .filter((invoice) => invoice.date.daysAgo <= 365)
-                .reduce(
-                    (sum, invoice) =>
-                        sum + inIls(invoice.total, invoice.currency),
-                    0,
-                ),
-        ),
-        open: round2(
-            own.reduce(
-                (sum, invoice) =>
-                    sum +
-                    inIls(
-                        Math.max(0, invoice.total - invoice.paid),
-                        invoice.currency,
-                    ),
-                0,
-            ),
-        ),
-    };
-}
+// The money figures on a supplier card — billed in twelve months, still owed —
+// are config/suppliers.js `supplierMoney`, the one formula the store recomputes
+// after a payment too.
+export { supplierMoney };
 
 /**
  * Write the derived money figures onto each supplier card, so the card and the

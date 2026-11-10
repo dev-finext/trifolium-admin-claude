@@ -17,6 +17,11 @@
 //   a separate, always-available action, draft included, and does not itself
 //   send anything — see `markExported` in the store for why.
 //
+//   a sent order stays sent while its goods arrive in parts, and is received
+//   when the last of them is booked in — or when the buyer closes the rest
+//   that is not coming. A draft nothing happened to, or an open request, can
+//   be removed; anything sent stays on record.
+//
 // Booking goods in takes over the page body rather than opening over it, and
 // it is an address of its own (`?do=receive`) so it survives a reload.
 import { computed, ref, watch } from 'vue';
@@ -42,7 +47,8 @@ import {
     buyingMoves,
     buyingSheet,
     canReceive,
-    groupDoneLines,
+    hasReceipts,
+    lineOutstanding,
     missingQty,
 } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -50,6 +56,7 @@ import { num } from '@/lib/money';
 import { downloadXlsx } from '@/lib/xlsx';
 import { useBuyingStore } from '@/stores/buying';
 import { useDatasetStore } from '@/stores/dataset';
+import { supplierSelectable } from '@/stores/system';
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -150,6 +157,16 @@ const nextStep = computed(() => {
             : t('buying.step.requestOpen');
     }
 
+    if (one.state === 'sent' && hasReceipts(one)) {
+        return t('buying.step.partial', { when: one.received?.stamp || '' });
+    }
+
+    if (one.state === 'received' && one.closedShort) {
+        return t('buying.step.receivedShort', {
+            when: one.received?.stamp || '',
+        });
+    }
+
     return {
         draft: t('buying.step.draft'),
         sent: t('buying.step.sent', { when: one.sent?.stamp || '' }),
@@ -175,8 +192,13 @@ const ticked = computed(
 
 const arrived = computed(
     () =>
-        (sheet.value?.lines || []).filter((line) => line.received !== null)
+        (sheet.value?.lines || []).filter((line) => Number(line.received) > 0)
             .length,
+);
+
+/** Lines still waiting for goods, on an order something already came for. */
+const outstanding = computed(() =>
+    (sheet.value?.lines || []).filter((line) => lineOutstanding(line) > 0),
 );
 
 const facts = computed(() => {
@@ -207,6 +229,18 @@ const facts = computed(() => {
         );
     }
 
+    if (one.kind === 'order' && arrived.value && outstanding.value.length) {
+        out.push(
+            t(
+                one.closedShort
+                    ? 'buying.order.closedShortLines'
+                    : 'buying.order.waiting',
+                { n: outstanding.value.length },
+                outstanding.value.length,
+            ),
+        );
+    }
+
     out.push(
         t('buying.openedBy', {
             who: one.by ? loc(one.by) : '—',
@@ -219,12 +253,23 @@ const facts = computed(() => {
 
 // ---- the supplier ----------------------------------------------------------
 
+/**
+ * The suppliers an order may go to: the active ones — a suspended card is not
+ * offered, as its suspension promises — plus whichever this order already
+ * names, so the field never shows a supplier that is not in its own list.
+ */
 const supplierOptions = computed(() => [
     { value: '', label: t('buying.pickSupplier') },
-    ...dataset.suppliers.map((one) => ({
-        value: one.code,
-        label: `${loc(one.name)} · ${one.code}`,
-    })),
+    ...dataset.suppliers
+        .filter(
+            (one) =>
+                supplierSelectable(one) ||
+                one.code === sheet.value?.supplierCode,
+        )
+        .map((one) => ({
+            value: one.code,
+            label: `${loc(one.name)} · ${one.code}`,
+        })),
 ]);
 
 function onSupplier(code) {
@@ -236,21 +281,29 @@ function onSupplier(code) {
     });
 }
 
-/** A settled sheet is read from, not edited. */
+/**
+ * A settled sheet is read from, not edited. A failed order is not settled:
+ * the usual reason it failed is that another supplier is being sought, so
+ * its supplier and lines stay open until it goes out again.
+ */
 const settled = computed(() =>
-    ['received', 'failed', 'closed'].includes(sheet.value?.state),
+    ['received', 'closed'].includes(sheet.value?.state),
+);
+
+/** Who the order goes to is fixed once it went — and open again if it failed. */
+const supplierLocked = computed(
+    () => !['draft', 'failed'].includes(sheet.value?.state),
 );
 
 // ---- request → order --------------------------------------------------------
 
-/** The request's sourced lines, grouped exactly as the split will group them. */
+/**
+ * The request's sourced lines, grouped exactly as the split will group them —
+ * and, for a supplier with a draft already waiting, the draft they will join.
+ * The store's own plan, so the dialog cannot say one thing and do another.
+ */
 const convertGroups = computed(() =>
-    sheet.value?.kind === 'request'
-        ? groupDoneLines(sheet.value, (code) =>
-              dataset.suppliers.find((one) => one.code === code)?.name ??
-              null,
-          )
-        : [],
+    sheet.value?.kind === 'request' ? store.conversionPlan(sheet.value.id) : [],
 );
 
 const canConvert = computed(
@@ -265,12 +318,15 @@ const convertOpen = ref(false);
 const convertEffects = computed(() => {
     const out = convertGroups.value.map((group) =>
         t(
-            'buying.convert.effect.group',
+            group.into
+                ? 'buying.convert.effect.into'
+                : 'buying.convert.effect.group',
             {
                 n: group.lines.length,
                 supplier: group.supplierName
                     ? loc(group.supplierName)
                     : t('buying.convert.effect.noSupplier'),
+                number: group.into?.number || '',
             },
             group.lines.length,
         ),
@@ -292,27 +348,102 @@ const convertEffects = computed(() => {
 });
 
 function onConvert() {
-    const created = store.convertToOrders(sheet.value.id);
+    const results = store.convertToOrders(sheet.value.id);
 
     convertOpen.value = false;
 
-    if (!created.length) {
+    if (!results.length) {
         return;
     }
 
+    const opened = results.filter((one) => !one.merged);
+    const joined = results.filter((one) => one.merged);
+
     push({
-        title: t(
-            'buying.convert.done',
-            { numbers: created.map((order) => order.number).join(', ') },
-            created.length,
-        ),
+        title: opened.length
+            ? t(
+                  'buying.convert.done',
+                  {
+                      numbers: opened
+                          .map(({ order }) => order.number)
+                          .join(', '),
+                  },
+                  opened.length,
+              )
+            : t(
+                  'buying.convert.doneJoined',
+                  {
+                      numbers: joined
+                          .map(({ order }) => order.number)
+                          .join(', '),
+                  },
+                  joined.length,
+              ),
+        body:
+            opened.length && joined.length
+                ? t(
+                      'buying.convert.doneJoined',
+                      {
+                          numbers: joined
+                              .map(({ order }) => order.number)
+                              .join(', '),
+                      },
+                      joined.length,
+                  )
+                : '',
     });
 
-    if (created.length === 1) {
+    if (results.length === 1) {
         router.push({
             name: 'buyingSheet',
-            params: { kind: 'order', id: created[0].id },
+            params: { kind: 'order', id: results[0].order.id },
         });
+    }
+}
+
+// ---- closing the rest, removing a sheet -------------------------------------
+
+/** Part of it came and the rest is not coming. */
+const canCloseRest = computed(
+    () =>
+        sheet.value?.kind === 'order' &&
+        sheet.value.state === 'sent' &&
+        hasReceipts(sheet.value),
+);
+
+/** Only a sheet nothing happened to may be taken off the list. */
+const canRemove = computed(() => {
+    const one = sheet.value;
+
+    return Boolean(
+        one &&
+        ((one.kind === 'order' && one.state === 'draft') ||
+            (one.kind === 'request' && one.state === 'open')),
+    );
+});
+
+const closingRest = ref(false);
+const removing = ref(false);
+
+function onCloseRest(reason) {
+    closingRest.value = false;
+
+    if (store.closeRemainder(sheet.value.id, reason)) {
+        push({ title: t('buying.closeRest.done'), body: sheet.value.number });
+    }
+}
+
+function onRemove(reason) {
+    const one = sheet.value;
+
+    removing.value = false;
+
+    if (store.removeList(one.id, { reason })) {
+        push({
+            title: t('buying.remove.done', { number: one.number }),
+            bad: true,
+        });
+        back();
     }
 }
 
@@ -456,9 +587,28 @@ function back() {
                     >
                         {{ t(`buying.move.${move}`) }}
                     </AButton>
+                    <AButton
+                        v-if="canCloseRest && !receiving"
+                        sm
+                        @click="closingRest = true"
+                    >
+                        {{ t('buying.closeRest.action') }}
+                    </AButton>
+                    <AButton
+                        v-if="canRemove && !receiving"
+                        sm
+                        kind="ghost"
+                        icon="trash"
+                        @click="removing = true"
+                    >
+                        {{ t(`buying.remove.action.${kind}`) }}
+                    </AButton>
                 </div>
 
-                <p v-if="canSend && sendBlocker && !receiving" class="bs-blocked">
+                <p
+                    v-if="canSend && sendBlocker && !receiving"
+                    class="bs-blocked"
+                >
                     {{ sendBlocker }}
                 </p>
 
@@ -486,7 +636,7 @@ function back() {
                         <ASelect
                             :model-value="sheet.supplierCode || ''"
                             :options="supplierOptions"
-                            :disabled="settled"
+                            :disabled="supplierLocked"
                             @update:model-value="onSupplier"
                         />
                     </label>
@@ -521,6 +671,37 @@ function back() {
                 :confirm-label="t('buying.convert.confirm')"
                 @confirm="onConvert"
                 @close="convertOpen = false"
+            />
+
+            <ConfirmDialog
+                :open="closingRest"
+                :title="t('buying.closeRest.title')"
+                :body="
+                    t(
+                        'buying.closeRest.body',
+                        { n: outstanding.length },
+                        outstanding.length,
+                    )
+                "
+                :effects="[
+                    t('buying.closeRest.effectState'),
+                    t('buying.closeRest.effectStock'),
+                ]"
+                :confirm-label="t('buying.closeRest.confirm')"
+                reason
+                @confirm="onCloseRest"
+                @close="closingRest = false"
+            />
+
+            <ConfirmDialog
+                :open="removing"
+                :title="t(`buying.remove.title.${kind}`)"
+                :body="t('buying.remove.body', { number: sheet.number })"
+                :confirm-label="t(`buying.remove.action.${kind}`)"
+                danger
+                reason
+                @confirm="onRemove"
+                @close="removing = false"
             />
         </template>
     </div>

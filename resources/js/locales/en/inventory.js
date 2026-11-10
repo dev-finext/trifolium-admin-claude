@@ -56,6 +56,7 @@ export default {
             d60: '30–60 days',
             d90: '60–90 days',
             later: 'Over 90 days',
+            none: 'No expiry',
         },
     },
     tab: {
@@ -247,6 +248,7 @@ export default {
         },
         expiredAgo: 'Expired {n} days ago',
         expiresIn: 'In {n} days',
+        noExpiry: 'No expiry',
         empty: {
             title: 'No batches match the filter',
             sub: 'Clear the filter',
@@ -283,6 +285,8 @@ export default {
             reasonHint:
                 'Written to the change log together with the previous value.',
             save: 'Save dates',
+            expiryRequired:
+                'A batch must have an expiry date — pick one to save.',
         },
         trace: {
             analyses: 'Batch analyses & documents',
@@ -427,10 +431,31 @@ export default {
         batch: 'Batch',
         batchPick: '— pick a batch —',
         batchOption: '{id} · {left} left · expires {expiry}',
+        batchFlagged: '{option} · {state}',
         why: 'Explanation (required — written to the log)',
         whyPhDeduct: 'For example: a bottle broke on the way to the lab',
         save: 'Save issue',
         noBatches: 'This item has no open batch in stock.',
+    },
+    count: {
+        title: 'Stock count · {name}',
+        qty: 'Counted quantity',
+        qtyHint:
+            'The system holds {qty} {unit} — the gap is written on a count document',
+        byBatch:
+            'This item is held in batches: each batch still holding stock is counted in its own field, and each batch’s difference is its own line on one count document. The item’s stock is the sum of what was counted.',
+        batch: 'Batch {id}',
+        batchHint: 'On record {qty} {unit} · expires {expiry}',
+        batchFlagged: '{hint} · {state}',
+        loose: 'Stock not recorded in any batch',
+        looseHint:
+            '{qty} {unit} on record belong to no batch. Counting 0 writes them off.',
+        total: 'After the count: {qty} {unit} · difference {delta}',
+        note: 'Note',
+        save: 'Record the count',
+    },
+    prep: {
+        noConvert: 'Cannot convert {from} to {to} — no batches planned',
     },
     picker: {
         placeholder: 'Search an item — name · item code · latin name',

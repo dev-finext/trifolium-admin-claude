@@ -7,6 +7,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import RefLink from '@/components/inventory/RefLink.vue';
 import SearchBox from '@/components/inventory/SearchBox.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
@@ -17,7 +18,6 @@ import DateRangeBar from '@/components/ui/DateRangeBar.vue';
 import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
-import OrderLink from '@/components/ui/OrderLink.vue';
 import SavedViews from '@/components/ui/SavedViews.vue';
 import {
     filterDefaults,
@@ -40,10 +40,7 @@ import {
     useInventoryStore,
 } from '@/stores/inventory';
 
-/** Which movement kinds point at an order rather than at a stock document. */
-const ORDER_REF_KINDS = ['allocated_to_compounding', 'released_on_cancel'];
-
-const emit = defineEmits(['open-batch', 'open-receipt', 'open-production']);
+const emit = defineEmits(['open-batch', 'open-ref']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -161,18 +158,6 @@ function applyView(patch) {
     Object.assign(view, filterDefaults(SPEC), { mq: '' }, patch);
 }
 
-/**
- * The document a movement was raised on. V3 — a production run is a document
- * too, and the column used to show a dash for anything that was not a receipt.
- */
-function openRef(move) {
-    if (String(move.ref).startsWith('PR-')) {
-        emit('open-production', move.ref);
-    } else {
-        emit('open-receipt', move.ref);
-    }
-}
-
 /** The report as it stands on screen, out to a file. V3. */
 function exportRows() {
     const file = `batch-movements-${isoDaysAgo(0)}.csv`;
@@ -249,12 +234,6 @@ const cols = computed(() => [
 
 const { sort, sorted } = useSorted(rows, view, () => cols.value);
 const { paged, total } = usePaged(sorted, view);
-
-// A historical movement can carry this kind with no resolvable order (real
-// SAP history predates the demo's own 50 orders) — never render a link with
-// no id behind it.
-const isOrderRef = (move) =>
-    ORDER_REF_KINDS.includes(move.kind) && Boolean(move.ref);
 </script>
 
 <template>
@@ -328,13 +307,16 @@ const isOrderRef = (move) =>
                 <div class="t-sub">{{ row.sku }}</div>
             </template>
             <template #cell-batch="{ row }">
+                <!-- A count of an item held in no batch moved no batch. -->
                 <button
+                    v-if="row.batch"
                     type="button"
                     class="a-linkbtn"
                     @click.stop="emit('open-batch', row.batch)"
                 >
                     <ANum>{{ row.batchNo }}</ANum>
                 </button>
+                <span v-else class="a-muted">—</span>
             </template>
             <template #cell-qty="{ row }">
                 <span class="num a-move-q" :class="{ 'is-out': row.qty < 0 }">
@@ -343,16 +325,10 @@ const isOrderRef = (move) =>
                 {{ t(`inventory.unit.${row.unit}`) }}
             </template>
             <template #cell-ref="{ row }">
-                <OrderLink v-if="isOrderRef(row)" :id="row.ref" />
-                <button
-                    v-else-if="row.ref"
-                    type="button"
-                    class="a-linkbtn"
-                    @click.stop="openRef(row)"
-                >
-                    <ANum>{{ row.ref }}</ANum>
-                </button>
-                <span v-else class="a-muted">—</span>
+                <!-- A receipt, a document, a production run or an order —
+                     whichever the reference is, it opens; one that names
+                     nothing on file is text. -->
+                <RefLink :id="row.ref" @open="emit('open-ref', $event)" />
             </template>
             <template #cell-by="{ row }">
                 <template v-if="row.by">{{ loc(row.by) }}</template>

@@ -597,7 +597,14 @@ const categories = computed(() =>
                     <p v-else class="pad t-sub">
                         {{ t('items.card.noWarehouses') }}
                     </p>
-                    <div v-if="row.flags?.inventory" class="pad pad-top">
+                    <!-- Only with a stock row to post to: the count is a
+                         movement on that row, and without one it can only fail. -->
+                    <div
+                        v-if="
+                            row.flags?.inventory && row.stock && !row.archived
+                        "
+                        class="pad pad-top"
+                    >
                         <AButton sm icon="check" @click="emit('count', row)">
                             {{ t('items.card.count') }}
                         </AButton>

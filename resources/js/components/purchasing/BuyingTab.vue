@@ -21,7 +21,12 @@ import ANum from '@/components/ui/ANum.vue';
 import ATabs from '@/components/ui/ATabs.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useUrlState } from '@/composables/useUrlState';
-import { BUYING_STATES, buyingStateTone } from '@/config';
+import {
+    BUYING_STATES,
+    buyingStateTone,
+    hasReceipts,
+    lineOutstanding,
+} from '@/config';
 import { useBuyingStore } from '@/stores/buying';
 
 const props = defineProps({
@@ -38,9 +43,14 @@ const sheets = computed(() => store.listsOf(props.kind));
 
 // A status filter only earns its keep on orders: a request has two states and
 // its own progress line already says where it stands (`buying.request.ticked`).
-// `PurchasingView` remounts this component on every tab switch (`:key="view.
-// tab"`), so a request never reads the order tab's `st`.
+// The filter lives in the address, and the address outlives a tab switch — so
+// the requests tab ignores `st` rather than trust it to be gone, and leaving
+// the orders tab clears it.
 const view = useUrlState({ st: '' });
+
+if (props.kind !== 'order' && view.st) {
+    view.st = '';
+}
 
 const statusTabs = computed(() => {
     if (props.kind !== 'order') {
@@ -60,7 +70,9 @@ const statusTabs = computed(() => {
 });
 
 const filteredSheets = computed(() =>
-    view.st ? sheets.value.filter((row) => row.state === view.st) : sheets.value,
+    props.kind === 'order' && view.st
+        ? sheets.value.filter((row) => row.state === view.st)
+        : sheets.value,
 );
 
 const openSheet = (id) =>
@@ -106,7 +118,10 @@ function progress(row) {
         });
     }
 
-    const arrived = row.lines.filter((line) => line.received !== null).length;
+    // Arrived means arrived in full; a line part of which came is still due.
+    const arrived = row.lines.filter(
+        (line) => Number(line.received) > 0 && lineOutstanding(line) <= 0,
+    ).length;
 
     return arrived
         ? t('buying.order.arrived', { done: arrived, total: row.lines.length })
@@ -171,6 +186,18 @@ function progress(row) {
                     <AChip :tone="buyingStateTone(row.state)">
                         {{ t(`buying.state.${row.state}`) }}
                     </AChip>
+                    <div
+                        v-if="row.state === 'sent' && hasReceipts(row)"
+                        class="bt-progress bt-part"
+                    >
+                        {{ t('buying.order.partial') }}
+                    </div>
+                    <div
+                        v-else-if="row.state === 'received' && row.closedShort"
+                        class="bt-progress bt-part"
+                    >
+                        {{ t('buying.order.closedShort') }}
+                    </div>
                 </template>
                 <template #cell-note="{ row }">
                     <span :class="{ 'bt-nil': !row.note }">{{
@@ -204,6 +231,11 @@ function progress(row) {
     margin-inline-start: 8px;
     font-size: 12.5px;
     color: var(--a-ink-4);
+}
+
+.bt-part {
+    margin-inline-start: 0;
+    margin-top: 2px;
 }
 
 .bt-nil {

@@ -18,6 +18,7 @@ import {
     CREDIT,
     DELIVERY_STATUS_IDS,
     EXCEPTION_THRESHOLDS,
+    liveOnly,
     TERMINAL_STATUS_IDS,
 } from '@/config';
 import { loadDataset, registerRecords, resetData } from '@/data/source';
@@ -181,7 +182,11 @@ export const useDatasetStore = defineStore('dataset', () => {
         ),
     );
 
-    const lowStock = computed(() => stock.value.filter((row) => row.low));
+    // An archived row is no longer stock anybody restocks — it does not light
+    // the badge.
+    const lowStock = computed(() =>
+        liveOnly(stock.value).filter((row) => row.low),
+    );
 
     /** Batches inside the expiry warning window that still hold quantity. */
     const expiringBatches = computed(() =>

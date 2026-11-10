@@ -13,13 +13,25 @@ import { computed } from 'vue';
 import {
     DEFAULT_WAREHOUSE,
     familyOfCode,
+    ITEM_FAMILY,
     ITEM_FLAG_IDS,
     ITEM_UOMS,
     liveOnly,
+    openOrderQty,
+    sentOrderQtyBySku,
+    sentOrders,
     TERMINAL_STATUS_IDS,
 } from '@/config';
 import { persist } from '@/data/source';
-import { daysSince, fmtISO, hm, isoDaysAgo, now, stamp } from '@/lib/dates';
+import {
+    addDays,
+    daysSince,
+    fmtISO,
+    hm,
+    isoDaysAgo,
+    now,
+    stamp,
+} from '@/lib/dates';
 import { isLocalized } from '@/lib/localized';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
@@ -300,6 +312,27 @@ export const useItemsStore = defineStore('items', () => {
         prepTypes.value.find((type) => type.sap === code)?.id || null;
 
     /**
+     * What is on order for an item, live.
+     *
+     * SAP's `OnOrder` was frozen the day the catalogue was read, so on its own
+     * it never moves: an order sent here added nothing and one received here
+     * took nothing off. The fixture keeps on each item only the part of it no
+     * sheet here carries (`onOrderBase`), and the purchase orders the console
+     * has sent and not yet received are added back from the sheets themselves.
+     * An item made here since has no SAP figure at all — its own `onOrder`, zero.
+     */
+    const sentOnOrder = computed(() => sentOrderQtyBySku(list('buyingLists')));
+
+    const onOrderBaseOf = (item) =>
+        Number(item?.onOrderBase ?? item?.onOrder) || 0;
+
+    const liveOnOrder = (item) =>
+        Math.round(
+            (onOrderBaseOf(item) + (sentOnOrder.value.get(item.sku) || 0)) *
+                1000,
+        ) / 1000;
+
+    /**
      * An item's row in every warehouse, reconciled.
      *
      * `OITW` is what SAP held the day the catalogue was read; the console has
@@ -310,17 +343,34 @@ export const useItemsStore = defineStore('items', () => {
     const warehouseRowsOf = (sku) => {
         const item = itemBySku(sku);
         const live = inventory.itemBySku(sku);
+        // What is on order moved too: the orders the console sent since are
+        // added and the ones it received are gone. The difference lands on the
+        // warehouse the item is counted in, which is the one SAP ordered into.
+        const orderedInto = live?.wh || DEFAULT_WAREHOUSE;
+        const onOrderMoved = item
+            ? liveOnOrder(item) - (Number(item.onOrder) || 0)
+            : 0;
 
-        return (item?.warehouses || []).map((row) =>
-            live && row.warehouse === live.wh
+        return (item?.warehouses || []).map((row) => {
+            if (row.warehouse !== orderedInto) {
+                return row;
+            }
+
+            const onOrder = Math.max(
+                0,
+                (Number(row.onOrder) || 0) + onOrderMoved,
+            );
+
+            return live
                 ? {
                       ...row,
                       onHand: live.onHand,
                       committed: live.alloc,
+                      onOrder,
                       min: live.min ?? row.min,
                   }
-                : row,
-        );
+                : { ...row, onOrder };
+        });
     };
 
     /** SAP's item groups (`OITB`), and one group's name. */
@@ -358,6 +408,32 @@ export const useItemsStore = defineStore('items', () => {
         );
 
         return String(highest + 1).padStart(6, '0');
+    };
+
+    /**
+     * The next free code in a numbering block — `21` + the highest `21xxxx`
+     * plus one, or `210001` for a block nothing is numbered in yet.
+     *
+     * For the categories SAP holds with nothing in them: there is no series to
+     * continue, so whoever opens the first item there says which block it is
+     * numbered in. Counted over every item, archived ones too — a code that was
+     * once used stays used.
+     */
+    const nextCodeInFamily = (familyId) => {
+        const prefix = ITEM_FAMILY[familyId]?.prefix;
+
+        if (!prefix) {
+            return '';
+        }
+
+        const highest = items.value
+            .map((item) => String(item.code))
+            .filter((one) => /^\d{6}$/.test(one) && one.startsWith(prefix))
+            .reduce((top, one) => Math.max(top, Number(one)), 0);
+
+        return highest
+            ? String(highest + 1).padStart(6, '0')
+            : `${prefix}${'1'.padStart(6 - prefix.length, '0')}`;
     };
 
     const codeTaken = (code, exceptSku) =>
@@ -403,6 +479,9 @@ export const useItemsStore = defineStore('items', () => {
                       ? product.stock < (product.minStock ?? 0)
                       : false,
                 min: stock ? stock.min : product ? product.minStock : null,
+                // Live, not SAP's frozen figure — the stock analysis, planning
+                // and the production forms all read it off this row.
+                onOrder: liveOnOrder(item),
                 preferred: supplierByCode(item.suppliers?.preferred),
                 groupName: groupName(item.group),
                 bomCount: bomsOfParent(item.sku).length,
@@ -467,7 +546,10 @@ export const useItemsStore = defineStore('items', () => {
                         status: order.status,
                         practitioner: order.practitioner?.name,
                         qty: herb.qty,
-                        unit: stock?.unit || 'g',
+                        // The formula's own unit — sixty grams of a herb held
+                        // in kilos is "60 גרם", not "60 ק״ג". SAP writes grams
+                        // as `gr` on the real lines.
+                        unit: herb.unit === 'gr' ? 'g' : herb.unit || 'g',
                     });
                 }
             });
@@ -476,31 +558,54 @@ export const useItemsStore = defineStore('items', () => {
         return out;
     };
 
-    /** Open purchase-order lines for an item — filled in by the purchasing module. */
-    const onOrderOf = (sku) =>
-        list('purchaseOrders')
-            .filter((po) => po.state !== 'closed' && po.state !== 'cancelled')
-            .flatMap((po) =>
-                (po.lines || [])
-                    .filter(
-                        (line) =>
-                            line.sku === sku && line.qty > (line.received || 0),
-                    )
-                    .map((line) => ({
-                        id: `${po.id}-${line.sku}`,
-                        po: po.id,
-                        supplier: po.supplier,
-                        qty: line.qty - (line.received || 0),
-                        // the same quantity in stock units, for the card's tile
-                        qtySales:
-                            (line.qty - (line.received || 0)) *
-                            (line.uom === itemBySku(sku)?.uom?.purchase
-                                ? itemBySku(sku)?.uom?.factor || 1
-                                : 1),
-                        uom: line.uom,
-                        eta: po.eta,
-                    })),
-            );
+    /**
+     * What is on its way for an item, line by line: every open line of a
+     * purchase order the console sent, and — as one line of its own — what SAP
+     * still had on order that no sheet here carries. The lines add up to the
+     * row's `onOrder` in stock units, so the card's tile and the list under it
+     * are the same figure.
+     *
+     * The buyer's sheets are read straight off the dataset: the buying store
+     * imports this one, and importing it back would be a cycle.
+     */
+    const onOrderOf = (sku) => {
+        const lines = sentOrders(list('buyingLists')).flatMap((order) =>
+            (order.lines || [])
+                .filter((line) => line.sku === sku && openOrderQty(line) > 0)
+                .map((line) => ({
+                    id: `${order.id}-${line.sku}`,
+                    po: order.number,
+                    supplier: order.supplier,
+                    // in the unit the order was written in…
+                    qty: (Number(line.qty) || 0) - (Number(line.received) || 0),
+                    uom: line.purchaseUom || line.uom,
+                    // …and in the stock unit, which is what the tile adds up
+                    qtyStock: openOrderQty(line),
+                    // sent, plus the lead time the line was ordered with
+                    eta:
+                        order.sent?.iso && Number(line.leadDays) > 0
+                            ? addDays(order.sent.iso, line.leadDays)
+                            : null,
+                })),
+        );
+        const item = itemBySku(sku);
+        const rest = onOrderBaseOf(item);
+
+        if (item && rest > 0) {
+            lines.push({
+                id: `${sku}-sap`,
+                po: null,
+                sap: true,
+                supplier: null,
+                qty: rest,
+                uom: item.uom?.stock || 'unit',
+                qtyStock: rest,
+                eta: null,
+            });
+        }
+
+        return lines;
+    };
 
     // ---- writes --------------------------------------------------------------
 
@@ -531,9 +636,8 @@ export const useItemsStore = defineStore('items', () => {
     }
 
     /**
-     * The fields a change log follows, and the label each is written under.
-     * Anything not here — the price rows, the warehouse rows, the properties —
-     * is logged as a whole rather than value by value.
+     * The fields a change log follows value by value, and the label each is
+     * written under. The lists and the pictures are in `TRACKED_WHOLE` below.
      */
     const TRACKED = [
         ['names.he', 'items.editor.nameHe'],
@@ -561,6 +665,53 @@ export const useItemsStore = defineStore('items', () => {
         ['site.sync', 'items.card.siteSync'],
         ['remarks', 'items.card.remarks'],
         ['internalNotes', 'items.card.internalNotes'],
+        ['issueMethod', 'items.card.issueMethod'],
+        ['frozen', 'items.editor.frozen'],
+        ['frozenComment', 'items.editor.frozenComment'],
+        ['additionalId', 'items.card.additionalId'],
+        ['uom.group', 'items.card.uomGroup'],
+        ['uom.count', 'items.card.countUom'],
+        ['uom.numInBuy', 'items.card.numInBuy'],
+        ['uom.numInSale', 'items.card.numInSale'],
+        ['uom.packUom', 'items.card.packUom'],
+        ['uom.packQty', 'items.card.packQty'],
+        ['uom.salesPackUom', 'items.card.salesPackUom'],
+        ['uom.salesPackQty', 'items.card.salesPack'],
+        ['levels.reorder', 'items.card.reorderQty'],
+        ['levels.minOrder', 'items.card.minOrderQty'],
+        ['levels.leadTime', 'items.card.leadTime'],
+        ['planning.method', 'items.card.planningMethod'],
+        ['planning.procurement', 'items.card.procurementMethod'],
+        ['planning.componentWarehouse', 'items.card.componentWarehouse'],
+        ['price.evalPrice', 'items.card.evalPrice'],
+        ['accounting.valuation', 'items.card.valuation'],
+        ['accounting.byWarehouse', 'items.card.byWarehouse'],
+        ['accounting.noDiscount', 'items.card.noDiscount'],
+        ['accounting.inCostRoll', 'items.card.inCostRoll'],
+        ['lab.alcoholPct', 'items.card.alcoholPct'],
+        ['lab.oilPct', 'items.card.oilPct'],
+        ['lab.extractionRatio', 'items.card.extractionRatio'],
+        ['lab.packageSize', 'items.card.packageSize'],
+        ['site.name', 'items.card.siteName'],
+        ['site.quantity', 'items.editor.siteQty'],
+        ['site.uom', 'items.editor.siteUom'],
+        ['site.comments', 'items.card.siteComments'],
+        ['saleText', 'items.card.saleText'],
+    ];
+
+    /**
+     * What the log records only as "changed": a picture is a data URL and a
+     * list of properties or categories is not one value, so the row names the
+     * area and the card itself shows what it now holds.
+     */
+    const TRACKED_WHOLE = [
+        ['pictureInternal', 'items.editor.pictureInternal'],
+        ['picture', 'items.editor.pictureExternal'],
+        ['safety', 'items.card.safety'],
+        ['site.categories', 'items.card.categories'],
+        ['properties', 'items.card.properties'],
+        ['prices', 'items.card.prices'],
+        ['warehouses', 'items.card.warehouse'],
     ];
 
     const at = (record, path) =>
@@ -598,10 +749,69 @@ export const useItemsStore = defineStore('items', () => {
                 to: now,
             });
         });
+
+        TRACKED_WHOLE.forEach(([path, label]) => {
+            const was = JSON.stringify(at(before, path) ?? null);
+            const now = JSON.stringify(at(after, path) ?? null);
+
+            if (was === now) {
+                return;
+            }
+
+            writeLog({
+                act: 'item_update',
+                entType: 'catalog_item',
+                ent: sku,
+                field: label,
+            });
+        });
     }
 
     const nameText = (value) =>
         isLocalized(value) ? value.he : String(value ?? '');
+
+    /**
+     * The stock row an inventory item is counted on, made when it has none.
+     *
+     * With zero quantity — stock still only ever arrives through a goods
+     * receipt. A new item gets one on creation; an item that becomes an
+     * inventory item later gets one on that save, or the card would offer a
+     * count the inventory store has no row to post.
+     */
+    function ensureStockRow(item) {
+        if (!item.flags?.inventory || inventory.itemBySku(item.sku)) {
+            return null;
+        }
+
+        const min = item.levels.min ?? 0;
+        const row = {
+            sku: item.sku,
+            herbId: item.family === 'herb' ? item.sku : null,
+            kind: STOCK_KIND_OF_FAMILY[item.family] || 'shelf',
+            name: {
+                he: item.names.he,
+                en: item.names.en || item.names.he,
+            },
+            lat: null,
+            cn: null,
+            system: 'west',
+            wh: DEFAULT_WAREHOUSE,
+            unit: item.uom.stock,
+            size: null,
+            sizeUnit: null,
+            price: item.price.sale,
+            onHand: 0,
+            alloc: 0,
+            min,
+            avail: 0,
+            low: min > 0,
+            created: isoDaysAgo(0),
+        };
+
+        bag('stock').unshift(row);
+
+        return row;
+    }
 
     /**
      * Create or update an item. A new item that also needs a stock row gets one
@@ -644,9 +854,17 @@ export const useItemsStore = defineStore('items', () => {
             barcode: form.barcode || null,
             additionalId: form.additionalId || null,
             picture: form.picture || null,
+            // The console's own, for the team: the editor offers it, so the
+            // save keeps it.
+            pictureInternal: form.pictureInternal || null,
             suppliers: {
                 preferred: form.suppliers?.preferred || null,
-                sapCode: form.suppliers?.sapCode || null,
+                // SAP holds one supplier on the item (`OITM.CardCode`). The
+                // purchase lines, planning and the lead time read it as
+                // `sapCode`, the card's picker writes `preferred` — so the one
+                // follows the other, or changing the supplier on the card
+                // changed nothing anywhere else.
+                sapCode: form.suppliers?.preferred || null,
                 catalogNum: form.suppliers?.catalogNum || null,
                 // What the vendor calls it — SAP keeps the field in `OSCN` and
                 // has never filled it.
@@ -749,37 +967,7 @@ export const useItemsStore = defineStore('items', () => {
 
             rows.unshift(item);
 
-            if (item.flags.inventory && !inventory.itemBySku(item.sku)) {
-                const stockRows = bag('stock');
-                const min = item.levels.min ?? 0;
-                const kind = STOCK_KIND_OF_FAMILY[item.family] || 'shelf';
-                const stockRow = {
-                    sku: item.sku,
-                    herbId: item.family === 'herb' ? item.sku : null,
-                    kind,
-                    name: {
-                        he: item.names.he,
-                        en: item.names.en || item.names.he,
-                    },
-                    lat: null,
-                    cn: null,
-                    system: 'west',
-                    wh: DEFAULT_WAREHOUSE,
-                    unit: item.uom.stock,
-                    size: null,
-                    sizeUnit: null,
-                    price: item.price.sale,
-                    // Quantity only ever arrives through a goods receipt.
-                    onHand: 0,
-                    alloc: 0,
-                    min,
-                    avail: 0,
-                    low: min > 0,
-                    created: item.created,
-                };
-
-                stockRows.unshift(stockRow);
-            }
+            const stockRow = ensureStockRow(item);
 
             writeLog({
                 act: 'item_create',
@@ -788,6 +976,11 @@ export const useItemsStore = defineStore('items', () => {
                 to: item.names.he,
             });
             await persist('items', item);
+
+            // After the item: the stock row is keyed by it.
+            if (stockRow) {
+                await persist('inventory/ingredients', stockRow);
+            }
 
             return { created: true, item };
         }
@@ -803,6 +996,8 @@ export const useItemsStore = defineStore('items', () => {
         Object.assign(item, record);
 
         const stockRow = inventory.itemBySku(item.sku);
+        // Ticking "inventory" on an item that never had stock opens its row.
+        const newStockRow = stockRow ? null : ensureStockRow(item);
 
         if (stockRow) {
             stockRow.name = {
@@ -817,6 +1012,10 @@ export const useItemsStore = defineStore('items', () => {
 
         logChanges(before, item, item.sku);
         await persist(`items/${item.sku}`, item, 'PUT');
+
+        if (newStockRow) {
+            await persist('inventory/ingredients', newStockRow);
+        }
 
         return { created: false, item };
     }
@@ -1095,7 +1294,8 @@ export const useItemsStore = defineStore('items', () => {
             act: 'attachment_add',
             entType: 'system',
             ent: `${entity}:${ref}`,
-            to: name,
+            // The file's own name — a bare `name` here is `window.name`.
+            to: file.name,
         });
         await persist('attachments', file);
 
@@ -1154,6 +1354,7 @@ export const useItemsStore = defineStore('items', () => {
         sapWarehouses,
         itemProperties,
         nextCode,
+        nextCodeInFamily,
         codeTaken,
         skuTaken,
         committedOf,

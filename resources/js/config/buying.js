@@ -71,8 +71,10 @@ export const BUYING_RAIL = {
  * hand-set outcome is `failed`; `received` is never one of them — the goods
  * are booked in through the real receiving flow (`receiveList`), the one
  * place stock actually rises, and nothing short of that may claim they
- * arrived. A `failed` order can be marked sent again — the same send,
- * retried.
+ * arrived. An order part of which arrived reaches `received` by closing the
+ * rest (`closeRemainder`), which claims nothing more arrived. A `failed`
+ * order can be marked sent again — the same send, retried, to the same
+ * supplier or another one.
  */
 export function buyingMoves(list) {
     if (!list) {
@@ -93,9 +95,26 @@ export function buyingMoves(list) {
     );
 }
 
-/** Can goods be booked in against this sheet? Only one that was sent. */
+/**
+ * Can goods be booked in against this sheet? Only one that was sent — and it
+ * stays sent, and receivable, until everything on it has arrived or the rest
+ * is closed (`isFullyReceived`, the store's `closeRemainder`).
+ */
 export const canReceive = (list) =>
     list?.kind === 'order' && list.state === 'sent';
+
+/** What is still to come on one line, in the purchase unit. */
+export const lineOutstanding = (line) =>
+    Math.max(0, (Number(line?.qty) || 0) - (Number(line?.received) || 0));
+
+/** Has every line of an order arrived in full? */
+export const isFullyReceived = (list) =>
+    (list?.lines || []).length > 0 &&
+    list.lines.every((line) => lineOutstanding(line) <= 0);
+
+/** Has anything at all arrived against this order yet? */
+export const hasReceipts = (list) =>
+    (list?.lines || []).some((line) => Number(line.received) > 0);
 
 /** The two kinds, and what each one requires. */
 export const BUYING_KINDS = [
@@ -189,7 +208,12 @@ export function lineFromItem(item, extra = {}) {
         // a Hebrew file, and a `{ he, en }` object reaches a cell as [object
         // Object].
         supplier: orNull(extra.supplier?.he ?? extra.supplier),
-        supplierCode: orNull(item.suppliers?.sapCode),
+        // The card's preferred supplier — the one its name is shown for — and
+        // SAP's code only when the card names none, so a line never shows one
+        // supplier and goes to another's order.
+        supplierCode: orNull(
+            item.suppliers?.preferred || item.suppliers?.sapCode,
+        ),
         catalogNum: orNull(item.suppliers?.catalogNum),
         purchaseUom: orNull(item.uom?.purchase),
         numInBuy: item.uom?.numInBuy ?? 1,

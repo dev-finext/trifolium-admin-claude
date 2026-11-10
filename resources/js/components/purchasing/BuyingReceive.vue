@@ -6,10 +6,12 @@
 // sixty-seven quantities, batch numbers and expiry dates, and a box floating
 // over the page is the wrong shape for that.
 //
-// Every line opens filled with what was ordered, because most deliveries are
-// complete and the common case should be one press. What the delivery was short
-// of, or sent extra of, is corrected on the line; a line that did not arrive at
-// all goes to zero and is left out of the receipt.
+// Every line opens filled with what is still to come — the whole order the first
+// time, the balance after a part arrived — because most deliveries are complete
+// and the common case should be one press. What the delivery was short of, or
+// sent extra of, is corrected on the line; a line that did not arrive at all
+// goes to zero and is left out of the receipt. Receipts add up: an order stays
+// open for the rest until everything on it has come.
 //
 // The quantity is in the purchase unit, the same unit the order was written in.
 // The shelf counts in the stock unit, and `numInBuy` off the item card is what
@@ -17,8 +19,12 @@
 //
 // The batch number is the supplier's own code, always, whatever the pharmacy's
 // own series is doing — Yaron: "אם חומר גלם מגיע מספק המוצר מקבל אצוות ספק
-// תמיד". The expiry is defaulted from the family's shelf life and corrected off
-// the carton.
+// תמיד". A lot with no code on it is numbered the way the pharmacy numbers it
+// in SAP, WV and the date. The expiry is read off the carton and is required
+// for an item kept in batches — it is a fact on the supplier's certificate,
+// and Natalie is explicit that the console suggests an expiry for its own
+// production only ("שים לב שרק מייצור פנימי ולא הזמנת רכש מספק"), which is
+// why nothing is pre-filled here.
 //
 // Signing it is the approval code, and it goes to the log with the name and the
 // time — which is what makes the receipt answerable to a person.
@@ -31,10 +37,11 @@ import ANum from '@/components/ui/ANum.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useToast } from '@/composables/useToast';
+import { lineOutstanding } from '@/config';
 import { isoDaysAgo } from '@/lib/dates';
 import { num } from '@/lib/money';
 import { useBuyingStore } from '@/stores/buying';
-import { usePurchasingStore } from '@/stores/purchasing';
+import { useItemsStore } from '@/stores/items';
 import { useSystemStore } from '@/stores/system';
 
 const props = defineProps({
@@ -47,44 +54,71 @@ const emit = defineEmits(['cancel', 'received']);
 const { t } = useI18n();
 const { push } = useToast();
 const store = useBuyingStore();
-const purchasing = usePurchasingStore();
+const items = useItemsStore();
 const system = useSystemStore();
 
 const saving = ref(false);
 const asking = ref(false);
 
-/** One editable row per ordered line, opened at the ordered quantity. */
+/**
+ * One editable row per ordered line, opened at what is still to come. Each
+ * row is the line's own — by its key, because one item can sit on an order
+ * twice.
+ */
 const form = reactive({
     docNum: '',
     date: isoDaysAgo(0),
     note: '',
-    lines: props.list.lines.map((line) => ({
-        sku: line.sku,
-        name: line.name,
-        uom: line.purchaseUom || line.uom,
-        ordered: line.qty ?? 0,
-        qty: String(line.qty ?? 0),
-        supplierBatch: '',
-        expiry: purchasing.defaultExpiryFor(line.sku)?.iso || '',
-        price: line.lastPrice ?? '',
-    })),
+    lines: props.list.lines.map((line, index) => {
+        const due = lineOutstanding(line);
+
+        return {
+            key: line.key || `${props.list.number}-x${index + 1}`,
+            sku: line.sku,
+            name: line.name,
+            uom: line.purchaseUom || line.uom,
+            ordered: line.qty ?? 0,
+            already: Number(line.received) || 0,
+            due,
+            qty: String(due),
+            batched: Boolean(items.itemBySku(line.sku)?.flags?.batch),
+            supplierBatch: '',
+            expiry: '',
+            price: line.lastPrice ?? '',
+        };
+    }),
 });
 
 const arriving = computed(() =>
     form.lines.filter((line) => Number(line.qty) > 0),
 );
 
-/** Lines where what came in is not what was asked for. */
+/** Lines where what came in is not what was still to come. */
 const differing = computed(() =>
-    form.lines.filter((line) => Number(line.qty) !== Number(line.ordered)),
+    arriving.value.filter((line) => Number(line.qty) !== Number(line.due)),
 );
 
-const ok = computed(() => arriving.value.length > 0 && !saving.value);
+/** Arriving lines of an item kept in batches that still have no expiry. */
+const noExpiry = computed(() =>
+    arriving.value.filter((line) => line.batched && !line.expiry),
+);
 
-/** Everything arrived as ordered — the press that covers most deliveries. */
+/** Will this receipt bring in everything still outstanding on the order? */
+const completes = computed(() =>
+    form.lines.every((line) => Number(line.qty) >= line.due),
+);
+
+const ok = computed(
+    () =>
+        arriving.value.length > 0 &&
+        noExpiry.value.length === 0 &&
+        !saving.value,
+);
+
+/** Everything still due arrived — the press that covers most deliveries. */
 function takeAll() {
     form.lines.forEach((line) => {
-        line.qty = String(line.ordered);
+        line.qty = String(line.due);
     });
 }
 
@@ -109,6 +143,7 @@ async function confirmed() {
             date: form.date,
             note: form.note.trim(),
             lines: arriving.value.map((line) => ({
+                key: line.key,
                 sku: line.sku,
                 qty: Number(line.qty),
                 supplierBatch: line.supplierBatch.trim(),
@@ -192,7 +227,7 @@ async function confirmed() {
                 <tbody>
                     <tr
                         v-for="line in form.lines"
-                        :key="line.sku"
+                        :key="line.key"
                         :class="{ 'is-off': !(Number(line.qty) > 0) }"
                     >
                         <td class="nowrap">
@@ -202,6 +237,13 @@ async function confirmed() {
                         <td class="nowrap">
                             <ANum>{{ num(line.ordered, 3) }}</ANum>
                             {{ t(`inventory.unit.${line.uom}`) }}
+                            <div v-if="line.already" class="rc-sub">
+                                {{
+                                    t('buying.receive.already', {
+                                        n: num(line.already, 3),
+                                    })
+                                }}
+                            </div>
                         </td>
                         <td class="nowrap">
                             <AInput
@@ -212,8 +254,7 @@ async function confirmed() {
                                 class="rc-qty"
                                 :class="{
                                     'is-diff':
-                                        Number(line.qty) !==
-                                        Number(line.ordered),
+                                        Number(line.qty) !== Number(line.due),
                                 }"
                                 :aria-label="t('buying.receive.arrived')"
                             />
@@ -224,6 +265,7 @@ async function confirmed() {
                                 ltr
                                 class="rc-batch"
                                 :placeholder="t('buying.receive.batchHint')"
+                                :title="t('buying.receive.batchEmpty')"
                                 :aria-label="t('buying.receive.batch')"
                             />
                         </td>
@@ -233,6 +275,12 @@ async function confirmed() {
                                 type="date"
                                 ltr
                                 class="rc-date"
+                                :class="{
+                                    'is-wanted':
+                                        line.batched &&
+                                        Number(line.qty) > 0 &&
+                                        !line.expiry,
+                                }"
                                 :aria-label="t('buying.receive.expiry')"
                             />
                         </td>
@@ -258,6 +306,15 @@ async function confirmed() {
                 <ATextarea v-model="form.note" :rows="2" class="a-w100" />
             </label>
             <div class="rc-go">
+                <span v-if="noExpiry.length" class="rc-why">
+                    {{
+                        t(
+                            'buying.receive.needExpiry',
+                            { n: noExpiry.length },
+                            noExpiry.length,
+                        )
+                    }}
+                </span>
                 <AButton
                     kind="p"
                     icon="check"
@@ -286,7 +343,9 @@ async function confirmed() {
         :effects="[
             t('buying.receive.effectStock'),
             t('buying.receive.effectBatches'),
-            t('buying.receive.effectState'),
+            completes
+                ? t('buying.receive.effectState')
+                : t('buying.receive.effectOpen'),
             ...(differing.length
                 ? [
                       t(
@@ -356,6 +415,23 @@ async function confirmed() {
 
 .rc-date {
     width: 150px;
+}
+
+/* An expiry the receipt cannot go without. */
+.rc-date.is-wanted {
+    border-color: var(--a-amber-line);
+    background: var(--a-amber-bg);
+}
+
+.rc-sub {
+    font-size: 12px;
+    color: var(--a-ink-4);
+}
+
+.rc-why {
+    align-self: center;
+    font-size: 13px;
+    color: var(--a-ink-3, var(--a-ink-4));
 }
 
 .rc-price {

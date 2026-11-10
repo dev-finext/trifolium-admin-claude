@@ -17,9 +17,9 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
-import { SUPPLIER_COMPLIANCE_DOCS } from '@/config/suppliers';
+import { SUPPLIER_COMPLIANCE_DOCS, supplierMoney } from '@/config/suppliers';
 import { persist } from '@/data/source';
-import { isoDaysAgo } from '@/lib/dates';
+import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { useDatasetStore } from '@/stores/dataset';
 
 /**
@@ -172,9 +172,18 @@ export const SUPPLIER_FILTER_FIELDS = [
         group: 'papers',
         kind: 'set',
         prefix: 'systemContacts.payMethod',
-        values: (one) => (one.payMethod ? [one.payMethod] : []),
+        values: (one) => (one.pay ? [one.pay] : []),
     },
 ];
+
+/**
+ * Whether a new document may name this supplier. A suspended supplier keeps
+ * every receipt, batch and invoice he already has; he is only not offered
+ * again — which is what the suspend dialog promises.
+ */
+export function supplierSelectable(supplier) {
+    return supplier?.status === 'active';
+}
 
 export const SUPPLIER_FILTER_GROUPS = ['who', 'papers'];
 
@@ -398,10 +407,36 @@ export const useSystemStore = defineStore('system', () => {
 
     // ---- supplier cards -----------------------------------------------------
 
-    const supplierOverlay = ref(null);
+    /**
+     * The supplier cards are the dataset's own records, changed in place — not
+     * an overlay kept here. Goods receipt, the item card, purchasing and
+     * planning all read `dataset.suppliers`; a rename or a suspension held in
+     * a copy only this screen reads would be a change nobody else sees.
+     *
+     * The two money figures are read through the invoices on the way out, so
+     * the list's "open balance" and the card's financial block say what the
+     * invoices tab says — whether or not anything wrote them onto the record.
+     * Every write below goes to the record itself, never to these rows.
+     */
+    const suppliers = computed(() => {
+        const invoices = new Map();
 
-    const suppliers = computed(
-        () => supplierOverlay.value || dataset.suppliers,
+        (dataset.data.supplierInvoices || []).forEach((invoice) => {
+            const own = invoices.get(invoice.supplierCode) || [];
+
+            own.push(invoice);
+            invoices.set(invoice.supplierCode, own);
+        });
+
+        return dataset.suppliers.map((record) => ({
+            ...record,
+            ...supplierMoney(record.code, invoices.get(record.code) || []),
+        }));
+    });
+
+    /** The cards a new document may name — what a supplier picker offers. */
+    const activeSuppliers = computed(() =>
+        suppliers.value.filter(supplierSelectable),
     );
 
     const supplierKindIds = computed(() => dataset.data.supplierKinds || []);
@@ -426,49 +461,145 @@ export const useSystemStore = defineStore('system', () => {
     const supplierReceipts = (code) =>
         dataset.receipts.filter((receipt) => receipt.supplierCode === code);
 
-    function patchSupplier(code, patch, path, payload, method = 'PUT') {
-        return commit(
-            supplierOverlay,
-            suppliers.value.map((supplier) =>
-                supplier.code === code ? { ...supplier, ...patch } : supplier,
-            ),
-            path,
-            payload,
-            method,
+    /**
+     * One row in the system log. Every supplier dialog says its action is
+     * logged, so each of them writes one — after the change is accepted,
+     * never for a write that was refused.
+     */
+    function writeLog(row) {
+        if (!Array.isArray(dataset.data.log)) {
+            dataset.data.log = [];
+        }
+
+        const log = dataset.data.log;
+
+        log.unshift({
+            id: `lg-${row.act}-${row.ent}-${log.length}`,
+            when: {
+                daysAgo: 0,
+                iso: isoDaysAgo(0),
+                time: hm(now()),
+                stamp: stamp(0),
+            },
+            actorType: 'agent',
+            actor: dataset.me?.name || null,
+            valueType: 'plain',
+            field: null,
+            from: null,
+            to: null,
+            src: 'manual',
+            ip: null,
+            ...row,
+        });
+    }
+
+    /**
+     * Change one card in place and report it. A refused write puts back the
+     * fields it touched, so the screen never shows a change that did not save.
+     *
+     * The path is the dataset's own (`suppliers/<code>`), which is what lets
+     * the database layer find the table and write the record whole.
+     */
+    const supplierRecord = (code) =>
+        dataset.suppliers.find((supplier) => supplier.code === code) || null;
+
+    async function patchSupplier(code, patch, path, payload) {
+        const record = supplierRecord(code);
+
+        if (!record) {
+            return false;
+        }
+
+        const before = Object.fromEntries(
+            Object.keys(patch).map((key) => [key, record[key]]),
         );
+
+        Object.assign(record, patch);
+
+        try {
+            await persist(path, payload, 'PUT');
+
+            return true;
+        } catch {
+            Object.assign(record, before);
+
+            return false;
+        }
     }
 
-    function updateSupplier(code, patch) {
-        return patchSupplier(code, patch, `system/suppliers/${code}`, patch);
+    /**
+     * Save an edit to a card. `changes` is what the log records — one row per
+     * field, `{ field, from, to }`, with the field as its label key so the log
+     * reads in whichever language it is opened in.
+     */
+    async function updateSupplier(code, patch, changes = []) {
+        const ok = await patchSupplier(code, patch, `suppliers/${code}`, patch);
+
+        if (ok) {
+            (changes.length ? changes : [{}]).forEach((change) =>
+                writeLog({
+                    act: 'supplier_update',
+                    entType: 'supplier',
+                    ent: code,
+                    ...change,
+                }),
+            );
+        }
+
+        return ok;
     }
 
-    function suspendSupplier(code, reason) {
-        return patchSupplier(
+    async function suspendSupplier(code, reason) {
+        const ok = await patchSupplier(
             code,
             {
                 status: 'suspended',
                 suspendedWhy: reason,
                 suspendedWhen: isoDaysAgo(0),
             },
-            `system/suppliers/${code}/suspend`,
+            `suppliers/${code}/suspend`,
             { reason },
         );
+
+        if (ok) {
+            writeLog({
+                act: 'supplier_suspend',
+                entType: 'supplier',
+                ent: code,
+                to: reason || null,
+            });
+        }
+
+        return ok;
     }
 
-    function reactivateSupplier(code) {
-        return patchSupplier(
+    async function reactivateSupplier(code) {
+        const why = supplierRecord(code)?.suspendedWhy;
+        const ok = await patchSupplier(
             code,
             { status: 'active', suspendedWhy: null, suspendedWhen: null },
-            `system/suppliers/${code}/reactivate`,
+            `suppliers/${code}/reactivate`,
             {},
         );
+
+        if (ok) {
+            writeLog({
+                act: 'supplier_reactivate',
+                entType: 'supplier',
+                ent: code,
+                from: why || null,
+            });
+        }
+
+        return ok;
     }
 
     /**
      * The supplier cards carry bank details, trade terms and purchase prices, so
      * reaching them is a re-confirmation rather than a click. The code is
      * verified by the server; the fixture's session carries one only so the flow
-     * can be exercised without a backend.
+     * can be exercised without a backend. The unlock lasts until the screen is
+     * left (SuppliersView locks it on the way out) or is locked by hand.
      */
     const supplierCardsUnlocked = ref(false);
 
@@ -485,12 +616,19 @@ export const useSystemStore = defineStore('system', () => {
     async function unlockSupplierCards(code) {
         try {
             await persist('system/supplier-cards/unlock', { code });
-            supplierCardsUnlocked.value = true;
-
-            return true;
         } catch {
             return false;
         }
+
+        supplierCardsUnlocked.value = true;
+        // The gate's own dialog says the opening is logged; the code is not.
+        writeLog({
+            act: 'gate_unlock',
+            entType: 'system',
+            ent: 'supplier-cards',
+        });
+
+        return true;
     }
 
     function lockSupplierCards() {
@@ -570,6 +708,7 @@ export const useSystemStore = defineStore('system', () => {
         removeVendorContact,
 
         suppliers,
+        activeSuppliers,
         supplierKindIds,
         payTermIds,
         payMethodIds,

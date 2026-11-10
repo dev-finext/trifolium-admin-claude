@@ -1,4 +1,21 @@
 // פריטים — כרטיס הפריט: שדות ה-OITM של SAP, עצי המוצר והספירה.
+
+/**
+ * A count in Hebrew's dual: שבוע אחד, שבועיים, 3 שבועות.
+ *
+ * vue-i18n's default rule reads a three-part message as zero | one | many, so
+ * "one | two | many" printed a single week as "שבועיים" and two weeks as
+ * "2 שבועות". The console sets no Hebrew rule of its own — and the zero | one |
+ * many strings elsewhere rely on that — so the form is picked here, off `{n}`.
+ */
+const dual =
+    (one, two, many) =>
+    ({ named }) => {
+        const n = Number(named('n'));
+
+        return n === 1 ? one : n === 2 ? two : `${named('n')} ${many}`;
+    };
+
 export default {
     title: 'כרטיס פריט',
     sub: '{total} פריטים · כרטיס פריט אחד, בדיוק כפי ש-SAP מחזיק אותו',
@@ -90,6 +107,7 @@ export default {
         qtyHint: 'במערכת כרגע {qty} {uom} — ההפרש יירשם כתנועת ספירה',
         note: 'הערה',
         save: 'רישום הספירה',
+        failed: 'הספירה לא נרשמה — לפריט אין שורת מלאי לרשום אליה. שמרו את הכרטיס עם הדגל ״מלאי״ ונסו שוב.',
     },
     kpi: {
         all: 'כל הפריטים',
@@ -129,9 +147,9 @@ export default {
             month: 'חודשים',
         },
         unit: {
-            day: 'יום אחד | {n} ימים',
-            week: 'שבוע אחד | שבועיים | {n} שבועות',
-            month: 'חודש אחד | חודשיים | {n} חודשים',
+            day: dual('יום אחד', 'יומיים', 'ימים'),
+            week: dual('שבוע אחד', 'שבועיים', 'שבועות'),
+            month: dual('חודש אחד', 'חודשיים', 'חודשים'),
         },
         source: {
             item: 'נקבע ידנית בכרטיס',
@@ -146,7 +164,7 @@ export default {
         colDays: 'בימים',
         amount: 'זמן',
         unitLabel: 'יחידה',
-        days: 'יום אחד | {n} ימים',
+        days: dual('יום אחד', 'יומיים', 'ימים'),
         saved: 'זמן האספקה עודכן',
     },
 
@@ -233,7 +251,7 @@ export default {
         noPrice: '—',
         siteOn: 'מסונכרן',
         siteOff: '—',
-        uom: '1 {purchase} = {factor} {stock}',
+        uom: '1 {purchase} = {factor} {sales}',
     },
     card: {
         ladder: 'מחירון מדורג',
@@ -297,6 +315,9 @@ export default {
         batchesAll: '{n} אצוות בסך הכל · לחיצה מפרטת',
         noCommitted: 'אין הזמנות פתוחות שהמלאי מוקצה להן',
         noOnOrder: 'אין הזמנות רכש פתוחות לפריט',
+        onOrderSap: 'פתוח ב-SAP',
+        onOrderSapSub: 'הזמנות שאינן בגיליונות הרכש כאן',
+        inStockUnit: '= {n} {unit}',
         noBatches: 'אין אצוות פתוחות',
         notTracked: 'הפריט אינו מנוהל במלאי — נקלט ולא נגרע',
         colOrder: 'הזמנה',
@@ -488,6 +509,13 @@ export default {
         remarksHint: 'שדה ההערות של SAP — מודפס בדף ההכנה',
         saleTextHint: 'הטקסט השיווקי שמופיע באתר הצרכני',
         codePending: 'ייקבע לפי הקטגוריה',
+        family: 'גוש מספור',
+        familyPick: 'בחירת גוש…',
+        familyHint:
+            'בקטגוריה הזו עוד אין פריטים, ולכן אין סדרה להמשיך. הגוש קובע את תחילית המספר — והמספר יהיה הפנוי הבא בו.',
+        siteQty: 'כמות לאתר',
+        siteUom: 'יחידה לאתר',
+        categorySlot: 'קטגוריה {n} באתר',
         flagsHint:
             'ארבעת הדגלים קובעים מה רלוונטי בשאר הכרטיס: פריט שלא נמכר אין לו מחיר ואין לו אתר, פריט שלא נקנה אין לו ספק, ופריט שלא מנוהל במלאי אין לו רמות ואין לו אצוות.',
         supplierItemNameHint: 'איך הספק קורא לפריט בתעודות שלו · רשות',
@@ -503,6 +531,7 @@ export default {
         group: 'נא לבחור קטגוריה',
         positive: 'מספר גדול מאפס',
         codeMissing: 'נא לבחור קטגוריה כדי שיוקצה מספר',
+        familyMissing: 'נא לבחור גוש מספור כדי שיוקצה מספר',
     },
     prep: {
         sub: '{n} סוגי הכנה · הטקסט הקבוע למדבקה, התוקף ו״מכיל״ נערכים כאן ולא בקוד',

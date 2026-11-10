@@ -20,31 +20,115 @@
 // `spend12` and `open` are not authored anywhere: applySupplierBalances() in
 // demo/purchasing.js derives them from the invoices and payments.
 import { chance, pickFrom, spread } from '@/demo/fixture';
+import REAL_INGREDIENTS from '@/demo/real/ingredients.json';
+import REAL_PRODUCTS from '@/demo/real/products.json';
 import REAL_SUPPLIERS from '@/demo/real/suppliers.json';
 import { isoDaysAgo } from '@/lib/dates';
 import { L } from '@/lib/localized';
 
 /**
- * SAP's supplier groups, by `OCRG.GroupCode`, mapped onto what the console
- * calls a supplier kind. The groups are the pharmacy's own; the mapping is the
- * only interpretation, and it is one line each.
+ * What a supplier is, in the console's own five kinds.
  *
- * 113 "אינטרנט" is the catch-all the pharmacy files one-off purchases
- * under — 263 cards, more than every other group together — so it maps to
- * services rather than pretending to be a trade category.
+ * SAP's supplier groups cannot answer it on their own: 101 "ספקים" holds the
+ * herb house and the stationery shop alike, 103 "חומר עזר" is a plastics plant
+ * and a rubber shop, 105 "אריזה ומשלוחים" is label printers and carton makers
+ * with not one courier among them, and 113 "אינטרנט" is the catch-all of one-
+ * off purchases — Chinese herb houses included. So the kind is read, in order:
+ *
+ *   1. from what the supplier actually sells — the numbering block of the
+ *      items that name it as their supplier, the block most of them sit in
+ *      (an essential-oil house is raw materials, a jar maker packaging).
+ *      Block 48 "מנהלה" is left out — it files office paper, cleaning
+ *      supplies, labels, envelopes and cartons together — and so is 49, the
+ *      five shelf products numbered outside their block;
+ *   2. from its name, where the name says it outright (אריזות, קרטון, שילוח);
+ *   3. from the group, where the group means one thing (102 raw materials,
+ *      105 packaging);
+ *   4. otherwise services.
+ *
+ * A packaging house whose only item is a shelf product's box stays packaging:
+ * the name wins over a single item.
  */
-const KIND_BY_GROUP = {
-    101: 'raw_materials',
-    102: 'raw_materials',
-    103: 'bases_alcohol',
-    104: 'packaging',
-    105: 'logistics',
-    106: 'services',
-    107: 'services',
-    111: 'services',
-    112: 'services',
-    113: 'services',
+const KIND_BY_PREFIX = {
+    10: 'raw_materials',
+    11: 'raw_materials',
+    12: 'raw_materials',
+    13: 'raw_materials',
+    14: 'raw_materials',
+    15: 'raw_materials',
+    16: 'raw_materials',
+    20: 'raw_materials',
+    21: 'raw_materials',
+    22: 'raw_materials',
+    23: 'raw_materials',
+    24: 'raw_materials',
+    26: 'raw_materials',
+    27: 'raw_materials',
+    50: 'raw_materials',
+    55: 'raw_materials',
+    30: 'bases_alcohol',
+    40: 'packaging',
+    41: 'packaging',
+    42: 'packaging',
+    43: 'packaging',
+    46: 'packaging',
+    47: 'packaging',
+    60: 'services',
+    99: 'services',
 };
+
+const KIND_BY_NAME = [
+    [
+        /שילוח|משלוחים|הובלה|הובלות|שליחויות|לוגיסטיקה|דואר|UPS|DHL|FedEx/i,
+        'logistics',
+    ],
+    [/אריזה|אריזות|קרטון|מדבקות|תוויות|מעטפות/, 'packaging'],
+];
+
+const KIND_BY_GROUP = {
+    102: 'raw_materials',
+    105: 'packaging',
+};
+
+/** The kinds of what each supplier sells, counted by numbering block. */
+const SOLD_BY_SUPPLIER = [...REAL_INGREDIENTS, ...REAL_PRODUCTS].reduce(
+    (by, item) => {
+        if (!item.supplierCode) {
+            return by;
+        }
+
+        const kind = KIND_BY_PREFIX[String(item.code).slice(0, 2)];
+
+        if (!kind) {
+            return by;
+        }
+
+        const counts = by.get(item.supplierCode) || {};
+
+        counts[kind] = (counts[kind] || 0) + 1;
+        by.set(item.supplierCode, counts);
+
+        return by;
+    },
+    new Map(),
+);
+
+function kindOf(row) {
+    const byName = KIND_BY_NAME.find(([pattern]) =>
+        pattern.test(row.name),
+    )?.[1];
+    const sold = SOLD_BY_SUPPLIER.get(row.code);
+
+    if (byName) {
+        return byName;
+    }
+
+    if (sold) {
+        return Object.entries(sold).sort((a, b) => b[1] - a[1])[0][0];
+    }
+
+    return KIND_BY_GROUP[row.groupCode] || 'services';
+}
 
 /** `OCTG.GroupNum` → the console's payment term. */
 const TERM_BY_CODE = {
@@ -84,7 +168,7 @@ const named = (name) => L(name, name);
  */
 export const DEMO_SUPPLIERS = REAL_SUPPLIERS.map((row) => {
     const slot = `supplier:${row.code}`;
-    const kind = KIND_BY_GROUP[row.groupCode] || 'services';
+    const kind = kindOf(row);
     const terms = TERM_BY_CODE[String(row.termsCode)] || 'net30';
     const trades = row.items > 0;
 

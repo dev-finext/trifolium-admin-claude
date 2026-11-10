@@ -19,6 +19,8 @@ import {
     DEFAULT_WAREHOUSE,
     HOUSE_SERIES_NEXT,
     INVENTORY_DOC_SERIES,
+    liveOnly,
+    MAIN_WAREHOUSE,
     REASON,
 } from '@/config';
 import { persist } from '@/data/source';
@@ -44,6 +46,9 @@ function nextSerial(ids, series) {
 
     return `${series}${highest ? highest + 1 : FIRST_SERIAL}`;
 }
+
+/** Three decimals — a gram of a herb kept in kilograms. */
+const round3 = (value) => Math.round(value * 1000) / 1000;
 
 /** A stable option key for a value that may be a `{ he, en }` record pair. */
 export function optionKey(value) {
@@ -72,8 +77,25 @@ export function stockRowState(row) {
     return row.low ? 'low' : 'ok';
 }
 
+/**
+ * Where a batch sits in the nearest-expiry-first order. A batch SAP holds with
+ * no expiry (five real ones) goes last: read as a number, its missing date
+ * would be day zero and FEFO would empty it before anything that really is
+ * about to expire.
+ */
+export const expiryRank = (batch) =>
+    Number.isFinite(batch?.daysToExp) ? batch.daysToExp : Infinity;
+
+/** Nearest expiry first; two batches with no expiry keep their order. */
+export const byExpiry = (a, b) => expiryRank(a) - expiryRank(b) || 0;
+
 /** How near a batch is to its expiry, in the windows a pharmacist works in. */
 export function batchExpiryWindow(batch) {
+    // No date is its own answer, not "expires today".
+    if (!Number.isFinite(batch.daysToExp)) {
+        return 'none';
+    }
+
     if (batch.daysToExp < 0) {
         return 'past';
     }
@@ -292,7 +314,14 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     // ---- derivations -------------------------------------------------------
 
-    const lowStock = computed(() => stock.value.filter((row) => row.low));
+    /**
+     * The stock rows a user works with: archived ones are out of the table, its
+     * export, the low-stock count and the pickers. `stock` keeps them, because
+     * the ledger and a batch's trace still name the item they moved.
+     */
+    const liveStock = computed(() => liveOnly(stock.value));
+
+    const lowStock = computed(() => liveStock.value.filter((row) => row.low));
 
     const liveBatches = computed(() =>
         batches.value.filter((batch) => batch.remaining > 0),
@@ -319,16 +348,37 @@ export const useInventoryStore = defineStore('inventory', () => {
      * FEFO is the only rule (DEMO_INVENTORY_FIXES_PROMPT.md §5.1; FIFO and the
      * pharmacist-approval toggle are retired). Expired and waste batches stay
      * out unless the caller's preparation type accepts waste.
+     *
+     * `warehouse` narrows to one warehouse. Selling takes from the main one
+     * only (config MAIN_WAREHOUSE), so a batch received into the external
+     * warehouse is not handed to a customer's order until it is moved in. No
+     * warehouse means every one, which is what production and the receipt's
+     * top-up picker have always seen.
      */
-    const openBatchesOf = (sku, { allowWaste = false } = {}) =>
+    const openBatchesOf = (
+        sku,
+        { allowWaste = false, warehouse = null } = {},
+    ) =>
         batchesOf(sku)
             .filter(
                 (batch) =>
                     batch.remaining > 0 &&
                     batch.state !== 'expired' &&
-                    (allowWaste || !batch.waste),
+                    (allowWaste || !batch.waste) &&
+                    (!warehouse || batch.wh === warehouse),
             )
-            .sort((a, b) => a.daysToExp - b.daysToExp);
+            .sort(byExpiry);
+
+    /**
+     * Every batch of an item that still holds something — expired and waste
+     * included, nearest expiry first. This is what is physically on the shelf:
+     * what a count counts, what an issue may write off, and what the stock
+     * table's batch column counts.
+     */
+    const heldBatchesOf = (sku) =>
+        batchesOf(sku)
+            .filter((batch) => batch.remaining > 0)
+            .sort(byExpiry);
 
     const useOfBatch = (id) => batchUse.value.filter((row) => row.batch === id);
 
@@ -363,15 +413,14 @@ export const useInventoryStore = defineStore('inventory', () => {
     const wasteBatchesOf = (sku) =>
         batchesOf(sku)
             .filter((batch) => batch.waste && batch.remaining > 0)
-            .sort((a, b) => a.daysToExp - b.daysToExp);
+            .sort(byExpiry);
 
     /** How much of an item's stock is waste — "of which waste: N". */
     const wasteOf = (sku) =>
         wasteBatchesOf(sku).reduce((sum, batch) => sum + batch.remaining, 0);
 
     /** How many batches of an item still hold quantity. */
-    const liveBatchCount = (sku) =>
-        batchesOf(sku).filter((batch) => batch.remaining > 0).length;
+    const liveBatchCount = (sku) => heldBatchesOf(sku).length;
 
     /**
      * The documents stock moved on. SAP posts nothing without one, so every
@@ -383,13 +432,62 @@ export const useInventoryStore = defineStore('inventory', () => {
         inventoryDocs.value.find((doc) => String(doc.id) === String(id)) ||
         null;
 
-    /** The next document number in SAP's own block. */
+    /**
+     * What a movement's reference opens, or null when it opens nothing.
+     *
+     * The ledger's `ref` is whatever document moved the stock — a goods
+     * receipt, an inventory document, a production run or a customer's order —
+     * and one column holds them all. Each is looked up rather than guessed
+     * from its prefix, so a number that names nothing on file is shown as text
+     * and never as a button that does nothing.
+     *
+     * @returns {'receipt'|'doc'|'production'|'order'|null}
+     */
+    function refKind(ref) {
+        if (ref === null || ref === undefined || ref === '') {
+            return null;
+        }
+
+        const id = String(ref);
+
+        if (receiptById(id)) {
+            return 'receipt';
+        }
+
+        if (docById(id)) {
+            return 'doc';
+        }
+
+        if ((dataset.data.productionOrders || []).some((o) => o.id === id)) {
+            return 'production';
+        }
+
+        if (dataset.orders.some((order) => order.id === id)) {
+            return 'order';
+        }
+
+        return null;
+    }
+
+    /**
+     * The next document number in SAP's own block.
+     *
+     * Only numbers inside the block count. SAP numbers its stock counts in a
+     * series of their own — the real counts carry 26000000 and 26000001 —
+     * and the highest of everything would send the next goods issue to an
+     * eight-digit number in the counts' range.
+     */
     const nextDocNumber = () =>
         String(
-            inventoryDocs.value.reduce(
-                (top, doc) => Math.max(top, Number(doc.id) || 0),
-                INVENTORY_DOC_SERIES,
-            ) + 1,
+            inventoryDocs.value.reduce((top, doc) => {
+                const n = Number(doc.id);
+
+                return Number.isInteger(n) &&
+                    n > top &&
+                    n < INVENTORY_DOC_SERIES + 100000
+                    ? n
+                    : top;
+            }, INVENTORY_DOC_SERIES) + 1,
         );
 
     /**
@@ -464,20 +562,33 @@ export const useInventoryStore = defineStore('inventory', () => {
      *
      * `ahead` lets one screen number several new batches in one go — a receipt
      * of eight herbs — without each asking the store and getting the same
-     * answer.
+     * answer. `taken` does the same for keys: the keys one receipt has already
+     * handed out, so two of its lines carrying the same supplier code do not
+     * both open under one key before either is saved.
+     *
+     * A delivery whose lot carries no code of its own is numbered the way the
+     * pharmacy numbers it in SAP — `WV` and the date of the receipt (`when`) —
+     * rather than opening a batch with no number, which nothing could find or
+     * open again.
      */
     const nextBatchNumber = ({
         kind = 'production',
         supplierBatch = '',
         production = '',
         ahead = 0,
+        taken = null,
+        when = null,
     } = {}) => {
-        const number = batchNumberFor({
+        let number = batchNumberFor({
             kind,
             serial: houseSerial.value + 1 + ahead,
             supplierBatch,
             production,
         });
+
+        if (!number && kind === 'purchase') {
+            number = `WV${String(when || isoDaysAgo(0)).replace(/-/g, '')}`;
+        }
 
         if (!number) {
             return { number: '', id: '' };
@@ -487,10 +598,15 @@ export const useInventoryStore = defineStore('inventory', () => {
         let id = number;
         let n = 1;
 
-        while (batches.value.some((batch) => batch.id === id)) {
+        while (
+            batches.value.some((batch) => batch.id === id) ||
+            taken?.has(id)
+        ) {
             n += 1;
             id = `${number}/${n}`;
         }
+
+        taken?.add(id);
 
         return { number, id };
     };
@@ -535,21 +651,27 @@ export const useInventoryStore = defineStore('inventory', () => {
     /**
      * Which batches a quantity would be drawn from, nearest expiry first.
      *
+     * `qty` is in the unit the item is stocked in — a caller holding grams
+     * against a herb kept in kilograms converts first (lib/units convertQty).
+     * `warehouse` narrows the batches as in `openBatchesOf`.
+     *
      * @returns {{ steps: Array<{batch: object, take: number, after: number}>,
      *            short: number }} `short` is what the open batches cannot cover.
      */
-    function fifoPlan(sku, qty) {
+    function fifoPlan(sku, qty, { warehouse = null } = {}) {
         const steps = [];
         let left = Math.max(0, Number(qty) || 0);
 
-        for (const batch of openBatchesOf(sku)) {
+        for (const batch of openBatchesOf(sku, { warehouse })) {
             if (left <= 0) {
                 break;
             }
 
             const take = Math.min(batch.remaining, left);
 
-            left -= take;
+            // Kept to the gram of a kilogram batch, so a plan that spills
+            // across two batches never reports 0.000000001 as short.
+            left = round3(left - take);
             steps.push({ batch, take, after: batch.remaining - take });
         }
 
@@ -578,6 +700,14 @@ export const useInventoryStore = defineStore('inventory', () => {
 
         if (batch.remaining <= 0) {
             batch.state = 'depleted';
+
+            return;
+        }
+
+        // A batch with no expiry on record is neither expired nor about to be
+        // — five real SAP batches have none.
+        if (!Number.isFinite(batch.daysToExp)) {
+            batch.state = 'active';
 
             return;
         }
@@ -646,6 +776,8 @@ export const useInventoryStore = defineStore('inventory', () => {
         );
         const supplier = known ? known.name : form.supplier;
         const supplierCode = known ? known.code : form.supplierCode || null;
+        // The keys this receipt hands out, so two of its lines never share one.
+        const taken = new Set();
 
         const lines = form.lines.map((line) => {
             const item = itemBySku(line.sku);
@@ -665,6 +797,8 @@ export const useInventoryStore = defineStore('inventory', () => {
                       kind: line.waste ? 'waste' : 'purchase',
                       supplierBatch: line.supplierBatch,
                       production: line.supplierBatch,
+                      taken,
+                      when: when.iso,
                   });
 
             return {
@@ -768,8 +902,8 @@ export const useInventoryStore = defineStore('inventory', () => {
                     madeOn: line.madeOn,
                     qty: line.qty,
                     remaining: line.qty,
-                    expiry: line.expiry,
-                    daysToExp: -daysSince(line.expiry),
+                    expiry: line.expiry || null,
+                    daysToExp: line.expiry ? -daysSince(line.expiry) : null,
                     state: 'active',
                     waste: Boolean(line.waste),
                     unitCost: line.price ?? null,
@@ -789,7 +923,9 @@ export const useInventoryStore = defineStore('inventory', () => {
             }
 
             writeMovement({
-                id: `mv-in-${line.batch}`,
+                // The receipt in the key too: a batch topped up by a second
+                // delivery has a second `goods_in`.
+                id: `mv-in-${id}-${line.batch}`,
                 kind: 'goods_in',
                 sku: line.sku,
                 name: line.name,
@@ -926,7 +1062,10 @@ export const useInventoryStore = defineStore('inventory', () => {
                     return;
                 }
 
-                const plan = fifoPlan(row.sku, need);
+                // A customer's order is served from the main warehouse only.
+                const plan = fifoPlan(row.sku, need, {
+                    warehouse: MAIN_WAREHOUSE,
+                });
 
                 plan.steps.forEach((step, k) => {
                     const take = step.take;
@@ -1055,7 +1194,9 @@ export const useInventoryStore = defineStore('inventory', () => {
 
         held.forEach((use) => {
             const batch = batchById(use.batch);
-            const row = batch ? stock.value.find((one) => one.sku === batch.sku) : null;
+            const row = batch
+                ? stock.value.find((one) => one.sku === batch.sku)
+                : null;
 
             if (batch) {
                 batch.remaining =
@@ -1072,7 +1213,9 @@ export const useInventoryStore = defineStore('inventory', () => {
 
             const move = {
                 id: `mv-release-${order.id}-${use.batch}-${use.item}`,
-                kind: 'returned_from_cancel',
+                // The kind config/inventory STOCK_MOVES names, so the ledger
+                // labels it and links its order like the allocation it undoes.
+                kind: 'released_on_cancel',
                 sku: use.sku,
                 name: use.batchName,
                 unit: use.unit,
@@ -1089,7 +1232,9 @@ export const useInventoryStore = defineStore('inventory', () => {
             moves.push(move);
         });
 
-        const remaining = bag('batchUse').filter((row) => row.order !== order.id);
+        const remaining = bag('batchUse').filter(
+            (row) => row.order !== order.id,
+        );
 
         dataset.data.batchUse = remaining;
 
@@ -1108,7 +1253,11 @@ export const useInventoryStore = defineStore('inventory', () => {
                 persist(`inventory/ingredients/${row.sku}`, row, 'PUT'),
             ),
             ...moves.map((move) => persist('movements', move)),
-            persist(`orders/${order.id}/batch-allocation`, { rows: [] }, 'DELETE'),
+            persist(
+                `orders/${order.id}/batch-allocation`,
+                { rows: [] },
+                'DELETE',
+            ),
         ]);
 
         return { rows: held };
@@ -1123,6 +1272,9 @@ export const useInventoryStore = defineStore('inventory', () => {
 
         const changes = [];
 
+        // An expiry is corrected, never removed: FEFO and the label both work
+        // from it. The editor will not save an empty one, and an empty value
+        // that reaches here leaves the date as it was.
         if (expiry && expiry !== batch.expiry) {
             changes.push([
                 'inventory.batches.trace.expiry',
@@ -1206,57 +1358,132 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
 
     /**
-     * A physical count of time-consumed stock: the figure on the shelf becomes
-     * the figure in the system, the gap is one `count` movement, and the
-     * consumption clock restarts from today.
+     * A physical count: the figure on the shelf becomes the figure in the
+     * system, and every gap is a line on one count document.
+     *
+     * `counted` is one number for an item that is not held in batches. For one
+     * that is, it is `{ batches: { [batchId]: qty }, loose }` — a figure per
+     * batch still holding stock, because a total cannot say which batch the
+     * difference belongs to, and the batches are what FEFO and a recall work
+     * from. The row's on-hand then moves by exactly what the batches moved.
+     * `loose` is stock on record in no batch at all (an extract that carried
+     * the item's total but not every batch behind it); left out, a surplus
+     * stays as it was and a deficit is closed, so on-hand never reads below
+     * what its batches hold.
      */
-    async function recordCount(sku, countedQty, note = '') {
+    async function recordCount(sku, counted, note = '') {
         const row = itemBySku(sku);
 
         if (!row) {
             throw new Error(`Cannot count ${sku}`);
         }
 
-        const counted = Math.max(0, Number(countedQty) || 0);
-        const delta = counted - row.onHand;
         const when = moment();
+        const by = dataset.me?.name || null;
+        const remarks = String(note || '').trim() || null;
+        const before = row.onHand;
+        const touched = [];
+        const lines = [];
+        const line = (fields) => ({
+            sku,
+            name: row.name,
+            unit: row.unit,
+            wh: row.wh,
+            batch: null,
+            price: null,
+            ...fields,
+            qty: round3(fields.counted - fields.inStock),
+        });
 
-        row.onHand = counted;
+        if (counted && typeof counted === 'object') {
+            const figures = counted.batches || {};
+            let held = 0;
+
+            heldBatchesOf(sku).forEach((batch) => {
+                held += batch.remaining;
+
+                // A batch the count did not reach is left as it stands.
+                if (!(batch.id in figures)) {
+                    return;
+                }
+
+                const found = round3(
+                    Math.max(0, Number(figures[batch.id]) || 0),
+                );
+
+                lines.push(
+                    line({
+                        wh: batch.wh,
+                        batch: batch.id,
+                        inStock: batch.remaining,
+                        counted: found,
+                    }),
+                );
+                batch.remaining = found;
+                // More found than ever came in: the batch's own total grows
+                // with it, or the screen would read "12 of 10".
+                batch.qty = Math.max(batch.qty, found);
+                syncBatch(batch);
+                touched.push(batch);
+            });
+
+            const loose = round3(before - held);
+            const given =
+                counted.loose !== undefined &&
+                counted.loose !== null &&
+                counted.loose !== '';
+            const looseFound = given
+                ? round3(Math.max(0, Number(counted.loose) || 0))
+                : Math.max(0, loose);
+
+            if (looseFound !== loose) {
+                lines.push(line({ inStock: loose, counted: looseFound }));
+            }
+        } else {
+            lines.push(
+                line({
+                    inStock: before,
+                    counted: round3(Math.max(0, Number(counted) || 0)),
+                }),
+            );
+        }
+
+        const delta = round3(lines.reduce((sum, one) => sum + one.qty, 0));
+
+        row.onHand = round3(Math.max(0, before + delta));
+        // What is promised to orders cannot exceed what is on the shelf, or
+        // "available" reads below zero.
+        row.alloc = Math.min(row.alloc, row.onHand);
         syncRow(row);
 
-        if (delta !== 0) {
+        const moved = lines.filter((one) => one.qty !== 0);
+
+        if (moved.length) {
             const doc = postDoc({
                 type: 'count',
                 warehouse: row.wh,
-                remarks: note.trim() || null,
+                remarks,
                 when,
-                lines: [
-                    {
-                        sku,
-                        name: row.name,
-                        unit: row.unit,
-                        qty: delta,
-                        counted,
-                        inStock: counted - delta,
-                        wh: row.wh,
-                        batch: null,
-                        price: null,
-                    },
-                ],
+                by,
+                lines,
             });
 
-            writeMovement({
-                id: `mv-count-${sku}-${when.iso}`,
-                kind: 'count',
-                sku,
-                name: row.name,
-                unit: row.unit,
-                wh: row.wh,
-                qty: delta,
-                batch: null,
-                ref: doc.id,
-                when,
-                by: dataset.me?.name || null,
+            moved.forEach((one, i) => {
+                writeMovement({
+                    // The document in the key: a second count of the same
+                    // item on the same day is a second document.
+                    id: `mv-count-${doc.id}-${i}`,
+                    kind: 'count',
+                    sku,
+                    name: row.name,
+                    unit: row.unit,
+                    wh: one.wh,
+                    qty: one.qty,
+                    batch: one.batch,
+                    ref: doc.id,
+                    when,
+                    by,
+                });
             });
         }
 
@@ -1264,13 +1491,24 @@ export const useInventoryStore = defineStore('inventory', () => {
             act: 'stock_adjust',
             entType: 'catalog_item',
             ent: sku,
-            from: String(row.onHand - delta),
-            to: String(counted),
-            note: note || null,
+            from: String(before),
+            to: String(row.onHand),
+            note: remarks,
         });
-        await persist(`inventory/count/${sku}`, { counted, note });
+        await Promise.all([
+            ...touched.map((batch) =>
+                persist(`batches/${batch.id}`, batch, 'PUT'),
+            ),
+            persist(`inventory/count/${sku}`, {
+                counted: row.onHand,
+                batches: lines
+                    .filter((one) => one.batch)
+                    .map((one) => ({ batch: one.batch, counted: one.counted })),
+                note: remarks,
+            }),
+        ]);
 
-        return { counted, delta, countedOn: when.iso };
+        return { counted: row.onHand, delta, countedOn: when.iso };
     }
 
     /**
@@ -1301,12 +1539,17 @@ export const useInventoryStore = defineStore('inventory', () => {
             0,
             Math.round((item.onHand - qty) * 1000) / 1000,
         );
+        // What is promised to orders cannot exceed what is left, or
+        // "available" reads below zero (allocateToOrder caps the same way).
+        item.alloc = Math.min(item.alloc, item.onHand);
         syncRow(item);
 
         const after = item.onHand;
 
         // SAP has no "adjustment": stock that disappears is a goods issue, and
-        // it is a document like any other.
+        // it is a document like any other. Its lines carry the quantity as a
+        // positive figure, as a production run's issue does — the document's
+        // type is what says it went out; the ledger row below keeps the sign.
         const doc = postDoc({
             type: 'goods_issue',
             reason: form.reason,
@@ -1317,7 +1560,7 @@ export const useInventoryStore = defineStore('inventory', () => {
                     sku: item.sku,
                     name: item.name,
                     unit: item.unit,
-                    qty: -qty,
+                    qty,
                     wh: batch.wh,
                     batch: batch.id,
                     price: null,
@@ -1554,10 +1797,12 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     return {
         stock,
+        liveStock,
         batches,
         receipts,
         inventoryDocs,
         docById,
+        refKind,
         postDoc,
         movements,
         batchUse,
@@ -1581,6 +1826,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         receiptById,
         batchesOf,
         openBatchesOf,
+        heldBatchesOf,
         openBatch,
         syncRow,
         syncBatch,

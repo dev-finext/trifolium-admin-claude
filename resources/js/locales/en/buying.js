@@ -44,6 +44,11 @@ export default {
         inSap: 'Booked in through SAP, before this console',
         moveTo: 'Move to:',
         arrived: '{done} of {total} arrived',
+        // An order part of whose goods came and the rest is still on its way.
+        partial: 'Partly received',
+        closedShort: 'Closed short',
+        waiting: 'one line still waiting | {n} lines still waiting',
+        closedShortLines: 'one line closed short | {n} lines closed short',
         emptyTitle: 'No purchase orders yet',
         emptySub:
             'A purchase order is one supplier, quantities, and a file to send them.',
@@ -78,7 +83,11 @@ export default {
         draft: 'A draft — not yet sent to the supplier. Export to Excel at any stage, and mark it Sent once it actually goes out.',
         sent: 'Sent to the supplier on {when}. When the goods arrive, book them in.',
         received: 'Received on {when}; stock was updated.',
-        failed: 'Marked as failed. If it was sent again, mark it Sent.',
+        partial:
+            'Part of the goods arrived (last on {when}). Book the rest in when it comes — or close it if it will not.',
+        receivedShort:
+            'Closed on {when} on what arrived; the rest is not coming.',
+        failed: 'Marked as failed. Change the supplier or the lines if needed, and mark it Sent when it goes out again.',
     },
 
     move: {
@@ -95,11 +104,41 @@ export default {
         confirm: 'Move',
         effect: {
             group: 'one line → {supplier} | {n} lines → {supplier}',
+            into: 'one line → {supplier} · added to draft {number} | {n} lines → {supplier} · added to draft {number}',
             noSupplier: 'No supplier (chosen on the order)',
             remain: 'one line stays on the request | {n} lines stay on the request',
             remainNone: 'Every line moves — the request will be left empty',
         },
         done: 'Opened purchase order {numbers} | Opened {n} purchase orders: {numbers}',
+        doneJoined:
+            'Lines added to draft {numbers} | Lines added to drafts {numbers}',
+    },
+
+    // An order part of whose goods came, and the rest is not coming.
+    closeRest: {
+        action: 'Close the rest',
+        title: 'Close the rest that is not coming',
+        body: 'One line is still waiting for goods. The order closes on what already arrived. | {n} lines are still waiting for goods. The order closes on what already arrived.',
+        effectState:
+            'The order moves to Received, with the shortfall left marked on its lines',
+        effectStock:
+            'Stock does not change — only what actually arrived was booked in',
+        confirm: 'Close the rest',
+        done: 'The rest was closed',
+    },
+
+    // Only a sheet nothing happened to: a draft order, or an open request.
+    remove: {
+        action: {
+            order: 'Delete the draft',
+            request: 'Delete the request',
+        },
+        title: {
+            order: 'Delete a draft order',
+            request: 'Delete a purchase request',
+        },
+        body: 'Sheet {number} will be removed from the list. The record stays in the log.',
+        done: 'Sheet {number} removed',
     },
 
     // What the row carries is what the decision is made from; the rest of the
@@ -138,6 +177,10 @@ export default {
         arrived: 'Arrived',
         batch: 'Supplier batch',
         batchHint: 'From the label',
+        batchEmpty:
+            'No batch code from the supplier? Leave it empty — the batch is numbered WV and the receipt date, as in SAP',
+        already: '{n} already received',
+        needExpiry: 'one line has no expiry | {n} lines have no expiry',
         expiry: 'Expiry',
         price: 'Unit price',
         note: 'Receipt note',
@@ -153,6 +196,7 @@ export default {
         effectBatches:
             'A batch is opened per line, with the supplier number and expiry',
         effectState: 'The order moves to Received',
+        effectOpen: 'The order stays open for the rest',
         effectDiffer:
             'One line differs from what was ordered | {n} lines differ from what was ordered',
         done: 'one line booked in | {n} lines booked in',

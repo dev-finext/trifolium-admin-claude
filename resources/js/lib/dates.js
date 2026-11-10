@@ -10,9 +10,16 @@ export { now, setClock };
 
 const pad = (n) => String(n).padStart(2, '0');
 
-/** `12.08.2026` from an ISO `2026-08-12`. */
+/**
+ * `12.08.2026` from an ISO `2026-08-12`. Nothing for no date — a batch SAP
+ * holds without an expiry prints blank, not "undefined.undefined.null".
+ */
 export function fmtISO(iso) {
-    const [y, m, d] = String(iso).split('-');
+    if (!iso) {
+        return '';
+    }
+
+    const [y, m, d] = String(iso).slice(0, 10).split('-');
 
     return `${d}.${m}.${y}`;
 }

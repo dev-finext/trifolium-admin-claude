@@ -22,7 +22,9 @@ import ATextarea from '@/components/ui/ATextarea.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import {
     COMPONENT_WAREHOUSE_IDS,
+    familyOfCode,
     ISSUE_METHOD_IDS,
+    ITEM_FAMILIES,
     ITEM_FLAG_IDS,
     ITEM_TYPE_IDS,
     ITEM_UOM_IDS,
@@ -36,8 +38,10 @@ import {
     VALUATION_METHOD_IDS,
 } from '@/config';
 import { applyDraft, recordMoved, snapshot, stampOf } from '@/lib/draft';
+import { convertQty } from '@/lib/units';
 import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
+import { supplierSelectable } from '@/stores/system';
 
 const props = defineProps({
     /** The item (or joined row) being edited; `{}` for a new one. */
@@ -77,6 +81,9 @@ const form = reactive({
     // SAP's item number is the key; the numbering block is the console's own.
     code: source.code || '',
     group: source.group ?? null,
+    // Asked only for a category that holds nothing yet — see `groupEmpty`.
+    // Never saved: the store reads the block back off the number.
+    family: familyOfCode(source.code) || '',
     names: {
         he: source.names?.he || '',
         en: source.names?.en || '',
@@ -116,7 +123,10 @@ const form = reactive({
         count: source.uom?.count || source.uom?.stock || 'kg',
         price: source.uom?.price || source.uom?.sales || 'kg',
         numInBuy: text(source.uom?.numInBuy ?? 1),
-        numInSale: text(source.uom?.numInSale ?? 1),
+        // A new item is held in kilos and sold in grams, so one sales unit is
+        // a thousandth of a stock unit — SAP's NumInSale, as every herb in the
+        // extract carries it. A 1 here read as "one gram is one kilo".
+        numInSale: text(source.uom?.numInSale ?? (source.uom ? 1 : 0.001)),
         group: source.uom?.group ?? -1,
         packUom: source.uom?.packUom || '',
         packQty: text(source.uom?.packQty),
@@ -202,16 +212,55 @@ watch(
     },
 );
 
-// The category picks the number: the next one in that category's own series.
-// Nobody types it.
+/**
+ * A category with nothing in it yet.
+ *
+ * Seventeen of SAP's categories are empty in the extract, so there is no series
+ * to continue and the category alone cannot number the item. Whoever opens the
+ * first one there says which numbering block it belongs to.
+ */
+const groupEmpty = computed(
+    () =>
+        isNew.value &&
+        groupCode(form.group) !== null &&
+        !store.nextCode(form.group),
+);
+
+// The category picks the number: the next one in that category's own series,
+// or in the block chosen for an empty category. Nobody types it.
 watch(
-    () => form.group,
-    (group) => {
+    () => [form.group, form.family],
+    ([group, family]) => {
         if (!isNew.value || groupCode(group) === null) {
             return;
         }
 
-        form.code = store.nextCode(group);
+        form.code =
+            store.nextCode(group) ||
+            (family ? store.nextCodeInFamily(family) : '');
+    },
+);
+
+// A new item's conversions follow its units while they are of one kind: kilos
+// to stock and grams to sell is 0.001, as SAP stores it. A jar and a gram have
+// no fixed ratio, so there the number is left for whoever knows it.
+watch(
+    () => [form.uom.stock, form.uom.purchase, form.uom.sales],
+    ([stock, purchase, sales]) => {
+        if (!isNew.value) {
+            return;
+        }
+
+        const perBuy = convertQty(1, purchase, stock);
+        const perSale = convertQty(1, sales, stock);
+
+        if (perBuy !== null) {
+            form.uom.numInBuy = text(perBuy);
+        }
+
+        if (perSale !== null) {
+            form.uom.numInSale = text(perSale);
+        }
     },
 );
 
@@ -238,7 +287,7 @@ const off = computed(() => ({
  * kilograms for one item and twenty millilitres for the next. The unit is the
  * item's own and is not chosen here — it is shown so the number can be read.
  */
-const unitLabel = (id) => (id ? t(`inventory.unit.${id}`) : '');
+const unitLabel = (id) => (id ? t(`items.uom.${id}`) : '');
 
 const nonNegative = (value) => value === '' || Number(value) >= 0;
 
@@ -254,7 +303,9 @@ const errors = computed(() => {
                   ? t('items.validate.nameLong')
                   : '',
         code: !code
-            ? t('items.validate.codeMissing')
+            ? groupEmpty.value
+                ? t('items.validate.familyMissing')
+                : t('items.validate.codeMissing')
             : !/^\d{6}$/.test(code)
               ? t('items.validate.codeFormat')
               : store.codeTaken(code, props.item.sku || null)
@@ -335,7 +386,8 @@ const draft = computed(() => ({
     pictureInternal: form.pictureInternal || null,
     suppliers: {
         preferred: form.suppliers.preferred || null,
-        sapCode: form.suppliers.sapCode || null,
+        // SAP's one `CardCode`: the code follows the supplier picked above.
+        sapCode: form.suppliers.preferred || null,
         catalogNum: form.suppliers.catalogNum.trim() || null,
         itemName: form.suppliers.itemName.trim() || null,
     },
@@ -466,6 +518,15 @@ const groupOptions = computed(() =>
     })),
 );
 
+/** The numbering blocks, each with the prefix its codes start with. */
+const familyOptions = computed(() => [
+    { value: '', label: t('items.editor.familyPick') },
+    ...ITEM_FAMILIES.map((family) => ({
+        value: family.id,
+        label: `${t(`items.family.${family.id}`)} · ${family.prefix}`,
+    })),
+]);
+
 const itemTypeOptions = computed(() =>
     ITEM_TYPE_IDS.map((id) => ({
         value: id,
@@ -531,12 +592,21 @@ const uomGroupOptions = computed(() =>
     })),
 );
 
+// A suspended supplier is not offered — its suspension promises as much —
+// unless this card already names it, so the field never shows a value that
+// is not in its own list.
 const supplierOptions = computed(() => [
     { value: '', label: t('items.editor.noSupplier') },
-    ...dataset.suppliers.map((supplier) => ({
-        value: supplier.code,
-        label: `${loc(supplier.name)} · ${supplier.code}`,
-    })),
+    ...dataset.suppliers
+        .filter(
+            (supplier) =>
+                supplierSelectable(supplier) ||
+                supplier.code === form.suppliers.preferred,
+        )
+        .map((supplier) => ({
+            value: supplier.code,
+            label: `${loc(supplier.name)} · ${supplier.code}`,
+        })),
 ]);
 
 const safetyOptions = computed(() => [
@@ -644,6 +714,22 @@ const win = computed(() => ({
                         />
                         <div v-if="show('group')" class="a-inv">
                             {{ show('group') }}
+                        </div>
+                    </div>
+                    <div v-if="groupEmpty">
+                        <label class="a-lbl" for="ie-family"
+                            >{{ t('items.editor.family') }}
+                            <span class="req">*</span></label
+                        >
+                        <ASelect
+                            id="ie-family"
+                            v-model="form.family"
+                            :options="familyOptions"
+                            class="a-w100"
+                            @blur="mark('code')"
+                        />
+                        <div class="a-hint">
+                            {{ t('items.editor.familyHint') }}
                         </div>
                     </div>
                     <div>
@@ -949,30 +1035,40 @@ const win = computed(() => ({
                             </div>
                         </div>
                         <div>
-                            <label class="a-lbl">{{
+                            <label class="a-lbl" for="ie-pack-uom">{{
                                 t('items.card.packUom')
                             }}</label>
-                            <div class="pair">
-                                <AInput
-                                    v-model="form.uom.packUom"
-                                    :disabled="off.purchase"
-                                    ltr
-                                />
-                                <AInput
-                                    v-model="form.uom.packQty"
-                                    :disabled="off.purchase"
-                                    type="number"
-                                    ltr
-                                />
-                            </div>
+                            <AInput
+                                id="ie-pack-uom"
+                                v-model="form.uom.packUom"
+                                :disabled="off.purchase"
+                                ltr
+                                class="a-w100"
+                            />
                         </div>
+                        <div>
+                            <label class="a-lbl" for="ie-pack-qty">{{
+                                t('items.card.packQty')
+                            }}</label>
+                            <AInput
+                                id="ie-pack-qty"
+                                v-model="form.uom.packQty"
+                                :disabled="off.purchase"
+                                type="number"
+                                ltr
+                                class="a-w100"
+                            />
+                        </div>
+                        <!-- The sales unit is the site's, so on a card already
+                             in use it opens with the site sync. A new item has
+                             no site listing to break, and needs one set. -->
                         <div>
                             <label class="a-lbl">{{
                                 t('items.card.salesUom')
                             }}</label>
                             <ASelect
                                 v-model="form.uom.sales"
-                                :disabled="!onSite"
+                                :disabled="!onSite && !isNew"
                                 :options="uomOptions"
                                 class="a-w100"
                             />
@@ -983,7 +1079,7 @@ const win = computed(() => ({
                             }}</label>
                             <AInput
                                 v-model="form.uom.numInSale"
-                                :disabled="!onSite"
+                                :disabled="!onSite && !isNew"
                                 type="number"
                                 step="0.001"
                                 ltr
@@ -1362,22 +1458,29 @@ const win = computed(() => ({
                         </div>
                     </div>
                     <div>
-                        <label class="a-lbl">{{
-                            t('items.card.siteQty')
+                        <label class="a-lbl" for="ie-site-qty">{{
+                            t('items.editor.siteQty')
                         }}</label>
-                        <div class="pair">
-                            <AInput
-                                v-model="form.site.quantity"
-                                :disabled="!onSite"
-                                type="number"
-                                ltr
-                            />
-                            <ASelect
-                                v-model="form.site.uom"
-                                :disabled="!onSite"
-                                :options="uomOptionsBlank"
-                            />
-                        </div>
+                        <AInput
+                            id="ie-site-qty"
+                            v-model="form.site.quantity"
+                            :disabled="!onSite"
+                            type="number"
+                            ltr
+                            class="a-w100"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl" for="ie-site-uom">{{
+                            t('items.editor.siteUom')
+                        }}</label>
+                        <ASelect
+                            id="ie-site-uom"
+                            v-model="form.site.uom"
+                            :disabled="!onSite"
+                            :options="uomOptionsBlank"
+                            class="a-w100"
+                        />
                     </div>
                     <div>
                         <label class="a-lbl">{{
@@ -1391,16 +1494,20 @@ const win = computed(() => ({
                         />
                     </div>
                 </div>
-                <div class="a-lbl top">{{ t('items.card.categories') }}</div>
-                <div class="a-2col">
-                    <ASelect
-                        v-for="(cat, i) in form.site.categories"
-                        :key="i"
-                        v-model="form.site.categories[i]"
-                        :disabled="!onSite"
-                        :options="categoryOptions"
-                        class="a-w100"
-                    />
+                <!-- SAP's four category fields, each its own field. -->
+                <div class="a-2col top">
+                    <div v-for="(cat, i) in form.site.categories" :key="i">
+                        <label class="a-lbl" :for="`ie-site-cat-${i}`">{{
+                            t('items.editor.categorySlot', { n: i + 1 })
+                        }}</label>
+                        <ASelect
+                            :id="`ie-site-cat-${i}`"
+                            v-model="form.site.categories[i]"
+                            :disabled="!onSite"
+                            :options="categoryOptions"
+                            class="a-w100"
+                        />
+                    </div>
                 </div>
                 <div class="top">
                     <label class="a-lbl">{{ t('items.card.saleText') }}</label>
@@ -1537,12 +1644,6 @@ const win = computed(() => ({
 .ro {
     display: inline-block;
     margin-top: 6px;
-}
-
-.pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
 }
 
 .flags-hint {

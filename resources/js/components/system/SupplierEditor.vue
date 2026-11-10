@@ -21,10 +21,21 @@ import { LEAD_UNIT_IDS } from '@/config';
 import { L } from '@/lib/localized';
 import { useSystemStore } from '@/stores/system';
 
-/** How the form lays its fields out. `loc` marks a localized record field. */
+/**
+ * How the form lays its fields out. `loc` marks a localized record field.
+ *
+ * Two kinds of figure, kept apart on purpose:
+ *   `digits` an identifier written in digits — a company number, a bank
+ *            branch, an account. It stays a string, leading zeros and all.
+ *   `num`    a quantity. It is saved as a number; `int` refuses a fraction,
+ *            and `blank` is what an emptied field saves as.
+ *
+ * City is not required: SAP does not require it, and most of the real cards
+ * have none — a required city would make those cards impossible to save.
+ */
 const FIELDS = [
     { k: 'name', label: 'field.name', loc: true, req: true },
-    { k: 'biz', label: 'field.biz', num: true, req: true, ltr: true },
+    { k: 'biz', label: 'field.biz', digits: true, req: true, ltr: true },
     { k: 'kind', label: 'field.kind', opts: 'kind' },
     { k: 'bizType', label: 'field.bizType', opts: 'bizType' },
     { k: 'contact', label: 'field.contactName', loc: true, req: true },
@@ -34,18 +45,18 @@ const FIELDS = [
     { k: 'email', label: 'field.email', ltr: true, req: true },
     { k: 'orderMail', label: 'field.orderMail', ltr: true },
     { k: 'site', label: 'field.site', ltr: true },
-    { k: 'city', label: 'field.city', loc: true, req: true },
+    { k: 'city', label: 'field.city', loc: true },
     { k: 'addr', label: 'field.addr', loc: true, full: true },
     { k: 'terms', label: 'field.terms', opts: 'terms' },
     { k: 'pay', label: 'field.pay', opts: 'pay' },
     { k: 'cur', label: 'field.cur', opts: 'cur' },
-    { k: 'lead', label: 'field.lead', num: true },
+    { k: 'lead', label: 'field.lead', num: true, int: true, blank: null },
     { k: 'leadUnit', label: 'field.leadUnit', opts: 'leadUnit' },
-    { k: 'tradeDisc', label: 'field.tradeDisc', num: true },
-    { k: 'minOrder', label: 'field.minOrder', num: true },
+    { k: 'tradeDisc', label: 'field.tradeDisc', num: true, blank: 0 },
+    { k: 'minOrder', label: 'field.minOrder', num: true, blank: 0 },
     { k: 'bank', label: 'field.bank', loc: true },
-    { k: 'branch', label: 'field.branch', num: true, ltr: true },
-    { k: 'acct', label: 'field.acct', num: true, ltr: true },
+    { k: 'branch', label: 'field.branch', digits: true, ltr: true },
+    { k: 'acct', label: 'field.acct', digits: true, ltr: true },
     { k: 'payee', label: 'field.payee', loc: true, full: true },
     { k: 'notes', label: 'card.notes', loc: true, area: true, full: true },
 ];
@@ -65,16 +76,21 @@ const uid = useId();
 const form = ref({});
 const confirming = ref(false);
 
-/** The record's current value for a field, as the string an input shows. */
+/**
+ * The record's current value for a field, as the string an input shows. Always
+ * a string: an empty localized field resolves to null, and a null that the
+ * input then shows as '' would read as a change nobody made.
+ */
 function original(field) {
-    const value = props.supplier?.[field.k];
-
-    if (field.loc) {
-        return loc(value);
-    }
+    const value = field.loc
+        ? loc(props.supplier?.[field.k])
+        : props.supplier?.[field.k];
 
     return value === null || value === undefined ? '' : String(value);
 }
+
+/** What the form holds for a field, compared the way it will be saved. */
+const typed = (field) => String(form.value[field.k] ?? '').trim();
 
 // Reseed on every opening so a half-typed edit never carries into the next card.
 watch(
@@ -124,11 +140,33 @@ const missing = computed(() =>
     ),
 );
 
-const changed = computed(() =>
-    FIELDS.filter(
-        (field) => String(form.value[field.k] ?? '') !== original(field),
-    ),
-);
+/**
+ * A quantity as it will be saved. Text that is not a number (a lone ".") saves
+ * as the field's blank rather than as NaN.
+ */
+function numberOf(field, text) {
+    const value = Number(text);
+
+    return text === '' || !Number.isFinite(value) ? field.blank : value;
+}
+
+/**
+ * Whether a field moved. A quantity is compared as a number, so "2.50" over a
+ * stored 2.5 — or an emptied field whose blank is what was there — is not an
+ * edit; everything else as trimmed text, the way it is saved.
+ */
+function moved(field) {
+    if (field.num) {
+        return (
+            numberOf(field, typed(field)) !==
+            numberOf(field, original(field).trim())
+        );
+    }
+
+    return typed(field) !== original(field).trim();
+}
+
+const changed = computed(() => FIELDS.filter(moved));
 
 const canSave = computed(() => !missing.value.length && changed.value.length);
 
@@ -158,8 +196,42 @@ function labelOf(field) {
     return t(`systemContacts.suppliers.${field.label}`);
 }
 
+/**
+ * Keep a figure to what it can be. An identifier and a whole number take
+ * digits only; a quantity also takes one decimal point (a comma is read as
+ * one), so a 2.5% discount is 2.5 and not 25.
+ */
 function onNum(field, value) {
-    form.value[field.k] = value.replace(/[^\d]/g, '');
+    const text = String(value ?? '');
+
+    if (field.digits || field.int) {
+        form.value[field.k] = text.replace(/\D/g, '');
+
+        return;
+    }
+
+    const [whole, ...rest] = text
+        .replace(/,/g, '.')
+        .replace(/[^\d.]/g, '')
+        .split('.');
+
+    form.value[field.k] = rest.length ? `${whole}.${rest.join('')}` : whole;
+}
+
+/** A value as the log shows it: an option by its label, empty as nothing. */
+function shown(field, text) {
+    if (!text) {
+        return null;
+    }
+
+    if (field.opts) {
+        return (
+            options.value[field.opts].find((option) => option.value === text)
+                ?.label ?? text
+        );
+    }
+
+    return text;
 }
 
 async function save() {
@@ -168,19 +240,25 @@ async function save() {
     const patch = {};
 
     changed.value.forEach((field) => {
-        const value = form.value[field.k];
+        const text = typed(field);
 
         if (field.num) {
-            patch[field.k] = Number(value);
+            patch[field.k] = numberOf(field, text);
         } else if (field.loc) {
-            patch[field.k] = L(String(value).trim());
+            patch[field.k] = text ? L(text) : null;
         } else {
-            patch[field.k] = String(value).trim();
+            // An identifier stays a string — a branch of 012 is not 12.
+            patch[field.k] = text || null;
         }
     });
 
     const labels = changed.value.map((field) => labelOf(field));
-    const ok = await system.updateSupplier(props.supplier.code, patch);
+    const changes = changed.value.map((field) => ({
+        field: `systemContacts.suppliers.${field.label}`,
+        from: shown(field, original(field).trim()),
+        to: shown(field, typed(field)),
+    }));
+    const ok = await system.updateSupplier(props.supplier.code, patch, changes);
 
     if (ok) {
         emit('saved', labels);
@@ -225,12 +303,12 @@ async function save() {
                     :rows="3"
                 />
                 <AInput
-                    v-else-if="field.num"
+                    v-else-if="field.num || field.digits"
                     :id="`${uid}-${field.k}`"
                     :model-value="form[field.k]"
                     class="a-w100"
                     :ltr="field.ltr"
-                    inputmode="numeric"
+                    :inputmode="field.num && !field.int ? 'decimal' : 'numeric'"
                     @update:model-value="onNum(field, $event)"
                 />
                 <AInput

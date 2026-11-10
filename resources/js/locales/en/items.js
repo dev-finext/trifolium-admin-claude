@@ -91,6 +91,7 @@ export default {
             'The system holds {qty} {uom} — the gap is written as a count movement',
         note: 'Note',
         save: 'Record the count',
+        failed: 'The count was not recorded — the item has no stock row to post it to. Save the card with the "Inventory" flag on and try again.',
     },
     kpi: {
         all: 'All items',
@@ -234,7 +235,7 @@ export default {
         noPrice: '—',
         siteOn: 'Synced',
         siteOff: '—',
-        uom: '1 {purchase} = {factor} {stock}',
+        uom: '1 {purchase} = {factor} {sales}',
     },
     card: {
         ladder: 'Price scale',
@@ -300,6 +301,9 @@ export default {
         batchesAll: '{n} batches in all · click to list',
         noCommitted: 'No open orders hold this item',
         noOnOrder: 'No open purchase orders for this item',
+        onOrderSap: 'Open in SAP',
+        onOrderSapSub: 'Orders not on the buying sheets here',
+        inStockUnit: '= {n} {unit}',
         noBatches: 'No open batches',
         notTracked: 'The item is not stock-managed — received, never deducted',
         colOrder: 'Order',
@@ -497,6 +501,13 @@ export default {
         remarksHint: 'SAP’s remarks field — printed on the prep sheet',
         saleTextHint: 'The marketing text the consumer site shows',
         codePending: 'Set by the category',
+        family: 'Numbering block',
+        familyPick: 'Choose a block…',
+        familyHint:
+            'This category holds no items yet, so there is no series to continue. The block sets the number prefix — the number is the next free one in it.',
+        siteQty: 'Quantity on the site',
+        siteUom: 'Unit on the site',
+        categorySlot: 'Site category {n}',
         flagsHint:
             'The four flags decide what the rest of the card is for: an item nobody sells has no price and no site, one nobody buys has no vendor, and one nobody stocks has no levels and no batches.',
         supplierItemNameHint:
@@ -513,6 +524,7 @@ export default {
         group: 'Please choose a category',
         positive: 'A number greater than zero',
         codeMissing: 'Choose a category so a number can be assigned',
+        familyMissing: 'Choose a numbering block so a number can be assigned',
     },
     prep: {
         sub: '{n} preparation types · the fixed label text, shelf life and “contains” are edited here, not in code',

@@ -33,8 +33,12 @@ const inventory = useInventoryStore();
 
 const uomLabel = (id) => (id ? t(`items.uom.${id}`) : t('items.card.notSet'));
 
-/** The sales unit every quantity tile counts in — empty until the item has one. */
-const salesUom = computed(() =>
+/**
+ * The stock unit every quantity tile counts in — SAP's `InvntryUom`, which is
+ * what on hand, committed and on order are all held in. Empty until the item
+ * has one.
+ */
+const stockUom = computed(() =>
     props.row?.uom?.stock ? t(`items.uom.${props.row.uom.stock}`) : '',
 );
 
@@ -45,12 +49,13 @@ const committed = computed(() =>
     props.row ? store.committedOf(props.row.sku) : [],
 );
 
+/**
+ * The lines behind the "on order" tile. The tile itself is the row's own
+ * `onOrder` — the figure every other screen reads — and these lines add up to
+ * it: the sent orders, plus what SAP still had open, as one line of its own.
+ */
 const onOrder = computed(() =>
     props.row ? store.onOrderOf(props.row.sku) : [],
-);
-
-const onOrderQty = computed(() =>
-    onOrder.value.reduce((sum, line) => sum + (line.qtySales ?? line.qty), 0),
 );
 
 /**
@@ -118,8 +123,8 @@ const batchCols = computed(() => [
                     </div>
                     <div class="tile-v">
                         <ANum>{{ num(row.onHand) }}</ANum>
-                        <span v-if="salesUom" class="tile-u">{{
-                            salesUom
+                        <span v-if="stockUom" class="tile-u">{{
+                            stockUom
                         }}</span>
                     </div>
                     <div v-if="waste > 0" class="tile-s">
@@ -137,8 +142,8 @@ const batchCols = computed(() => [
                     </div>
                     <div class="tile-v">
                         <ANum>{{ num(row.alloc) }}</ANum>
-                        <span v-if="salesUom" class="tile-u">{{
-                            salesUom
+                        <span v-if="stockUom" class="tile-u">{{
+                            stockUom
                         }}</span>
                     </div>
                     <div class="tile-s">
@@ -159,9 +164,9 @@ const batchCols = computed(() => [
                         {{ t('items.card.onOrder') }}
                     </div>
                     <div class="tile-v">
-                        <ANum>{{ num(onOrderQty) }}</ANum>
-                        <span v-if="salesUom" class="tile-u">{{
-                            salesUom
+                        <ANum>{{ num(row.onOrder ?? 0) }}</ANum>
+                        <span v-if="stockUom" class="tile-u">{{
+                            stockUom
                         }}</span>
                     </div>
                     <div class="tile-s">
@@ -178,8 +183,8 @@ const batchCols = computed(() => [
                     </div>
                     <div class="tile-v" :class="{ 'is-low': row.low }">
                         <ANum>{{ num(row.avail) }}</ANum>
-                        <span v-if="salesUom" class="tile-u">{{
-                            salesUom
+                        <span v-if="stockUom" class="tile-u">{{
+                            stockUom
                         }}</span>
                     </div>
                     <div class="tile-s">
@@ -254,15 +259,35 @@ const batchCols = computed(() => [
                         {{ t('items.card.noOnOrder') }}
                     </p>
                 </template>
-                <template #cell-po="{ row: line }"
-                    ><ANum>{{ line.po }}</ANum></template
-                >
-                <template #cell-supplier="{ row: line }">{{
-                    loc(line.supplier)
-                }}</template>
+                <template #cell-po="{ row: line }">
+                    <template v-if="line.sap">
+                        <div>{{ t('items.card.onOrderSap') }}</div>
+                        <div class="t-sub">
+                            {{ t('items.card.onOrderSapSub') }}
+                        </div>
+                    </template>
+                    <ANum v-else>{{ line.po }}</ANum>
+                </template>
+                <template #cell-supplier="{ row: line }">
+                    <template v-if="line.supplier">{{
+                        loc(line.supplier)
+                    }}</template>
+                    <span v-else class="t-sub">—</span>
+                </template>
                 <template #cell-qty="{ row: line }">
                     <ANum>{{ num(line.qty) }}</ANum>
                     {{ uomLabel(line.uom) }}
+                    <div
+                        v-if="line.uom !== row.uom?.stock && stockUom"
+                        class="t-sub"
+                    >
+                        {{
+                            t('items.card.inStockUnit', {
+                                n: num(line.qtyStock),
+                                unit: stockUom,
+                            })
+                        }}
+                    </div>
                 </template>
                 <template #cell-eta="{ row: line }">
                     <ANum>{{ line.eta ? fmtISO(line.eta) : '—' }}</ANum>

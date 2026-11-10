@@ -10,7 +10,7 @@
 // before it calls in. The build order matters and is the only stateful thing
 // about it: orders need practitioner cards, messages need orders, exception
 // flags need messages, and balances need the orders they are derived from.
-import { SETTINGS } from '@/config';
+import { SETTINGS, sentOrderQtyBySku } from '@/config';
 import { DEMO_CITIES } from '@/demo/addresses';
 import { buildBuyingLists } from '@/demo/buying';
 import {
@@ -34,7 +34,10 @@ import {
     EVENT_KIND_IDS,
 } from '@/demo/content';
 import { buildActivities } from '@/demo/crm';
-import { buildCourierPickupLists, buildCourierSettings } from '@/demo/deliveries';
+import {
+    buildCourierPickupLists,
+    buildCourierSettings,
+} from '@/demo/deliveries';
 import {
     buildBatchUse,
     buildBatches,
@@ -103,6 +106,7 @@ import {
     buildSupplierInvoices,
     buildSupplierNotes,
     buildSupplierPayments,
+    applySupplierBalances,
     INVENTORY_SETTINGS,
 } from '@/demo/purchasing';
 import REAL_ITEM_GROUPS from '@/demo/real/itemGroups.json';
@@ -174,6 +178,21 @@ export function buildDataset() {
         stock,
         boms,
     });
+
+    // SAP's `OnOrder` is frozen the day the catalogue was read, and part of it
+    // is the very orders above that the console now holds as sent. The item
+    // keeps only the rest — what SAP had on order that no sheet here carries —
+    // and the items store adds the sent orders back live, so a quantity is
+    // never counted twice and sending or receiving an order moves the figure.
+    const sentOpen = sentOrderQtyBySku(buyingLists);
+
+    items.forEach((item) => {
+        const rest =
+            (Number(item.onOrder) || 0) - (sentOpen.get(item.sku) || 0);
+
+        item.onOrderBase = Math.max(0, Math.round(rest * 1000) / 1000);
+    });
+
     const purchaseOrders = buildPurchaseOrders(items, DEMO_SUPPLIERS);
     const supplierNotes = buildSupplierNotes(purchaseOrders, receipts);
     // The runs that made the in-house items: they consume component batches,
@@ -195,6 +214,11 @@ export function buildDataset() {
         DEMO_SUPPLIERS,
     );
     const supplierPayments = buildSupplierPayments(supplierInvoices);
+
+    // The open balance and the twelve-month spend on each supplier card, from
+    // the same invoices the payables screen lists — written once here, and
+    // kept current by the store after every invoice and payment.
+    applySupplierBalances(DEMO_SUPPLIERS, supplierInvoices);
     // The paperwork every movement above was posted with: SAP does not move
     // stock without a document, so the documents come last and describe what
     // the receipts and the production runs already did.

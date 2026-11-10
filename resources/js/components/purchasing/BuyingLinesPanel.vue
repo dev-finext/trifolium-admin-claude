@@ -161,10 +161,24 @@ const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
 
 // ---- one line in full ------------------------------------------------------
 
-const openSku = ref('');
+/**
+ * The sheet's lines, each with its key. A real sheet can list one item twice
+ * (SAP request 2600001 does), so a row — its tick, its quantity, its removal,
+ * its drawer — is addressed by the line's own key and never by the item code.
+ * A line saved before keys existed reads with the key the store will give it.
+ */
+const rows = computed(() =>
+    props.list.lines.map((line, index) =>
+        line.key
+            ? line
+            : { ...line, key: `${props.list.number}-x${index + 1}` },
+    ),
+);
+
+const openKey = ref('');
 
 const openLine = computed(
-    () => props.list.lines.find((line) => line.sku === openSku.value) || null,
+    () => rows.value.find((line) => line.key === openKey.value) || null,
 );
 </script>
 
@@ -255,9 +269,9 @@ const openLine = computed(
             v-else
             class="bl-sheet"
             :cols="cols"
-            :rows="list.lines"
-            row-key="sku"
-            :selected="openSku"
+            :rows="rows"
+            row-key="key"
+            :selected="openKey"
         >
             <template #cell-sku="{ row }">
                 <ANum class="a-code">{{ row.sku }}</ANum>
@@ -267,7 +281,7 @@ const openLine = computed(
                     type="button"
                     class="bl-name"
                     :title="row.name"
-                    @click="openSku = row.sku"
+                    @click="openKey = row.key"
                 >
                     {{ row.name }}
                 </button>
@@ -303,7 +317,7 @@ const openLine = computed(
                     class="bl-qty"
                     :class="{ 'is-short': rules.qtyRequired && !row.qty }"
                     :aria-label="t('buying.col.qty')"
-                    @update:model-value="store.setQty(list.id, row.sku, $event)"
+                    @update:model-value="store.setQty(list.id, row.key, $event)"
                 />
                 <ANum v-else>{{
                     row.qty === null ? '—' : num(row.qty, 3)
@@ -328,7 +342,7 @@ const openLine = computed(
                         :checked="row.done"
                         :disabled="readonly"
                         :aria-label="t('buying.col.done')"
-                        @change="store.toggleDone(list.id, row.sku)"
+                        @change="store.toggleDone(list.id, row.key)"
                     />
                 </label>
             </template>
@@ -340,22 +354,22 @@ const openLine = computed(
                         icon="external"
                         :title="t('buying.lineDetails')"
                         :aria-label="t('buying.lineDetails')"
-                        @click="openSku = row.sku"
+                        @click="openKey = row.key"
                     />
                     <AButton
-                        v-if="!readonly"
+                        v-if="!readonly && !(Number(row.received) > 0)"
                         sm
                         kind="ghost"
                         icon="x"
                         :title="t('buying.dropLine')"
                         :aria-label="t('buying.dropLine')"
-                        @click="store.removeLine(list.id, row.sku)"
+                        @click="store.removeLine(list.id, row.key)"
                     />
                 </span>
             </template>
         </ADataTable>
 
-        <BuyingLineDrawer :line="openLine" :list="list" @close="openSku = ''" />
+        <BuyingLineDrawer :line="openLine" :list="list" @close="openKey = ''" />
     </div>
 </template>
 

@@ -5,6 +5,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import RefLink from '@/components/inventory/RefLink.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
@@ -21,7 +22,7 @@ const props = defineProps({
     doc: { type: Object, default: null },
 });
 
-const emit = defineEmits(['close', 'open-batch', 'open-item']);
+const emit = defineEmits(['close', 'open-batch', 'open-item', 'open-ref']);
 /**
  * V3 — what this window is called when it is parked in the tray.
  *
@@ -69,6 +70,14 @@ const lines = computed(() =>
 );
 
 const unit = (line) => (line.unit ? t(`items.uom.${line.unit}`) : '');
+
+/**
+ * Whether a line took stock out. A goods issue's lines are positive — a
+ * production run's and a manual issue's alike — and the document's type is
+ * what says the quantity left; a count's variance carries its own sign.
+ */
+const isOut = (line) =>
+    INVENTORY_DOC[props.doc?.type]?.sign < 0 || line.qty < 0;
 </script>
 
 <template>
@@ -124,7 +133,16 @@ const unit = (line) => (line.unit ? t(`items.uom.${line.unit}`) : '');
                             doc.remarks ? loc(doc.remarks) : '—',
                         ],
                     ]"
-                />
+                >
+                    <!-- What it was raised against opens when it is on file —
+                         a production run's issue leads back to the run. -->
+                    <template v-if="doc.baseRef" #value-1>
+                        <RefLink
+                            :id="doc.baseRef"
+                            @open="emit('open-ref', $event)"
+                        />
+                    </template>
+                </AKeyValue>
 
                 <ADataTable
                     :cols="cols"
@@ -159,7 +177,7 @@ const unit = (line) => (line.unit ? t(`items.uom.${line.unit}`) : '');
                     </template>
 
                     <template #cell-qty="{ row }">
-                        <span class="num" :class="{ 'is-out': row.qty < 0 }"
+                        <span class="num" :class="{ 'is-out': isOut(row) }"
                             >{{ num(row.qty, 3) }} {{ unit(row) }}</span
                         >
                     </template>

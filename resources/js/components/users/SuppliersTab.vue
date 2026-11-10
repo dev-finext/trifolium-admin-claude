@@ -59,15 +59,24 @@ const view = useUrlState({
 
 const term = computed(() => view.sq.trim().toLowerCase());
 
+/** A phone as typed into a search box: digits only, whatever the dashes. */
+const digitsOf = (value) => String(value || '').replace(/\D/g, '');
+
+// What the placeholder promises — name, code, company number, contact, phone —
+// read from the fields the card actually holds. A phone matches with or
+// without its dashes.
 const searched = computed(() =>
     term.value
         ? system.suppliers.filter((supplier) =>
               searchHaystack(
                   supplier.code,
                   supplier.name,
-                  supplier.bizNum,
-                  supplier.contact?.name,
-                  supplier.contact?.phone,
+                  supplier.biz,
+                  supplier.contact,
+                  supplier.mobile,
+                  supplier.office,
+                  digitsOf(supplier.mobile),
+                  digitsOf(supplier.office),
               ).includes(term.value),
           )
         : system.suppliers,
@@ -231,7 +240,11 @@ function lockCards() {
                 </AButton>
             </FilterBar>
 
-            <div class="st-quick" role="group" :aria-label="t('systemContacts.suppliers.filter.field.kind')">
+            <div
+                class="st-quick"
+                role="group"
+                :aria-label="t('systemContacts.suppliers.filter.field.kind')"
+            >
                 <span class="st-quick-label">
                     {{ t('systemContacts.suppliers.filter.field.kind') }}
                 </span>

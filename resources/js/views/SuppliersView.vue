@@ -3,7 +3,7 @@
 // which compliance documents on file. Under daily operations, next to the
 // purchasing that names them. The cards hold bank details and purchase prices,
 // so opening them goes through the same re-confirmation gate as before.
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import PageHead from '@/components/layout/PageHead.vue';
@@ -20,6 +20,10 @@ const system = useSystemStore();
 
 /** The confirmation the cards' gate raises. */
 const ask = ref(null);
+
+// The gate says it stays open until the screen is left — so leaving it shuts
+// it. Scoped to this visit, not to the session, the same as the admin users.
+onBeforeUnmount(() => system.lockSupplierCards());
 
 const sub = computed(() =>
     t('suppliers.sub', {

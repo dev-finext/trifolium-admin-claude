@@ -56,6 +56,7 @@ export default {
             d60: '30–60 יום',
             d90: '60–90 יום',
             later: 'מעל 90 יום',
+            none: 'ללא תוקף',
         },
     },
     tab: {
@@ -247,6 +248,7 @@ export default {
         },
         expiredAgo: 'פג לפני {n} ימים',
         expiresIn: 'בעוד {n} ימים',
+        noExpiry: 'ללא תוקף',
         empty: {
             title: 'אין אצוות שתואמות את הסינון',
             sub: 'נקה את הסינון',
@@ -282,6 +284,7 @@ export default {
             reason: 'סיבת השינוי',
             reasonHint: 'נרשמת ביומן השינויים יחד עם הערך הקודם.',
             save: 'שמור תאריכים',
+            expiryRequired: 'לאצווה חייב להיות תוקף — בחרו תאריך כדי לשמור.',
         },
         trace: {
             analyses: 'אנליזות ומסמכי אצווה',
@@ -426,10 +429,30 @@ export default {
         batch: 'אצווה',
         batchPick: '— בחר אצווה —',
         batchOption: '{id} · נותרו {left} · תוקף {expiry}',
+        batchFlagged: '{option} · {state}',
         why: 'הסבר (חובה — נרשם ביומן)',
         whyPhDeduct: 'לדוגמה: בקבוק נשבר בהעברה למעבדה',
         save: 'שמור יציאה',
         noBatches: 'לפריט זה אין אצווה פתוחה במלאי.',
+    },
+    count: {
+        title: 'ספירת מלאי · {name}',
+        qty: 'כמות שנספרה',
+        qtyHint: 'במערכת כרגע {qty} {unit} — ההפרש יירשם במסמך ספירה',
+        byBatch:
+            'הפריט מנוהל באצוות: כל אצווה שעדיין מחזיקה מלאי נספרת בשדה משלה, וההפרש של כל אצווה נרשם בשורה משלה באותו מסמך ספירה. המלאי של הפריט הוא סכום מה שנספר.',
+        batch: 'אצווה {id}',
+        batchHint: 'במערכת {qty} {unit} · תוקף {expiry}',
+        batchFlagged: '{hint} · {state}',
+        loose: 'מלאי שאינו רשום באף אצווה',
+        looseHint:
+            'במערכת {qty} {unit} שאינם משויכים לאצווה. ספירה של 0 גורעת אותם.',
+        total: 'אחרי הספירה: {qty} {unit} · הפרש {delta}',
+        note: 'הערה',
+        save: 'רישום הספירה',
+    },
+    prep: {
+        noConvert: 'אין המרה מ{from} ל{to} — האצוות לא חושבו',
     },
     picker: {
         placeholder: 'חיפוש פריט — שם · מק״ט · שם לטיני',

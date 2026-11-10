@@ -74,7 +74,17 @@ const cols = computed(() => [
     },
 ]);
 
-const lines = computed(() => props.receipt?.lines || []);
+/**
+ * The receipt's lines, each with a key of its own. A real receipt's lines carry
+ * no batch — the extract does not join the two — so the batch cannot be the
+ * key: every line would share the same empty one.
+ */
+const lines = computed(() =>
+    (props.receipt?.lines || []).map((line, i) => ({
+        key: String(i),
+        ...line,
+    })),
+);
 </script>
 
 <template>
@@ -149,9 +159,10 @@ const lines = computed(() => props.receipt?.lines || []);
                 icon="package"
                 :pad="false"
             >
-                <ADataTable :cols="cols" :rows="lines" row-key="batch">
+                <ADataTable :cols="cols" :rows="lines" row-key="key">
                     <template #cell-batch="{ row }">
                         <button
+                            v-if="row.batch"
                             type="button"
                             class="a-linkbtn"
                             @click="emit('open-batch', row.batch)"
@@ -160,6 +171,7 @@ const lines = computed(() => props.receipt?.lines || []);
                                 inventory.batchNo(row.batch)
                             }}</span>
                         </button>
+                        <span v-else class="a-muted">—</span>
                     </template>
                     <template #cell-name="{ row }">
                         <div class="t-strong">{{ loc(row.name) }}</div>
@@ -176,7 +188,8 @@ const lines = computed(() => props.receipt?.lines || []);
                         <span v-else class="a-muted">—</span>
                     </template>
                     <template #cell-expiry="{ row }">
-                        <ANum>{{ fmtISO(row.expiry) }}</ANum>
+                        <ANum v-if="row.expiry">{{ fmtISO(row.expiry) }}</ANum>
+                        <span v-else class="a-muted">—</span>
                     </template>
                     <template #cell-wh="{ row }">
                         {{ t(`warehouse.${row.wh}.name`) }}

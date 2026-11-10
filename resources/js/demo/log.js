@@ -39,6 +39,8 @@ export const LOG_ENTITY_TYPE_IDS = [
     'supplier_invoice',
     'supplier_payment',
     'production_order',
+    // A supplier card's own edits, suspensions and reactivations.
+    'supplier',
 ];
 
 /** Agents who sign in, and the address they sign in from. */

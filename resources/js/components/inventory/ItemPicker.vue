@@ -20,7 +20,7 @@ import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
 import AIcon from '@/components/ui/AIcon.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { STOCK_KIND, STOCK_KINDS, WAREHOUSES } from '@/config';
+import { liveOnly, STOCK_KIND, STOCK_KINDS, WAREHOUSES } from '@/config';
 import { searchHaystack } from '@/lib/localized';
 import { num } from '@/lib/money';
 
@@ -49,14 +49,20 @@ const box = ref(null);
 const listBox = ref(null);
 const field = ref(null);
 
+/**
+ * What may be picked: an archived stock row stays on its documents and out of
+ * every new one, whichever list the caller handed in.
+ */
+const pool = computed(() => liveOnly(props.items));
+
 const selected = computed(() =>
-    props.items.find((item) => item.sku === props.modelValue),
+    pool.value.find((item) => item.sku === props.modelValue),
 );
 
 const term = computed(() => q.value.trim().toLowerCase());
 
 const matched = computed(() =>
-    props.items.filter(
+    pool.value.filter(
         (item) =>
             (!kind.value || item.kind === kind.value) &&
             (!wh.value || item.wh === wh.value) &&
@@ -76,13 +82,13 @@ const dirty = computed(
         Boolean(wh.value) ||
         low.value,
 );
-const lowCount = computed(() => props.items.filter((item) => item.low).length);
+const lowCount = computed(() => pool.value.filter((item) => item.low).length);
 
 const kinds = computed(() =>
     STOCK_KINDS.map((entry) => ({
         ...entry,
         label: t(`inventory.stockKind.${entry.id}`),
-        n: props.items.filter((item) => item.kind === entry.id).length,
+        n: pool.value.filter((item) => item.kind === entry.id).length,
     })),
 );
 
@@ -91,7 +97,7 @@ const warehouses = computed(() =>
         id: warehouse.id,
         label: t('inventory.picker.whOption', {
             name: t(`warehouse.${warehouse.id}.name`),
-            n: props.items.filter((item) => item.wh === warehouse.id).length,
+            n: pool.value.filter((item) => item.wh === warehouse.id).length,
         }),
     })),
 );
@@ -237,7 +243,7 @@ watch([cursor, open], async () => {
                         @click="kind = ''"
                     >
                         {{ t('inventory.picker.all') }}
-                        <span class="num">{{ items.length }}</span>
+                        <span class="num">{{ pool.length }}</span>
                     </button>
                     <button
                         v-for="entry in kinds"
@@ -338,7 +344,7 @@ watch([cursor, open], async () => {
                     {{
                         t('inventory.picker.found', {
                             n: matched.length,
-                            total: items.length,
+                            total: pool.length,
                         })
                     }}
                 </template>

@@ -143,7 +143,9 @@ const qty3 = (value) => Math.round(Number(value) * 1000) / 1000;
  * bought.
  */
 function snapshotOf(item, context) {
-    const supplier = context.supplierByCode.get(item.suppliers?.sapCode);
+    const supplier = context.supplierByCode.get(
+        item.suppliers?.preferred || item.suppliers?.sapCode,
+    );
     const stock = context.stockBySku.get(item.sku);
     const lead = leadTimeOf(item, {
         supplier,
@@ -178,6 +180,10 @@ function sheetOf(doc, plan, kind, context) {
 
         row.qty = blank ? null : Number(line.qty) || null;
         row.done = kind === 'request' && index < (plan.ticked ?? 0);
+        // Each line its own key: a real sheet may list one item twice (SAP
+        // request 2600001 has 130115 on lines 16 and 29), so the item code
+        // cannot be what a tick or a quantity is addressed to.
+        row.key = `${doc.docNum}-${index + 1}`;
         lines.push(row);
     });
 
@@ -205,7 +211,11 @@ function sheetOf(doc, plan, kind, context) {
                 : null,
         note: plan.note,
         lines,
+        lineSeq: (doc.lines || []).length,
         state,
+        // A line that came in short on an order that is closed was closed
+        // short — the rest is not coming.
+        closedShort: state === 'received' && Boolean(plan.shortLast),
         created: when,
         sent: ['sent', 'received'].includes(state) ? when : null,
         received: state === 'received' ? when : null,

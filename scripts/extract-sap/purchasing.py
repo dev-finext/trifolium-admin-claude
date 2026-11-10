@@ -283,10 +283,52 @@ def batches(conn, dicts, clean, limit, codes):
     the same thing: 2,914 numbers are shared by more than one item, because a
     supplier's own batch number is whatever the supplier printed. The console
     keeps both for that reason.
+
+    Two sets, in this order:
+
+    * every batch that still holds stock, for every item the fixture carries
+      — all of them, uncut. For a batch-managed item SAP's on-hand is exactly
+      the sum of its batches, and a sample that keeps only the newest batches
+      leaves older stock with no batch at all: on-hand says 32.6 kg, the
+      batches 4 kg, and FEFO finds nothing to draw. Taking the stocked
+      batches whole is what keeps the two equal.
+    * then the newest batches of those items, empty ones included, up to
+      `limit` more — the history the trace screens show.
     """
     wanted = [c for c in dict.fromkeys(codes) if c]
     out = []
     seen = set()
+
+    for chunk in _chunks(wanted):
+        for row in dicts(
+            conn,
+            f"""
+            SELECT b.AbsEntry AS batchKey, b.DistNumber AS batch,
+                   b.ItemCode AS code, i.ItemName AS itemName,
+                   b.InDate AS receivedOn, b.ExpDate AS expiresOn,
+                   b.MnfDate AS producedOn, b.MnfSerial AS supplierBatch,
+                   b.Notes AS notes, b.Status AS status,
+                   b.CreateDate AS createdOn,
+                   q.Quantity AS quantity, q.WhsCode AS warehouse
+            FROM OBTN b
+            JOIN OITM i ON i.ItemCode = b.ItemCode
+            JOIN OBTQ q ON q.MdAbsEntry = b.AbsEntry
+            WHERE b.ItemCode IN ({_in(chunk)}) AND q.Quantity > 0
+            ORDER BY b.AbsEntry DESC
+            """,
+        ):
+            one = clean(row)
+
+            # A batch split over two warehouses is one batch: its rows add up.
+            if one['batchKey'] in seen:
+                kept = next(r for r in out if r['batchKey'] == one['batchKey'])
+                kept['quantity'] = (kept['quantity'] or 0) + (one['quantity'] or 0)
+                continue
+
+            seen.add(one['batchKey'])
+            out.append(one)
+
+    stocked = len(out)
 
     for chunk in _chunks(wanted):
         for row in dicts(
@@ -314,7 +356,7 @@ def batches(conn, dicts, clean, limit, codes):
             seen.add(one['batchKey'])
             out.append(one)
 
-    return out[:limit]
+    return out[: stocked + limit]
 
 
 def batch_movements(conn, dicts, clean, keys, per_batch=8):

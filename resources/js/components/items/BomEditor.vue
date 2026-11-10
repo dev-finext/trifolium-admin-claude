@@ -14,6 +14,7 @@ import {
     BOM_ISSUE_IDS,
     BOM_RULES,
     EXTRACTION_RATIOS,
+    isArchived,
     ITEM_UOM_IDS,
 } from '@/config';
 import { applyDraft, recordMoved, snapshot, stampOf } from '@/lib/draft';
@@ -72,10 +73,24 @@ const draftStale = computed(
 const itemLabel = (item) =>
     `${loc({ he: item.names.he, en: item.names.en || item.names.he })} · ${item.code}`;
 
-const itemOptions = computed(() => [
-    { value: '', label: t('items.bom.editor.pickItem') },
-    ...store.items.map((item) => ({ value: item.sku, label: itemLabel(item) })),
-]);
+/**
+ * Live items only — an archived card is not something to build a recipe from.
+ * One the recipe already names stays listed, so opening an old recipe still
+ * shows what it is made of rather than a blank select.
+ */
+const itemOptions = computed(() => {
+    const named = new Set([
+        form.parentSku,
+        ...form.components.map((component) => component.sku),
+    ]);
+
+    return [
+        { value: '', label: t('items.bom.editor.pickItem') },
+        ...store.items
+            .filter((item) => !isArchived(item) || named.has(item.sku))
+            .map((item) => ({ value: item.sku, label: itemLabel(item) })),
+    ];
+});
 
 const uomOptions = computed(() =>
     ITEM_UOM_IDS.map((id) => ({ value: id, label: t(`items.uom.${id}`) })),

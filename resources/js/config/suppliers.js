@@ -52,6 +52,58 @@ export const SUPPLIER_CARD_GATE = {
 };
 
 /**
+ * Rough conversion into shekels for a card figure, whatever the invoice
+ * currency. A card states one balance, so a dollar invoice is read in shekels
+ * there; the invoice itself keeps its own currency.
+ */
+export const SUPPLIER_CARD_TO_ILS = { ILS: 1, EUR: 4, USD: 3.7 };
+
+const inIls = (amount, currency) =>
+    amount * (SUPPLIER_CARD_TO_ILS[currency] || 1);
+
+/**
+ * What a supplier's invoices say about him: everything billed in the last
+ * twelve months (`spend12`) and everything still owed (`open`). The card and
+ * the list read these two figures off the record, so whatever changes an
+ * invoice — a capture, a payment — writes them again from here, the same way
+ * the fixture first wrote them.
+ */
+export function supplierMoney(code, invoices) {
+    const own = (invoices || []).filter(
+        (invoice) => invoice.supplierCode === code,
+    );
+
+    return {
+        spend12: Math.round(
+            own
+                .filter((invoice) => (invoice.date?.daysAgo ?? 0) <= 365)
+                .reduce(
+                    (sum, invoice) =>
+                        sum +
+                        inIls(Number(invoice.total) || 0, invoice.currency),
+                    0,
+                ),
+        ),
+        open:
+            Math.round(
+                own.reduce(
+                    (sum, invoice) =>
+                        sum +
+                        inIls(
+                            Math.max(
+                                0,
+                                (Number(invoice.total) || 0) -
+                                    (Number(invoice.paid) || 0),
+                            ),
+                            invoice.currency,
+                        ),
+                    0,
+                ) * 100,
+            ) / 100,
+    };
+}
+
+/**
  * Compliance documents every active supplier must have on file. A missing or
  * expired bookkeeping certificate blocks *payment*, not purchasing.
  */

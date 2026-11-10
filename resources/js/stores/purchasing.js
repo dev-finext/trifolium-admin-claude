@@ -14,6 +14,7 @@ import {
     SETTINGS,
     supplierInvoiceOpen,
     supplierInvoiceState,
+    supplierMoney,
 } from '@/config';
 import { persist } from '@/data/source';
 import { inRange } from '@/lib/dateRange';
@@ -259,6 +260,21 @@ export const usePurchasingStore = defineStore('purchasing', () => {
     };
 
     // ---- writes --------------------------------------------------------------
+
+    /**
+     * Write a supplier's two money figures again from his invoices, by the same
+     * rule the supplier screens read them with (`supplierMoney`). An invoice
+     * that changed without this leaves the card's own record saying what was
+     * owed before it. No request of its own: the figures are derived, and the
+     * invoice or payment that moved them is the write.
+     */
+    function refreshSupplierMoney(code) {
+        const supplier = supplierByCode(code);
+
+        if (supplier) {
+            Object.assign(supplier, supplierMoney(code, invoicesOf(code)));
+        }
+    }
 
     function bag(name) {
         if (!Array.isArray(dataset.data[name])) {
@@ -560,6 +576,7 @@ export const usePurchasingStore = defineStore('purchasing', () => {
         });
 
         rows.unshift(invoice);
+        refreshSupplierMoney(invoice.supplierCode);
         writeLog({
             act: 'supplier_invoice_capture',
             entType: 'supplier_invoice',
@@ -698,6 +715,7 @@ export const usePurchasingStore = defineStore('purchasing', () => {
         });
 
         rows.unshift(payment);
+        refreshSupplierMoney(supplier.code);
         writeLog({
             act: 'supplier_payment',
             entType: 'supplier_payment',

@@ -178,7 +178,7 @@ export default {
             papers: 'מסמכים ותשלום',
         },
         items: {
-            note: 'הפריטים שהספק הזה הוא הספק הקבוע שלהם, או שנקנו ממנו לאחרונה — מכרטיס הפריט, לא מרשימה נפרדת.',
+            note: 'הפריטים בקטלוג המערכת שהספק הזה הוא הספק הקבוע שלהם — מכרטיס הפריט, לא מרשימה נפרדת. הספירה ב-SAP כוללת גם כרטיסי פריט שאינם בקטלוג.',
             empty: 'אין פריטים מקושרים לספק',
             col: {
                 code: 'קוד',
@@ -189,16 +189,16 @@ export default {
         },
         purchasing: {
             open: 'הזמנות פתוחות',
-            closed: 'הזמנות שהושלמו או בוטלו',
+            closed: 'הזמנות שהתקבלו או נכשלו',
             empty: 'אין הזמנות רכש לספק',
             openIt: 'פתיחה',
             col: {
                 id: 'הזמנה',
                 state: 'מצב',
                 lines: 'שורות',
-                value: 'שווי',
-                eta: 'צפי',
                 created: 'נוצרה',
+                sent: 'נשלחה',
+                received: 'התקבלה',
             },
         },
         card: {
@@ -236,6 +236,7 @@ export default {
             tradeDisc: 'הנחת סחר',
             minOrder: 'מינימום הזמנה',
             lead: 'זמן אספקה ממוצע',
+            leadUnit: 'יחידת זמן האספקה',
             coa: 'COA לכל אצווה',
             bank: 'בנק',
             branch: 'סניף',
@@ -247,6 +248,7 @@ export default {
         },
         value: {
             skus: 'פריט אחד בקטלוג | {n} פריטים בקטלוג',
+            skusSplit: '{here} בקטלוג המערכת · {sap} ב-SAP',
             serviceNoStock: 'שירות — ללא פריטי מלאי',
             coaRequired: 'נדרש ומתקבל',
             coaNotRequired: 'לא נדרש',
@@ -268,6 +270,7 @@ export default {
             expired: 'פג תוקף',
             missing: 'חסר',
             exemptUntil: 'פטור מניכוי · בתוקף עד {date}',
+            rateUntil: 'ניכוי {rate}% במקור · בתוקף עד {date}',
             withholdRate: 'ניכוי {rate}% במקור — אין אישור בתוקף',
             coaEveryReceipt: 'מתקבל עם תעודת המשלוח בכל קליטה',
             noScans: 'אין סריקות בכרטיס',

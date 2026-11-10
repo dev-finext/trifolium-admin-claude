@@ -31,6 +31,9 @@ import { SETTINGS_KEY, TABLE_BY_NAME, TABLES } from '@database/spec.mjs';
 const ALIASES = {
     'purchase-orders': 'purchase_orders',
     'purchase-requests': 'purchase_requests',
+    // The buyer's sheets (stores/buying.js). Without this they never reached
+    // their table and lived only in the read cache.
+    'buying-lists': 'buying_lists',
     'plan-lines': 'plan_lines',
     'production-orders': 'production_orders',
     'supplier-invoices': 'supplier_invoices',

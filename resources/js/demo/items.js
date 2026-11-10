@@ -430,20 +430,27 @@ function pricePer(price, from, to) {
 }
 
 /**
- * The demo supplier an item's `CardCode` stands for.
+ * The supplier card an item's `CardCode` stands for.
  *
- * SAP names twenty real vendors across the sample; the console carries seven
- * supplier cards of its own. Each real code maps to one of them and always to
- * the same one, so an item's buyer does not move between builds. The item keeps
- * SAP's own code beside it, which is what a migration would carry.
+ * The supplier cards are SAP's own (demo/suppliers.js, from the extract), so
+ * the item's code names its card directly — the herb SAP buys from פארמה תמר
+ * shows פארמה תמר, and the purchase sheet that reads `sapCode` agrees with the
+ * item card that reads `preferred`. This used to spread the codes over seven
+ * invented cards, which put a packaging house on 370 herbs once the real
+ * cards arrived. A code with no card of its own still lands on one, the same
+ * one every build, so no item is left without a buyer.
  */
 function supplierMap(suppliers) {
+    const known = new Set(suppliers.map((supplier) => supplier.code));
     const codes = [
         ...new Set(REAL_ITEMS.map((item) => item.supplierCode).filter(Boolean)),
     ].sort();
 
     return new Map(
-        codes.map((code, i) => [code, suppliers[i % suppliers.length].code]),
+        codes.map((code, i) => [
+            code,
+            known.has(code) ? code : suppliers[i % suppliers.length].code,
+        ]),
     );
 }
 

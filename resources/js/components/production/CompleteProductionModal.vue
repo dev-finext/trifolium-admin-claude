@@ -105,10 +105,17 @@ const adding = computed(
     () => form.batchMode === 'add' && Boolean(previousBatch),
 );
 
-const kindOptions = computed(() => [
-    { value: 'final', label: t('production.receive.kind.final') },
-    { value: 'partial', label: t('production.receive.kind.partial') },
-]);
+// Once the whole run has been drawn there is no "part" left to receive: the
+// next receipt is the last.
+const kindOptions = computed(() =>
+    [
+        { value: 'final', label: t('production.receive.kind.final') },
+        leftQty > 0 && {
+            value: 'partial',
+            label: t('production.receive.kind.partial'),
+        },
+    ].filter(Boolean),
+);
 
 const batchOptions = computed(() =>
     [
@@ -185,10 +192,12 @@ async function save() {
         wasteQty: wasteNumber.value,
         batchMode: adding.value ? 'add' : 'new',
         expiresOn: adding.value ? null : form.expiresOn,
+        // An emptied field is no figure — the recipe's quantity stands —
+        // not a zero that would leave the shelf untouched.
         actual: Object.fromEntries(
             Object.entries(form.actual).map(([sku, value]) => [
                 sku,
-                Number(value),
+                String(value ?? '').trim() === '' ? '' : Number(value),
             ]),
         ),
         note: form.note,

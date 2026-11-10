@@ -13,9 +13,17 @@ import { useI18n } from 'vue-i18n';
 
 import { useCourierName } from '@/components/deliveries/useCourierName';
 import { useLocalized } from '@/composables/useLocalized';
-import { isSettled, LAB_ROLE_IDS, ORG, SAFETY_LEVEL_IDS } from '@/config';
+import {
+    isSettled,
+    LAB_ROLE_IDS,
+    MAIN_WAREHOUSE,
+    ORG,
+    SAFETY_LEVEL_IDS,
+} from '@/config';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
+import { qtyText } from '@/lib/money';
 import { esc, printHtml } from '@/lib/print';
+import { convertQty } from '@/lib/units';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 import { shelfItems, trackedItems, useOrdersStore } from '@/stores/orders';
@@ -30,17 +38,72 @@ export function usePrepSheet() {
 
     const text = (value) => esc(loc(value));
 
+    /** A stock quantity with its unit — `0.03 ק״ג`. */
+    const stockQty = (qty, unit) =>
+        `${qtyText(qty, 3)} ${unit ? t(`inventory.unit.${unit}`) : ''}`.trim();
+
+    /**
+     * Which batches a herb line would be drawn from.
+     *
+     * The formula states grams and the batches hold the unit the item is
+     * stocked in — a herb kept by the kilogram — so the quantity is converted
+     * before FEFO sees it; handing 30 to a kilogram batch asked it for 30 kg.
+     * Two units with no fixed ratio (capsules against grams) are said to be
+     * so, not guessed at. The batches are the main warehouse's, as the
+     * allocation at "send to the lab" takes them, and each is printed under
+     * the number the pharmacy calls it.
+     */
+    function batchPlan(herb, unit, stock) {
+        const from = herb.unit || unit;
+
+        // No stock row at all: the whole line is short, in its own unit.
+        if (!stock) {
+            return {
+                batches: '',
+                short: t('orders.sheet.short', {
+                    n: `${qtyText(herb.qty, 3)} ${t(`orders.unit.${from}`)}`,
+                }),
+            };
+        }
+
+        const need = convertQty(herb.qty, from, stock.unit);
+
+        if (need === null) {
+            return {
+                batches: t('inventory.prep.noConvert', {
+                    from: t(`orders.unit.${from}`),
+                    to: t(`inventory.unit.${stock.unit}`),
+                }),
+                short: '',
+            };
+        }
+
+        const plan = inventory.fifoPlan(stock.sku, need, {
+            warehouse: MAIN_WAREHOUSE,
+        });
+
+        return {
+            batches: plan.steps
+                .map(
+                    (step) =>
+                        `${inventory.batchNo(step.batch)} (${stockQty(step.take, stock.unit)})`,
+                )
+                .join(', '),
+            short:
+                plan.short > 0
+                    ? t('orders.sheet.short', {
+                          n: stockQty(plan.short, stock.unit),
+                      })
+                    : '',
+        };
+    }
+
     /** One herb line: item code, FEFO batches for the quantity, production note, safety. */
     function herbRow(herb, unit, patient) {
         const stock =
             inventory.stock.find((row) => row.herbId === herb.id) || null;
         const card = stock ? items.itemBySku(stock.sku) : null;
-        const plan = stock
-            ? inventory.fifoPlan(stock.sku, herb.qty)
-            : { steps: [], short: herb.qty };
-        const batches = plan.steps
-            .map((step) => `${step.batch.id} (${step.take})`)
-            .join(', ');
+        const plan = batchPlan(herb, unit, stock);
         const flags = [];
 
         if (card?.safety) {
@@ -66,11 +129,8 @@ export function usePrepSheet() {
             name: loc(herb.name),
             lat: herb.lat || '',
             qty: `${herb.qty} ${t(`orders.unit.${herb.unit || unit}`)}`,
-            batches: batches || t('orders.sheet.noBatch'),
-            short:
-                plan.short > 0
-                    ? t('orders.sheet.short', { n: plan.short })
-                    : '',
+            batches: plan.batches || t('orders.sheet.noBatch'),
+            short: plan.short,
             note: card?.notes?.production ? loc(card.notes.production) : '',
             flags,
         };

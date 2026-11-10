@@ -8,7 +8,7 @@
 // sheet and the order label, the one that names the material on the bench until
 // it has a batch ("כדי שלא יעמוד מוצר ללא מדבקה במעבדה, עד שהמוצר יתקבל למלאי
 // ויקבל אצווה ותוקף").
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
@@ -17,6 +17,7 @@ import AChip from '@/components/ui/AChip.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
+import AModal from '@/components/ui/AModal.vue';
 import ANum from '@/components/ui/ANum.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useProductionLabels } from '@/composables/useProductionLabels';
@@ -240,8 +241,35 @@ async function printLabel() {
     }
 }
 
-async function reprint(receipt) {
-    const count = receipt.labels ?? productionLabelCount(props.order, receipt);
+/**
+ * Printing a receipt's batch labels again asks how many, opened on the count
+ * printed last time — or the one the containers come to. With neither, the
+ * field starts empty: the containers are not known, and one label is not a
+ * guess worth recording.
+ */
+const reprinting = ref(null);
+const reprintCount = ref('');
+
+function reprint(receipt) {
+    const count = productionLabelCount(props.order, receipt, null);
+
+    reprintCount.value = count == null ? '' : String(count);
+    reprinting.value = receipt;
+}
+
+const reprintNumber = computed(() =>
+    Math.round(Number(reprintCount.value) || 0),
+);
+
+async function confirmReprint() {
+    const receipt = reprinting.value;
+    const count = reprintNumber.value;
+
+    if (!receipt || count < 1) {
+        return;
+    }
+
+    reprinting.value = null;
 
     if (!(await printBatchLabels(props.order, receipt, count))) {
         push({ title: t('production.action.printFailed'), bad: true });
@@ -707,6 +735,48 @@ async function reprint(receipt) {
             </div>
         </template>
     </ADrawer>
+
+    <AModal
+        v-if="reprinting"
+        open
+        :title="t('production.drawer.reprint')"
+        :width="420"
+        @close="reprinting = null"
+    >
+        <label class="a-lbl" for="pd-reprint">{{
+            t('production.receive.labels.count')
+        }}</label>
+        <AInput
+            id="pd-reprint"
+            v-model="reprintCount"
+            type="number"
+            min="1"
+            ltr
+            class="pd-due-in"
+        />
+        <div v-if="!reprintCount" class="a-hint">
+            {{ t('production.receive.labels.noPack') }}
+        </div>
+        <template #footer>
+            <AButton
+                kind="p"
+                icon="printer"
+                :disabled="reprintNumber < 1"
+                @click="confirmReprint"
+            >
+                {{
+                    t(
+                        'production.receive.labels.print',
+                        { n: reprintNumber },
+                        reprintNumber,
+                    )
+                }}
+            </AButton>
+            <AButton @click="reprinting = null">{{
+                t('actions.cancel')
+            }}</AButton>
+        </template>
+    </AModal>
 </template>
 
 <style scoped>

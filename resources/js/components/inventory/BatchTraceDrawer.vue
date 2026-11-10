@@ -6,6 +6,7 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import RefLink from '@/components/inventory/RefLink.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
@@ -32,14 +33,7 @@ const props = defineProps({
     batch: { type: Object, default: null },
 });
 
-const emit = defineEmits([
-    'close',
-    'open-receipt',
-    'open-production',
-    'open-batch',
-    'open-doc',
-    'open-report',
-]);
+const emit = defineEmits(['close', 'open-batch', 'open-ref', 'open-report']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -83,21 +77,6 @@ const moveCols = computed(() => [
     { k: 'by', label: t('inventory.batches.moves.by') },
 ]);
 
-/** Which screen a movement's document belongs to, read off its own number. */
-function openRef(ref) {
-    if (!ref) {
-        return;
-    }
-
-    if (String(ref).startsWith('GR-')) {
-        emit('open-receipt', ref);
-    } else if (String(ref).startsWith('PR-')) {
-        emit('open-production', ref);
-    } else {
-        emit('open-doc', ref);
-    }
-}
-
 /**
  * Correcting the batch's two dates. V3.
  *
@@ -124,7 +103,21 @@ const dirty = computed(
             (form.madeOn || '') !== (props.batch.madeOn || '')),
 );
 
+/**
+ * A batch always has an expiry: FEFO orders by it and the label prints it.
+ * Clearing the field used to leave Save enabled and quietly keep the old date;
+ * now the dialog says why it will not save.
+ */
+const expiryMissing = computed(() => editing.value && !form.expiry);
+
+/** Days to expiry, or nothing for a batch SAP holds without a date. */
+const hasExpiry = computed(() => Number.isFinite(props.batch?.daysToExp));
+
 async function saveDates() {
+    if (expiryMissing.value) {
+        return;
+    }
+
     saving.value = true;
 
     try {
@@ -254,7 +247,12 @@ const cols = computed(() => [
                             </span>
                             <span>
                                 {{ t('inventory.batches.trace.expiry') }}
-                                <ANum>{{ fmtISO(batch.expiry) }}</ANum>
+                                <ANum v-if="batch.expiry">{{
+                                    fmtISO(batch.expiry)
+                                }}</ANum>
+                                <template v-else>{{
+                                    t('inventory.batches.noExpiry')
+                                }}</template>
                             </span>
                             <span>
                                 {{
@@ -337,28 +335,16 @@ const cols = computed(() => [
                             </AChip>
                         </template>
                         <template #value-2>
-                            <button
-                                v-if="batch.receipt"
-                                type="button"
-                                class="a-linkbtn"
-                                @click="emit('open-receipt', batch.receipt)"
-                            >
-                                <ANum>{{ batch.receipt }}</ANum>
-                            </button>
-                            <span v-else>—</span>
+                            <RefLink
+                                :id="batch.receipt"
+                                @open="emit('open-ref', $event)"
+                            />
                         </template>
                         <template #value-3>
-                            <button
-                                v-if="batch.production"
-                                type="button"
-                                class="a-linkbtn"
-                                @click="
-                                    emit('open-production', batch.production)
-                                "
-                            >
-                                <ANum>{{ batch.production }}</ANum>
-                            </button>
-                            <span v-else>—</span>
+                            <RefLink
+                                :id="batch.production"
+                                @open="emit('open-ref', $event)"
+                            />
                         </template>
                         <template #value-4>
                             <span v-if="batch.unitCost">
@@ -373,8 +359,11 @@ const cols = computed(() => [
                             <span v-else>—</span>
                         </template>
                         <template #value-9>
+                            <template v-if="!hasExpiry">{{
+                                t('inventory.batches.noExpiry')
+                            }}</template>
                             <AChip
-                                v-if="batch.daysToExp < 0"
+                                v-else-if="batch.daysToExp < 0"
                                 tone="red"
                                 size="sm"
                             >
@@ -507,13 +496,10 @@ const cols = computed(() => [
                         >
                     </template>
                     <template #cell-ref="{ row }">
-                        <button
-                            type="button"
-                            class="a-linkbtn"
-                            @click="emit('open-receipt', row.ref)"
-                        >
-                            <ANum>{{ row.ref }}</ANum>
-                        </button>
+                        <RefLink
+                            :id="row.ref"
+                            @open="emit('open-ref', $event)"
+                        />
                     </template>
                     <template #cell-by="{ row }">
                         <span v-if="row.by">{{ loc(row.by) }}</span>
@@ -560,15 +546,10 @@ const cols = computed(() => [
                         >
                     </template>
                     <template #cell-ref="{ row }">
-                        <button
-                            v-if="row.ref"
-                            type="button"
-                            class="a-linkbtn"
-                            @click="openRef(row.ref)"
-                        >
-                            <ANum>{{ row.ref }}</ANum>
-                        </button>
-                        <span v-else class="a-trace-n">—</span>
+                        <RefLink
+                            :id="row.ref"
+                            @open="emit('open-ref', $event)"
+                        />
                     </template>
                     <template #cell-by="{ row }">
                         <span v-if="row.by">{{ loc(row.by) }}</span>
@@ -606,6 +587,9 @@ const cols = computed(() => [
                             type="date"
                             class="a-w100"
                         />
+                        <div v-if="expiryMissing" class="a-hint bd-need">
+                            {{ t('inventory.batches.dates.expiryRequired') }}
+                        </div>
                         <div class="a-hint">
                             {{ t('inventory.batches.dates.expiryHint') }}
                         </div>
@@ -643,7 +627,7 @@ const cols = computed(() => [
                     <AButton
                         kind="p"
                         icon="save"
-                        :disabled="!dirty || saving"
+                        :disabled="!dirty || expiryMissing || saving"
                         @click="saveDates"
                         >{{ t('inventory.batches.dates.save') }}</AButton
                     >
@@ -686,6 +670,10 @@ const cols = computed(() => [
 .bd-form {
     display: grid;
     gap: 14px;
+}
+
+.bd-need {
+    color: var(--a-red);
 }
 
 .a-trace-report {

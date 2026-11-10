@@ -27,12 +27,12 @@ import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
-import { CURRENCY_SYMBOL, PO_STATES } from '@/config';
+import { buyingStateTone, CURRENCY_SYMBOL, liveOnly } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { num } from '@/lib/money';
+import { useBuyingStore } from '@/stores/buying';
 import { useCrmStore } from '@/stores/crm';
 import { useItemsStore } from '@/stores/items';
-import { usePurchasingStore } from '@/stores/purchasing';
 import { supplierDocsOk, useSystemStore } from '@/stores/system';
 
 const props = defineProps({
@@ -46,7 +46,7 @@ const { loc } = useLocalized();
 const { push } = useToast();
 const system = useSystemStore();
 const items = useItemsStore();
-const purchasing = usePurchasingStore();
+const buying = useBuyingStore();
 const crm = useCrmStore();
 const router = useRouter();
 
@@ -61,19 +61,27 @@ const receipts = computed(() => system.supplierReceipts(supplier.value.code));
 
 // V2 — what the item cards and the purchase orders say about this supplier
 const linkedItems = computed(() =>
-    // SAP names one vendor on an item — `OITM.CardCode`.
-    items.rows.filter(
+    // SAP names one vendor on an item — `OITM.CardCode`. An archived item is
+    // nobody's item any more, and is not counted here.
+    liveOnly(items.rows).filter(
         (row) => row.suppliers?.preferred === supplier.value.code,
     ),
 );
+// The orders the purchasing screen writes — its own sheets, the same records it
+// lists — not the legacy purchase-order fixture, which nothing writes to any
+// more. An order is still open while it is a draft or on its way; received
+// and failed are where it ends.
+const OPEN_ORDER_STATES = ['draft', 'sent'];
 const supplierPos = computed(() =>
-    purchasing.rows.filter((po) => po.supplierCode === supplier.value.code),
+    buying
+        .listsOf('order')
+        .filter((list) => list.supplierCode === supplier.value.code),
 );
 const openPos = computed(() =>
-    supplierPos.value.filter((po) => ['open', 'partial'].includes(po.state)),
+    supplierPos.value.filter((list) => OPEN_ORDER_STATES.includes(list.state)),
 );
 const closedPos = computed(() =>
-    supplierPos.value.filter((po) => !['open', 'partial'].includes(po.state)),
+    supplierPos.value.filter((list) => !OPEN_ORDER_STATES.includes(list.state)),
 );
 const activities = computed(() =>
     crm.activitiesOf('supplier', supplier.value.code),
@@ -93,28 +101,48 @@ const itemCols = computed(() => [
 ]);
 const poCols = computed(() => [
     {
-        k: 'id',
+        k: 'number',
         label: t('systemContacts.suppliers.purchasing.col.id'),
+        nowrap: true,
     },
-    { k: 'state', label: t('systemContacts.suppliers.purchasing.col.state') },
+    {
+        k: 'state',
+        label: t('systemContacts.suppliers.purchasing.col.state'),
+        nowrap: true,
+    },
+    {
+        k: 'created',
+        label: t('systemContacts.suppliers.purchasing.col.created'),
+        nowrap: true,
+    },
+    {
+        k: 'sent',
+        label: t('systemContacts.suppliers.purchasing.col.sent'),
+        nowrap: true,
+    },
+    {
+        k: 'received',
+        label: t('systemContacts.suppliers.purchasing.col.received'),
+        nowrap: true,
+    },
     {
         k: 'lines',
         label: t('systemContacts.suppliers.purchasing.col.lines'),
-    },
-    {
-        k: 'value',
-        label: t('systemContacts.suppliers.purchasing.col.value'),
-    },
-    {
-        k: 'eta',
-        label: t('systemContacts.suppliers.purchasing.col.eta'),
+        align: 'end',
     },
     { k: 'go', label: '' },
 ]);
 
-function openPo(po) {
-    emit('close');
-    router.push({ name: 'purchasing', query: { po: po.id } });
+/**
+ * Open the order on its own page, the one the purchasing screen opens. The
+ * drawer is not closed first: its address change would race the navigation,
+ * and leaving the screen takes the drawer with it anyway.
+ */
+function openPo(list) {
+    router.push({
+        name: 'buyingSheet',
+        params: { kind: 'order', id: list.id },
+    });
 }
 
 const tabs = computed(() => [
@@ -160,6 +188,30 @@ const tabs = computed(() => [
     },
 ]);
 
+/**
+ * How many items this supplier supplies. SAP counts every item card that names
+ * him (`skus`); the items tab lists the ones in this console's catalog. The two
+ * differ for a fifth of the cards, so where they do the card says both rather
+ * than one figure the tab beside it contradicts.
+ */
+const skusText = computed(() => {
+    const sap = Number(supplier.value.skus) || 0;
+    const here = linkedItems.value.length;
+
+    if (!sap && !here) {
+        return t('systemContacts.suppliers.value.serviceNoStock');
+    }
+
+    if (sap === here) {
+        return t('systemContacts.suppliers.value.skus', { n: num(sap) }, sap);
+    }
+
+    return t('systemContacts.suppliers.value.skusSplit', {
+        here: num(here),
+        sap: num(sap),
+    });
+});
+
 const profileRows = computed(() => {
     const s = supplier.value;
 
@@ -175,16 +227,7 @@ const profileRows = computed(() => {
             t('systemContacts.suppliers.field.kind'),
             t(`systemContacts.kind.${s.kind}`),
         ],
-        [
-            t('systemContacts.suppliers.field.skus'),
-            s.skus
-                ? t(
-                      'systemContacts.suppliers.value.skus',
-                      { n: num(s.skus) },
-                      s.skus,
-                  )
-                : t('systemContacts.suppliers.value.serviceNoStock'),
-        ],
+        [t('systemContacts.suppliers.field.skus'), skusText.value],
         [t('systemContacts.suppliers.field.since'), s.since],
     ];
 });
@@ -275,13 +318,20 @@ const docRows = computed(() => {
             key: 'withholding_tax',
             ok: Boolean(s.tax?.ok),
             has: Boolean(s.tax?.valid),
-            extra: s.tax?.ok
-                ? t('systemContacts.suppliers.docs.exemptUntil', {
-                      date: fmtISO(s.tax.valid),
-                  })
-                : t('systemContacts.suppliers.docs.withholdRate', {
+            // A valid certificate states a rate; only a rate of zero is an
+            // exemption. A 30% certificate is valid and still withholds 30%.
+            extra: !s.tax?.ok
+                ? t('systemContacts.suppliers.docs.withholdRate', {
                       rate: num(s.tax?.rate ?? 0),
-                  }),
+                  })
+                : Number(s.tax.rate) > 0
+                  ? t('systemContacts.suppliers.docs.rateUntil', {
+                        rate: num(s.tax.rate),
+                        date: fmtISO(s.tax.valid),
+                    })
+                  : t('systemContacts.suppliers.docs.exemptUntil', {
+                        date: fmtISO(s.tax.valid),
+                    }),
         },
     ];
 
@@ -718,28 +768,35 @@ function onSaved(changed) {
                     :rows="group.rows"
                     row-key="id"
                 >
-                    <template #cell-id="{ row }"
-                        ><ANum>{{ row.id }}</ANum></template
+                    <template #cell-number="{ row }"
+                        ><ANum class="a-code">{{ row.number }}</ANum></template
                     >
                     <template #cell-state="{ row }">
-                        <AChip
-                            :tone="PO_STATES[row.state]?.tone || 'gray'"
-                            size="sm"
-                        >
-                            {{ t(`purchasing.state.${row.state}`) }}
+                        <AChip :tone="buyingStateTone(row.state)" size="sm">
+                            {{ t(`buying.state.${row.state}`) }}
                         </AChip>
+                    </template>
+                    <template #cell-created="{ row }">
+                        <ANum v-if="row.created?.iso">{{
+                            fmtISO(row.created.iso)
+                        }}</ANum>
+                        <span v-else class="sp-dash">—</span>
+                    </template>
+                    <template #cell-sent="{ row }">
+                        <ANum v-if="row.sent?.iso">{{
+                            fmtISO(row.sent.iso)
+                        }}</ANum>
+                        <span v-else class="sp-dash">—</span>
+                    </template>
+                    <template #cell-received="{ row }">
+                        <ANum v-if="row.received?.iso">{{
+                            fmtISO(row.received.iso)
+                        }}</ANum>
+                        <span v-else class="sp-dash">—</span>
                     </template>
                     <template #cell-lines="{ row }"
                         ><ANum>{{ row.lines.length }}</ANum></template
                     >
-                    <template #cell-value="{ row }">
-                        <ANum>{{ num(row.value) }}</ANum>
-                        {{ CURRENCY_SYMBOL[row.currency] || '' }}
-                    </template>
-                    <template #cell-eta="{ row }">
-                        <ANum v-if="row.eta">{{ fmtISO(row.eta) }}</ANum>
-                        <template v-else>—</template>
-                    </template>
                     <template #cell-go="{ row }">
                         <AButton sm icon="external" @click="openPo(row)">
                             {{

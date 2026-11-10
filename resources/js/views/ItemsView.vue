@@ -11,9 +11,11 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 import BatchTraceDrawer from '@/components/inventory/BatchTraceDrawer.vue';
+import StockCountModal from '@/components/inventory/StockCountModal.vue';
 import BomDrawer from '@/components/items/BomDrawer.vue';
 import BomEditor from '@/components/items/BomEditor.vue';
-import CountModal from '@/components/items/CountModal.vue';
+// A batch-managed item is counted batch by batch — SAP counts it that way —
+// and anything else as one figure; the one dialog does both.
 import ItemDrawer from '@/components/items/ItemDrawer.vue';
 import ItemEditor from '@/components/items/ItemEditor.vue';
 import ItemsTab from '@/components/items/ItemsTab.vue';
@@ -25,6 +27,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
+import { liveOnly } from '@/config';
 import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
@@ -84,6 +87,9 @@ const counting = ref(null);
 const removing = ref(null);
 
 const openItem = computed(() => (view.item ? store.rowBySku(view.item) : null));
+
+/** The cards in use — the archive is counted behind its own button, not here. */
+const liveTotal = computed(() => liveOnly(store.items).length);
 
 /** V3 — the batch a row on the item card opened, traced without leaving here. */
 const openBatch = computed(() =>
@@ -239,7 +245,7 @@ async function confirmRestore(reason) {
     <PageHead
         :crumbs="[t('nav.group.operations'), t('nav.item.items')]"
         :title="t('items.title')"
-        :sub="t('items.sub', { total: store.items.length })"
+        :sub="t('items.sub', { total: liveTotal })"
     >
         <template #actions>
             <AButton kind="p" icon="plus" @click="editing = {}">
@@ -302,7 +308,7 @@ async function confirmRestore(reason) {
         @saved="onBomSaved"
     />
 
-    <CountModal
+    <StockCountModal
         v-if="counting"
         :row="counting"
         @close="counting = null"

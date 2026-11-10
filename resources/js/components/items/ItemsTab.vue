@@ -35,7 +35,7 @@ import {
 } from '@/config';
 import { downloadCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
-import { ils, num } from '@/lib/money';
+import { ils, num, qtyText } from '@/lib/money';
 import { useCatalogStore } from '@/stores/catalog';
 import {
     ITEM_FILTER_FIELDS,
@@ -496,12 +496,19 @@ function exportRows() {
 
             <template #cell-stock="{ row }">
                 <template v-if="row.tracked">
+                    <!-- Available is held in the stock unit, not the sales
+                         unit: 38.29 of a herb counted in kilos is 38.29 kg —
+                         and to the grams it holds, so 0.337 kg is not "0". -->
                     <span :class="{ 'is-low': row.low }">
-                        <ANum>{{ num(row.avail) }}</ANum>
-                        {{ uomLabel(row.uom?.sales) }}
+                        <ANum>{{ qtyText(row.avail, 3) }}</ANum>
+                        {{ uomLabel(row.uom?.stock) }}
                     </span>
                     <div v-if="row.alloc" class="t-sub">
-                        {{ t('items.cell.committed', { n: num(row.alloc) }) }}
+                        {{
+                            t('items.cell.committed', {
+                                n: qtyText(row.alloc, 3),
+                            })
+                        }}
                     </div>
                 </template>
                 <span v-else class="t-sub">{{ t('items.cell.noStock') }}</span>

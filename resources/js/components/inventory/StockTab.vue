@@ -60,12 +60,13 @@ const view = useUrlState({
 
 const term = computed(() => view.q.trim().toLowerCase());
 
+// Archived rows are out of the table; their history still names them.
 const searched = computed(() =>
     term.value
-        ? inventory.stock.filter((row) =>
+        ? inventory.liveStock.filter((row) =>
               searchHaystack(row.name, row.sku, row.lat).includes(term.value),
           )
-        : inventory.stock,
+        : inventory.liveStock,
 );
 
 const filters = useListFilters(SPEC, view, searched);

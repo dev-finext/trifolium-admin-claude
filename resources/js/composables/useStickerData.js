@@ -183,7 +183,7 @@ export function useStickerData() {
      * How many batch labels one receipt from production needs: what the person
      * printed, or else what its containers come to (config/batches.js).
      */
-    function productionLabelCount(order, receipt) {
+    function productionLabelCount(order, receipt, fallback = 1) {
         if (receipt.labels != null) {
             return receipt.labels;
         }
@@ -198,7 +198,7 @@ export function useStickerData() {
                     item: items.itemBySku(order.parentSku),
                     settings: dataset.data.inventorySettings,
                 }),
-            ) || 1
+            ) ?? fallback
         );
     }
 

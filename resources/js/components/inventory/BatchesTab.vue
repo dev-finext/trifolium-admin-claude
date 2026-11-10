@@ -9,6 +9,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BatchSettingsCard from '@/components/inventory/BatchSettingsCard.vue';
+import RefLink from '@/components/inventory/RefLink.vue';
 import SearchBox from '@/components/inventory/SearchBox.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AChip from '@/components/ui/AChip.vue';
@@ -44,7 +45,7 @@ defineProps({
     selected: { type: String, default: '' },
 });
 
-const emit = defineEmits(['open-batch', 'open-receipt']);
+const emit = defineEmits(['open-batch', 'open-ref']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
@@ -130,8 +131,15 @@ function removeChip(chip) {
     filters.toggle(chip.key, chip.value);
 }
 
-/** How long until the batch expires, or how long since it did. */
+/**
+ * How long until the batch expires, or how long since it did. A batch SAP
+ * holds with no expiry says so, rather than "expires in 0 days".
+ */
 function expiryNote(batch) {
+    if (!Number.isFinite(batch.daysToExp)) {
+        return t('inventory.batches.noExpiry');
+    }
+
     return batch.daysToExp < 0
         ? t('inventory.batches.expiredAgo', { n: -batch.daysToExp })
         : t('inventory.batches.expiresIn', { n: batch.daysToExp });
@@ -272,7 +280,8 @@ const { paged, total } = usePaged(sorted, view);
                 </span>
             </template>
             <template #cell-expiry="{ row }">
-                <ANum>{{ fmtISO(row.expiry) }}</ANum>
+                <ANum v-if="row.expiry">{{ fmtISO(row.expiry) }}</ANum>
+                <span v-else class="a-muted">—</span>
                 <div class="t-sub">{{ expiryNote(row) }}</div>
             </template>
             <template #cell-state="{ row }">
@@ -281,13 +290,14 @@ const { paged, total } = usePaged(sorted, view);
                 </AChip>
             </template>
             <template #cell-receipt="{ row }">
-                <button
-                    type="button"
-                    class="a-linkbtn"
-                    @click.stop="emit('open-receipt', row.receipt)"
-                >
-                    <ANum>{{ row.receipt }}</ANum>
-                </button>
+                <!-- The document the batch came in on: its goods receipt, or
+                     for a batch the pharmacy made, the production order. A
+                     real batch whose receipt the extract does not join to has
+                     neither, and shows a dash. -->
+                <RefLink
+                    :id="row.receipt || row.production"
+                    @open="emit('open-ref', $event)"
+                />
             </template>
             <template #cell-use="{ row }">
                 <ANum>{{ inventory.useOfBatch(row.id).length }}</ANum>

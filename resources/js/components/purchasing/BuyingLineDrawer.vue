@@ -48,7 +48,7 @@ const text = (value) => value || '—';
 const win = computed(() =>
     props.line
         ? {
-              id: `buyline:${props.list?.id}:${props.line.sku}`,
+              id: `buyline:${props.list?.id}:${props.line.key || props.line.sku}`,
               title: props.line.name,
               subtitle: props.line.sku,
               icon: 'package',

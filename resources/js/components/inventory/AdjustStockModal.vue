@@ -16,7 +16,7 @@ import ATextarea from '@/components/ui/ATextarea.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { REASONS_OUT } from '@/config';
 import { fmtISO } from '@/lib/dates';
-import { num } from '@/lib/money';
+import { num, qtyText } from '@/lib/money';
 import { useInventoryStore } from '@/stores/inventory';
 
 /** Room for the key-value block plus the three fields, and no more. */
@@ -48,8 +48,13 @@ const reasons = computed(() =>
     })),
 );
 
+/**
+ * Every batch still holding something — expired and waste ones too. Those
+ * are exactly what a write-off is for, and FEFO's open list leaves them out,
+ * so they could never leave stock. The same list the stock table counts.
+ */
 const batches = computed(() =>
-    props.item ? inventory.openBatchesOf(props.item.sku) : [],
+    props.item ? inventory.heldBatchesOf(props.item.sku) : [],
 );
 
 const asked = computed(() => Number(qty.value));
@@ -90,12 +95,23 @@ function unitLabel() {
     return props.item ? t(`inventory.unit.${props.item.unit}`) : '';
 }
 
+/** An expired or waste batch says so in the list, so it is picked knowingly. */
 function batchLabel(row) {
-    return t('inventory.adjust.batchOption', {
+    const option = t('inventory.adjust.batchOption', {
         id: inventory.batchNo(row),
-        left: num(row.remaining),
-        expiry: fmtISO(row.expiry),
+        left: qtyText(row.remaining, 3),
+        expiry: row.expiry
+            ? fmtISO(row.expiry)
+            : t('inventory.batches.noExpiry'),
     });
+    const flag = row.waste ? 'waste' : row.state === 'expired' ? 'expired' : '';
+
+    return flag
+        ? t('inventory.adjust.batchFlagged', {
+              option,
+              state: t(`batchState.${flag}`),
+          })
+        : option;
 }
 
 async function save() {

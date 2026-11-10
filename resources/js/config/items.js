@@ -5,6 +5,7 @@
 // families and their code prefixes are SAP's own item-group numbering, adopted
 // as-is because the warehouse is physically arranged by it. Display text lives in
 // the locale catalogs under `items.*` and `attachments.*`.
+import { liveOnly } from '@/config/archive';
 
 /**
  * Item families and the code prefixes each is numbered under, counted against
@@ -245,6 +246,51 @@ export const EXTRACTION_RATIOS = [
 ];
 
 export const BOM_RULES = { maxComponents: 40 };
+
+/**
+ * What one purchase-order line still has to deliver, in the item's stock unit.
+ *
+ * The sheet counts in the purchase unit and SAP's `OnOrder` counts in the stock
+ * unit; `numInBuy`, carried on the line off the item card, is what sits
+ * between — the same conversion the goods receipt makes when the goods arrive.
+ */
+export function openOrderQty(line) {
+    const open = (Number(line?.qty) || 0) - (Number(line?.received) || 0);
+
+    if (!(open > 0)) {
+        return 0;
+    }
+
+    return Math.round(open * (Number(line?.numInBuy) || 1) * 1000) / 1000;
+}
+
+/**
+ * The purchase orders that have left for a supplier and not arrived yet.
+ *
+ * A draft has not been placed and a failed order will not come; a received one
+ * has come. Only `sent` is stock somebody is waiting for.
+ */
+export const sentOrders = (lists) =>
+    liveOnly(lists).filter(
+        (list) => list.kind === 'order' && list.state === 'sent',
+    );
+
+/** What the sent orders still have to deliver, per sku, in stock units. */
+export function sentOrderQtyBySku(lists) {
+    const out = new Map();
+
+    sentOrders(lists).forEach((order) =>
+        (order.lines || []).forEach((line) => {
+            const open = openOrderQty(line);
+
+            if (open > 0) {
+                out.set(line.sku, (out.get(line.sku) || 0) + open);
+            }
+        }),
+    );
+
+    return out;
+}
 
 /** Records a file can be attached to. */
 export const ATTACHMENT_ENTITY_IDS = [
