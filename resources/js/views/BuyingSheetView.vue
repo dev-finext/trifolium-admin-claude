@@ -19,8 +19,15 @@
 //
 //   a sent order stays sent while its goods arrive in parts, and is received
 //   when the last of them is booked in — or when the buyer closes the rest
-//   that is not coming. A draft nothing happened to, or an open request, can
-//   be removed; anything sent stays on record.
+//   that is not coming. Its lines are fixed from the moment it is sent: they
+//   are what was asked of the supplier, and what arrives is measured against
+//   them, line by line, for the rest of the order's life. A draft nothing
+//   happened to, or an open request, can be removed; anything sent stays on
+//   record.
+//
+// Two notes, and they are kept apart on purpose: the working note is the
+// pharmacy's own and never leaves the console; the note for the supplier, on
+// an order, heads the exported sheet.
 //
 // Booking goods in takes over the page body rather than opening over it, and
 // it is an address of its own (`?do=receive`) so it survives a reload.
@@ -31,6 +38,7 @@ import { useRoute, useRouter } from 'vue-router';
 import PageHead from '@/components/layout/PageHead.vue';
 import BuyingLinesPanel from '@/components/purchasing/BuyingLinesPanel.vue';
 import BuyingReceive from '@/components/purchasing/BuyingReceive.vue';
+import ReceiptLabelsModal from '@/components/purchasing/ReceiptLabelsModal.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
 import AErrorState from '@/components/ui/AErrorState.vue';
@@ -48,7 +56,9 @@ import {
     buyingSheet,
     canReceive,
     hasReceipts,
+    lineGap,
     lineOutstanding,
+    linesEditable,
     missingQty,
 } from '@/config';
 import { fmtISO } from '@/lib/dates';
@@ -56,6 +66,8 @@ import { num } from '@/lib/money';
 import { downloadXlsx } from '@/lib/xlsx';
 import { useBuyingStore } from '@/stores/buying';
 import { useDatasetStore } from '@/stores/dataset';
+import { useInventoryStore } from '@/stores/inventory';
+import { useStickersStore } from '@/stores/stickers';
 import { supplierSelectable } from '@/stores/system';
 
 const { t } = useI18n();
@@ -65,6 +77,8 @@ const route = useRoute();
 const router = useRouter();
 const dataset = useDatasetStore();
 const store = useBuyingStore();
+const stickers = useStickersStore();
+const inventory = useInventoryStore();
 
 const kind = computed(() =>
     route.params.kind === 'order' ? 'order' : 'request',
@@ -196,6 +210,15 @@ const arrived = computed(
             .length,
 );
 
+/** Lines where what arrived is not what was ordered — short or over. */
+const gaps = computed(() =>
+    (sheet.value?.lines || []).filter((line) => {
+        const gap = lineGap(line);
+
+        return gap !== null && gap !== 0;
+    }),
+);
+
 /** Lines still waiting for goods, on an order something already came for. */
 const outstanding = computed(() =>
     (sheet.value?.lines || []).filter((line) => lineOutstanding(line) > 0),
@@ -226,6 +249,16 @@ const facts = computed(() => {
                 done: arrived.value,
                 total: one.lines.length,
             }),
+        );
+    }
+
+    if (one.kind === 'order' && gaps.value.length) {
+        out.push(
+            t(
+                'buying.order.gapLines',
+                { n: gaps.value.length },
+                gaps.value.length,
+            ),
         );
     }
 
@@ -294,6 +327,12 @@ const settled = computed(() =>
 const supplierLocked = computed(
     () => !['draft', 'failed'].includes(sheet.value?.state),
 );
+
+/**
+ * The lines themselves — adding, removing, quantities — are open while the
+ * sheet is: a request until it is finished, an order until it is sent.
+ */
+const linesLocked = computed(() => !linesEditable(sheet.value));
 
 // ---- request → order --------------------------------------------------------
 
@@ -473,8 +512,23 @@ function exportSheet() {
     });
 }
 
-function onReceived() {
+/**
+ * The receipt just signed, while its batch labels are offered for printing.
+ * Held here and not on the receipt screen, which closes the moment the
+ * receipt is booked — and with it anything it had open.
+ */
+const labelling = ref(null);
+
+function onReceived(booked) {
     setMode(null);
+
+    // What the store hands back is the receipt's number and its batches; the
+    // labels are read off the receipt itself.
+    const receipt = booked?.id ? inventory.receiptById(booked.id) : null;
+
+    if ((receipt?.lines || []).some((line) => stickers.itemCount(line) > 0)) {
+        labelling.value = receipt;
+    }
 }
 
 function back() {
@@ -621,8 +675,8 @@ function back() {
             <BuyingReceive
                 v-if="receiving"
                 :list="sheet"
+                :done="onReceived"
                 @cancel="setMode(null)"
-                @received="onReceived"
             />
 
             <template v-else>
@@ -640,6 +694,22 @@ function back() {
                             @update:model-value="onSupplier"
                         />
                     </label>
+                    <label v-if="kind === 'order'" class="a-field bs-note">
+                        <span>{{ t('buying.supplierNote') }}</span>
+                        <ATextarea
+                            :model-value="sheet.supplierNote || ''"
+                            :rows="2"
+                            class="a-w100"
+                            :disabled="supplierLocked"
+                            :placeholder="t('buying.supplierNotePlaceholder')"
+                            @update:model-value="
+                                store.setSupplierNote(sheet.id, $event)
+                            "
+                        />
+                        <small class="a-hint">{{
+                            t('buying.supplierNoteHint')
+                        }}</small>
+                    </label>
                     <label class="a-field bs-note">
                         <span>{{ t('buying.note') }}</span>
                         <ATextarea
@@ -651,10 +721,11 @@ function back() {
                                 store.setNote(sheet.id, $event)
                             "
                         />
+                        <small class="a-hint">{{ t('buying.noteHint') }}</small>
                     </label>
                 </div>
 
-                <BuyingLinesPanel :list="sheet" :readonly="settled" />
+                <BuyingLinesPanel :list="sheet" :readonly="linesLocked" />
 
                 <ChangeLogPanel
                     class="bs-log"
@@ -662,6 +733,11 @@ function back() {
                     :ref-id="sheet.id"
                 />
             </template>
+
+            <ReceiptLabelsModal
+                :receipt="labelling"
+                @close="labelling = null"
+            />
 
             <ConfirmDialog
                 :open="convertOpen"
@@ -822,7 +898,7 @@ function back() {
 
 .bs-top {
     display: grid;
-    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 18px;
     align-items: start;
     margin-bottom: 18px;

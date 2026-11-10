@@ -22,9 +22,10 @@ import {
     isFullyReceived,
     leadTimeOf,
     lineOutstanding,
+    linesEditable,
     liveOnly,
     lineFromItem,
-    parseSkus,
+    parsePaste,
 } from '@/config';
 import { persist } from '@/data/source';
 import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
@@ -171,7 +172,10 @@ export const useBuyingStore = defineStore('buying', () => {
             kind,
             supplierCode: supplierCode || null,
             supplier: supplier || null,
+            // The pharmacy's own working note, and the one written for the
+            // supplier — only the second goes out with the order.
             note: '',
+            supplierNote: '',
             lines: [],
             lineSeq: 0,
             state: buyingFirstState(kind),
@@ -198,24 +202,43 @@ export const useBuyingStore = defineStore('buying', () => {
     }
 
     /**
-     * Add every code in a pasted block.
+     * Add every code in a pasted block — with its quantity, when the block
+     * carries one (`parsePaste` in config/buying.js).
      *
-     * Three things come back, because all three have to be said out loud: what
-     * went on the sheet, what the catalogue has never heard of, and what was
-     * already there. A code silently dropped is a code the buyer thinks they
-     * ordered.
+     * Four things come back, because all four have to be said out loud: what
+     * went on the sheet, which lines already on it took the pasted quantity,
+     * what was already there with no quantity to give it, and what the
+     * catalogue has never heard of. A code silently dropped is a code the
+     * buyer thinks they ordered.
+     *
+     * A pasted quantity replaces the one on the line: the paste is the list as
+     * it stands now, so pasting the same column twice does not double it.
      */
     function addSkus(id, text) {
         const list = listById(id);
-        const result = { added: [], missing: [], already: [] };
+        const result = { added: [], updated: [], missing: [], already: [] };
 
-        if (!list) {
+        if (!list || !linesEditable(list)) {
             return result;
         }
 
-        for (const code of parseSkus(text)) {
-            if (list.lines.some((line) => line.sku === code)) {
-                result.already.push(code);
+        keyLines(list);
+
+        for (const { code, qty } of parsePaste(text, (token) =>
+            Boolean(items.rowBySku(token)),
+        )) {
+            const twin = list.lines.find(
+                (line) => line.sku === code && !(Number(line.received) > 0),
+            );
+
+            if (twin || list.lines.some((line) => line.sku === code)) {
+                if (twin && qty > 0 && Number(twin.qty) !== qty) {
+                    twin.qty = qty;
+                    result.updated.push(code);
+                } else {
+                    result.already.push(code);
+                }
+
                 continue;
             }
 
@@ -226,7 +249,13 @@ export const useBuyingStore = defineStore('buying', () => {
                 continue;
             }
 
-            list.lines.push(withKey(list, snapshot(row)));
+            const line = withKey(list, snapshot(row));
+
+            if (qty > 0) {
+                line.qty = qty;
+            }
+
+            list.lines.push(line);
             result.added.push(code);
         }
 
@@ -236,6 +265,9 @@ export const useBuyingStore = defineStore('buying', () => {
                 ent: list.id,
                 to: String(result.added.length),
             });
+        }
+
+        if (result.added.length || result.updated.length) {
             save(list);
         }
 
@@ -247,7 +279,11 @@ export const useBuyingStore = defineStore('buying', () => {
         const list = listById(id);
         const row = items.rowBySku(sku);
 
-        if (!list || !row || list.lines.some((line) => line.sku === sku)) {
+        if (
+            !linesEditable(list) ||
+            !row ||
+            list.lines.some((line) => line.sku === sku)
+        ) {
             return null;
         }
 
@@ -269,11 +305,17 @@ export const useBuyingStore = defineStore('buying', () => {
         return (list?.lines || []).find((line) => line.key === key) || null;
     };
 
+    /**
+     * A line's quantity. Open while the sheet is: an order's quantities are
+     * what was asked of the supplier, so once it is sent they are fixed, and
+     * whatever arrives is measured against them (`lineGap`). A line goods
+     * already arrived on keeps its quantity even on an order that failed.
+     */
     function setQty(id, key, qty) {
         const list = listById(id);
         const line = lineOf(list, key);
 
-        if (!line) {
+        if (!line || !linesEditable(list) || Number(line.received) > 0) {
             return null;
         }
 
@@ -290,7 +332,11 @@ export const useBuyingStore = defineStore('buying', () => {
         const list = listById(id);
         const line = lineOf(list, key);
 
-        if (!line || !BUYING_KIND[list.kind]?.checklist) {
+        if (
+            !line ||
+            !BUYING_KIND[list.kind]?.checklist ||
+            !linesEditable(list)
+        ) {
             return null;
         }
 
@@ -303,7 +349,7 @@ export const useBuyingStore = defineStore('buying', () => {
     function removeLine(id, key) {
         const list = listById(id);
 
-        if (!list) {
+        if (!linesEditable(list)) {
             return null;
         }
 
@@ -361,6 +407,23 @@ export const useBuyingStore = defineStore('buying', () => {
         }
 
         list.note = String(note || '');
+
+        return save(list);
+    }
+
+    /**
+     * The note that goes to the supplier, at the head of the exported sheet.
+     * Written while the order is being prepared; once it is sent it is part
+     * of what was sent.
+     */
+    function setSupplierNote(id, note) {
+        const list = listById(id);
+
+        if (!list || list.kind !== 'order' || !linesEditable(list)) {
+            return null;
+        }
+
+        list.supplierNote = String(note || '');
 
         return save(list);
     }
@@ -583,7 +646,8 @@ export const useBuyingStore = defineStore('buying', () => {
      * @param {string} id
      * @param {{docNum?: string, date: string, note?: string,
      *          lines: Array<{key: string, qty: number, supplierBatch?: string,
-     *                        expiry?: string, price?: number}>}} form
+     *                        madeOn?: string, expiry?: string, price?: number,
+     *                        labels?: number}>}} form
      */
     async function receiveList(id, form) {
         const list = listById(id);
@@ -620,9 +684,14 @@ export const useBuyingStore = defineStore('buying', () => {
                     qty: Number(line.qty) * perBuy,
                     wh: line.wh || DEFAULT_WAREHOUSE,
                     supplierBatch: line.supplierBatch || '',
+                    // The supplier's manufacturing date, off the certificate —
+                    // the label's "תאריך ייצור".
+                    madeOn: line.madeOn || null,
                     expiry: line.expiry || null,
                     price: line.price ?? row?.lastPrice ?? null,
-                    labels: 0,
+                    // How many containers the quantity is divided into: one
+                    // batch label for each, numbered 1/n … n/n.
+                    labels: Math.max(0, Math.round(Number(line.labels) || 0)),
                 };
             }),
         });
@@ -695,6 +764,7 @@ export const useBuyingStore = defineStore('buying', () => {
         removeLine,
         setSupplier,
         setNote,
+        setSupplierNote,
         removeList,
         setState,
         markExported,

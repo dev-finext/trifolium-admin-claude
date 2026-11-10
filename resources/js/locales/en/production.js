@@ -34,7 +34,6 @@ export default {
 
     // config/production.js PRODUCTION_STATE_IDS
     state: {
-        planned: 'Planned',
         issued: 'Issued',
         completed: 'Completed',
         cancelled: 'Cancelled',
@@ -59,7 +58,7 @@ export default {
             ritem: 'Item',
             rby: 'Opened by',
             rwaste: 'Waste',
-            rqty: 'Planned quantity',
+            rqty: 'Quantity to make',
         },
         wasteState: {
             yes: 'With waste',
@@ -69,7 +68,7 @@ export default {
 
     kpi: {
         open: 'Open orders',
-        openSub: 'Planned and issued',
+        openSub: 'At the lab, not yet received',
         produced: 'Completed in the last 30 days',
         producedSub: 'Click filters',
         waste: 'Waste this month',
@@ -100,7 +99,6 @@ export default {
 
     action: {
         create: 'New production order',
-        issue: 'Issue to production',
         receive: 'Receive into stock',
         cancel: 'Cancel the order',
         cancelRest: 'Cancel the rest',
@@ -114,6 +112,12 @@ export default {
         onHand: 'On hand',
         avail: 'Available',
         onOrder: 'On order',
+        leftAfter: 'Left in stock after the issue',
+        supplierOrder: 'Supplier order in progress',
+        supplierYes: 'Yes',
+        supplierNo: 'No',
+        supplierOn: 'On order {list}',
+        supplierDraft: 'Draft {list} — not yet sent',
     },
 
     // Notes for the lab: one for this order only, and the standing ones that
@@ -133,6 +137,13 @@ export default {
         labPlaceholder: 'For example: finish all of herb 100002',
         labHint: 'Not carried to the next order of the same item.',
         none: 'No notes for this order.',
+        internal: 'Internal notes',
+        internalPlaceholder:
+            'e.g. If the yield is good — raise the quantity next time',
+        internalHint:
+            'For the pharmacy only — never printed on the work sheet or the labels, never passed to the lab.',
+        internalNone: 'No internal notes.',
+        internalSaved: 'Internal note saved',
     },
 
     // The production order's target per preparation type — on the "Times by
@@ -149,7 +160,7 @@ export default {
         by: 'Opened by {name}',
         railAria: 'Order stages',
         details: 'Order details',
-        planned: 'Planned quantity',
+        planned: 'Quantity to make',
         recipe: 'Bill of materials',
         created: 'Opened',
         issuedOn: 'Issued',
@@ -206,7 +217,8 @@ export default {
         recipeHint:
             'The recipe yields {qty} {uom} per run · stock allows {runs} runs',
         qty: 'Quantity to make',
-        qtyHint: 'In {uom}, the recipe’s yield unit',
+        uom: 'Unit of measure',
+        uomHint: 'From the item card — cannot be changed',
 
         pick: {
             manual: 'Pick a batch by hand',
@@ -222,26 +234,20 @@ export default {
             qtyCol: 'Quantity from this batch',
         },
 
-        start: 'Opening status',
-        startHint: {
-            planned:
-                'Written down and holds no stock. It can be released later.',
-            issued: 'Goes to the bench now, and takes its components.',
-        },
         due: 'Target date',
         dueHint:
             '{n} days for {type}. Move it to suit the lab’s load and priorities.',
         dueNone:
             '{type} has no standing target yet — set a date here, or set a target on the “Times by preparation type” tab.',
         preview: 'What leaves stock',
-        save: 'Open the order',
+        save: 'Open the order and send it to the lab',
     },
 
     // Receiving into stock — all of it, or a part.
     receive: {
         title: 'Receive into stock · {id} · {name}',
         progress:
-            'Planned {planned} {uom} · received so far {received} · {left} {uom} left',
+            'On the order {planned} {uom} · received so far {received} · {left} {uom} left',
         kind: {
             label: 'Kind of receipt',
             final: 'Last receipt — the order closes',
@@ -309,7 +315,6 @@ export default {
     toast: {
         created: 'Production order opened',
         createdBody: '{id} · {name}',
-        issued: 'Order issued to production',
         received: 'Part of the order received into stock',
         completed: 'Run completed',
         completedBody: 'Batch {batch} · {qty} {uom}',

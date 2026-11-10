@@ -266,7 +266,7 @@ export default {
         },
         mistake_fix: {
             name: 'Correcting a mistake',
-            hint: 'Fixing an earlier wrong entry',
+            hint: 'Fixing an earlier wrong entry — in either direction',
         },
     },
     preparationForm: {

@@ -2,12 +2,13 @@
 // parent item. Second-version material.
 //
 // The moves of a run and what each does to stock:
-//   create   — the recipe is scaled to the planned quantity and a FEFO plan
-//              is drawn for every component; nothing moves yet. The order
-//              takes its target date and the standing lab notes of the item
-//              it makes.
-//   issue    — the plan is reserved: each component's stock row shows the
-//              quantity as committed, so the buyer sees it before it leaves.
+//   create   — the recipe is scaled to the quantity, in the unit of measure
+//              of the item being made, and a FEFO plan is drawn for every
+//              component. The order goes to the lab as it is written — there
+//              is no planned stage — so the plan is reserved at once: each
+//              component's stock row shows the quantity as committed, so the
+//              buyer sees it before it leaves. The order takes its target date
+//              and the standing lab notes of the item it makes.
 //   receive  — what came back from the lab goes into stock, all of it or a
 //              part ("לפעמים מוצר רק חלק מכמות המוצר שהזמנתי ואני מכניסה למלאי
 //              רק את החלק הזה ושאר ההוראה נשארת פתוחה"). Each receipt draws its
@@ -45,6 +46,7 @@ import {
     stamp,
 } from '@/lib/dates';
 import { L } from '@/lib/localized';
+import { convertQty } from '@/lib/units';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
@@ -187,6 +189,20 @@ export const useProductionStore = defineStore('production', () => {
     };
 
     /**
+     * The unit an order for this recipe is written in: the unit of measure of
+     * the item it makes, off that item's card — what the person opening the
+     * order thinks in, and what the shelf counts — whenever the recipe's yield
+     * can be restated in it. A recipe whose yield cannot (a run of bottles
+     * counted in units against an item counted in kilos) keeps its own.
+     */
+    function unitFor(bom) {
+        const made = bom?.yield?.uom || 'unit';
+        const own = inventory.itemBySku(bom?.parentSku)?.unit;
+
+        return own && convertQty(1, made, own) !== null ? own : made;
+    }
+
+    /**
      * Scale a recipe to a planned quantity and draw the FEFO plan for each
      * component. Waste batches are drawn only when the recipe's preparation
      * type accepts waste.
@@ -196,8 +212,13 @@ export const useProductionStore = defineStore('production', () => {
      * see and choose from the rest of the shelf (components/production/
      * ComponentBatchPicker.vue).
      */
-    function planComponents(bom, plannedQty, overrides = {}) {
-        const runs = plannedQty / (bom.yield?.qty || 1);
+    function planComponents(bom, plannedQty, overrides = {}, uom = null) {
+        // The quantity is in the item's own unit (`unitFor`); the recipe's
+        // yield may be written in another one of the same kind — a litre of
+        // tincture against a recipe for 1,000 ml.
+        const runs =
+            toStockUnits(plannedQty, uom || unitFor(bom), bom.yield?.uom) /
+            (bom.yield?.qty || 1);
         const prepType = items.prepTypeById(bom.prepType);
         const allowWaste = Boolean(prepType?.acceptsWaste);
 
@@ -356,7 +377,7 @@ export const useProductionStore = defineStore('production', () => {
      * Open a production order on a recipe.
      *
      * @param {{ bomId: string, plannedQty: number, labNote?: string,
-     *          dueOn?: string,
+     *          internalNote?: string, dueOn?: string,
      *          overrides?: Record<string, {batch: string, qty: number}[]> }} form
      */
     async function createOrder(form) {
@@ -377,6 +398,8 @@ export const useProductionStore = defineStore('production', () => {
             dueOn && dueOn === byRule
                 ? productionDueDays(items.prepTypeById(bom.prepType))
                 : null;
+        const uom = unitFor(bom);
+        const opened = moment();
         const order = {
             id: nextSerial(
                 rows.map((row) => row.id),
@@ -388,9 +411,9 @@ export const useProductionStore = defineStore('production', () => {
             name: bom.name,
             prepType: bom.prepType,
             plannedQty,
-            uom: bom.yield?.uom || 'unit',
-            state: 'planned',
-            components: planComponents(bom, plannedQty, form.overrides),
+            uom,
+            state: 'issued',
+            components: planComponents(bom, plannedQty, form.overrides, uom),
             // תאריך יעד — the preparation's own figure, or the date the person
             // opening the order chose over it.
             dueOn,
@@ -398,6 +421,9 @@ export const useProductionStore = defineStore('production', () => {
             // A note for this run only — "שלא נגררות להוראה הבאה" — and the
             // standing ones the item card carries, copied as they read today.
             labNote: form.labNote?.trim() || null,
+            // The pharmacy's own note on the order. It stays in the console:
+            // the work sheet and the labels that go to the lab never carry it.
+            internalNote: form.internalNote?.trim() || null,
             standing: standingNotesOf(items.itemBySku(bom.parentSku), bom),
             receipts: [],
             drawn: 0,
@@ -408,48 +434,47 @@ export const useProductionStore = defineStore('production', () => {
             expiresOn: null,
             cost: null,
             by: dataset.me?.name || null,
-            createdOn: moment(),
-            issuedOn: null,
+            createdOn: opened,
+            issuedOn: opened,
             completedOn: null,
             cancelledOn: null,
             reason: null,
         };
 
         rows.unshift(order);
+        reserveRun(order);
         writeLog({
             act: 'production_create',
             entType: 'production_order',
             ent: order.id,
             to: `${plannedQty} ${order.uom}`,
         });
+        writeLog({
+            act: 'production_issue',
+            entType: 'production_order',
+            ent: order.id,
+        });
         await persist('production-orders', order);
 
         return order;
     }
 
-    /** Re-draw the FEFO plan of a planned order, or override one pick. */
-    function setPick(orderId, sku, picks) {
-        const order = orderById(orderId);
-        const component = order?.components.find((row) => row.sku === sku);
+    /**
+     * The order's internal note — the pharmacy's own, edited while the order
+     * is open and never printed for the lab.
+     */
+    async function setInternalNote(id, note) {
+        const order = orderById(id);
+        const next = String(note || '').trim() || null;
 
-        if (!component || order.state !== 'planned') {
-            return;
+        if (!order || (order.internalNote || null) === next) {
+            return null;
         }
 
-        component.picks = picks.map((pick) => ({
-            batch: pick.batch,
-            qty: round2(Number(pick.qty) || 0),
-        }));
-        component.short = round2(
-            Math.max(
-                0,
-                toStockUnits(
-                    component.plannedQty,
-                    component.uom,
-                    component.stockUnit,
-                ) - component.picks.reduce((sum, pick) => sum + pick.qty, 0),
-            ),
-        );
+        order.internalNote = next;
+        await persist(`production-orders/${id}`, order, 'PUT');
+
+        return order;
     }
 
     /** Move an open order's target date — the lab's load is the person's call. */
@@ -476,27 +501,6 @@ export const useProductionStore = defineStore('production', () => {
         // Moved by hand: no longer the preparation's figure.
         order.dueDays = null;
         await persist(`production-orders/${id}`, order, 'PUT');
-
-        return order;
-    }
-
-    /** Issue: the components are reserved and the sheet goes to the bench. */
-    async function issueOrder(id) {
-        const order = orderById(id);
-
-        if (!order || order.state !== 'planned') {
-            return null;
-        }
-
-        order.state = 'issued';
-        order.issuedOn = moment();
-        reserveRun(order);
-        writeLog({
-            act: 'production_issue',
-            entType: 'production_order',
-            ent: order.id,
-        });
-        await persist(`production-orders/${id}/issue`, {});
 
         return order;
     }
@@ -945,14 +949,13 @@ export const useProductionStore = defineStore('production', () => {
     }
 
     /**
-     * Cancel a planned or issued run; the reservation still standing is
-     * released.
+     * Cancel an open run; the reservation still standing is released.
      *
      * A run part of which already came back is not cancelled — the stock it
      * delivered is real — but closed short: it completes on what it brought,
      * and only what was never drawn goes back to being available. That is what
      * SAP shows too: ten of its 180 orders closed with less received than
-     * planned.
+     * ordered.
      */
     async function cancelOrder(id, reason = '') {
         const order = orderById(id);
@@ -1047,10 +1050,10 @@ export const useProductionStore = defineStore('production', () => {
         canProduce,
         dueOnFor,
         planComponents,
+        unitFor,
         createOrder,
-        setPick,
+        setInternalNote,
         setDueOn,
-        issueOrder,
         receiveOrder,
         setReceiptLabels,
         cancelOrder,

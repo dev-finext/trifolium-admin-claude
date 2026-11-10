@@ -35,7 +35,6 @@ export default {
 
     // config/production.js PRODUCTION_STATE_IDS
     state: {
-        planned: 'מתוכננת',
         issued: 'הוצאה לייצור',
         completed: 'הושלמה',
         cancelled: 'בוטלה',
@@ -60,7 +59,7 @@ export default {
             ritem: 'פריט',
             rby: 'נפתחה על ידי',
             rwaste: 'פחת',
-            rqty: 'כמות מתוכננת',
+            rqty: 'כמות לייצור',
         },
         wasteState: {
             yes: 'עם פחת',
@@ -70,7 +69,7 @@ export default {
 
     kpi: {
         open: 'הוראות פתוחות',
-        openSub: 'מתוכננות והוצאו לייצור',
+        openSub: 'במעבדה, טרם נקלטו במלאי',
         produced: 'הושלמו ב־30 הימים האחרונים',
         producedSub: 'לחיצה מסננת',
         waste: 'פחת החודש',
@@ -101,7 +100,6 @@ export default {
 
     action: {
         create: 'הוראת ייצור חדשה',
-        issue: 'הוצאה לייצור',
         receive: 'קליטה למלאי',
         cancel: 'ביטול ההוראה',
         cancelRest: 'ביטול היתרה',
@@ -115,6 +113,14 @@ export default {
         onHand: 'במלאי',
         avail: 'זמין',
         onOrder: 'בהזמנה',
+        // כמה יישאר על המדף אחרי שההוראה הזו תיקח את חלקה.
+        leftAfter: 'נותר במלאי אחרי ההוצאה',
+        // האם כבר יש הזמנה מספק בדרך, כמה, ובאיזו הזמנה.
+        supplierOrder: 'הזמנת ספק בתהליך',
+        supplierYes: 'כן',
+        supplierNo: 'לא',
+        supplierOn: 'בהזמנה {list}',
+        supplierDraft: 'טיוטה {list} — טרם נשלחה לספק',
     },
 
     // הערות למעבדה: אחת להוראה הזו בלבד, והקבועות שעוברות מכרטיס הפריט.
@@ -133,6 +139,14 @@ export default {
         labPlaceholder: 'לדוגמה: לסיים את כל הצמח 100002',
         labHint: 'לא עוברת להוראה הבאה של אותו פריט.',
         none: 'אין הערות להוראה הזו.',
+        // הערות פנימיות — של בית המרקחת בלבד, לא מודפסות ולא עוברות למעבדה.
+        internal: 'הערות פנימיות',
+        internalPlaceholder:
+            'לדוגמה: אם התפוקה טובה — להגדיל את הכמות בהוראה הבאה',
+        internalHint:
+            'לשימוש פנימי בלבד — לא מודפסות בדף העבודה ובמדבקות, ולא עוברות למעבדה.',
+        internalNone: 'אין הערות פנימיות.',
+        internalSaved: 'ההערה הפנימית נשמרה',
     },
 
     // יעד הוראת ייצור לפי סוג הכנה — בלשונית ״זמנים לפי סוג הכנה״.
@@ -148,7 +162,7 @@ export default {
         by: 'נפתחה ע״י {name}',
         railAria: 'שלבי ההוראה',
         details: 'פרטי ההוראה',
-        planned: 'כמות מתוכננת',
+        planned: 'כמות לייצור',
         recipe: 'עץ מוצר',
         created: 'נפתחה',
         issuedOn: 'הוצאה לייצור',
@@ -203,19 +217,15 @@ export default {
         productNone: 'אין מוצר שמתאים לחיפוש',
         recipeHint: 'המתכון מניב {qty} {uom} לריצה · המלאי מאפשר {runs} ריצות',
         qty: 'כמות לייצור',
-        qtyHint: 'ב{uom}, לפי יחידת התפוקה של המתכון',
-        start: 'מצב פתיחה',
-        startHint: {
-            planned: 'נרשמת ואינה תופסת מלאי. אפשר להוציא אותה לייצור אחר כך.',
-            issued: 'יוצאת למעבדה מיד, והרכיבים נתפסים.',
-        },
+        uom: 'יחידת מידה',
+        uomHint: 'לפי כרטיס הפריט — לא ניתן לשינוי',
         due: 'תאריך יעד',
         dueHint:
             '{n} ימים לפי {type}. אפשר להזיז לפי העומס במעבדה וסדר העדיפויות.',
         dueNone:
             'ל{type} עדיין אין יעד קבוע — אפשר לקבוע תאריך כאן, או להגדיר יעד בלשונית ״זמנים לפי סוג הכנה״.',
         preview: 'מה ייצא מהמלאי',
-        save: 'פתיחת ההוראה',
+        save: 'פתיחת ההוראה ושליחה למעבדה',
 
         pick: {
             manual: 'בחירת אצווה ידנית',
@@ -236,7 +246,7 @@ export default {
     receive: {
         title: 'קליטה למלאי · {id} · {name}',
         progress:
-            'תוכנן {planned} {uom} · נקלטו עד עכשיו {received} · נותרו {left} {uom}',
+            'בהוראה {planned} {uom} · נקלטו עד עכשיו {received} · נותרו {left} {uom}',
         kind: {
             label: 'סוג הקליטה',
             final: 'קליטה אחרונה — ההוראה תיסגר',
@@ -303,7 +313,6 @@ export default {
     toast: {
         created: 'הוראת הייצור נפתחה',
         createdBody: '{id} · {name}',
-        issued: 'ההוראה הוצאה לייצור',
         received: 'חלק מההוראה נקלט למלאי',
         completed: 'הייצור הושלם',
         completedBody: 'אצווה {batch} · {qty} {uom}',

@@ -516,10 +516,7 @@ export const TABLES = [
         lines: {
             field: 'streets',
             name: 'city_streets',
-            columns: [
-                col('street_id', 'text', 'id'),
-                locCol('name', 'name'),
-            ],
+            columns: [col('street_id', 'text', 'id'), locCol('name', 'name')],
         },
     },
     {
@@ -599,7 +596,7 @@ export const SETTINGS_KEY = 'settings';
  * **Bump this whenever a record's fields change.** The date plus a serial is
  * enough; nothing parses it, it only has to differ.
  */
-export const DATA_VERSION = '2026-11-10.2';
+export const DATA_VERSION = '2026-11-10.5';
 
 /** The settings row that carries it. */
 export const DATA_VERSION_KEY = 'data:version';

@@ -202,7 +202,7 @@ const ruleLines = computed(() => {
             ...(receipt.lines || []).map((line, i) =>
                 t('stickers.print.line', {
                     i: i + 1,
-                    name: line.batch || line.sku,
+                    name: inventory.batchNo(line.batch) || line.sku,
                     n: stickers.itemCount(line),
                 }),
             ),

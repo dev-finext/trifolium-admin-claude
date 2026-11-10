@@ -8,6 +8,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BatchDatesModal from '@/components/inventory/BatchDatesModal.vue';
 import BatchSettingsCard from '@/components/inventory/BatchSettingsCard.vue';
 import RefLink from '@/components/inventory/RefLink.vue';
 import SearchBox from '@/components/inventory/SearchBox.vue';
@@ -185,6 +186,9 @@ const cols = computed(() => [
 ]);
 
 const { sort, sorted } = useSorted(rows, view, () => cols.value);
+
+/** The batch whose dates are being corrected, straight from its row. */
+const dating = ref(null);
 const { paged, total } = usePaged(sorted, view);
 </script>
 
@@ -280,8 +284,18 @@ const { paged, total } = usePaged(sorted, view);
                 </span>
             </template>
             <template #cell-expiry="{ row }">
-                <ANum v-if="row.expiry">{{ fmtISO(row.expiry) }}</ANum>
-                <span v-else class="a-muted">—</span>
+                <span class="bt-exp">
+                    <ANum v-if="row.expiry">{{ fmtISO(row.expiry) }}</ANum>
+                    <span v-else class="a-muted">—</span>
+                    <AButton
+                        sm
+                        kind="ghost"
+                        icon="edit"
+                        :title="t('inventory.batches.dates.editShort')"
+                        :aria-label="t('inventory.batches.dates.editShort')"
+                        @click.stop="dating = row"
+                    />
+                </span>
                 <div class="t-sub">{{ expiryNote(row) }}</div>
             </template>
             <template #cell-state="{ row }">
@@ -303,6 +317,8 @@ const { paged, total } = usePaged(sorted, view);
                 <ANum>{{ inventory.useOfBatch(row.id).length }}</ANum>
             </template>
         </ADataTable>
+
+        <BatchDatesModal :batch="dating" @close="dating = null" />
 
         <APagination
             v-model:page="view.pg"
@@ -339,5 +355,11 @@ const { paged, total } = usePaged(sorted, view);
     margin: 0;
     font-size: 13.5px;
     color: var(--a-ink-3);
+}
+
+.bt-exp {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
 }
 </style>

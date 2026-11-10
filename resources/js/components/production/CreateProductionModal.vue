@@ -1,7 +1,12 @@
 <script setup>
-// Opening a production order: pick the product, say how much, choose whether it
-// is planned or goes down to the lab now, and see before saving which batches
-// each component would be drawn from.
+// Opening a production order: pick the product, say how much, and see before
+// saving which batches each component would be drawn from. The order goes down
+// to the lab as it is saved — there is no planned stage — so its components
+// are reserved at once.
+//
+// The quantity is in the item's own unit of measure, off its card, and the
+// form says which unit that is without letting it be changed: a litre of
+// tincture is a litre whatever unit the recipe happens to be written in.
 //
 // The product, not the recipe. SAP's production order names an item and loads
 // that item's bill of materials — `OITT` has one row per item code, 2,121 of
@@ -14,8 +19,10 @@
 // statement, not a verdict.
 //
 // The preview carries each component's stock the way SAP's own production
-// order does — on hand, available and on order — because that is what the
-// decision is made from: "רואים את כל הפרטי בנים ... ואת מצב המלאי שלהם, כולל
+// order does — on hand and available — and two more answers the decision is
+// made from: how much will be left on the shelf once this run draws its
+// share, and whether more is already on its way from a supplier, how much,
+// and on which order: "רואים את כל הפרטי בנים ... ואת מצב המלאי שלהם, כולל
 // פרטים על כמות מוזמנת".
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -26,12 +33,12 @@ import AButton from '@/components/ui/AButton.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ASelect from '@/components/ui/ASelect.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { productionDueDays } from '@/config';
+import { lineOutstanding, productionDueDays } from '@/config';
 import { toStockUnits } from '@/demo/production';
-import { num } from '@/lib/money';
+import { num, qtyText } from '@/lib/money';
+import { useBuyingStore } from '@/stores/buying';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 import { standingNotesOf, useProductionStore } from '@/stores/production';
@@ -39,12 +46,6 @@ import { standingNotesOf, useProductionStore } from '@/stores/production';
 const props = defineProps({
     /** A recipe to start from, when the page was reached from one. */
     bomId: { type: String, default: '' },
-    /**
-     * Where the order starts — `issued` when the person came from the stock
-     * analysis to send a run to the lab ("נוכל לעבור ישירות לשליחת ההוראה
-     * למעבדה").
-     */
-    start: { type: String, default: 'planned' },
 });
 
 const emit = defineEmits(['close', 'created']);
@@ -54,10 +55,12 @@ const { loc } = useLocalized();
 const items = useItemsStore();
 const inventory = useInventoryStore();
 const store = useProductionStore();
+const buying = useBuyingStore();
 
 const bomId = ref(props.bomId || '');
 const qty = ref('');
 const labNote = ref('');
+const internalNote = ref('');
 const dueOn = ref('');
 const saving = ref(false);
 
@@ -75,22 +78,25 @@ watch(bomId, () => {
     expandedSku.value = '';
 });
 
-/**
- * Where the order starts its life — SAP's own two opening statuses.
- *
- * Planned is a run that is written down and holds nothing; released takes the
- * components and sends the paper to the bench. The pharmacy's own history is
- * almost entirely released (149 against 2 planned), but both exist and the
- * screen should not decide for the person opening it.
- */
-const startState = ref(props.start === 'issued' ? 'issued' : 'planned');
-
-const startOptions = computed(() => [
-    { value: 'planned', label: t('production.state.planned') },
-    { value: 'issued', label: t('production.state.issued') },
-]);
-
 const bom = computed(() => (bomId.value ? items.bomById(bomId.value) : null));
+
+/** The item's own unit of measure — the unit the quantity is written in. */
+const uom = computed(() => (bom.value ? store.unitFor(bom.value) : ''));
+
+const uomLabel = computed(() =>
+    uom.value ? t(`inventory.unit.${uom.value}`) : '',
+);
+
+/** One run of the recipe, restated in the item's own unit. */
+const runQty = computed(() =>
+    bom.value
+        ? toStockUnits(
+              bom.value.yield?.qty || 1,
+              bom.value.yield?.uom,
+              uom.value,
+          )
+        : 1,
+);
 
 /** The preparation type's own target figure, when it has one. */
 const dueDays = computed(() =>
@@ -149,12 +155,12 @@ const productOptions = computed(() =>
 
 watch(bom, (next) => {
     if (next && !qty.value) {
-        qty.value = String(next.yield?.qty || 1);
+        qty.value = String(runQty.value);
     }
 });
 
 if (bom.value) {
-    qty.value = String(bom.value.yield?.qty || 1);
+    qty.value = String(runQty.value);
 }
 
 const qtyNumber = computed(() => Number(qty.value) || 0);
@@ -167,9 +173,64 @@ const allowWaste = computed(() =>
 
 const plan = computed(() =>
     bom.value && qtyNumber.value > 0
-        ? store.planComponents(bom.value, qtyNumber.value, manualPicks.value)
+        ? store.planComponents(
+              bom.value,
+              qtyNumber.value,
+              manualPicks.value,
+              uom.value,
+          )
         : [],
 );
+
+/** What this run draws of one component, in the unit its shelf counts in. */
+const needOf = (row) => toStockUnits(row.plannedQty, row.uom, row.stockUnit);
+
+/**
+ * What is left on the shelf once this run draws its share — on hand less
+ * what it takes. Below zero is what the shelf does not have.
+ */
+function leftAfter(row) {
+    const onHand = stockOf(row.sku).onHand;
+
+    return onHand == null
+        ? null
+        : Math.round((onHand - needOf(row)) * 1000) / 1000;
+}
+
+/**
+ * Whether more of a component is on its way from a supplier: the quantity on
+ * order — the item card's own figure, which counts every order sent and not
+ * yet received — the orders this console sent it on, and any draft still
+ * waiting to go out, which is not counted until it is sent.
+ */
+function supplierOrders(sku) {
+    const sent = [];
+    const drafts = [];
+
+    buying.listsOf('order').forEach((list) => {
+        const lines = list.lines.filter((line) => line.sku === sku);
+
+        if (!lines.length) {
+            return;
+        }
+
+        if (list.state === 'sent') {
+            const due = lines.reduce(
+                (sum, line) =>
+                    sum + lineOutstanding(line) * (Number(line.numInBuy) || 1),
+                0,
+            );
+
+            if (due > 0) {
+                sent.push(list.number);
+            }
+        } else if (list.state === 'draft') {
+            drafts.push(list.number);
+        }
+    });
+
+    return { qty: stockOf(sku).onOrder || 0, sent, drafts };
+}
 
 const ok = computed(() => Boolean(bom.value) && qtyNumber.value > 0);
 
@@ -202,15 +263,10 @@ async function save() {
         bomId: bom.value.id,
         plannedQty: qtyNumber.value,
         labNote: labNote.value,
+        internalNote: internalNote.value,
         dueOn: dueOn.value || null,
         overrides: manualPicks.value,
     });
-
-    // Released means the components are taken and the run is at the bench; the
-    // order is written first either way, so the two states share one path.
-    if (startState.value === 'issued') {
-        await store.issueOrder(order.id);
-    }
 
     saving.value = false;
     emit('created', order);
@@ -257,30 +313,20 @@ async function save() {
                     ltr
                     class="a-w100"
                 />
-                <div class="a-hint">
-                    {{
-                        bom
-                            ? t('production.create.qtyHint', {
-                                  uom: bom.yield?.uom
-                                      ? t(`inventory.unit.${bom.yield.uom}`)
-                                      : '',
-                              })
-                            : ''
-                    }}
-                </div>
             </div>
             <div>
-                <label class="a-lbl" for="cp-start">{{
-                    t('production.create.start')
+                <label class="a-lbl" for="cp-uom">{{
+                    t('production.create.uom')
                 }}</label>
-                <ASelect
-                    id="cp-start"
-                    v-model="startState"
-                    :options="startOptions"
+                <AInput
+                    id="cp-uom"
+                    :model-value="uomLabel"
+                    readonly
+                    disabled
                     class="a-w100"
                 />
                 <div class="a-hint">
-                    {{ t(`production.create.startHint.${startState}`) }}
+                    {{ t('production.create.uomHint') }}
                 </div>
             </div>
             <div>
@@ -346,6 +392,21 @@ async function save() {
                 />
                 <div class="a-hint">{{ t('production.notes.labHint') }}</div>
             </div>
+            <div class="cp-wide">
+                <label class="a-lbl" for="cp-internal">{{
+                    t('production.notes.internal')
+                }}</label>
+                <ATextarea
+                    id="cp-internal"
+                    v-model="internalNote"
+                    class="a-w100"
+                    :rows="2"
+                    :placeholder="t('production.notes.internalPlaceholder')"
+                />
+                <div class="a-hint">
+                    {{ t('production.notes.internalHint') }}
+                </div>
+            </div>
         </div>
 
         <div v-if="plan.length" class="cp-plan">
@@ -366,7 +427,10 @@ async function save() {
                             {{ t('production.stock.avail') }}
                         </th>
                         <th scope="col" class="nowrap cp-n">
-                            {{ t('production.stock.onOrder') }}
+                            {{ t('production.stock.leftAfter') }}
+                        </th>
+                        <th scope="col" class="nowrap">
+                            {{ t('production.stock.supplierOrder') }}
                         </th>
                         <th scope="col">
                             {{ t('production.drawer.compPicks') }}
@@ -389,7 +453,7 @@ async function save() {
                                     v-if="stockOf(row.sku).onHand != null"
                                 >
                                     <ANum>{{
-                                        num(stockOf(row.sku).onHand, 3)
+                                        qtyText(stockOf(row.sku).onHand, 3)
                                     }}</ANum>
                                     {{ t(`inventory.unit.${row.stockUnit}`) }}
                                 </template>
@@ -401,14 +465,10 @@ async function save() {
                                         :class="{
                                             'cp-low':
                                                 stockOf(row.sku).avail <
-                                                toStockUnits(
-                                                    row.plannedQty,
-                                                    row.uom,
-                                                    row.stockUnit,
-                                                ),
+                                                needOf(row),
                                         }"
                                         >{{
-                                            num(stockOf(row.sku).avail, 3)
+                                            qtyText(stockOf(row.sku).avail, 3)
                                         }}</ANum
                                     >
                                     {{ t(`inventory.unit.${row.stockUnit}`) }}
@@ -416,15 +476,59 @@ async function save() {
                                 <span v-else class="t-sub">—</span>
                             </td>
                             <td class="nowrap cp-n">
-                                <ANum
-                                    :class="{
-                                        't-sub': !stockOf(row.sku).onOrder,
-                                    }"
-                                    >{{
-                                        num(stockOf(row.sku).onOrder, 3)
-                                    }}</ANum
+                                <template v-if="leftAfter(row) != null">
+                                    <ANum
+                                        :class="{
+                                            'cp-low': leftAfter(row) < 0,
+                                        }"
+                                        >{{ qtyText(leftAfter(row), 3) }}</ANum
+                                    >
+                                    {{ t(`inventory.unit.${row.stockUnit}`) }}
+                                </template>
+                                <span v-else class="t-sub">—</span>
+                            </td>
+                            <td>
+                                <template
+                                    v-if="supplierOrders(row.sku).qty > 0"
                                 >
-                                {{ t(`inventory.unit.${row.stockUnit}`) }}
+                                    <span class="cp-yes">{{
+                                        t('production.stock.supplierYes')
+                                    }}</span>
+                                    ·
+                                    <ANum>{{
+                                        qtyText(supplierOrders(row.sku).qty, 3)
+                                    }}</ANum>
+                                    {{ t(`inventory.unit.${row.stockUnit}`) }}
+                                    <div
+                                        v-if="
+                                            supplierOrders(row.sku).sent.length
+                                        "
+                                        class="t-sub"
+                                    >
+                                        {{
+                                            t('production.stock.supplierOn', {
+                                                list: supplierOrders(
+                                                    row.sku,
+                                                ).sent.join(', '),
+                                            })
+                                        }}
+                                    </div>
+                                </template>
+                                <span v-else class="t-sub">{{
+                                    t('production.stock.supplierNo')
+                                }}</span>
+                                <div
+                                    v-if="supplierOrders(row.sku).drafts.length"
+                                    class="t-sub"
+                                >
+                                    {{
+                                        t('production.stock.supplierDraft', {
+                                            list: supplierOrders(
+                                                row.sku,
+                                            ).drafts.join(', '),
+                                        })
+                                    }}
+                                </div>
                             </td>
                             <td>
                                 <span
@@ -470,7 +574,7 @@ async function save() {
                             </td>
                         </tr>
                         <tr v-if="expandedSku === row.sku" class="cp-pick-row">
-                            <td colspan="6">
+                            <td colspan="7">
                                 <ComponentBatchPicker
                                     :name="row.name"
                                     :batches="batchesFor(row.sku)"
@@ -521,7 +625,7 @@ async function save() {
 
 .cp-plan {
     margin-top: 18px;
-    /* Six columns do not fit a phone; the table scrolls, the form does not. */
+    /* Seven columns do not fit a phone; the table scrolls, the form does not. */
     overflow-x: auto;
 }
 
@@ -555,6 +659,11 @@ async function save() {
 /* Less available than this run needs — the reason to look at "on order". */
 .cp-low {
     color: var(--a-red);
+    font-weight: 600;
+}
+
+/* More is on its way from a supplier. */
+.cp-yes {
     font-weight: 600;
 }
 

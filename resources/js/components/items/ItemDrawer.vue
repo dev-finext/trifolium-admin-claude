@@ -49,6 +49,7 @@ const emit = defineEmits([
     'open-batch',
     'produce',
     'count',
+    'adjust',
     'remove',
     'restore',
 ]);
@@ -603,10 +604,13 @@ const categories = computed(() =>
                         v-if="
                             row.flags?.inventory && row.stock && !row.archived
                         "
-                        class="pad pad-top"
+                        class="pad pad-top card-acts"
                     >
                         <AButton sm icon="check" @click="emit('count', row)">
                             {{ t('items.card.count') }}
+                        </AButton>
+                        <AButton sm icon="edit" @click="emit('adjust', row)">
+                            {{ t('inventory.stock.adjust') }}
                         </AButton>
                     </div>
                 </ACard>
@@ -962,6 +966,12 @@ const categories = computed(() =>
 
 .pad-top {
     padding-top: 0;
+}
+
+.card-acts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .chips {

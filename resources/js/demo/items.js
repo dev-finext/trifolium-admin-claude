@@ -725,10 +725,14 @@ export function buildBoms(stock, products) {
             }
         }
 
+        // A herb is weighed; a tincture or an extract kept in litres is
+        // measured — a recipe line in grams of something the shelf holds in
+        // litres has no conversion, and every stock figure built on it is
+        // wrong.
         const components = picked.map((herb, k) => ({
             sku: herb.sku,
             qty: spread(`${slot}:qty:${k}`, 8, 40),
-            uom: 'g',
+            uom: ['l', 'ml'].includes(herb.unit) ? 'ml' : 'g',
             issue: 'backflush',
         }));
 

@@ -45,6 +45,12 @@ function el(id, kind, props) {
         bold: false,
         align: 'start',
         label: false,
+        // What a labelled field prints before its value, when not the
+        // field's own name; how wide that caption column is, in mm; and
+        // whether the field sits in a box that prints even when it is empty.
+        caption: null,
+        captionW: null,
+        box: false,
         ...props,
     };
 }
@@ -134,85 +140,98 @@ export const STICKER_TEMPLATES = [
         updatedBy: DEMO_ACTORS.orit,
     },
     {
-        // V3 — the batch label, laid out the way the pharmacy's own label is
-        // laid out (see the photograph in Natalie's note "ניהול אצוות"): the
-        // item number large at the top, the name under it, the botanical or
-        // Chinese name under that, then the supplier and the three facts that
-        // matter on a shelf — batch, made on, expires on — with the division
-        // note opposite and the barcode across the foot.
+        // V3 — the batch label, laid out exactly the way the pharmacy's own
+        // label is (the photograph in the purchasing spec, "אנחנו חוזרים
+        // למדבקת פריט, ככה זה נראה היום"): the item code large across the top
+        // with "קוד פריט" in the corner; the name, then the Chinese name under
+        // it; "ספק:"; the three facts that matter on a shelf in one column of
+        // captions — "אצווה:", "תאריך ייצור:", "תאריך תפוגה:" — with the
+        // "חלוקה" box opposite them, and the barcode across the foot.
         id: 'item',
         size: { ...STICKER_SIZES.item },
         elements: [
+            el('codeCaption', 'text', {
+                text: L('קוד פריט', 'Item code'),
+                x: 3,
+                y: 3,
+                w: 22,
+                size: 7,
+            }),
             field('code', 'itemCode', {
                 x: 4,
-                y: 3,
+                y: 2,
                 w: 112,
-                size: 20,
+                size: 22,
                 bold: true,
                 align: 'center',
             }),
             field('name', 'itemName', {
                 x: 4,
-                y: 13,
+                y: 12.5,
                 w: 112,
-                size: 13,
+                size: 12,
                 bold: true,
                 align: 'center',
             }),
             field('foreign', 'foreignName', {
                 x: 4,
-                y: 21,
+                y: 19.5,
                 w: 112,
                 size: 10,
-                bold: true,
                 align: 'center',
             }),
             field('supplier', 'supplier', {
-                x: 4,
-                y: 28.5,
-                w: 112,
+                x: 3,
+                y: 25.5,
+                w: 114,
                 size: 8,
-                align: 'center',
                 label: true,
+                caption: L('ספק:', 'Supplier:'),
             }),
             field('batch', 'batch', {
-                x: 40,
-                y: 34.5,
-                w: 76,
+                x: 3,
+                y: 31,
+                w: 74,
                 size: 10,
                 bold: true,
-                align: 'end',
                 label: true,
+                caption: L('אצווה:', 'Batch:'),
+                captionW: 25,
             }),
             field('made', 'madeOn', {
-                x: 40,
-                y: 40.5,
-                w: 76,
-                size: 9,
-                align: 'end',
+                x: 3,
+                y: 36,
+                w: 74,
+                size: 10,
+                bold: true,
                 label: true,
+                caption: L('תאריך ייצור:', 'Made on:'),
+                captionW: 25,
             }),
             field('expiry', 'expiry', {
-                x: 40,
-                y: 46,
-                w: 76,
-                size: 9,
+                x: 3,
+                y: 41,
+                w: 74,
+                size: 10,
                 bold: true,
-                align: 'end',
                 label: true,
+                caption: L('תאריך תפוגה:', 'Expires on:'),
+                captionW: 25,
             }),
             field('split', 'split', {
-                x: 4,
-                y: 40.5,
-                w: 30,
+                x: 86,
+                y: 37,
+                w: 28,
                 size: 9,
-                align: 'start',
+                align: 'center',
                 label: true,
+                box: true,
+                caption: L('חלוקה', 'Division'),
             }),
-            el('barcode', 'barcode', { x: 30, y: 51, w: 60, h: 7 }),
+            el('barcode', 'barcode', { x: 30, y: 47, w: 60, h: 10 }),
         ],
-        updated: at(34, 9, 40),
-        updatedBy: DEMO_ACTORS.amit,
+        updated: at(1, 9, 30),
+        updatedBy: DEMO_ACTORS.orit,
     },
     {
         // Spec §8: 100×100 mm (§20.2 picks the final size against the

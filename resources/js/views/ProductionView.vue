@@ -51,7 +51,7 @@ import {
     receivedQty,
 } from '@/config';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
-import { num, pct } from '@/lib/money';
+import { pct, qtyText } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
@@ -77,9 +77,6 @@ const state = useUrlState({
     ...PAGE_DEFAULTS,
     order: '',
     bom: '',
-    // `issued` when the create form was opened to send a run straight to the
-    // lab — the stock analysis does that.
-    start: '',
 });
 
 const tabs = computed(() => [
@@ -247,7 +244,6 @@ function whenOf(order) {
 async function onCreated(order) {
     state.order = order.id;
     state.bom = '';
-    state.start = '';
     push({
         title: t('production.toast.created'),
         body: t('production.toast.createdBody', {
@@ -255,11 +251,6 @@ async function onCreated(order) {
             name: loc(order.name),
         }),
     });
-}
-
-async function issue(order) {
-    await store.issueOrder(order.id);
-    push({ title: t('production.toast.issued'), body: order.id });
 }
 
 async function onCompleted({ order, receipt }) {
@@ -271,7 +262,7 @@ async function onCompleted({ order, receipt }) {
         body: receipt.batch
             ? t('production.toast.completedBody', {
                   batch: inventory.batchNo(receipt.batch),
-                  qty: num(receipt.qty),
+                  qty: qtyText(receipt.qty, 3),
                   uom: t(`inventory.unit.${order.uom}`),
               })
             : order.id,
@@ -339,11 +330,10 @@ async function confirmCancel(reason) {
                     :value="kpis.open"
                     :sub="t('production.kpi.openSub')"
                     :active="
-                        state.rstate.length === 2 &&
-                        state.rstate.includes('planned') &&
+                        state.rstate.length === 1 &&
                         state.rstate.includes('issued')
                     "
-                    @click="filters.patch({ rstate: ['planned', 'issued'] })"
+                    @click="filters.patch({ rstate: ['issued'] })"
                 />
                 <FilterKpi
                     icon="check"
@@ -425,7 +415,7 @@ async function confirmCancel(reason) {
                     </AChip>
                 </template>
                 <template #cell-qty="{ row }">
-                    <ANum>{{ num(row.plannedQty) }}</ANum>
+                    <ANum>{{ qtyText(row.plannedQty, 3) }}</ANum>
                     {{ t(`inventory.unit.${row.uom}`) }}
                     <div
                         v-if="row.state === 'issued' && row.receipts?.length"
@@ -433,7 +423,7 @@ async function confirmCancel(reason) {
                     >
                         {{
                             t('production.cell.received', {
-                                qty: num(receivedQty(row)),
+                                qty: qtyText(receivedQty(row), 3),
                                 uom: t(`inventory.unit.${row.uom}`),
                             })
                         }}
@@ -441,8 +431,8 @@ async function confirmCancel(reason) {
                     <div v-else-if="row.yieldQty != null" class="t-sub">
                         {{
                             t('production.cell.yielded', {
-                                qty: num(row.yieldQty),
-                                waste: num(row.wasteQty || 0),
+                                qty: qtyText(row.yieldQty, 3),
+                                waste: qtyText(row.wasteQty || 0, 3),
                                 uom: t(`inventory.unit.${row.uom}`),
                             })
                         }}
@@ -517,7 +507,6 @@ async function confirmCancel(reason) {
         <ProductionDrawer
             :order="openOrder"
             @close="state.order = ''"
-            @issue="issue"
             @complete="completing = $event"
             @cancel="cancelling = $event"
         />
@@ -525,8 +514,7 @@ async function confirmCancel(reason) {
         <CreateProductionModal
             v-if="creating"
             :bom-id="state.bom"
-            :start="state.start"
-            @close="((state.order = ''), (state.bom = ''), (state.start = ''))"
+            @close="((state.order = ''), (state.bom = ''))"
             @created="onCreated"
         />
 
@@ -553,7 +541,7 @@ async function confirmCancel(reason) {
                           {
                               id: cancelling.id,
                               name: loc(cancelling.name),
-                              qty: num(receivedQty(cancelling)),
+                              qty: qtyText(receivedQty(cancelling), 3),
                               uom: t(`inventory.unit.${cancelling.uom}`),
                           },
                       )

@@ -1601,6 +1601,142 @@ export const useInventoryStore = defineStore('inventory', () => {
         return { before, after, diff: after - before };
     }
 
+    /**
+     * A manual stock entry: raise one batch by a quantity, for one of the
+     * reasons stock may come in by hand — found on a count, a patient's
+     * return, a booking error the other way. The mirror of `manualIssue`.
+     *
+     * The quantity goes into a batch the item already holds, or opens a new
+     * one: under the number the person gives it, or — like a supplier's lot
+     * with no code — `WV` and the date. A new batch of an item kept in batches
+     * needs its expiry, as every batch does.
+     *
+     * It is a goods receipt without an order, the document SAP posts for the
+     * same thing, and its ledger row is `manual_in` — an adjustment, which the
+     * consumption figures leave out, so correcting a count never reads as
+     * demand.
+     *
+     * @param {{sku: string, reason: string, qty: number, batch?: string,
+     *          newBatch?: {number?: string, expiry?: string, madeOn?: string},
+     *          note: string}} form
+     */
+    async function manualReceive(form) {
+        const item = itemBySku(form.sku);
+        const rule = REASON[form.reason];
+        const qty =
+            Math.round(Math.max(0, Number(form.qty) || 0) * 1000) / 1000;
+
+        if (!item || !rule || rule.dir === 'out' || !(qty > 0)) {
+            throw new Error(`Cannot add ${form.sku} for ${form.reason}`);
+        }
+
+        const when = moment();
+        let batch = form.batch ? batchById(form.batch) : null;
+
+        if (form.batch && !batch) {
+            throw new Error(`No batch ${form.batch}`);
+        }
+
+        const before = item.onHand;
+
+        if (batch) {
+            batch.remaining = Math.round((batch.remaining + qty) * 1000) / 1000;
+            batch.qty = Math.max(batch.qty, batch.remaining);
+            syncBatch(batch);
+        } else {
+            const fresh = form.newBatch || {};
+            const minted = nextBatchNumber({
+                kind: 'purchase',
+                supplierBatch: String(fresh.number || '').trim(),
+                when: when.iso,
+            });
+
+            batch = {
+                id: minted.id,
+                number: minted.number,
+                sku: item.sku,
+                name: item.name,
+                unit: item.unit,
+                wh: item.wh || DEFAULT_WAREHOUSE,
+                source: 'adjustment',
+                production: null,
+                receipt: null,
+                supplier: null,
+                supplierBatch: String(fresh.number || '').trim() || null,
+                received: when,
+                madeOn: fresh.madeOn || null,
+                qty,
+                remaining: qty,
+                expiry: fresh.expiry || null,
+                daysToExp: fresh.expiry ? -daysSince(fresh.expiry) : null,
+                state: 'active',
+                waste: false,
+                unitCost: null,
+                components: null,
+                by: dataset.me?.name || null,
+            };
+            syncBatch(batch);
+            bag('batches').unshift(batch);
+        }
+
+        item.onHand = Math.round((item.onHand + qty) * 1000) / 1000;
+        syncRow(item);
+
+        const after = item.onHand;
+
+        const doc = postDoc({
+            type: 'goods_receipt',
+            base: 'manual',
+            reason: form.reason,
+            warehouse: batch.wh,
+            remarks: form.note.trim() || null,
+            when,
+            lines: [
+                {
+                    sku: item.sku,
+                    name: item.name,
+                    unit: item.unit,
+                    qty,
+                    wh: batch.wh,
+                    batch: batch.id,
+                    price: null,
+                },
+            ],
+        });
+
+        writeMovement({
+            id: `mv-manual-in-${batch.id}-${movements.value.length}`,
+            kind: 'manual_in',
+            sku: item.sku,
+            name: item.name,
+            unit: item.unit,
+            wh: batch.wh,
+            qty,
+            batch: batch.id,
+            reason: form.reason,
+            ref: doc.id,
+            by: dataset.me?.name || null,
+        });
+
+        writeLog({
+            act: 'stock_adjust',
+            entType: 'batch',
+            ent: batch.id,
+            from: String(before),
+            to: String(after),
+            note: form.note.trim(),
+        });
+
+        await persist('inventory/adjustments', {
+            sku: item.sku,
+            reason: form.reason,
+            qty,
+            batch: batch.id,
+        });
+
+        return { before, after, diff: after - before, batch: batch.id };
+    }
+
     // ---- ingredient catalogue ----------------------------------------------
     //
     // "רכיבי פורמולה" is the one place a formula ingredient is created: the same
@@ -1843,6 +1979,7 @@ export const useInventoryStore = defineStore('inventory', () => {
 
         receiveGoods,
         manualIssue,
+        manualReceive,
 
         skuTaken,
         ingredientBlock,

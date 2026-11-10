@@ -31,7 +31,7 @@ import {
 } from '@/config';
 import { toStockUnits } from '@/demo/production';
 import { addMonths } from '@/lib/dates';
-import { num, qtyText } from '@/lib/money';
+import { qtyText } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
@@ -307,9 +307,9 @@ const packHint = computed(() => {
             <div class="cm-wide cm-progress">
                 {{
                     t('production.receive.progress', {
-                        planned: num(order.plannedQty),
-                        received: num(round2(received)),
-                        left: num(leftQty),
+                        planned: qtyText(order.plannedQty, 3),
+                        received: qtyText(round2(received), 3),
+                        left: qtyText(leftQty, 3),
                         uom: uomLabel(order.uom),
                     })
                 }}
@@ -421,7 +421,7 @@ const packHint = computed(() => {
                 <div class="a-hint">
                     {{
                         t('production.complete.actualHint', {
-                            qty: num(component.plannedQty),
+                            qty: qtyText(component.plannedQty, 3),
                             uom: t(`inventory.unit.${component.uom}`),
                         })
                     }}

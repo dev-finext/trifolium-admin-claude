@@ -3,8 +3,13 @@
 //
 // It takes the whole page rather than a dialog, because it is the longest piece
 // of typing in the whole purchasing flow: a sixty-seven-line order is
-// sixty-seven quantities, batch numbers and expiry dates, and a box floating
-// over the page is the wrong shape for that.
+// sixty-seven quantities, batch numbers, dates and label counts, and a box
+// floating over the page is the wrong shape for that.
+//
+// One labelled block per ordered line, every field with its own label above
+// it — never a header row over bare inputs (the pharmacy's own rule for line
+// editors). The block's head says what the line is and what was ordered; its
+// body is what the person types.
 //
 // Every line opens filled with what is still to come — the whole order the first
 // time, the balance after a part arrived — because most deliveries are complete
@@ -24,11 +29,18 @@
 // for an item kept in batches — it is a fact on the supplier's certificate,
 // and Natalie is explicit that the console suggests an expiry for its own
 // production only ("שים לב שרק מייצור פנימי ולא הזמנת רכש מספק"), which is
-// why nothing is pre-filled here.
+// why nothing is pre-filled here. The production date is the supplier's too,
+// and optional: the label prints it when there is one.
+//
+// "כמה מדבקות להדפיס" is how many containers the quantity is divided into —
+// ten kilos of powder into ten one-kilo jars is ten labels of this batch,
+// numbered 1/10 … 10/10. It opens at what the item's container size says
+// (config/batches.js `labelPackOf`), or at one when nothing says, and the
+// labels are printed together once the receipt is signed.
 //
 // Signing it is the approval code, and it goes to the log with the name and the
 // time — which is what makes the receipt answerable to a person.
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AButton from '@/components/ui/AButton.vue';
@@ -37,25 +49,35 @@ import ANum from '@/components/ui/ANum.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useToast } from '@/composables/useToast';
-import { lineOutstanding } from '@/config';
+import { labelCount, labelPackOf, lineOutstanding } from '@/config';
 import { isoDaysAgo } from '@/lib/dates';
-import { num } from '@/lib/money';
+import { qtyText } from '@/lib/money';
 import { useBuyingStore } from '@/stores/buying';
+import { useDatasetStore } from '@/stores/dataset';
 import { useItemsStore } from '@/stores/items';
 import { useSystemStore } from '@/stores/system';
 
 const props = defineProps({
     /** The order whose goods these are. */
     list: { type: Object, required: true },
+    /**
+     * Called with the booked receipt. A function and not an event: a receipt
+     * that completes the order moves it to "received", which closes this
+     * screen while the save is still finishing — and an unmounted component's
+     * events are dropped, the labels with them.
+     */
+    done: { type: Function, default: null },
 });
 
-const emit = defineEmits(['cancel', 'received']);
+const emit = defineEmits(['cancel']);
 
 const { t } = useI18n();
 const { push } = useToast();
 const store = useBuyingStore();
 const items = useItemsStore();
+const dataset = useDatasetStore();
 const system = useSystemStore();
+const uid = useId();
 
 const saving = ref(false);
 const asking = ref(false);
@@ -71,20 +93,31 @@ const form = reactive({
     note: '',
     lines: props.list.lines.map((line, index) => {
         const due = lineOutstanding(line);
+        const card = items.itemBySku(line.sku);
 
         return {
             key: line.key || `${props.list.number}-x${index + 1}`,
             sku: line.sku,
             name: line.name,
+            foreignName: line.foreignName || '',
             uom: line.purchaseUom || line.uom,
+            stockUom: line.uom,
+            perBuy: Number(line.numInBuy) || 1,
+            pack: labelPackOf({
+                item: card,
+                settings: dataset.data.inventorySettings,
+            }),
             ordered: line.qty ?? 0,
             already: Number(line.received) || 0,
             due,
             qty: String(due),
-            batched: Boolean(items.itemBySku(line.sku)?.flags?.batch),
+            batched: Boolean(card?.flags?.batch),
             supplierBatch: '',
+            madeOn: '',
             expiry: '',
             price: line.lastPrice ?? '',
+            labels: '',
+            labelsTouched: false,
         };
     }),
 });
@@ -103,6 +136,55 @@ const noExpiry = computed(() =>
     arriving.value.filter((line) => line.batched && !line.expiry),
 );
 
+/** The containers a line's quantity comes to, when the item says how big one is. */
+function suggestedLabels(line) {
+    return (
+        labelCount(Number(line.qty) * line.perBuy, line.stockUom, line.pack) ??
+        1
+    );
+}
+
+/** What the label field shows: the person's figure once they typed one. */
+function labelsShown(line) {
+    return line.labelsTouched ? line.labels : String(suggestedLabels(line));
+}
+
+function onLabels(line, value) {
+    line.labels = String(value).replace(/[^\d]/g, '');
+    line.labelsTouched = true;
+}
+
+const labelsOf = (line) => Number(labelsShown(line)) || 0;
+
+/** Where the opening figure came from, said under the field. */
+function labelsHint(line) {
+    const pack = line.pack;
+
+    if (!pack) {
+        return t('buying.receive.labelsNoPack');
+    }
+
+    const size = `${qtyText(pack.qty, 3)} ${t(`inventory.unit.${pack.uom}`)}`;
+
+    return pack.source === 'item'
+        ? t('buying.receive.labelsByItem', { size })
+        : t('buying.receive.labelsByFamily', { size });
+}
+
+/** A label count that is not a whole number cannot be printed. */
+const badLabels = computed(() =>
+    arriving.value.filter(
+        (line) =>
+            line.labelsTouched &&
+            line.labels !== '' &&
+            !Number.isInteger(Number(line.labels)),
+    ),
+);
+
+const totalLabels = computed(() =>
+    arriving.value.reduce((sum, line) => sum + labelsOf(line), 0),
+);
+
 /** Will this receipt bring in everything still outstanding on the order? */
 const completes = computed(() =>
     form.lines.every((line) => Number(line.qty) >= line.due),
@@ -112,6 +194,7 @@ const ok = computed(
     () =>
         arriving.value.length > 0 &&
         noExpiry.value.length === 0 &&
+        badLabels.value.length === 0 &&
         !saving.value,
 );
 
@@ -127,6 +210,8 @@ function none() {
         line.qty = '0';
     });
 }
+
+const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
 
 async function confirmed() {
     asking.value = false;
@@ -147,8 +232,10 @@ async function confirmed() {
                 sku: line.sku,
                 qty: Number(line.qty),
                 supplierBatch: line.supplierBatch.trim(),
+                madeOn: line.madeOn || null,
                 expiry: line.expiry || null,
                 price: line.price === '' ? null : Number(line.price),
+                labels: labelsOf(line),
             })),
         });
 
@@ -160,7 +247,7 @@ async function confirmed() {
             ),
             body: receipt.id,
         });
-        emit('received', receipt);
+        props.done?.(receipt);
     } catch (error) {
         push({ title: String(error?.message || error), bad: true });
     } finally {
@@ -201,103 +288,162 @@ async function confirmed() {
             </div>
         </div>
 
-        <div class="a-tablewrap rc-wrap">
-            <table class="a-table">
-                <thead>
-                    <tr>
-                        <th scope="col">{{ t('buying.col.sku') }}</th>
-                        <th scope="col">{{ t('buying.col.name') }}</th>
-                        <th scope="col" class="nowrap">
-                            {{ t('buying.receive.ordered') }}
-                        </th>
-                        <th scope="col" class="nowrap">
+        <div
+            class="a-lines"
+            role="list"
+            :aria-label="t('buying.receive.linesAria')"
+        >
+            <div
+                v-for="(line, i) in form.lines"
+                :key="line.key"
+                class="a-line-block"
+                :class="{
+                    'is-ok':
+                        Number(line.qty) > 0 && !(line.batched && !line.expiry),
+                    'is-off': !(Number(line.qty) > 0),
+                }"
+                role="listitem"
+            >
+                <div class="a-line-head">
+                    <span class="a-line-no">
+                        {{ t('labels.lineNo', { n: i + 1 }) }}
+                    </span>
+                    <ANum class="a-code a-tag">{{ line.sku }}</ANum>
+                    <span class="rc-name">
+                        <span class="t-strong">{{ line.name }}</span>
+                        <span
+                            v-if="
+                                line.foreignName &&
+                                line.foreignName !== line.name
+                            "
+                            class="rc-sub"
+                            >{{ line.foreignName }}</span
+                        >
+                    </span>
+                    <span class="rc-ordered a-push">
+                        {{ t('buying.receive.ordered') }}
+                        <ANum>{{ qtyText(line.ordered, 3) }}</ANum>
+                        {{ unit(line.uom) }}
+                        <template v-if="line.already">
+                            ·
+                            {{
+                                t('buying.receive.already', {
+                                    n: qtyText(line.already, 3),
+                                })
+                            }}
+                        </template>
+                    </span>
+                </div>
+
+                <div class="a-line-body">
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-q${i}`">
                             {{ t('buying.receive.arrived') }}
-                        </th>
-                        <th scope="col" class="nowrap">
+                        </label>
+                        <AInput
+                            :id="`${uid}-q${i}`"
+                            v-model="line.qty"
+                            type="number"
+                            min="0"
+                            ltr
+                            :class="{
+                                'is-diff':
+                                    Number(line.qty) !== Number(line.due),
+                            }"
+                        />
+                        <div class="a-hint">
+                            {{
+                                Number(line.qty) !== Number(line.due)
+                                    ? t('buying.receive.diffHint', {
+                                          due: qtyText(line.due, 3),
+                                      })
+                                    : unit(line.uom)
+                            }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-b${i}`">
                             {{ t('buying.receive.batch') }}
-                        </th>
-                        <th scope="col" class="nowrap">
+                        </label>
+                        <AInput
+                            :id="`${uid}-b${i}`"
+                            v-model="line.supplierBatch"
+                            ltr
+                            :placeholder="t('buying.receive.batchHint')"
+                        />
+                        <div class="a-hint">
+                            {{ t('buying.receive.batchEmptyShort') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-m${i}`">
+                            {{ t('buying.receive.madeOn') }}
+                        </label>
+                        <AInput
+                            :id="`${uid}-m${i}`"
+                            v-model="line.madeOn"
+                            type="date"
+                            ltr
+                        />
+                        <div class="a-hint">
+                            {{ t('buying.receive.madeOnHint') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-x${i}`">
                             {{ t('buying.receive.expiry') }}
-                        </th>
-                        <th scope="col" class="nowrap">
+                            <span v-if="line.batched" class="a-req">{{
+                                t('labels.required')
+                            }}</span>
+                        </label>
+                        <AInput
+                            :id="`${uid}-x${i}`"
+                            v-model="line.expiry"
+                            type="date"
+                            ltr
+                            :class="{
+                                'is-wanted':
+                                    line.batched &&
+                                    Number(line.qty) > 0 &&
+                                    !line.expiry,
+                            }"
+                        />
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-p${i}`">
                             {{ t('buying.receive.price') }}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="line in form.lines"
-                        :key="line.key"
-                        :class="{ 'is-off': !(Number(line.qty) > 0) }"
-                    >
-                        <td class="nowrap">
-                            <ANum class="a-code">{{ line.sku }}</ANum>
-                        </td>
-                        <td>{{ line.name }}</td>
-                        <td class="nowrap">
-                            <ANum>{{ num(line.ordered, 3) }}</ANum>
-                            {{ t(`inventory.unit.${line.uom}`) }}
-                            <div v-if="line.already" class="rc-sub">
-                                {{
-                                    t('buying.receive.already', {
-                                        n: num(line.already, 3),
-                                    })
-                                }}
-                            </div>
-                        </td>
-                        <td class="nowrap">
-                            <AInput
-                                v-model="line.qty"
-                                type="number"
-                                min="0"
-                                ltr
-                                class="rc-qty"
-                                :class="{
-                                    'is-diff':
-                                        Number(line.qty) !== Number(line.due),
-                                }"
-                                :aria-label="t('buying.receive.arrived')"
-                            />
-                        </td>
-                        <td class="nowrap">
-                            <AInput
-                                v-model="line.supplierBatch"
-                                ltr
-                                class="rc-batch"
-                                :placeholder="t('buying.receive.batchHint')"
-                                :title="t('buying.receive.batchEmpty')"
-                                :aria-label="t('buying.receive.batch')"
-                            />
-                        </td>
-                        <td class="nowrap">
-                            <AInput
-                                v-model="line.expiry"
-                                type="date"
-                                ltr
-                                class="rc-date"
-                                :class="{
-                                    'is-wanted':
-                                        line.batched &&
-                                        Number(line.qty) > 0 &&
-                                        !line.expiry,
-                                }"
-                                :aria-label="t('buying.receive.expiry')"
-                            />
-                        </td>
-                        <td class="nowrap">
-                            <AInput
-                                v-model="line.price"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                ltr
-                                class="rc-price"
-                                :aria-label="t('buying.receive.price')"
-                            />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        </label>
+                        <AInput
+                            :id="`${uid}-p${i}`"
+                            v-model="line.price"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            ltr
+                        />
+                        <div class="a-hint">
+                            {{
+                                t('buying.receive.priceHint', {
+                                    uom: unit(line.uom),
+                                })
+                            }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="a-lbl" :for="`${uid}-l${i}`">
+                            {{ t('buying.receive.labels') }}
+                        </label>
+                        <AInput
+                            :id="`${uid}-l${i}`"
+                            :model-value="labelsShown(line)"
+                            inputmode="numeric"
+                            ltr
+                            @update:model-value="onLabels(line, $event)"
+                        />
+                        <div class="a-hint">{{ labelsHint(line) }}</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="a-pane rc-foot">
@@ -314,6 +460,9 @@ async function confirmed() {
                             noExpiry.length,
                         )
                     }}
+                </span>
+                <span v-else-if="badLabels.length" class="rc-why">
+                    {{ t('buying.receive.needLabels') }}
                 </span>
                 <AButton
                     kind="p"
@@ -355,6 +504,13 @@ async function confirmed() {
                       ),
                   ]
                 : []),
+            totalLabels
+                ? t(
+                      'buying.receive.effectLabels',
+                      { n: totalLabels },
+                      totalLabels,
+                  )
+                : t('buying.receive.effectNoLabels'),
         ]"
         :confirm-label="t('buying.receive.sign')"
         :pin="system.approvalPin"
@@ -395,30 +551,28 @@ async function confirmed() {
 }
 
 /* A line that did not arrive stays on the sheet and out of the receipt. */
-.rc-wrap tr.is-off td {
-    opacity: 0.5;
+.a-line-block.is-off {
+    opacity: 0.55;
 }
 
-.rc-qty {
-    width: 92px;
+.rc-name {
+    display: grid;
+    min-width: 0;
+}
+
+.rc-ordered {
+    font-size: 13px;
+    color: var(--a-ink-3, var(--a-ink-4));
 }
 
 /* A quantity that is not what was ordered is the whole point of this screen. */
-.rc-qty.is-diff {
+.is-diff {
     border-color: var(--a-amber-line);
     background: var(--a-amber-bg);
 }
 
-.rc-batch {
-    width: 140px;
-}
-
-.rc-date {
-    width: 150px;
-}
-
 /* An expiry the receipt cannot go without. */
-.rc-date.is-wanted {
+.is-wanted {
     border-color: var(--a-amber-line);
     background: var(--a-amber-bg);
 }
@@ -432,10 +586,6 @@ async function confirmed() {
     align-self: center;
     font-size: 13px;
     color: var(--a-ink-3, var(--a-ink-4));
-}
-
-.rc-price {
-    width: 100px;
 }
 
 .rc-foot {

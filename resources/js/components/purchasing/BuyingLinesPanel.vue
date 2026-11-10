@@ -3,7 +3,9 @@
 //
 // Pasting is the one the work actually uses — a column out of Excel, a line out
 // of an email — and the search button turns the block into rows in one press.
-// The type-ahead beside it is for the item the buyer thinks of afterwards.
+// Two columns, the code and the quantity, fill the quantity too. The
+// type-ahead beside it is for the item the buyer thinks of afterwards, and it
+// finds an item by its Chinese name as readily as by its code.
 //
 // **The table fits the page.** It carried the whole item card for a while,
 // twenty-nine columns and three thousand pixels of it, and that was the wrong
@@ -24,8 +26,8 @@ import AEmpty from '@/components/ui/AEmpty.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
-import { BUYING_KIND } from '@/config';
-import { ils, num } from '@/lib/money';
+import { BUYING_KIND, lineGap } from '@/config';
+import { ils, qtyText } from '@/lib/money';
 import { useBuyingStore } from '@/stores/buying';
 import { useItemsStore } from '@/stores/items';
 
@@ -64,8 +66,19 @@ function search() {
 
 const query = ref('');
 
+/** A name as the search compares it: lower case, spaces ignored. */
+const flat = (text) =>
+    String(text || '')
+        .toLowerCase()
+        .replace(/\s+/g, '');
+
+/**
+ * Items the type-ahead offers: by code, by name, or by Chinese name — SAP's
+ * `FrgnName`, the pinyin — with or without the space between its syllables,
+ * because "qinghao" and "Qing Hao" are the same herb to the person typing.
+ */
 const matches = computed(() => {
-    const q = query.value.trim().toLowerCase();
+    const q = flat(query.value);
 
     if (q.length < 2) {
         return [];
@@ -78,8 +91,8 @@ const matches = computed(() => {
             (row) =>
                 !taken.has(row.sku) &&
                 (row.sku.includes(q) ||
-                    (row.names?.he || '').toLowerCase().includes(q) ||
-                    (row.names?.en || '').toLowerCase().includes(q)),
+                    flat(row.names?.he).includes(q) ||
+                    flat(row.names?.en).includes(q)),
         )
         .slice(0, MATCHES);
 });
@@ -95,7 +108,9 @@ const label = (key) => t(`buying.col.${key}`);
 
 /** Was anything ever booked in against this sheet? */
 const hasReceipt = computed(() =>
-    props.list.lines.some((line) => line.received !== null),
+    props.list.lines.some(
+        (line) => line.received !== null && line.received !== undefined,
+    ),
 );
 
 /**
@@ -134,13 +149,24 @@ const cols = computed(() => {
     ];
 
     if (hasReceipt.value) {
-        out.push({
-            k: 'received',
-            label: label('received'),
-            align: 'end',
-            nowrap: true,
-            cls: 'bl-work',
-        });
+        out.push(
+            {
+                k: 'received',
+                label: label('received'),
+                align: 'end',
+                nowrap: true,
+                cls: 'bl-work',
+            },
+            // What arrived against what was ordered, kept on the line for
+            // as long as the order exists — after it is closed as well.
+            {
+                k: 'gap',
+                label: label('gap'),
+                align: 'end',
+                nowrap: true,
+                cls: 'bl-work',
+            },
+        );
     }
 
     if (rules.value.checklist) {
@@ -158,6 +184,19 @@ const cols = computed(() => {
 });
 
 const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '');
+
+/** `+2` / `−3` / `0`, signed the way a person reads a difference. */
+function gapText(gap) {
+    if (gap === null) {
+        return '—';
+    }
+
+    if (gap === 0) {
+        return '0';
+    }
+
+    return `${gap > 0 ? '+' : '−'}${qtyText(Math.abs(gap), 3)}`;
+}
 
 // ---- one line in full ------------------------------------------------------
 
@@ -228,7 +267,17 @@ const openLine = computed(
                     <li v-for="row in matches" :key="row.sku">
                         <button type="button" @click="pick(row)">
                             <span class="a-code a-tag">{{ row.sku }}</span>
-                            <span class="bl-match-n">{{ row.names?.he }}</span>
+                            <span class="bl-match-n">
+                                <span>{{ row.names?.he }}</span>
+                                <span
+                                    v-if="
+                                        row.names?.en &&
+                                        row.names.en !== row.names.he
+                                    "
+                                    class="bl-match-cn"
+                                    >{{ row.names.en }}</span
+                                >
+                            </span>
                         </button>
                     </li>
                 </ul>
@@ -244,6 +293,11 @@ const openLine = computed(
                         { n: found.added.length },
                         found.added.length,
                     )
+                }}
+            </span>
+            <span v-if="found.updated.length" class="bl-ok">
+                {{
+                    t('buying.foundUpdated', { list: found.updated.join(', ') })
                 }}
             </span>
             <span v-if="found.already.length" class="bl-quiet">
@@ -285,21 +339,27 @@ const openLine = computed(
                 >
                     {{ row.name }}
                 </button>
+                <div
+                    v-if="row.foreignName && row.foreignName !== row.name"
+                    class="bl-cn"
+                >
+                    {{ row.foreignName }}
+                </div>
             </template>
             <template #cell-uom="{ row }">{{ unit(row.uom) }}</template>
             <template #cell-available="{ row }">
                 <ANum :class="{ 'bl-low': row.available <= 0 }">{{
-                    num(row.available, 3)
+                    qtyText(row.available, 3)
                 }}</ANum>
             </template>
             <template #cell-onOrder="{ row }">
                 <ANum :class="{ 'bl-nil': !row.onOrder }">{{
-                    num(row.onOrder, 3)
+                    qtyText(row.onOrder, 3)
                 }}</ANum>
             </template>
             <template #cell-min="{ row }">
                 <ANum :class="{ 'bl-nil': row.min === null }">{{
-                    row.min === null ? '—' : num(row.min, 3)
+                    row.min === null ? '—' : qtyText(row.min, 3)
                 }}</ANum>
             </template>
             <template #cell-lastPrice="{ row }">
@@ -320,7 +380,7 @@ const openLine = computed(
                     @update:model-value="store.setQty(list.id, row.key, $event)"
                 />
                 <ANum v-else>{{
-                    row.qty === null ? '—' : num(row.qty, 3)
+                    row.qty === null ? '—' : qtyText(row.qty, 3)
                 }}</ANum>
             </template>
             <template #cell-received="{ row }">
@@ -331,8 +391,18 @@ const openLine = computed(
                             row.received !== null && row.received < row.qty,
                     }"
                     >{{
-                        row.received === null ? '—' : num(row.received, 3)
+                        row.received === null ? '—' : qtyText(row.received, 3)
                     }}</ANum
+                >
+            </template>
+            <template #cell-gap="{ row }">
+                <ANum
+                    :class="{
+                        'bl-nil': lineGap(row) === null || lineGap(row) === 0,
+                        'bl-low': lineGap(row) < 0,
+                        'bl-over': lineGap(row) > 0,
+                    }"
+                    >{{ gapText(lineGap(row)) }}</ANum
                 >
             </template>
             <template #cell-done="{ row }">
@@ -447,10 +517,23 @@ const openLine = computed(
 }
 
 .bl-match-n {
+    display: grid;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.bl-match-n > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* The Chinese name, under the item's own — what the buyer may have typed. */
+.bl-match-cn,
+.bl-cn {
+    font-size: 12px;
+    color: var(--a-ink-4);
 }
 
 .bl-ok {
@@ -538,6 +621,12 @@ const openLine = computed(
    that should catch the eye without being looked for. */
 .bl-low {
     color: var(--a-red);
+    font-weight: 600;
+}
+
+/* More arrived than was ordered: worth seeing, not an alarm. */
+.bl-over {
+    color: var(--a-amber, var(--a-ink));
     font-weight: 600;
 }
 </style>

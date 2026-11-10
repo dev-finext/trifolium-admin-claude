@@ -262,6 +262,11 @@ export const SUPPLIER_PAYMENT_FILTER_FIELDS = [
 export const SUPPLIER_PAYMENT_FILTER_GROUPS = ['who', 'size'];
 
 /** Where a batch comes from; each source numbers its batches under its own prefix. */
-export const BATCH_SOURCE_IDS = ['supplier', 'production', 'waste'];
+export const BATCH_SOURCE_IDS = [
+    'supplier',
+    'production',
+    'waste',
+    'adjustment',
+];
 
 export const PO_RULES = { maxLines: 60 };

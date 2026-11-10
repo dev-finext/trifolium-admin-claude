@@ -94,6 +94,19 @@ export function route(path) {
 }
 
 /**
+ * The writes, one at a time.
+ *
+ * A record is written whole — its row, then its lines deleted and inserted
+ * again — and that takes several statements. Two writes of one record that
+ * overlap, which is what a quantity typed digit by digit produces, interleave
+ * those statements: both deletes run, then both inserts, and the second insert
+ * collides with the first and is refused, leaving the table one keystroke
+ * behind the screen. Queued, every write lands whole, in the order it was
+ * made, and the last one is the record as the screen holds it.
+ */
+let queue = Promise.resolve();
+
+/**
  * Apply one change.
  *
  * @param {object} db      The open database.
@@ -102,7 +115,16 @@ export function route(path) {
  * @param {object} payload
  * @param {string} method
  */
-export async function write(db, records, path, payload, method = 'POST') {
+export function write(db, records, path, payload, method = 'POST') {
+    const run = queue.then(() => apply(db, records, path, payload, method));
+
+    queue = run.catch(() => {});
+
+    return run;
+}
+
+/** One change, applied — see `write`, which queues it. */
+async function apply(db, records, path, payload, method) {
     const { table, id } = route(path);
 
     if (!table) {

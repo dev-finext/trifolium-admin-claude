@@ -7,9 +7,15 @@
 // production order completes, and they leave from the batches the order was
 // issued against.
 
-/** Production-order states and their chip tone. */
+/**
+ * Production-order states and their chip tone.
+ *
+ * There is no "planned" state: an order is opened to be made, and goes to the
+ * lab — its components reserved — the moment it is written ("להוריד מתוכננת,
+ * כולם יהיו רגילות"). SAP's own history agrees: 149 released orders against 2
+ * planned ones.
+ */
 export const PRODUCTION_STATES = [
-    { id: 'planned', tone: 'blue' },
     { id: 'issued', tone: 'amber' },
     { id: 'completed', tone: 'green' },
     { id: 'cancelled', tone: 'gray' },
@@ -21,8 +27,8 @@ export const PRODUCTION_STATE = Object.fromEntries(
 
 export const PRODUCTION_STATE_IDS = PRODUCTION_STATES.map((state) => state.id);
 
-/** States an order can still be edited, issued, completed or cancelled in. */
-export const PRODUCTION_OPEN_STATE_IDS = ['planned', 'issued'];
+/** States an order can still be received into stock or cancelled in. */
+export const PRODUCTION_OPEN_STATE_IDS = ['issued'];
 
 /** The document series a production order is numbered under. */
 export const PRODUCTION_SERIES = 'PR-';

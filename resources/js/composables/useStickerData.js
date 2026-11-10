@@ -50,6 +50,15 @@ export function useStickerData() {
     const stickers = useStickersStore();
     const dataset = useDatasetStore();
 
+    /** The item's other name — unless it only repeats the first. */
+    const foreignOf = (card) => {
+        const other = String(card?.names?.en || '').trim();
+
+        return other && other !== String(card?.names?.he || '').trim()
+            ? other
+            : '';
+    };
+
     const pharmacy = () => ({
         pharmacy: loc(ORG.name),
         pharmacyPhone: ORG.phone,
@@ -123,11 +132,14 @@ export function useStickerData() {
 
         return {
             ...pharmacy(),
-            itemName: card
-                ? loc({ he: card.names.he, en: card.names.en || card.names.he })
-                : loc(stock?.name) || line.sku,
+            // The item's own name, SAP's ItemName, whatever language the
+            // console is in: the label is printed for the shelf, and the
+            // Chinese name has a line of its own under it.
+            itemName: card ? card.names.he : loc(stock?.name) || line.sku,
             // V3 — the botanical or Chinese name, as the printed label shows it.
-            foreignName: card?.names?.en || '',
+            // SAP's FrgnName sometimes just repeats the item's own name; the
+            // label does not print the same line twice.
+            foreignName: foreignOf(card),
             itemCode: card?.code || line.sku,
             batch: inventory.batchNo(line.batch) || line.batch || '',
             supplierBatch: line.supplierBatch || '',
@@ -140,7 +152,10 @@ export function useStickerData() {
             madeOn: line.madeOn ? fmtISO(line.madeOn) : '',
             expiry: line.expiry ? fmtISO(line.expiry) : '',
             qty: `${line.qty} ${unit}`.trim(),
-            split: `${index}/${total}`,
+            // "חלוקה" — which of the containers the quantity was divided into
+            // this label goes on. Natalie: "אם לא בחרתי חלוקה השדה יודפס ריק",
+            // so a single label leaves the box empty rather than saying 1/1.
+            split: total > 1 ? `${index}/${total}` : '',
             barcode: batchBarcode(
                 card?.code || line.sku,
                 inventory.batchNo(line.batch) || line.batch,
@@ -154,10 +169,8 @@ export function useStickerData() {
 
         return {
             ...pharmacy(),
-            itemName: card
-                ? loc({ he: card.names.he, en: card.names.en || card.names.he })
-                : loc(order.name),
-            foreignName: card?.names?.en || '',
+            itemName: card ? card.names.he : loc(order.name),
+            foreignName: foreignOf(card),
             itemCode: card?.code || order.parentSku,
             productionOrder: order.id,
             // The day the run went to the bench — the order's date, which is
@@ -305,7 +318,33 @@ export function useStickerData() {
         }));
     }
 
-    /** One element as positioned markup. Empty values print nothing. */
+    /**
+     * What a field says before its value: the element's own caption when the
+     * template gives one — the batch label writes "אצווה:" and "תאריך
+     * תפוגה:", as the pharmacy's label does — or else the field's name. With
+     * `captionW` the captions of a column of fields line up, so the values
+     * start on one edge.
+     */
+    function captionHtml(element) {
+        const own = element.caption ? loc(element.caption) : '';
+        const text = own || `${t(`stickers.field.${element.field}`)}:`;
+        const style = [
+            own ? 'font-weight:400' : 'opacity:.7',
+            element.captionW
+                ? `display:inline-block;min-width:${element.captionW}mm`
+                : '',
+        ]
+            .filter(Boolean)
+            .join(';');
+
+        return `<span style="${style}">${esc(text)}</span> `;
+    }
+
+    /**
+     * One element as positioned markup. Empty values print nothing — except
+     * a boxed field, whose box and caption are part of the label's layout and
+     * print empty, the way "חלוקה" does on a batch that was not divided.
+     */
     function elementHtml(element, data) {
         const style = [
             'position:absolute',
@@ -317,6 +356,9 @@ export function useStickerData() {
             'overflow:hidden',
             element.bold ? 'font-weight:700' : '',
             `text-align:${element.align || 'start'}`,
+            element.box
+                ? 'border:0.35mm solid #1f2e1d;border-radius:1.2mm;padding:0.5mm 1.2mm;box-sizing:border-box'
+                : '',
         ]
             .filter(Boolean)
             .join(';');
@@ -336,16 +378,15 @@ export function useStickerData() {
         }
 
         const value = data[element.field] ?? '';
+        const empty = value === '' || value === null;
 
-        if (value === '' || value === null) {
+        if (empty && !element.box) {
             return '';
         }
 
-        const prefix = element.label
-            ? `<span style="opacity:.7">${esc(t(`stickers.field.${element.field}`))}:</span> `
-            : '';
+        const prefix = element.label ? captionHtml(element) : '';
 
-        return `<div style="${style}">${prefix}${esc(value)}</div>`;
+        return `<div style="${style}">${prefix}${empty ? '' : esc(value)}</div>`;
     }
 
     /** The whole label as markup, sized in millimetres. */

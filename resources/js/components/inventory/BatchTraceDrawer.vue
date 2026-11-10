@@ -3,9 +3,10 @@
 // it. This is the drawer a recall question is answered from, which is why the
 // chain lists the order, the formula, the patient and the practitioner rather
 // than only a quantity.
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BatchDatesModal from '@/components/inventory/BatchDatesModal.vue';
 import RefLink from '@/components/inventory/RefLink.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
@@ -14,11 +15,8 @@ import ActionGate from '@/components/ui/ActionGate.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import AEmpty from '@/components/ui/AEmpty.vue';
-import AInput from '@/components/ui/AInput.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
-import AModal from '@/components/ui/AModal.vue';
 import ANum from '@/components/ui/ANum.vue';
-import ATextarea from '@/components/ui/ATextarea.vue';
 import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import ChangeLogPanel from '@/components/ui/ChangeLogPanel.vue';
 import OrderLink from '@/components/ui/OrderLink.vue';
@@ -78,55 +76,13 @@ const moveCols = computed(() => [
 ]);
 
 /**
- * Correcting the batch's two dates. V3.
- *
- * Both are single fields, as the specification insists — the expiry that FEFO
- * and the label work from, and the production date the supplier's certificate
- * gives. Changing either is written to the change log with its old value.
+ * Correcting the batch's two dates — the one dialog every batch view opens
+ * (BatchDatesModal).
  */
 const editing = ref(false);
-const saving = ref(false);
-const form = reactive({ expiry: '', madeOn: '', reason: '' });
-
-watch(editing, (open) => {
-    if (open && props.batch) {
-        form.expiry = props.batch.expiry || '';
-        form.madeOn = props.batch.madeOn || '';
-        form.reason = '';
-    }
-});
-
-const dirty = computed(
-    () =>
-        Boolean(props.batch) &&
-        (form.expiry !== (props.batch.expiry || '') ||
-            (form.madeOn || '') !== (props.batch.madeOn || '')),
-);
-
-/**
- * A batch always has an expiry: FEFO orders by it and the label prints it.
- * Clearing the field used to leave Save enabled and quietly keep the old date;
- * now the dialog says why it will not save.
- */
-const expiryMissing = computed(() => editing.value && !form.expiry);
 
 /** Days to expiry, or nothing for a batch SAP holds without a date. */
 const hasExpiry = computed(() => Number.isFinite(props.batch?.daysToExp));
-
-async function saveDates() {
-    if (expiryMissing.value) {
-        return;
-    }
-
-    saving.value = true;
-
-    try {
-        await inventory.editBatchDates(props.batch.id, { ...form });
-        editing.value = false;
-    } finally {
-        saving.value = false;
-    }
-}
 
 /**
  * What went into a batch the pharmacy made: the production run records which
@@ -569,73 +525,10 @@ const cols = computed(() => [
 
             <ChangeLogPanel entity="batch" :ref-id="batch.id" />
 
-            <AModal
-                v-if="editing"
-                open
-                :title="t('inventory.batches.dates.title')"
-                :width="480"
+            <BatchDatesModal
+                :batch="editing ? batch : null"
                 @close="editing = false"
-            >
-                <div class="bd-form">
-                    <div>
-                        <label class="a-lbl" for="bd-exp">{{
-                            t('inventory.batches.trace.expiry')
-                        }}</label>
-                        <AInput
-                            id="bd-exp"
-                            v-model="form.expiry"
-                            type="date"
-                            class="a-w100"
-                        />
-                        <div v-if="expiryMissing" class="a-hint bd-need">
-                            {{ t('inventory.batches.dates.expiryRequired') }}
-                        </div>
-                        <div class="a-hint">
-                            {{ t('inventory.batches.dates.expiryHint') }}
-                        </div>
-                    </div>
-                    <div>
-                        <label class="a-lbl" for="bd-made">{{
-                            t('inventory.batches.trace.madeOn')
-                        }}</label>
-                        <AInput
-                            id="bd-made"
-                            v-model="form.madeOn"
-                            type="date"
-                            class="a-w100"
-                        />
-                        <div class="a-hint">
-                            {{ t('inventory.batches.dates.madeOnHint') }}
-                        </div>
-                    </div>
-                    <div>
-                        <label class="a-lbl" for="bd-why">{{
-                            t('inventory.batches.dates.reason')
-                        }}</label>
-                        <ATextarea
-                            id="bd-why"
-                            v-model="form.reason"
-                            :rows="2"
-                            class="a-w100"
-                        />
-                        <div class="a-hint">
-                            {{ t('inventory.batches.dates.reasonHint') }}
-                        </div>
-                    </div>
-                </div>
-                <template #footer>
-                    <AButton
-                        kind="p"
-                        icon="save"
-                        :disabled="!dirty || expiryMissing || saving"
-                        @click="saveDates"
-                        >{{ t('inventory.batches.dates.save') }}</AButton
-                    >
-                    <AButton @click="editing = false">{{
-                        t('actions.cancel')
-                    }}</AButton>
-                </template>
-            </AModal>
+            />
         </template>
     </ADrawer>
 </template>
@@ -664,15 +557,6 @@ const cols = computed(() => [
 }
 
 .is-out {
-    color: var(--a-red);
-}
-
-.bd-form {
-    display: grid;
-    gap: 14px;
-}
-
-.bd-need {
     color: var(--a-red);
 }
 

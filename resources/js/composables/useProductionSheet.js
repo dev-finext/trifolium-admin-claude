@@ -15,7 +15,7 @@ import { useI18n } from 'vue-i18n';
 import { useLocalized } from '@/composables/useLocalized';
 import { ORG } from '@/config';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
-import { num } from '@/lib/money';
+import { qtyText } from '@/lib/money';
 import { esc, printHtml } from '@/lib/print';
 import { useItemsStore } from '@/stores/items';
 
@@ -40,7 +40,7 @@ export function useProductionSheet() {
         return `<tr>
             <td class="num">${esc(component.sku)}</td>
             <td>${esc(card?.names?.he || component.sku)}</td>
-            <td class="num">${esc(num(component.plannedQty, 3))} ${unit(component.uom)}</td>
+            <td class="num">${esc(qtyText(component.plannedQty, 3))} ${unit(component.uom)}</td>
             <td class="tick"></td>
             <td class="write"></td>
         </tr>`;
@@ -93,7 +93,7 @@ export function useProductionSheet() {
                     <div>${text(order.name)}</div>
                     <div class="small">${esc(t('production.sheet.version', { v: order.bomVersion || 1 }))}</div></div>
                 <div class="box"><strong>${esc(t('production.sheet.planned'))}</strong>
-                    <div class="num">${esc(num(order.plannedQty, 3))} ${unit(order.uom)}</div></div>
+                    <div class="num">${esc(qtyText(order.plannedQty, 3))} ${unit(order.uom)}</div></div>
                 <div class="box"><strong>${esc(t('production.sheet.opened'))}</strong>
                     <div>${esc(order.createdOn?.stamp || '')}</div>
                     <div class="small">${text(order.by)}</div></div>

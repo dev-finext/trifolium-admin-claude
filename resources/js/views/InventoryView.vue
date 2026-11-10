@@ -31,7 +31,7 @@ import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { downloadCsv } from '@/lib/csv';
 import { isoDaysAgo } from '@/lib/dates';
-import { num } from '@/lib/money';
+import { qtyText } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 
@@ -215,7 +215,7 @@ function onAdjusted({ item, reason, diff }) {
         body: t('inventory.toast.adjusted.body', {
             item: loc(item.name),
             reason: t(`reason.${reason}.name`),
-            diff: `${diff > 0 ? '+' : ''}${num(diff)}`,
+            diff: `${diff > 0 ? '+' : ''}${qtyText(diff, 3)}`,
             unit: t(`inventory.unit.${item.unit}`),
         }),
     });

@@ -562,6 +562,9 @@ async function save() {
                                 t('inventory.receipt.aria.labels', { n: i + 1 })
                             "
                         />
+                        <div class="a-hint">
+                            {{ t('buying.receive.labelsNoPack') }}
+                        </div>
                     </div>
                 </div>
             </div>

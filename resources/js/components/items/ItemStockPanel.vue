@@ -8,6 +8,8 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BatchDatesModal from '@/components/inventory/BatchDatesModal.vue';
+import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
@@ -30,6 +32,9 @@ const { t } = useI18n();
 const { loc } = useLocalized();
 const store = useItemsStore();
 const inventory = useInventoryStore();
+
+/** The batch whose dates are being corrected, straight from its row. */
+const dating = ref(null);
 
 const uomLabel = (id) => (id ? t(`items.uom.${id}`) : t('items.card.notSet'));
 
@@ -329,6 +334,14 @@ const batchCols = computed(() => [
                 </template>
                 <template #cell-expiry="{ row: batch }">
                     <ANum>{{ fmtISO(batch.expiry) }}</ANum>
+                    <AButton
+                        sm
+                        kind="ghost"
+                        icon="edit"
+                        :title="t('inventory.batches.dates.editShort')"
+                        :aria-label="t('inventory.batches.dates.editShort')"
+                        @click.stop="dating = batch"
+                    />
                     <AChip
                         v-if="batch.state !== 'active'"
                         size="sm"
@@ -341,6 +354,7 @@ const batchCols = computed(() => [
             </ADataTable>
         </template>
         <p v-else class="t-sub">{{ t('items.card.notTracked') }}</p>
+        <BatchDatesModal :batch="dating" @close="dating = null" />
     </ACard>
 </template>
 

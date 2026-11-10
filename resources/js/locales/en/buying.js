@@ -49,6 +49,7 @@ export default {
         closedShort: 'Closed short',
         waiting: 'one line still waiting | {n} lines still waiting',
         closedShortLines: 'one line closed short | {n} lines closed short',
+        gapLines: 'a gap on one line | gaps on {n} lines',
         emptyTitle: 'No purchase orders yet',
         emptySub:
             'A purchase order is one supplier, quantities, and a file to send them.',
@@ -177,12 +178,29 @@ export default {
         arrived: 'Arrived',
         batch: 'Supplier batch',
         batchHint: 'From the label',
-        batchEmpty:
-            'No batch code from the supplier? Leave it empty — the batch is numbered WV and the receipt date, as in SAP',
+        batchEmptyShort:
+            'No code from the supplier? Empty — numbered WV and the receipt date',
         already: '{n} already received',
         needExpiry: 'one line has no expiry | {n} lines have no expiry',
-        expiry: 'Expiry',
+        diffHint: 'Differs from what was still due ({due})',
+        linesAria: 'Receipt lines',
+        madeOn: 'Production date',
+        madeOnHint:
+            'From the supplier’s certificate, if given. Printed on the label.',
+        expiry: 'Expiry date',
         price: 'Unit price',
+        priceHint: 'Per {uom}; saved as the last purchase price',
+        labels: 'How many labels to print',
+        labelsNoPack:
+            'How many containers the quantity is divided into — one label each.',
+        labelsByItem:
+            'By a {size} package, from the item card. Can be changed.',
+        labelsByFamily:
+            'By a {size} container, from the batch settings. Can be changed.',
+        needLabels: 'The label count must be a whole number',
+        effectLabels:
+            'One batch label is printed after confirming | {n} batch labels are printed after confirming',
+        effectNoLabels: 'No labels will be printed',
         note: 'Receipt note',
         takeAll: 'All arrived',
         none: 'Clear',
@@ -202,20 +220,37 @@ export default {
         done: 'one line booked in | {n} lines booked in',
     },
 
-    note: 'Working note',
+    labels: {
+        title: 'Batch labels · {id}',
+        lead: 'One label is ready to print. | {n} labels are ready to print, each line by the number of packages recorded.',
+        batch: 'Batch {batch}',
+        each: 'no labels | one label | {n} labels',
+        sample: 'The first label will look like this',
+        skip: 'Not now',
+    },
+
+    note: 'Internal note',
+    noteHint:
+        'For the pharmacy only — not in the exported file, never sent to the supplier.',
+    supplierNote: 'Note for the supplier',
+    supplierNotePlaceholder:
+        'e.g. Please attach a certificate of analysis for each batch',
+    supplierNoteHint:
+        'Written at the head of the Excel file sent to the supplier. Locked once the order is marked sent.',
     notePlaceholder:
         'Being prepared · emailed on the 5th · waiting on a price…',
     openedBy: 'Opened by {who} · {when}',
 
-    paste: 'Paste item codes',
-    pastePlaceholder: '100002 110005 200011',
+    paste: 'Paste codes and quantities',
+    pastePlaceholder: '100002 5\n110005 2.5\n200011',
     pasteHint:
-        'Separated by spaces, commas or lines — a column pasted out of Excel works too. Each code becomes a row.',
+        'A code, then its quantity if there is one — two columns out of Excel (code and quantity) work, and so do bare codes. The quantity is in the line’s purchase unit. A code already listed takes the pasted quantity in place of its own.',
     search: 'Search',
     addOne: 'Add a single item',
-    addOnePlaceholder: 'Code or name…',
+    addOnePlaceholder: 'Code, name or Chinese name…',
 
     foundAdded: 'one row added | {n} rows added',
+    foundUpdated: 'Quantity updated: {list}',
     foundAlready: 'Already listed: {list}',
     foundMissing: 'Not found: {list}',
 
@@ -244,6 +279,7 @@ export default {
         lines: 'Lines',
         sheetState: 'State',
         received: 'Received',
+        gap: 'Gap',
 
         sku: 'Code',
         name: 'Item',

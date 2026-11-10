@@ -25,7 +25,8 @@ const FIRST_BATCH_NUMBER = 3001;
  *
  * `partial` is an issued run of which a first part has already come back into
  * stock and the rest is still at the bench — the internal-production note's
- * "קליטה חלקית למלאי ... ושאר ההוראה נשארת פתוחה".
+ * "קליטה חלקית למלאי ... ושאר ההוראה נשארת פתוחה". There is no planned run:
+ * an order goes to the lab as it is written.
  */
 const STATE_MIX = [
     'completed',
@@ -34,8 +35,8 @@ const STATE_MIX = [
     'partial',
     'issued',
     'issued',
-    'planned',
-    'planned',
+    'issued',
+    'issued',
     'cancelled',
 ];
 
@@ -47,6 +48,15 @@ const LAB_NOTES = {
     4: (component) =>
         `לסיים את כל הצמח ${component.sku} — נשארו כ-470 גרם על המדף`,
     6: () => 'לא לסנן לפני שבועיים, גם אם נראה מוכן',
+};
+
+/**
+ * The pharmacy's own note on a run — the kind that is not for the bench and
+ * is never printed for it.
+ */
+const INTERNAL_NOTES = {
+    5: 'אם התפוקה טובה — להגדיל את הכמות בהוראה הבאה. לבדוק מול נטלי.',
+    7: 'הלקוח הגדול מחכה לזה — לעדכן את אורית כשנקלט.',
 };
 
 /**
@@ -263,7 +273,15 @@ export function buildProductionOrders({
         const item = itemBySku.get(bom.parentSku) || null;
         const prepType = prepById.get(bom.prepType) || null;
         const runs = pickFrom(`${slot}:runs`, [1, 1, 2]);
-        const plannedQty = bom.yield.qty * runs;
+        // The order is written in the item's own unit of measure — a litre of
+        // tincture, not 1,000 ml — as the store's unitFor() writes it.
+        const uom =
+            parent?.unit && convertQty(1, bom.yield.uom, parent.unit) !== null
+                ? parent.unit
+                : bom.yield.uom;
+        const plannedQty = round3(
+            toStockUnits(bom.yield.qty * runs, bom.yield.uom, uom),
+        );
         const createdDays =
             state === 'completed'
                 ? spread(`${slot}:d`, 20, 60)
@@ -279,7 +297,7 @@ export function buildProductionOrders({
                 spread(`${slot}:hh:${days}`, 8, 15),
                 spread(`${slot}:mm:${days}`, 0, 59),
             );
-        const drawsStock = !['planned', 'cancelled'].includes(state);
+        const drawsStock = state !== 'cancelled';
 
         const components = bom.components.map((component) => {
             const row = stockBySku.get(component.sku) || null;
@@ -315,7 +333,7 @@ export function buildProductionOrders({
             name: bom.name,
             prepType: bom.prepType,
             plannedQty,
-            uom: bom.yield.uom,
+            uom,
             state: state === 'partial' ? 'issued' : state,
             components,
             // The preparation's own figure where it has one; otherwise a run
@@ -327,6 +345,7 @@ export function buildProductionOrders({
                   : null,
             dueDays,
             labNote: note ? note(components[0]) : null,
+            internalNote: INTERNAL_NOTES[i] || null,
             standing: {
                 item: String(item?.remarks ?? '').trim() || null,
                 recipe: bom.notes?.he ? { ...bom.notes } : null,
@@ -346,10 +365,6 @@ export function buildProductionOrders({
             cancelledOn: null,
             reason: null,
         };
-
-        if (state === 'planned') {
-            return order;
-        }
 
         order.issuedOn = stamp(Math.max(1, createdDays - 1));
 
@@ -397,13 +412,13 @@ export function buildProductionOrders({
                 : Math.max(1, createdDays - spread(`${slot}:dur`, 2, 14));
         const when = stamp(receivedDays);
         const wastePct = bom.expectedWastePct || 0;
-        const yieldQty = round2(
+        const yieldQty = round3(
             plannedQty *
                 share *
                 (1 - wastePct / 100) *
                 (0.97 + fraction(`${slot}:yield`) * 0.03),
         );
-        const wasteQty = wastePct ? round2(plannedQty * share - yieldQty) : 0;
+        const wasteQty = wastePct ? round3(plannedQty * share - yieldQty) : 0;
         const months =
             item?.expiryMonths ||
             prepType?.expiryMonths ||
@@ -448,10 +463,8 @@ export function buildProductionOrders({
             });
         }
 
-        const stockUnit = parent?.unit || bom.yield.uom;
-        const outputQty = round3(
-            toStockUnits(yieldQty, bom.yield.uom, stockUnit),
-        );
+        const stockUnit = parent?.unit || uom;
+        const outputQty = round3(toStockUnits(yieldQty, uom, stockUnit));
         // V3 — the number a run's output takes is the next one in the
         // pharmacy's own running series, which the console carries on from the
         // workbook and from SAP rather than restarting. Waste takes the
@@ -514,9 +527,7 @@ export function buildProductionOrders({
         let wasteStock = 0;
 
         if (wasteId) {
-            wasteStock = round3(
-                toStockUnits(wasteQty, bom.yield.uom, stockUnit),
-            );
+            wasteStock = round3(toStockUnits(wasteQty, uom, stockUnit));
 
             batches.unshift({
                 ...opened,

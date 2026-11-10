@@ -34,7 +34,7 @@ import { useStickersStore } from '@/stores/stickers';
 const MM = 96 / 25.4;
 const PREVIEW_MAX_PX = 560;
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
 const stickers = useStickersStore();
@@ -197,6 +197,27 @@ function remove(element) {
 
 function setText(element, value) {
     element.text = { he: value, en: value };
+}
+
+/** What a labelled field prints before its value when no caption is set. */
+const defaultCaption = (element) => `${t(`stickers.field.${element.field}`)}:`;
+
+/**
+ * The caption, in the language being edited — the other language keeps its
+ * own. Cleared, the field goes back to printing its own name.
+ */
+function setCaption(element, value) {
+    const text = String(value || '');
+
+    element.caption = text.trim()
+        ? { ...(element.caption || {}), [locale.value]: text }
+        : null;
+}
+
+function setCaptionW(element, value) {
+    const width = Number(value);
+
+    element.captionW = Number.isFinite(width) && width > 0 ? width : null;
 }
 
 async function save() {
@@ -474,6 +495,45 @@ async function reset() {
                                 <ASwitch
                                     v-model="element.label"
                                     :label="t('stickers.editor.prefix')"
+                                />
+                            </div>
+                            <label
+                                v-if="element.kind === 'field' && element.label"
+                                class="a-field"
+                            >
+                                <span>{{ t('stickers.editor.caption') }}</span>
+                                <AInput
+                                    :model-value="
+                                        element.caption
+                                            ? loc(element.caption)
+                                            : ''
+                                    "
+                                    :placeholder="defaultCaption(element)"
+                                    @update:model-value="
+                                        setCaption(element, $event)
+                                    "
+                                />
+                            </label>
+                            <label
+                                v-if="element.kind === 'field' && element.label"
+                                class="a-field"
+                            >
+                                <span>{{ t('stickers.editor.captionW') }}</span>
+                                <AInput
+                                    :model-value="element.captionW ?? ''"
+                                    type="number"
+                                    @update:model-value="
+                                        setCaptionW(element, $event)
+                                    "
+                                />
+                            </label>
+                            <div
+                                v-if="element.kind === 'field'"
+                                class="a-field a-field--switch el-sw"
+                            >
+                                <ASwitch
+                                    v-model="element.box"
+                                    :label="t('stickers.editor.box')"
                                 />
                             </div>
                         </div>

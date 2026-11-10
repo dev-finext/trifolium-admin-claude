@@ -102,6 +102,7 @@ export default {
         supplier: 'Goods receipt',
         production: 'In-house production',
         waste: 'Waste',
+        adjustment: 'Stock adjustment',
     },
     settings: {
         title: 'Batch settings',
@@ -275,8 +276,9 @@ export default {
             inReport: 'Open the batch movements report, filtered to this batch',
         },
         dates: {
-            edit: 'Edit dates',
-            title: 'Edit the batch dates',
+            edit: 'Edit expiry and production date',
+            editShort: 'Edit expiry',
+            title: 'Expiry and production date · batch {batch}',
             expiryHint:
                 'One field for the whole batch. Changing the expiry immediately affects the picking order (FEFO) and the batch state.',
             madeOnHint:
@@ -384,7 +386,7 @@ export default {
             after: 'Stock after',
             existing: 'Existing batch',
             price: 'Price per purchase unit',
-            labels: 'Labels',
+            labels: 'How many labels to print',
         },
         supplierBatchPh: "Batch number at the supplier's",
         batchIsSupplier:
@@ -419,22 +421,37 @@ export default {
         },
     },
     adjust: {
-        title: 'Manual stock issue · {item}',
+        title: 'Stock adjustment · {item}',
         kv: {
             sku: 'Item code',
             onHand: 'On hand now',
             alloc: 'Allocated to orders',
             batches: 'Batches with quantity',
         },
-        reason: 'Reason for the issue',
+        dir: 'Direction',
+        dirIn: 'Add to stock',
+        dirOut: 'Remove from stock',
+        reason: 'Reason',
         qtyDeduct: 'Quantity to deduct',
+        qtyAdd: 'Quantity to add',
+        after: 'Stock after',
+        overdraw: 'The batch holds only {left} {unit}',
         batch: 'Batch',
         batchPick: '— pick a batch —',
+        batchNew: 'A new batch…',
+        newNumber: 'Batch number',
+        newNumberHint:
+            'As written on the package. Empty — numbered WV and today’s date.',
         batchOption: '{id} · {left} left · expires {expiry}',
         batchFlagged: '{option} · {state}',
         why: 'Explanation (required — written to the log)',
         whyPhDeduct: 'For example: a bottle broke on the way to the lab',
+        whyPhAdd:
+            'For example: an extra jar was found on the shelf at the count',
+        notConsumption:
+            'An adjustment is not counted as consumption in the stock analysis.',
         save: 'Save issue',
+        saveIn: 'Save addition',
         noBatches: 'This item has no open batch in stock.',
     },
     count: {

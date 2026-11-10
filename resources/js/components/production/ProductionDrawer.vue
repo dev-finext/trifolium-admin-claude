@@ -1,8 +1,13 @@
 <script setup>
 // One production order: where it stands, what it makes, what it draws from
 // which batches, what came back and when it is due. The buttons follow the
-// state — a planned run can be issued or cancelled, an issued run received
-// (in parts or whole) or cancelled, a finished one only read and printed.
+// state — an open run is received (in parts or whole) or cancelled, a
+// finished one only read and printed. There is no planned stage: an order is
+// at the lab from the moment it is written.
+//
+// Two kinds of note, kept apart: the lab's — this run's own and the standing
+// ones off the item card, all printed on the work sheet — and the pharmacy's
+// internal note, which stays here and is never printed for the lab.
 //
 // Two things go to the lab with the order and are printed from here: the work
 // sheet and the order label, the one that names the material on the bench until
@@ -19,6 +24,7 @@ import AInput from '@/components/ui/AInput.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ANum from '@/components/ui/ANum.vue';
+import ATextarea from '@/components/ui/ATextarea.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useProductionLabels } from '@/composables/useProductionLabels';
 import { useProductionSheet } from '@/composables/useProductionSheet';
@@ -31,7 +37,7 @@ import {
     receivedQty,
 } from '@/config';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
-import { ils, num } from '@/lib/money';
+import { ils, num, qtyText } from '@/lib/money';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
 import { useProductionStore } from '@/stores/production';
@@ -41,7 +47,7 @@ const props = defineProps({
     order: { type: Object, default: null },
 });
 
-const emit = defineEmits(['close', 'issue', 'complete', 'cancel']);
+const emit = defineEmits(['close', 'complete', 'cancel']);
 /**
  * V3 — what this window is called when it is parked in the tray.
  *
@@ -68,8 +74,8 @@ const items = useItemsStore();
 const inventory = useInventoryStore();
 const store = useProductionStore();
 
-/** The three states a run passes through, in order, for the rail. */
-const RAIL = ['planned', 'issued', 'completed'];
+/** The states a run passes through, in order, for the rail. */
+const RAIL = ['issued', 'completed'];
 
 const unit = (uom) => t(`inventory.unit.${uom || 'unit'}`);
 
@@ -114,7 +120,7 @@ const details = computed(() => {
     const rows = [
         [
             t('production.drawer.planned'),
-            `${num(order.plannedQty)} ${unit(order.uom)}`,
+            `${qtyText(order.plannedQty, 3)} ${unit(order.uom)}`,
         ],
         [
             t('production.drawer.recipe'),
@@ -137,8 +143,8 @@ const details = computed(() => {
         rows.push([
             t('production.drawer.received'),
             t('production.drawer.receivedOf', {
-                qty: num(received.value),
-                planned: num(order.plannedQty),
+                qty: qtyText(received.value, 3),
+                planned: qtyText(order.plannedQty, 3),
                 uom: unit(order.uom),
             }),
         ]);
@@ -149,12 +155,12 @@ const details = computed(() => {
             [t('production.drawer.completedOn'), order.completedOn?.stamp],
             [
                 t('production.drawer.yield'),
-                `${num(order.yieldQty)} ${unit(order.uom)}`,
+                `${qtyText(order.yieldQty, 3)} ${unit(order.uom)}`,
             ],
             [
                 t('production.drawer.waste'),
                 order.wasteQty
-                    ? `${num(order.wasteQty)} ${unit(order.uom)}`
+                    ? `${qtyText(order.wasteQty, 3)} ${unit(order.uom)}`
                     : t('production.drawer.noWaste'),
             ],
             [
@@ -213,6 +219,35 @@ async function onDue(value) {
 }
 
 const standing = computed(() => props.order?.standing || {});
+
+/**
+ * The internal note, edited in place while the order is open. Saved when the
+ * field is left, so nothing typed is lost to a closed drawer.
+ */
+const internalDraft = ref(null);
+
+const internalText = computed(() =>
+    internalDraft.value === null
+        ? props.order?.internalNote || ''
+        : internalDraft.value,
+);
+
+async function saveInternal() {
+    if (internalDraft.value === null || !props.order) {
+        return;
+    }
+
+    const saved = await store.setInternalNote(
+        props.order.id,
+        internalDraft.value,
+    );
+
+    internalDraft.value = null;
+
+    if (saved) {
+        push({ title: t('production.notes.internalSaved') });
+    }
+}
 const hasNotes = computed(
     () =>
         Boolean(props.order?.labNote) ||
@@ -325,15 +360,6 @@ async function confirmReprint() {
                         </div>
                     </div>
                     <div class="a-dhead-a">
-                        <AButton
-                            v-if="order.state === 'planned'"
-                            kind="p"
-                            sm
-                            icon="check"
-                            @click="emit('issue', order)"
-                        >
-                            {{ t('production.action.issue') }}
-                        </AButton>
                         <AButton
                             v-if="order.state === 'issued'"
                             kind="p"
@@ -454,6 +480,33 @@ async function confirmReprint() {
                     </div>
                 </ACard>
 
+                <ACard :title="t('production.notes.internal')" icon="lock">
+                    <template
+                        v-if="PRODUCTION_OPEN_STATE_IDS.includes(order.state)"
+                    >
+                        <ATextarea
+                            :model-value="internalText"
+                            :rows="3"
+                            class="a-w100"
+                            :aria-label="t('production.notes.internal')"
+                            :placeholder="
+                                t('production.notes.internalPlaceholder')
+                            "
+                            @update:model-value="internalDraft = $event"
+                            @blur="saveInternal"
+                        />
+                    </template>
+                    <div v-else-if="order.internalNote" class="a-note pd-text">
+                        {{ order.internalNote }}
+                    </div>
+                    <div v-else class="t-sub">
+                        {{ t('production.notes.internalNone') }}
+                    </div>
+                    <div class="a-hint">
+                        {{ t('production.notes.internalHint') }}
+                    </div>
+                </ACard>
+
                 <ACard
                     :title="t('production.drawer.components')"
                     icon="layers"
@@ -468,20 +521,6 @@ async function confirmReprint() {
                                 </th>
                                 <th scope="col" class="nowrap">
                                     {{ t('production.drawer.compPlanned') }}
-                                </th>
-                                <th
-                                    v-if="order.state === 'planned'"
-                                    scope="col"
-                                    class="nowrap pd-n"
-                                >
-                                    {{ t('production.stock.avail') }}
-                                </th>
-                                <th
-                                    v-if="order.state === 'planned'"
-                                    scope="col"
-                                    class="nowrap pd-n"
-                                >
-                                    {{ t('production.stock.onOrder') }}
                                 </th>
                                 <th scope="col">
                                     {{ t('production.drawer.compPicks') }}
@@ -505,7 +544,9 @@ async function confirmReprint() {
                                     </div>
                                 </td>
                                 <td class="nowrap">
-                                    <ANum>{{ num(component.plannedQty) }}</ANum>
+                                    <ANum>{{
+                                        qtyText(component.plannedQty, 3)
+                                    }}</ANum>
                                     {{ unit(component.uom) }}
                                     <AChip
                                         v-if="component.issue === 'manual'"
@@ -516,32 +557,6 @@ async function confirmReprint() {
                                     >
                                         {{ t('items.bom.issue.manual') }}
                                     </AChip>
-                                </td>
-                                <td
-                                    v-if="order.state === 'planned'"
-                                    class="nowrap pd-n"
-                                >
-                                    <ANum>{{
-                                        num(
-                                            items.rowBySku(component.sku)
-                                                ?.avail ?? 0,
-                                            3,
-                                        )
-                                    }}</ANum>
-                                    {{ unit(component.stockUnit) }}
-                                </td>
-                                <td
-                                    v-if="order.state === 'planned'"
-                                    class="nowrap pd-n"
-                                >
-                                    <ANum>{{
-                                        num(
-                                            items.rowBySku(component.sku)
-                                                ?.onOrder ?? 0,
-                                            3,
-                                        )
-                                    }}</ANum>
-                                    {{ unit(component.stockUnit) }}
                                 </td>
                                 <td>
                                     <div
@@ -601,7 +616,7 @@ async function confirmReprint() {
                                         v-if="component.actualQty != null"
                                     >
                                         <ANum>{{
-                                            num(component.actualQty)
+                                            qtyText(component.actualQty, 3)
                                         }}</ANum>
                                         {{ unit(component.uom) }}
                                     </template>
@@ -660,12 +675,15 @@ async function confirmReprint() {
                                     </div>
                                 </td>
                                 <td class="nowrap">
-                                    <ANum>{{ num(receipt.qty) }}</ANum>
+                                    <ANum>{{ qtyText(receipt.qty, 3) }}</ANum>
                                     {{ unit(order.uom) }}
                                     <div v-if="receipt.wasteQty" class="t-sub">
                                         {{
                                             t('production.drawer.rcptWaste', {
-                                                qty: num(receipt.wasteQty),
+                                                qty: qtyText(
+                                                    receipt.wasteQty,
+                                                    3,
+                                                ),
                                                 uom: unit(order.uom),
                                             })
                                         }}

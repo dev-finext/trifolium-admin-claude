@@ -266,7 +266,7 @@ export default {
         },
         mistake_fix: {
             name: 'תיקון טעות',
-            hint: 'תיקון רישום שגוי קודם',
+            hint: 'תיקון רישום שגוי קודם — בכל כיוון',
         },
     },
     preparationForm: {

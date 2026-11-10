@@ -15,6 +15,7 @@ import { useI18n } from 'vue-i18n';
 import GoodsReceiptModal from '@/components/inventory/GoodsReceiptModal.vue';
 import PageHead from '@/components/layout/PageHead.vue';
 import BuyingTab from '@/components/purchasing/BuyingTab.vue';
+import ReceiptLabelsModal from '@/components/purchasing/ReceiptLabelsModal.vue';
 import AButton from '@/components/ui/AButton.vue';
 import AErrorState from '@/components/ui/AErrorState.vue';
 import ASkeleton from '@/components/ui/ASkeleton.vue';
@@ -23,6 +24,8 @@ import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { BUYING_KIND_IDS } from '@/config';
 import { useDatasetStore } from '@/stores/dataset';
+import { useInventoryStore } from '@/stores/inventory';
+import { useStickersStore } from '@/stores/stickers';
 
 /** How many skeleton rows stand in while the dataset loads. */
 const SKELETON_ROWS = 8;
@@ -30,6 +33,8 @@ const SKELETON_ROWS = 8;
 const { t } = useI18n();
 const { push } = useToast();
 const dataset = useDatasetStore();
+const stickers = useStickersStore();
+const inventory = useInventoryStore();
 
 // Receiving without a purchase order — "קנייה בלי הזמנה". Receiving against
 // one happens on that order's own sheet (BuyingSheetView/BuyingReceive); this
@@ -37,7 +42,18 @@ const dataset = useDatasetStore();
 // longer lives on the Inventory screen (DEMO_INVENTORY_FIXES_PROMPT.md §5).
 const receiving = ref(false);
 
+/** The receipt whose batch labels are offered for printing, once signed. */
+const labelling = ref(null);
+
 function onReceived({ id, batches }) {
+    // The store hands back the receipt's number; the labels are read off the
+    // receipt itself.
+    const receipt = inventory.receiptById(id);
+
+    if ((receipt?.lines || []).some((line) => stickers.itemCount(line) > 0)) {
+        labelling.value = receipt;
+    }
+
     push({
         title: t('inventory.toast.received.title'),
         body: t(
@@ -93,4 +109,6 @@ const tabs = computed(() => [
         @close="receiving = false"
         @saved="onReceived"
     />
+
+    <ReceiptLabelsModal :receipt="labelling" @close="labelling = null" />
 </template>

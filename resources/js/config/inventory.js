@@ -207,7 +207,9 @@ export const REASONS = [
     { id: 'waste', dir: 'out' },
     { id: 'spill_damage', dir: 'out' },
     { id: 'sample_use', dir: 'out' },
-    { id: 'mistake_fix', dir: 'out' },
+    // A wrong entry can be wrong in either direction: goods booked in twice
+    // come out, goods that were never booked in go in.
+    { id: 'mistake_fix', dir: 'both' },
 ];
 
 export const REASON = Object.fromEntries(

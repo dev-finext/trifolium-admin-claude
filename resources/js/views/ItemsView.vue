@@ -10,6 +10,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
+import AdjustStockModal from '@/components/inventory/AdjustStockModal.vue';
 import BatchTraceDrawer from '@/components/inventory/BatchTraceDrawer.vue';
 import StockCountModal from '@/components/inventory/StockCountModal.vue';
 import BomDrawer from '@/components/items/BomDrawer.vue';
@@ -28,7 +29,7 @@ import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { liveOnly } from '@/config';
-import { num } from '@/lib/money';
+import { num, qtyText } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
@@ -85,6 +86,28 @@ watch(
 );
 const counting = ref(null);
 const removing = ref(null);
+
+/**
+ * The stock row a manual adjustment is open on — the same dialog the
+ * inventory screen opens, reached from the card itself.
+ */
+const adjusting = ref(null);
+
+function adjust(row) {
+    adjusting.value = inventory.itemBySku(row.sku) || null;
+}
+
+function onAdjusted({ item, reason, diff }) {
+    push({
+        title: t('inventory.toast.adjusted.title'),
+        body: t('inventory.toast.adjusted.body', {
+            item: loc(item.name),
+            reason: t(`reason.${reason}.name`),
+            diff: `${diff > 0 ? '+' : ''}${qtyText(diff, 3)}`,
+            unit: t(`inventory.unit.${item.unit}`),
+        }),
+    });
+}
 
 const openItem = computed(() => (view.item ? store.rowBySku(view.item) : null));
 
@@ -272,6 +295,7 @@ async function confirmRestore(reason) {
         @open-batch="view.batch = $event"
         @produce="produce"
         @count="counting = $event"
+        @adjust="adjust"
         @remove="removing = $event"
         @restore="restoring = $event"
     />
@@ -306,6 +330,12 @@ async function confirmRestore(reason) {
         :draft="bomDraft"
         @close="((editingBom = null), (bomDraft = null))"
         @saved="onBomSaved"
+    />
+
+    <AdjustStockModal
+        :item="adjusting"
+        @close="adjusting = null"
+        @saved="onAdjusted"
     />
 
     <StockCountModal

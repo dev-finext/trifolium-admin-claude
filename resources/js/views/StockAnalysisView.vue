@@ -158,7 +158,7 @@ function produce(row) {
 
     router.push({
         name: 'production',
-        query: { order: 'new', bom: bom.id, start: 'issued' },
+        query: { order: 'new', bom: bom.id },
     });
 }
 

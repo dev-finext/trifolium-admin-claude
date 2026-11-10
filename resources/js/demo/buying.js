@@ -85,6 +85,8 @@ const ORDER_PLAN = [
         hour: 9,
         state: 'draft',
         note: 'ממתינים לאישור כמויות מהמחסן לפני השליחה',
+        supplierNote:
+            'נא לצרף תעודת אנליזה (COA) לכל אצווה, ולציין תאריך ייצור על כל אריזה.',
     },
     {
         docNum: 2600163,
@@ -99,6 +101,8 @@ const ORDER_PLAN = [
         hour: 8,
         state: 'sent',
         note: 'הזמנת צמחים רבעונית — נשלח 30.7',
+        supplierNote:
+            'הזמנה רבעונית. משלוח אחד אם אפשר; אם לא — לעדכן מראש מה יגיע בנפרד.',
     },
     {
         docNum: 2600158,
@@ -209,7 +213,10 @@ function sheetOf(doc, plan, kind, context) {
             kind === 'order' && doc.supplier
                 ? { he: doc.supplier, en: doc.supplier }
                 : null,
+        // The pharmacy's own note, and — on an order — the one that went to
+        // the supplier at the head of the exported sheet.
         note: plan.note,
+        supplierNote: kind === 'order' ? plan.supplierNote || '' : '',
         lines,
         lineSeq: (doc.lines || []).length,
         state,

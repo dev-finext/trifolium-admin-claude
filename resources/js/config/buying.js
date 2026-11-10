@@ -147,20 +147,93 @@ export const BUYING_SERIES = { request: 2600000, order: 2600000 };
  * pasting the same list twice does not double the sheet.
  */
 export function parseSkus(text) {
-    const seen = new Set();
+    return parsePaste(text).map((entry) => entry.code);
+}
+
+/** A token that reads as a quantity rather than an item code. */
+const QTY_TOKEN = /^\d{1,5}(\.\d+)?$/;
+
+/**
+ * Codes and quantities out of a pasted block.
+ *
+ * The buyer pastes two columns out of Excel — a code and a quantity — or a line
+ * out of an email, `100002 5, 110005 2.5`. A number that comes straight after a
+ * code is that code's quantity; anything else is another code, so a block of
+ * bare codes reads exactly as it always did. A quantity is at most five digits
+ * with an optional decimal part, and is never itself a code on the catalogue
+ * (`isSku`) — item codes are six digits, so `100002 110005` stays two codes.
+ * A decimal comma, `2,5`, is a decimal point; a comma anywhere else separates.
+ *
+ * A code pasted twice is one entry, its quantities added together, in the
+ * position it first appeared.
+ *
+ * @param {string} text
+ * @param {(code: string) => boolean} [isSku]
+ * @returns {Array<{code: string, qty: number|null}>}
+ */
+export function parsePaste(text, isSku = () => false) {
     const out = [];
+    const at = new Map();
+    let last = null;
 
-    for (const token of String(text || '').split(/[\s,;|]+/)) {
-        const code = token.trim();
+    const add = (code) => {
+        if (at.has(code)) {
+            last = at.get(code);
 
-        if (code && !seen.has(code)) {
-            seen.add(code);
-            out.push(code);
+            return;
+        }
+
+        last = { code, qty: null };
+        at.set(code, last);
+        out.push(last);
+    };
+
+    for (const raw of String(text || '').split(/\r?\n/)) {
+        const line = raw.replace(
+            /(^|[^\d])(\d{1,5}),(\d{1,3})(?!\d)/g,
+            '$1$2.$3',
+        );
+        const parts = line.includes('\t')
+            ? line.split('\t').flatMap((part) => part.split(/[\s,;|]+/))
+            : line.split(/[\s,;|]+/);
+
+        last = null;
+
+        for (const token of parts.map((part) => part.trim()).filter(Boolean)) {
+            if (last && QTY_TOKEN.test(token) && !isSku(token)) {
+                last.qty =
+                    Math.round(((last.qty || 0) + Number(token)) * 1000) / 1000;
+                last = null;
+                continue;
+            }
+
+            add(token);
         }
     }
 
     return out;
 }
+
+/**
+ * What arrived against a line, set against what was ordered — negative when
+ * the supplier sent less, positive when more, zero when it matched, `null`
+ * while nothing has been booked in. An order's quantities are fixed once it is
+ * sent (the store refuses edits after that), so the gap stays what it was for
+ * the rest of the order's life, closed or not.
+ */
+export const lineGap = (line) =>
+    line?.received === null || line?.received === undefined
+        ? null
+        : Math.round(
+              ((Number(line.received) || 0) - (Number(line.qty) || 0)) * 1000,
+          ) / 1000;
+
+/** Is the sheet's list of lines still open to change? */
+export const linesEditable = (list) =>
+    Boolean(list) &&
+    (list.kind === 'order'
+        ? ['draft', 'failed'].includes(list.state)
+        : list.state === 'open');
 
 const number = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
 
@@ -365,9 +438,14 @@ export function buyingSheet(list, fmt = {}) {
     const procurement = fmt.procurement || ((id) => id);
     const date = fmt.date || ((iso) => iso);
     const checklist = Boolean(BUYING_KIND[list?.kind]?.checklist);
-    const head = checklist
-        ? [...BUYING_SHEET_HEAD, 'בוצע']
-        : [...BUYING_SHEET_HEAD];
+    // An order something arrived on carries what arrived and the gap, the
+    // same two figures its screen shows, for as long as the order exists.
+    const arrived = list?.kind === 'order' && hasReceipts(list);
+    const head = [
+        ...BUYING_SHEET_HEAD,
+        ...(checklist ? ['בוצע'] : []),
+        ...(arrived ? ['התקבל', 'פער'] : []),
+    ];
 
     const body = (list.lines || []).map((line) => {
         const row = [
@@ -404,8 +482,18 @@ export function buyingSheet(list, fmt = {}) {
             row.push(line.done ? 'בוצע' : null);
         }
 
+        if (arrived) {
+            row.push(cell(line.received), cell(lineGap(line)));
+        }
+
         return row;
     });
 
-    return [head, ...body];
+    // The note for the supplier heads the file, above the table — the one
+    // thing on the sheet written for the person it goes to. The working note
+    // is the pharmacy's own and never leaves the console.
+    const note = String(list?.supplierNote || '').trim();
+    const top = list?.kind === 'order' && note ? [['הערה לספק', note], []] : [];
+
+    return [...top, head, ...body];
 }
