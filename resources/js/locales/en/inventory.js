@@ -369,7 +369,6 @@ export default {
         batchAuto: 'Assigned automatically by item family',
         title: 'New goods receipt',
         supplier: 'Supplier',
-        supplierPh: 'Supplier name as printed on the delivery note',
         docNum: 'Delivery note',
         docNumPh: 'Delivery-note number',
         date: 'Receipt date',
@@ -401,7 +400,6 @@ export default {
         wasteHint:
             'Marking waste tells ground waste from whole material — for a correct stock reading and for priority in production.',
         supplierPick: 'Choose a supplier from the list…',
-        supplierOther: 'Other supplier — type the name',
         existingNew: 'New batch',
         existingOption: '{id} · expires {expiry}',
         expiryAuto: 'Family default — {n} months · can be changed',
@@ -409,11 +407,9 @@ export default {
         hint: 'Each line opens a separate batch with its own batch number and expiry date, and enters stock the moment it is received',
         submit: 'Receive into stock · 1 batch | Receive into stock · {n} batches',
         need: 'Required: a supplier, the document and its number, and at least one complete line — an item and a quantity; a batch number and an expiry for a batch-managed item; a price on a tax invoice',
-        // 12.11.2026 — a tax invoice is recorded on a supplier with a card
+        // 12.11.2026 — a receipt without an order, on a tax invoice
         invoicePrices:
             'Tax invoice — a price is required on every line, per purchase unit, before VAT. The invoice is recorded on the supplier and enters the open balance.',
-        invoiceNeedsCard:
-            'A tax invoice is recorded on a supplier card — choose a supplier from the list',
         aria: {
             madeOn: 'Production date on line {n}',
             qty: 'Quantity on line {n}',

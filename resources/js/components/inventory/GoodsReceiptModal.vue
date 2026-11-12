@@ -7,10 +7,14 @@
 // than a wizard — a delivery of eight herbs is eight blocks on one screen.
 //
 // Second-version additions, each marked: the supplier is picked from the supplier
-// list (free text stays for a one-off), a line may top up an existing batch
-// instead of opening one, the expiry defaults from the family's shelf life, and a
-// line carries the price that becomes the item's last purchase price and the
-// number of item labels to print.
+// list, a line may top up an existing batch instead of opening one, the expiry
+// defaults from the family's shelf life, and a line carries the price that
+// becomes the item's last purchase price and the number of item labels to print.
+//
+// **The supplier is always a card from the list (12.11.2026).** Every receipt is
+// a supplier document kept on that supplier's card, and a delivery note waits
+// there for its tax invoice — so a supplier typed by hand, with no card, has no
+// place for either. The free-text "ספק אחר" was removed for exactly that reason.
 //
 // **For production — 12.11.2026.** The same document rules as a receipt against
 // an order (BuyingReceive, config/supplierDocs.js): the person chooses which
@@ -43,9 +47,6 @@ import { supplierSelectable } from '@/stores/system';
 
 /** One field to a row, label beside it: the form no longer needs the width. */
 const WIDTH = 860;
-
-/** The supplier select's value for "not on the list — type it". */
-const OTHER = '__other';
 
 const props = defineProps({
     open: { type: Boolean, default: false },
@@ -164,10 +165,9 @@ const supplierOptions = computed(() => [
         value: row.code,
         label: loc(row.name),
     })),
-    { value: OTHER, label: t('inventory.receipt.supplierOther') },
 ]);
 
-/** Picking a listed supplier fills the name; "other" opens the free-text field. */
+/** Picking a supplier fills the name the receipt records. */
 function onSupplier(code) {
     supplierCode.value = code;
 
@@ -208,19 +208,13 @@ const badGeneral = computed(() =>
     ),
 );
 
-/** A tax invoice is recorded on a supplier card — one from the list. */
-const knownSupplier = computed(
-    () => Boolean(supplierCode.value) && supplierCode.value !== OTHER,
-);
-
 const valid = computed(
     () =>
-        Boolean(supplier.value.trim()) &&
+        Boolean(supplierCode.value) &&
         Boolean(docType.value) &&
         Boolean(docNum.value.trim()) &&
         good.value.length > 0 &&
         badGeneral.value.length === 0 &&
-        (!invoice.value || knownSupplier.value) &&
         !saving.value,
 );
 
@@ -228,10 +222,6 @@ const valid = computed(
 const blocker = computed(() => {
     if (!docType.value) {
         return t('buying.receive.needDocType');
-    }
-
-    if (invoice.value && supplierCode.value === OTHER) {
-        return t('inventory.receipt.invoiceNeedsCard');
     }
 
     if (badGeneral.value.length) {
@@ -366,7 +356,7 @@ async function save() {
     try {
         const receipt = await purchasing.receiveDocument({
             supplier: supplier.value.trim(),
-            supplierCode: knownSupplier.value ? supplierCode.value : null,
+            supplierCode: supplierCode.value,
             docType: docType.value,
             docNum: docNum.value,
             date: date.value,
@@ -428,13 +418,6 @@ async function save() {
                     :options="supplierOptions"
                     class="a-w100"
                     @update:model-value="onSupplier"
-                />
-                <AInput
-                    v-if="supplierCode === OTHER"
-                    :id="`${uid}-sup`"
-                    v-model="supplier"
-                    class="a-w100 other"
-                    :placeholder="t('inventory.receipt.supplierPh')"
                 />
             </div>
             <div>
@@ -853,10 +836,6 @@ async function save() {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 12px 14px;
     margin-bottom: 16px;
-}
-
-.other {
-    margin-top: 6px;
 }
 
 .foot {

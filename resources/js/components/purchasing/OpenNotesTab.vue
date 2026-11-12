@@ -7,9 +7,10 @@
 // its lines have no price, and it waits for the supplier's tax invoice. One
 // invoice may cover several notes of one supplier, which is why "הצמדת
 // חשבונית" opens the dialog on the row's supplier with that note ticked and
-// his other open notes beside it. A note from a supplier with no card (a
-// one-off typed by hand) cannot take an invoice — the invoice has nowhere to be
-// recorded — and says so.
+// his other open notes beside it. Every receipt names a supplier card (the
+// free-text supplier was removed, 12.11.2026); a note without one could only
+// come from older data, cannot take an invoice — the invoice would have nowhere
+// to be recorded — and says so.
 //
 // The value shown is what the note comes to at the order's quote prices — an
 // estimate, until the invoice sets the real one; a note with any line
