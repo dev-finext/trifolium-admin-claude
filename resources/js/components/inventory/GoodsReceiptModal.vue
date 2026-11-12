@@ -439,7 +439,7 @@ async function save() {
                             ? t('buying.receive.docNumInvoice')
                             : docType
                               ? t('buying.receive.docNumNote')
-                              : t('inventory.receipt.docNum')
+                              : t('buying.receive.docNum')
                     }}
                     <span class="a-req">{{ t('labels.required') }}</span>
                 </label>
