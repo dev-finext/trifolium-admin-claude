@@ -348,6 +348,12 @@ export default {
         minLevel: 'מלאי מינימום',
         maxLevel: 'מלאי מקסימום',
         catalogNum: 'מק״ט אצל הספק',
+        // מה שכל ספק קורא לפריט — טבלת OSCN של SAP (12.11.2026)
+        supplierCatalog: 'מק״ט אצל ספקים',
+        supplierCatalogNone: 'אין מק״ט של הפריט אצל אף ספק',
+        supplierCatalogHint:
+            'מה שכל ספק קורא לפריט אצלו. הקובץ לספק בהזמנת רכש לוקח את המק״ט של ספק ההזמנה.',
+        catalogSupplier: 'ספק',
         barcode: 'ברקוד',
         packageSize: 'גודל האריזה',
         alcoholPct: 'אחוז אלכוהול',
@@ -519,6 +525,13 @@ export default {
         flagsHint:
             'ארבעת הדגלים קובעים מה רלוונטי בשאר הכרטיס: פריט שלא נמכר אין לו מחיר ואין לו אתר, פריט שלא נקנה אין לו ספק, ופריט שלא מנוהל במלאי אין לו רמות ואין לו אצוות.',
         supplierItemNameHint: 'איך הספק קורא לפריט בתעודות שלו · רשות',
+        supplierCatalogHint:
+            'מק״ט אחד לכל ספק. שורה בלי ספק או בלי מק״ט לא נשמרת.',
+        catalogSupplier: 'ספק',
+        catalogNumAt: 'המק״ט אצלו',
+        catalogPickSupplier: 'בחירת ספק…',
+        catalogAdd: 'הוספת מק״ט אצל ספק',
+        catalogRemove: 'הסרת השורה',
         internalNotesHint:
             'למשרד בלבד · לא מודפס ולא מוצג באתר · אין לזה מקבילה ב-SAP',
     },

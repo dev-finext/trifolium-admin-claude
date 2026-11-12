@@ -207,7 +207,8 @@ export default {
             'Not batch-managed — booked in with no batch, production date or expiry.',
         needDocType: 'Choose the document the goods came with',
         needPrices: 'one line has no price | {n} lines have no price',
-        needGeneral: 'A general line is missing its description, quantity or price',
+        needGeneral:
+            'A general line is missing its description, quantity or price',
         file: 'Document scan',
         fileHint: 'Optional — it can be added later, on the supplier card.',
         general: {
@@ -286,11 +287,22 @@ export default {
     note: 'Internal note',
     noteHint:
         'For the pharmacy only — not in the exported file, never sent to the supplier.',
+    // On an order (12.11.2026): the internal note is in the internal export,
+    // never in the supplier's file.
+    noteHintOrder:
+        'For the pharmacy only — in the internal export, never in the file sent to the supplier.',
     supplierNote: 'Note for the supplier',
     supplierNotePlaceholder:
         'e.g. Please attach a certificate of analysis for each batch',
     supplierNoteHint:
-        'Written at the head of the Excel file sent to the supplier. Locked once the order is marked sent.',
+        'Written at the head of the supplier’s Excel file, and of the internal export. Locked once the order is marked sent.',
+    // A note for the supplier on one order line (12.11.2026) — the item-notes
+    // column of the supplier's file.
+    lineSupplierNote: 'Note for the supplier on this item',
+    lineSupplierNotePlaceholder: 'e.g. whole herb only — not powder',
+    lineSupplierNoteHint:
+        'Goes into the item-notes column of the supplier’s file. Locked once the order is marked sent.',
+    lineSupplierNoteShort: 'For the supplier: {note}',
     notePlaceholder:
         'Being prepared · emailed on the 5th · waiting on a price…',
     openedBy: 'Opened by {who} · {when}',
@@ -331,6 +343,15 @@ export default {
     dropLine: 'Remove the row',
     export: 'Export to Excel',
     exported: 'one row exported | {n} rows exported',
+    // A purchase order has two buttons (12.11.2026): internal — every field;
+    // supplier — only what the supplier needs, in the sample file's shape.
+    exportInternal: 'Export to Excel (internal)',
+    exportSupplier: 'Export to Excel for the supplier',
+    exportSupplierHint:
+        'The file sent to the supplier: codes, names, purchase unit, quantity and notes — no prices and no internal note',
+    exportedSupplier:
+        'Supplier file exported — one row | Supplier file exported — {n} rows',
+    supplierFileSuffix: 'supplier',
 
     days: '{n} days',
 

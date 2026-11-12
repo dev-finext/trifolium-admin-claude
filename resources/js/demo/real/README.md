@@ -26,6 +26,7 @@ local restore.
 | `priceTiers.json` | 400 | `SPP2` (`CardCode = '*8'`) — the consumer quantity tiers |
 | `batches.json` | 120 | `OBTN`+`OBTQ` |
 | `suppliers.json` | 40 | `OCRD` CardType S — company data |
+| `supplierCatalog.json` | 130 | `OSCN` — each supplier's own catalogue number for an item (read 12.11.2026 for the supplier's Excel file). Every row, with SAP's `IsDefault`; the console attaches the rows whose item it holds and keeps the default number per supplier |
 | `orders.json` | 50 | `ORDR`+`RDR1`, all eight states represented, 250 real lines |
 | `stationWebOrders.json` | 52 + 40 | `ORDR`+`RDR1`, 2026 website orders joined on `U_DocEntryWeb` — each its one or two formula documents — and 40 shelf-product documents (50xxxx/55xxxx). The shipping station's sample: some orders get a shelf document added, which SAP never shows together and the new cart allows. Free-text comments and internal notes are not read. |
 

@@ -116,6 +116,12 @@ const form = reactive({
         catalogNum: source.suppliers?.catalogNum || '',
         itemName: source.suppliers?.itemName || '',
     },
+    // 12.11.2026 — each supplier's own catalogue number (SAP's `OSCN`), one
+    // row per supplier; the supplier's Excel file takes the order's supplier's.
+    supplierCatalog: (source.supplierCatalog || []).map((row) => ({
+        supplierCode: row.supplierCode || '',
+        catalogNum: row.catalogNum || '',
+    })),
     uom: {
         stock: source.uom?.stock || 'kg',
         purchase: source.uom?.purchase || 'kg',
@@ -391,6 +397,11 @@ const draft = computed(() => ({
         catalogNum: form.suppliers.catalogNum.trim() || null,
         itemName: form.suppliers.itemName.trim() || null,
     },
+    // A row missing either half is dropped by the save (stores/items.js).
+    supplierCatalog: form.supplierCatalog.map((row) => ({
+        supplierCode: row.supplierCode,
+        catalogNum: row.catalogNum.trim(),
+    })),
     uom: {
         stock: form.uom.stock,
         purchase: form.uom.purchase,
@@ -608,6 +619,50 @@ const supplierOptions = computed(() => [
             label: `${loc(supplier.name)} · ${supplier.code}`,
         })),
 ]);
+
+/**
+ * The suppliers one row of "מק״ט אצל ספקים" may name: the active ones not
+ * already named by another row — a supplier has one number for the item — plus
+ * whatever this row already names, suspended or not on the demo's list (SAP
+ * holds a number for 950092, a supplier the demo has no card for), so the
+ * field never shows a value that is not among its options.
+ */
+function catalogSupplierOptions(row) {
+    const taken = new Set(
+        form.supplierCatalog
+            .filter((other) => other !== row)
+            .map((other) => other.supplierCode),
+    );
+    const known = dataset.suppliers.filter(
+        (supplier) =>
+            supplier.code === row.supplierCode ||
+            (supplierSelectable(supplier) && !taken.has(supplier.code)),
+    );
+    const options = known.map((supplier) => ({
+        value: supplier.code,
+        label: `${loc(supplier.name)} · ${supplier.code}`,
+    }));
+
+    if (
+        row.supplierCode &&
+        !known.some((supplier) => supplier.code === row.supplierCode)
+    ) {
+        options.unshift({ value: row.supplierCode, label: row.supplierCode });
+    }
+
+    return [
+        { value: '', label: t('items.editor.catalogPickSupplier') },
+        ...options,
+    ];
+}
+
+function addCatalogRow() {
+    form.supplierCatalog.push({ supplierCode: '', catalogNum: '' });
+}
+
+function dropCatalogRow(index) {
+    form.supplierCatalog.splice(index, 1);
+}
 
 const safetyOptions = computed(() => [
     { value: '', label: t('items.editor.notSet') },
@@ -1127,6 +1182,68 @@ const win = computed(() => ({
                             </div>
                         </div>
                     </div>
+
+                    <!-- 12.11.2026 — each supplier's own catalogue number
+                         (SAP's OSCN). One row per supplier, every field with
+                         its own label; the supplier's Excel file takes the
+                         row of the order's supplier for its supplier-code column. -->
+                    <div class="ie-catalog" :class="{ 'is-off': off.purchase }">
+                        <div class="a-lbl">
+                            {{ t('items.card.supplierCatalog') }}
+                        </div>
+                        <div class="a-hint">
+                            {{ t('items.editor.supplierCatalogHint') }}
+                        </div>
+                        <div
+                            v-for="(row, i) in form.supplierCatalog"
+                            :key="i"
+                            class="ie-catrow"
+                        >
+                            <div>
+                                <label class="a-lbl" :for="`ie-cat-sup-${i}`">{{
+                                    t('items.editor.catalogSupplier')
+                                }}</label>
+                                <ASelect
+                                    :id="`ie-cat-sup-${i}`"
+                                    v-model="row.supplierCode"
+                                    :options="catalogSupplierOptions(row)"
+                                    :disabled="off.purchase"
+                                    class="a-w100"
+                                />
+                            </div>
+                            <div>
+                                <label class="a-lbl" :for="`ie-cat-num-${i}`">{{
+                                    t('items.editor.catalogNumAt')
+                                }}</label>
+                                <AInput
+                                    :id="`ie-cat-num-${i}`"
+                                    v-model="row.catalogNum"
+                                    ltr
+                                    :disabled="off.purchase"
+                                    class="a-w100"
+                                />
+                            </div>
+                            <AButton
+                                sm
+                                kind="ghost"
+                                icon="x"
+                                :disabled="off.purchase"
+                                :title="t('items.editor.catalogRemove')"
+                                :aria-label="t('items.editor.catalogRemove')"
+                                @click="dropCatalogRow(i)"
+                            />
+                        </div>
+                        <div>
+                            <AButton
+                                sm
+                                icon="plus"
+                                :disabled="off.purchase"
+                                @click="addCatalogRow"
+                            >
+                                {{ t('items.editor.catalogAdd') }}
+                            </AButton>
+                        </div>
+                    </div>
                 </ActionGate>
             </section>
 
@@ -1644,6 +1761,35 @@ const win = computed(() => ({
 .ro {
     display: inline-block;
     margin-top: 6px;
+}
+
+/* Each supplier's catalogue number: one row per supplier, its two fields side
+   by side with their own labels, the remove button on the fields' baseline. */
+.ie-catalog {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.ie-catalog > .a-hint {
+    margin-top: -4px;
+}
+
+.ie-catrow {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+@media (max-width: 640px) {
+    .ie-catrow {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .ie-catrow > div:first-child {
+        grid-column: 1 / -1;
+    }
 }
 
 .flags-hint {

@@ -195,6 +195,36 @@ const priceCols = computed(() => [
     { k: 'price', label: t('items.card.priceValue'), nowrap: true },
 ]);
 
+/**
+ * 12.11.2026 — what each supplier calls the item: its own catalogue number
+ * (SAP's `OSCN`), one row per supplier, named by its card. The supplier's
+ * Excel file takes the row of the order's supplier for "מק״ט ספק". A code the
+ * demo holds no card for stays a code.
+ */
+const catalogRows = computed(() =>
+    (props.row?.supplierCatalog || []).map((entry) => {
+        const supplier = dataset.suppliers.find(
+            (one) => one.code === entry.supplierCode,
+        );
+
+        return {
+            id: entry.supplierCode,
+            supplier: supplier ? loc(supplier.name) : entry.supplierCode,
+            code: entry.supplierCode,
+            preferred:
+                entry.supplierCode ===
+                (props.row.suppliers?.preferred ||
+                    props.row.suppliers?.sapCode),
+            catalogNum: entry.catalogNum,
+        };
+    }),
+);
+
+const catalogCols = computed(() => [
+    { k: 'supplier', label: t('items.card.catalogSupplier') },
+    { k: 'catalogNum', label: t('items.card.catalogNum'), nowrap: true },
+]);
+
 /** The item's rows in `OITW`, named by their warehouse. */
 const warehouseRows = computed(() =>
     (props.row ? store.warehouseRowsOf(props.row.sku) : []).map((row) => {
@@ -482,6 +512,45 @@ const categories = computed(() =>
                             ],
                         ]"
                     />
+                </ACard>
+
+                <!-- 12.11.2026 — each supplier's own catalogue number (OSCN),
+                     the supplier-code column of the supplier's Excel file -->
+                <ACard
+                    :title="t('items.card.supplierCatalog')"
+                    icon="tag"
+                    :pad="false"
+                >
+                    <ADataTable
+                        v-if="catalogRows.length"
+                        :cols="catalogCols"
+                        :rows="catalogRows"
+                        row-key="id"
+                    >
+                        <template #cell-supplier="{ row: entry }">
+                            {{ entry.supplier }}
+                            <span class="a-code a-tag">{{ entry.code }}</span>
+                            <AChip
+                                v-if="entry.preferred"
+                                size="sm"
+                                tone="green"
+                                :dot="false"
+                            >
+                                {{ t('items.card.preferredSupplier') }}
+                            </AChip>
+                        </template>
+                        <template #cell-catalogNum="{ row: entry }">
+                            <span class="a-code" dir="ltr">{{
+                                entry.catalogNum
+                            }}</span>
+                        </template>
+                    </ADataTable>
+                    <p v-else class="pad t-sub">
+                        {{ t('items.card.supplierCatalogNone') }}
+                    </p>
+                    <p class="pad t-sub">
+                        {{ t('items.card.supplierCatalogHint') }}
+                    </p>
                 </ACard>
 
                 <!-- the price lists: the item's own ITM1 rows -->

@@ -1248,6 +1248,12 @@ def main():
     counts['products'] = write('products', products)
     counts['boms'] = write('boms', bom_rows)
     counts['priceTiers'] = write('priceTiers', price_tiers(conn))
+    # What each supplier calls an item (`OSCN`) — the "מק״ט ספק" of the
+    # supplier's Excel file. Every row, whether or not its item is in the
+    # sample: the console attaches the ones whose item it holds.
+    counts['supplierCatalog'] = write(
+        'supplierCatalog', purchasing.supplier_catalog(conn, dicts, clean)
+    )
 
     # V3 - inventory planning and purchasing. The consumption history is the
     # pharmacy's own, on the pharmacy's own definition; see CONSUMPTION_SKIP.

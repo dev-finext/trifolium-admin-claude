@@ -712,6 +712,7 @@ export const useItemsStore = defineStore('items', () => {
         ['properties', 'items.card.properties'],
         ['prices', 'items.card.prices'],
         ['warehouses', 'items.card.warehouse'],
+        ['supplierCatalog', 'items.card.supplierCatalog'],
     ];
 
     const at = (record, path) =>
@@ -870,6 +871,24 @@ export const useItemsStore = defineStore('items', () => {
                 // has never filled it.
                 itemName: form.suppliers?.itemName || null,
             },
+            // 12.11.2026 — each supplier's own catalogue number for the item
+            // (SAP's `OSCN`), one row per supplier, read by the supplier's
+            // Excel file for the order's supplier (config/items.js
+            // `supplierCatalogNum`). A row needs both halves, and a supplier
+            // appears once: the editor offers each supplier to one row only,
+            // and a second row for the same one would be a number nobody reads.
+            supplierCatalog: (form.supplierCatalog || [])
+                .map((row) => ({
+                    supplierCode: String(row?.supplierCode || '').trim(),
+                    catalogNum: String(row?.catalogNum || '').trim(),
+                }))
+                .filter((row) => row.supplierCode && row.catalogNum)
+                .filter(
+                    (row, index, all) =>
+                        all.findIndex(
+                            (other) => other.supplierCode === row.supplierCode,
+                        ) === index,
+                ),
             uom: {
                 stock: form.uom?.stock || 'unit',
                 purchase: form.uom?.purchase || 'unit',

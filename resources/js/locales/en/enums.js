@@ -353,6 +353,7 @@ export default {
         buying_close_short: 'Rest of a purchase order closed',
         buying_archive: 'Purchasing sheet removed',
         buying_quote: 'Quote price updated on a purchase order',
+        buying_export_supplier: 'Supplier Excel file exported',
         production_create: 'Production order opened',
         production_issue: 'Production order issued',
         production_due: 'Production order target date changed',

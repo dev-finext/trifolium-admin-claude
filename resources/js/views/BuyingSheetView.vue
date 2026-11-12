@@ -26,8 +26,8 @@
 //   record.
 //
 // Two notes, and they are kept apart on purpose: the working note is the
-// pharmacy's own and never leaves the console; the note for the supplier, on
-// an order, heads the exported sheet.
+// pharmacy's own — on an order it heads the internal file, and it never reaches
+// the supplier's; the note for the supplier, on an order, heads both files.
 //
 // Booking goods in takes over the page body rather than opening over it, and
 // it is an address of its own (`?do=receive`) so it survives a reload.
@@ -38,6 +38,14 @@
 // the rail shows that step only on an order that has a delivery note. A request
 // every line of which moved to an order is "בוצע", read-only, its lines marked
 // with the orders they went to.
+//
+// Also 12.11.2026: an order exports two ways, by two buttons. "ייצוא לאקסל
+// (פנימי)" is the pharmacy's own copy with every field the order holds — the
+// item card's columns, the quote price, each line's note for the supplier, and
+// both notes at the head (config/buying.js `buyingSheet`). "ייצוא לאקסל ספק" is
+// the file that goes to the supplier, in the exact shape of the sample Avichai
+// sent, with only what the supplier needs (config/supplierSheet.js). A request
+// keeps its one button, "ייצוא לאקסל". None of them sends anything.
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
@@ -70,17 +78,20 @@ import {
     lineOutstanding,
     linesEditable,
     missingQty,
+    supplierCatalogNum,
+    supplierSheet,
 } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { num } from '@/lib/money';
-import { downloadXlsx } from '@/lib/xlsx';
+import { downloadStyledXlsx, downloadXlsx } from '@/lib/xlsx';
 import { useBuyingStore } from '@/stores/buying';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
+import { useItemsStore } from '@/stores/items';
 import { useStickersStore } from '@/stores/stickers';
 import { supplierSelectable } from '@/stores/system';
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
 const route = useRoute();
@@ -89,6 +100,7 @@ const dataset = useDatasetStore();
 const store = useBuyingStore();
 const stickers = useStickersStore();
 const inventory = useInventoryStore();
+const items = useItemsStore();
 
 const kind = computed(() =>
     route.params.kind === 'order' ? 'order' : 'request',
@@ -573,6 +585,52 @@ function exportSheet() {
 }
 
 /**
+ * A unit's Hebrew label, whatever the screen's language: the supplier's file
+ * is a Hebrew document, like the sample it copies. The stock screen's short
+ * labels first (יח׳, ק״ג, מ״ל — as SAP writes them), the item card's for the
+ * units they do not cover.
+ */
+function hebrewUnit(uom) {
+    if (!uom) {
+        return '';
+    }
+
+    const key = te(`inventory.unit.${uom}`, 'he')
+        ? `inventory.unit.${uom}`
+        : `items.uom.${uom}`;
+
+    return t(key, {}, { locale: 'he' });
+}
+
+/**
+ * The file that goes to the supplier — config/supplierSheet.js says what is in
+ * it and why. The supplier's own catalogue number is read off the item card
+ * now, for the supplier the order goes to.
+ */
+function exportSupplierSheet() {
+    const one = sheet.value;
+    const file = `${t('buying.order.file')}-${one.number}-${t('buying.supplierFileSuffix')}.xlsx`;
+
+    downloadStyledXlsx(
+        file,
+        supplierSheet(one, {
+            unit: hebrewUnit,
+            catalogNum: (line) =>
+                supplierCatalogNum(items.itemBySku(line.sku), one.supplierCode),
+        }),
+    );
+    store.markExported(one.id, { supplier: true });
+    push({
+        title: t(
+            'buying.exportedSupplier',
+            { n: one.lines.length },
+            one.lines.length,
+        ),
+        body: file,
+    });
+}
+
+/**
  * The receipt just signed, while its batch labels are offered for printing.
  * Held here and not on the receipt screen, which closes the moment the
  * receipt is booked — and with it anything it had open.
@@ -696,7 +754,24 @@ function back() {
                         :title="noLines ? t('buying.blocked.noLines') : ''"
                         @click="exportSheet"
                     >
-                        {{ t('buying.export') }}
+                        {{
+                            kind === 'order'
+                                ? t('buying.exportInternal')
+                                : t('buying.export')
+                        }}
+                    </AButton>
+                    <AButton
+                        v-if="kind === 'order' && !receiving"
+                        icon="download"
+                        :disabled="noLines"
+                        :title="
+                            noLines
+                                ? t('buying.blocked.noLines')
+                                : t('buying.exportSupplierHint')
+                        "
+                        @click="exportSupplierSheet"
+                    >
+                        {{ t('buying.exportSupplier') }}
                     </AButton>
                     <AButton
                         v-for="move in moves"
@@ -789,7 +864,11 @@ function back() {
                                 store.setNote(sheet.id, $event)
                             "
                         />
-                        <small class="a-hint">{{ t('buying.noteHint') }}</small>
+                        <small class="a-hint">{{
+                            kind === 'order'
+                                ? t('buying.noteHintOrder')
+                                : t('buying.noteHint')
+                        }}</small>
                     </label>
                 </div>
 

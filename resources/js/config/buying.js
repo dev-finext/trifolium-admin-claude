@@ -165,8 +165,9 @@ export const allLinesMoved = (list) =>
  * sent (a supplier often confirms prices only once he has the order) and if it
  * failed — until goods arrive for that line: from then on the price that counts
  * is the one on the tax invoice. It opens the price field of an invoice
- * receipt and of an invoice attached later. It is **not** part of the regular
- * Excel export (12.11.2026).
+ * receipt and of an invoice attached later. It is in the internal Excel export
+ * ("ייצוא לאקסל (פנימי)", `BUYING_ORDER_HEAD`) and **never** in the file that
+ * goes to the supplier ("ייצוא לאקסל ספק", config/supplierSheet.js) — 12.11.2026.
  */
 export const quoteEditable = (list, line) =>
     list?.kind === 'order' &&
@@ -421,6 +422,13 @@ export function lineFromItem(item, extra = {}) {
         // An order line: the supplier's price for this order ("הצעת מחיר"),
         // per purchase unit, before VAT — see `quoteEditable`.
         quotePrice: null,
+        // An order line: a note for the supplier about this one line (12.11.2026)
+        // — "רק כצמח - לא אבקה", "מכסה רחב". It is the "הערות לפריט" column of
+        // the supplier's Excel file (config/supplierSheet.js), as SAP's free
+        // text on a purchase order line was. Written while the order's lines
+        // are (`linesEditable`): a draft, or a failed order going out again;
+        // once sent it is part of what was sent. A request has none.
+        supplierNote: null,
         // A request line: the order it moved to — see `lineMoved`.
         movedTo: null,
         // what actually turned up, once the goods are booked in
@@ -486,10 +494,13 @@ export function groupDoneLines(list, nameOf) {
 
 /**
  * The columns a sheet exports, in order. Hebrew headers: this file is read by
- * a person and, for an order, sent to a supplier.
+ * a person. For an order it is the pharmacy's own copy — "ייצוא לאקסל
+ * (פנימי)"; the file that goes to the supplier is a different one, in the shape
+ * the supplier gets (config/supplierSheet.js, 12.11.2026).
  *
  * The same columns for both kinds, because the same decision is made on both.
- * Only the checklist is the request's alone.
+ * Only the checklist is the request's alone, and the order's own two columns
+ * (`BUYING_ORDER_HEAD`) the order's.
  */
 export const BUYING_SHEET_HEAD = [
     'מק״ט',
@@ -521,6 +532,20 @@ export const BUYING_SHEET_HEAD = [
     'כמות',
 ];
 
+/**
+ * An order's own columns in the internal export, after the item card's
+ * (12.11.2026).
+ *
+ * An order is exported two ways. "ייצוא לאקסל (פנימי)" is this file, and it
+ * carries every field the order holds — in Avichai's words, "הפנימי מביא לנו את
+ * כל השדות" — so an order adds what only an order has: the price quoted for
+ * this order, and the note written for the supplier about the line. "ייצוא
+ * לאקסל ספק" is the file that goes to the supplier, in the shape of the sample
+ * Avichai sent, with only what the supplier needs (config/supplierSheet.js). A
+ * request goes to nobody, and its file is as it was.
+ */
+export const BUYING_ORDER_HEAD = ['הצעת מחיר', 'הערות לפריט'];
+
 /** Text that is a clean number becomes one, so Excel can sum the column. */
 const cell = (value) => {
     if (value === null || value === undefined || value === '') {
@@ -551,11 +576,13 @@ export function buyingSheet(list, fmt = {}) {
     const procurement = fmt.procurement || ((id) => id);
     const date = fmt.date || ((iso) => iso);
     const checklist = Boolean(BUYING_KIND[list?.kind]?.checklist);
+    const order = list?.kind === 'order';
     // An order something arrived on carries what arrived and the gap, the
     // same two figures its screen shows, for as long as the order exists.
-    const arrived = list?.kind === 'order' && hasReceipts(list);
+    const arrived = order && hasReceipts(list);
     const head = [
         ...BUYING_SHEET_HEAD,
+        ...(order ? BUYING_ORDER_HEAD : []),
         ...(checklist ? ['בוצע'] : []),
         ...(arrived ? ['התקבל', 'פער'] : []),
     ];
@@ -591,6 +618,13 @@ export function buyingSheet(list, fmt = {}) {
             cell(line.qty),
         ];
 
+        if (order) {
+            // The note stays text even when it is all digits.
+            const note = String(line.supplierNote || '').trim();
+
+            row.push(cell(line.quotePrice), note || null);
+        }
+
         if (checklist) {
             row.push(line.done ? 'בוצע' : null);
         }
@@ -602,11 +636,20 @@ export function buyingSheet(list, fmt = {}) {
         return row;
     });
 
-    // The note for the supplier heads the file, above the table — the one
-    // thing on the sheet written for the person it goes to. The working note
-    // is the pharmacy's own and never leaves the console.
-    const note = String(list?.supplierNote || '').trim();
-    const top = list?.kind === 'order' && note ? [['הערה לספק', note], []] : [];
+    // An order's two notes head the file, above the table: the one written for
+    // the supplier, then the pharmacy's own working note (12.11.2026 — the
+    // internal file carries every field the order holds). The working note
+    // goes no further than this file: the supplier's file carries only the
+    // note written for it. A request's file carries neither, as before.
+    const supplierNote = String(list?.supplierNote || '').trim();
+    const internalNote = String(list?.note || '').trim();
+    const notes = order
+        ? [
+              ...(supplierNote ? [['הערה לספק', supplierNote]] : []),
+              ...(internalNote ? [['הערה פנימית', internalNote]] : []),
+          ]
+        : [];
+    const top = notes.length ? [...notes, []] : [];
 
     return [...top, head, ...body];
 }

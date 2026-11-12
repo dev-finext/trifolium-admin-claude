@@ -12,6 +12,7 @@ import { DEMO_ACTORS } from '@/demo/people';
 import REAL_CATEGORIES from '@/demo/real/categories.json';
 import REAL_INGREDIENTS from '@/demo/real/ingredients.json';
 import REAL_PRODUCTS from '@/demo/real/products.json';
+import REAL_SUPPLIER_CATALOG from '@/demo/real/supplierCatalog.json';
 import { L } from '@/lib/localized';
 
 // ---------------------------------------------------------------- site tree
@@ -344,6 +345,38 @@ export function pickInternalParents(stock) {
 /** Every item SAP holds in this extract, ingredients and finished goods alike. */
 const REAL_ITEMS = [...REAL_INGREDIENTS, ...REAL_PRODUCTS];
 
+/**
+ * What each supplier calls an item — its own catalogue number, SAP's `OSCN`,
+ * by item code (12.11.2026).
+ *
+ * The supplier's Excel file reads it for its "מק״ט ספק" column, taking the row
+ * of the order's supplier (config/items.js `supplierCatalogNum`). One number per
+ * supplier: SAP holds two for one pair — 150040 at שיפון, CM4/30ML marked
+ * default and CMS2/50ML — and the extract lists the default first, so the first
+ * row met for a supplier is the one kept. A supplier code SAP names here and the
+ * demo holds no card for (950092, on one item) stays a code: it is a real
+ * supplier, and attaching its number to another card would send one supplier
+ * another's catalogue number.
+ */
+const SUPPLIER_CATALOG = (() => {
+    const byItem = new Map();
+
+    for (const row of REAL_SUPPLIER_CATALOG) {
+        const list = byItem.get(row.code) || [];
+
+        if (!list.some((one) => one.supplierCode === row.supplierCode)) {
+            list.push({
+                supplierCode: row.supplierCode,
+                catalogNum: row.catalogNum,
+            });
+        }
+
+        byItem.set(row.code, list);
+    }
+
+    return byItem;
+})();
+
 /** SAP's three restriction values → the card's levels. */
 const SAP_LIMIT = {
     None: 'none',
@@ -519,6 +552,13 @@ function itemOf(real, supplierByCode) {
             // and has never filled one of its 130 rows.
             itemName: null,
         },
+        // 12.11.2026 — each supplier's own catalogue number for the item
+        // (`OSCN`), one row per supplier: `{ supplierCode, catalogNum }`. Its
+        // own table in the database (`item_supplier_catalog`), which is why it
+        // sits at the top of the record and not inside `suppliers`.
+        supplierCatalog: (SUPPLIER_CATALOG.get(real.code) || []).map((row) => ({
+            ...row,
+        })),
         uom: {
             stock: stockUom,
             purchase: purchaseUom,

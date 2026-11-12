@@ -248,6 +248,47 @@ export const EXTRACTION_RATIOS = [
 export const BOM_RULES = { maxComponents: 40 };
 
 /**
+ * The item's catalogue number at one supplier — what that supplier calls it.
+ *
+ * 12.11.2026, for the supplier's Excel file, whose "מק״ט ספק" column is this
+ * number for the order's supplier (config/supplierSheet.js). Two places hold
+ * one, and they are asked in this order:
+ *
+ *   1. the item's per-supplier list, `supplierCatalog` — SAP's `OSCN`, one
+ *      number per supplier, edited on the item card under "מק״ט אצל ספקים".
+ *      This is where SAP itself takes the number it writes onto a purchase
+ *      order line (`POR1.SubCatNum`): all 428 order lines of the last two
+ *      years that carried one;
+ *   2. the card's single "מק״ט אצל הספק" (`suppliers.catalogNum`,
+ *      `OITM.SuppCatNum`) — but only when the supplier asked about is the
+ *      item's preferred one, the supplier that field stands beside on the card.
+ *      A number one supplier gave must never reach another.
+ *
+ * Null when neither holds — the column is then left empty, as the sample file
+ * left it.
+ */
+export function supplierCatalogNum(item, supplierCode) {
+    if (!item || !supplierCode) {
+        return null;
+    }
+
+    const own = (item.supplierCatalog || []).find(
+        (row) => row.supplierCode === supplierCode,
+    );
+
+    if (own?.catalogNum) {
+        return own.catalogNum;
+    }
+
+    const preferred =
+        item.suppliers?.preferred || item.suppliers?.sapCode || null;
+
+    return preferred === supplierCode
+        ? item.suppliers?.catalogNum || null
+        : null;
+}
+
+/**
  * What one purchase-order line still has to deliver, in the item's stock unit.
  *
  * The sheet counts in the purchase unit and SAP's `OnOrder` counts in the stock

@@ -286,6 +286,39 @@ def _with_lines(conn, dicts, clean, heads, table, base=False):
     return heads
 
 
+# ------------------------------------------------- supplier catalogue numbers
+def supplier_catalog(conn, dicts, clean):
+    """`OSCN`: what each supplier calls an item — its own catalogue number.
+
+    Read for the supplier's Excel file (12.11.2026), whose "מק״ט ספק" column is
+    this number for the order's supplier. SAP fills it onto a purchase order
+    line (`POR1.SubCatNum`) from here, by the order's supplier: in the two years
+    to the backup 428 order lines carried one, and every one of them came from
+    this table — none from the item card's own `OITM.SuppCatNum`, which is a
+    single number per item, filled on 141 items, and never reached an order.
+    Order 2600160, the one the sample file was made from, carries 22046/500ML
+    for 150043 and 90/50ML for 150044 from here.
+
+    130 rows, 129 item–supplier pairs, 11 suppliers. One pair holds two numbers
+    (150040 at 950002: CM4/30ML, marked `IsDefault`, and CMS2/50ML); every row
+    is read as it is, with the flag, and the console keeps the default one —
+    one number per supplier is what an order line can carry. `Descriptio`, the
+    supplier's name for the item, is empty on every row and is not read.
+    """
+    return [
+        clean(row)
+        for row in dicts(
+            conn,
+            """
+            SELECT ItemCode AS code, CardCode AS supplierCode,
+                   Substitute AS catalogNum, IsDefault AS isDefault
+            FROM OSCN
+            ORDER BY ItemCode, CardCode, IsDefault DESC, Substitute
+            """,
+        )
+    ]
+
+
 # ----------------------------------------------------------------------- stock
 def warehouse_stock(conn, dicts, clean, codes):
     """`OITW`: the shelf, warehouse by warehouse.

@@ -62,6 +62,9 @@ export const LOG_ACTION_IDS = [
     'buying_archive',
     // 12.11.2026 — the order's own price for a line ("הצעת מחיר")
     'buying_quote',
+    // 12.11.2026 — the order's file for the supplier ("ייצוא לאקסל ספק"),
+    // logged apart from the internal export (`buying_export`)
+    'buying_export_supplier',
     'production_create',
     'production_issue',
     'production_due',

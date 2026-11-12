@@ -497,6 +497,28 @@ export const useBuyingStore = defineStore('buying', () => {
     }
 
     /**
+     * The note for the supplier on one order line (12.11.2026) — "רק כצמח -
+     * לא אבקה", "מכסה רחב" — the "הערות לפריט" column of the supplier's Excel
+     * file (config/supplierSheet.js), as SAP's free text on an order line was.
+     * Open while the order's lines are, like the order's own note for the
+     * supplier: once the order is sent the note is part of what was sent.
+     */
+    function setLineSupplierNote(id, key, note) {
+        const list = listById(id);
+        const line = lineOf(list, key);
+
+        if (!line || list.kind !== 'order' || !linesEditable(list)) {
+            return null;
+        }
+
+        const next = String(note || '');
+
+        line.supplierNote = next.trim() ? next : null;
+
+        return save(list);
+    }
+
+    /**
      * May this sheet be taken off the lists? Only one nothing happened to: a
      * draft order, or an open request none of whose lines moved to an order —
      * a moved line is the record of an order, and the order points back at it.
@@ -576,15 +598,24 @@ export const useBuyingStore = defineStore('buying', () => {
      * Exporting used to be what sent a draft order; it no longer is. A buyer
      * takes a copy to work from at any stage, draft included, without that
      * stage changing — sending is its own, deliberate move (`buying.move.sent`).
+     *
+     * An order has two exports since 12.11.2026, logged apart: the internal
+     * file ("ייצוא לאקסל (פנימי)", `buying_export`) and the supplier's file
+     * ("ייצוא לאקסל ספק", `buying_export_supplier`, config/supplierSheet.js).
+     * Neither sends the order.
      */
-    function markExported(id) {
+    function markExported(id, { supplier = false } = {}) {
         const list = listById(id);
 
         if (!list) {
             return null;
         }
 
-        writeLog({ act: 'buying_export', ent: list.id, to: list.number });
+        writeLog({
+            act: supplier ? 'buying_export_supplier' : 'buying_export',
+            ent: list.id,
+            to: list.number,
+        });
 
         return save(list);
     }
@@ -986,6 +1017,7 @@ export const useBuyingStore = defineStore('buying', () => {
         setSupplier,
         setNote,
         setSupplierNote,
+        setLineSupplierNote,
         removable,
         removeList,
         setState,

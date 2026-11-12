@@ -352,6 +352,7 @@ export default {
         buying_close_short: 'סגירת יתרה בהזמנת רכש',
         buying_archive: 'הסרת גיליון רכש',
         buying_quote: 'עדכון הצעת מחיר בהזמנת רכש',
+        buying_export_supplier: 'ייצוא קובץ אקסל לספק',
         production_create: 'פתיחת הוראת ייצור',
         production_issue: 'הוצאת הוראת ייצור',
         production_due: 'שינוי תאריך יעד של הוראת ייצור',

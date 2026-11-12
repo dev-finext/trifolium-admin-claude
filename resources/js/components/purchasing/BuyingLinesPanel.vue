@@ -24,7 +24,11 @@
 //   a draft, sent or failed, until goods arrive for the line
 //   (config/buying.js `quoteEditable`); committed when the field is left, not
 //   on every keystroke, because each change is logged. It opens the price of
-//   a tax-invoice receipt and of an invoice attached later. Not exported.
+//   a tax-invoice receipt and of an invoice attached later. In the internal
+//   export, never in the supplier's file.
+//
+//   On an order line, its note for the supplier, under the item's name — the
+//   "הערות לפריט" of the supplier's file, written in the line's drawer.
 //
 //   A request line that moved to an order stays on the request, read-only,
 //   ticked, with the order it went to in place of its checkbox — a link when
@@ -378,6 +382,16 @@ const openLine = computed(
                 >
                     {{ row.foreignName }}
                 </div>
+                <div
+                    v-if="list.kind === 'order' && row.supplierNote"
+                    class="bl-snote"
+                >
+                    {{
+                        t('buying.lineSupplierNoteShort', {
+                            note: row.supplierNote,
+                        })
+                    }}
+                </div>
             </template>
             <template #cell-uom="{ row }">{{ unit(row.uom) }}</template>
             <template #cell-available="{ row }">
@@ -605,6 +619,14 @@ const openLine = computed(
 .bl-cn {
     font-size: 12px;
     color: var(--a-ink-4);
+}
+
+/* The line's note for the supplier — what the supplier's file carries for it. */
+.bl-snote {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--a-ink-3);
+    white-space: pre-line;
 }
 
 .bl-ok {

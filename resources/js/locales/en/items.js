@@ -334,6 +334,12 @@ export default {
         minLevel: 'Minimum stock',
         maxLevel: 'Maximum stock',
         catalogNum: 'Vendor catalogue no.',
+        // What each supplier calls the item — SAP's OSCN (12.11.2026)
+        supplierCatalog: 'Supplier catalogue numbers',
+        supplierCatalogNone: 'No supplier holds a catalogue number for it',
+        supplierCatalogHint:
+            'What each supplier calls the item. A purchase order’s file for the supplier takes the number of the order’s supplier.',
+        catalogSupplier: 'Supplier',
         barcode: 'Barcode',
         packageSize: 'Package size',
         alcoholPct: 'Alcohol %',
@@ -512,6 +518,13 @@ export default {
             'The four flags decide what the rest of the card is for: an item nobody sells has no price and no site, one nobody buys has no vendor, and one nobody stocks has no levels and no batches.',
         supplierItemNameHint:
             'What the vendor calls it on their own paperwork · optional',
+        supplierCatalogHint:
+            'One number per supplier. A row missing the supplier or the number is not saved.',
+        catalogSupplier: 'Supplier',
+        catalogNumAt: 'Their catalogue no.',
+        catalogPickSupplier: 'Choose a supplier…',
+        catalogAdd: 'Add a supplier catalogue number',
+        catalogRemove: 'Remove the row',
         internalNotesHint:
             'For the office only · never printed, never shown on the site · SAP has no equivalent',
     },

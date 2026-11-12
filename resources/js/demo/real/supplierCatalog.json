@@ -1,0 +1,782 @@
+[
+ {
+  "code": "100023",
+  "supplierCode": "950001",
+  "catalogNum": "810262",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100036",
+  "supplierCode": "950001",
+  "catalogNum": "810280",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100046",
+  "supplierCode": "950001",
+  "catalogNum": "810056",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100057",
+  "supplierCode": "950001",
+  "catalogNum": "810620",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100060",
+  "supplierCode": "950001",
+  "catalogNum": "612061",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100062",
+  "supplierCode": "950001",
+  "catalogNum": "612009",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100067",
+  "supplierCode": "950001",
+  "catalogNum": "810621",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100080",
+  "supplierCode": "950001",
+  "catalogNum": "810359",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100083",
+  "supplierCode": "950001",
+  "catalogNum": "310767",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100090",
+  "supplierCode": "950001",
+  "catalogNum": "210942",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100106",
+  "supplierCode": "950001",
+  "catalogNum": "211049",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100114",
+  "supplierCode": "950001",
+  "catalogNum": "810907",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100118",
+  "supplierCode": "950001",
+  "catalogNum": "612030",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100119",
+  "supplierCode": "950001",
+  "catalogNum": "612180",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100133",
+  "supplierCode": "950001",
+  "catalogNum": "810299",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100135",
+  "supplierCode": "950001",
+  "catalogNum": "810301",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100145",
+  "supplierCode": "950001",
+  "catalogNum": "810053",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100153",
+  "supplierCode": "950001",
+  "catalogNum": "810071",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100156",
+  "supplierCode": "950001",
+  "catalogNum": "810142",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100167",
+  "supplierCode": "950001",
+  "catalogNum": "612086",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100180",
+  "supplierCode": "950001",
+  "catalogNum": "810774",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100189",
+  "supplierCode": "950001",
+  "catalogNum": "810130",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100201",
+  "supplierCode": "950001",
+  "catalogNum": "210110",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100210",
+  "supplierCode": "950001",
+  "catalogNum": "810091",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100221",
+  "supplierCode": "950001",
+  "catalogNum": "810198",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100234",
+  "supplierCode": "950001",
+  "catalogNum": "810844",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100248",
+  "supplierCode": "950001",
+  "catalogNum": "210913",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100267",
+  "supplierCode": "950001",
+  "catalogNum": "610022",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100269",
+  "supplierCode": "950001",
+  "catalogNum": "310197",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100284",
+  "supplierCode": "950001",
+  "catalogNum": "810682",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100326",
+  "supplierCode": "950001",
+  "catalogNum": "810852",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100338",
+  "supplierCode": "950001",
+  "catalogNum": "810046",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100339",
+  "supplierCode": "950001",
+  "catalogNum": "612012",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100347",
+  "supplierCode": "950001",
+  "catalogNum": "210207",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100348",
+  "supplierCode": "950001",
+  "catalogNum": "210209",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100363",
+  "supplierCode": "950001",
+  "catalogNum": "612040",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100366",
+  "supplierCode": "950001",
+  "catalogNum": "612115",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100386",
+  "supplierCode": "950001",
+  "catalogNum": "612025",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100390",
+  "supplierCode": "950001",
+  "catalogNum": "612283",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100406",
+  "supplierCode": "950001",
+  "catalogNum": "810282",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100423",
+  "supplierCode": "950001",
+  "catalogNum": "810379",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100430",
+  "supplierCode": "950001",
+  "catalogNum": "810057",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100440",
+  "supplierCode": "950001",
+  "catalogNum": "810223",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100446",
+  "supplierCode": "950001",
+  "catalogNum": "612169",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100453",
+  "supplierCode": "950001",
+  "catalogNum": "210967",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100456",
+  "supplierCode": "950001",
+  "catalogNum": "612007",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100462",
+  "supplierCode": "950001",
+  "catalogNum": "810466",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100466",
+  "supplierCode": "950001",
+  "catalogNum": "810135",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100473",
+  "supplierCode": "950001",
+  "catalogNum": "810559",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100503",
+  "supplierCode": "950001",
+  "catalogNum": "810170",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100506",
+  "supplierCode": "950001",
+  "catalogNum": "612392 sheng",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100565",
+  "supplierCode": "950001",
+  "catalogNum": "210910",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100574",
+  "supplierCode": "950001",
+  "catalogNum": "810573",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100584",
+  "supplierCode": "950001",
+  "catalogNum": "210162",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100602",
+  "supplierCode": "950001",
+  "catalogNum": "310503",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100630",
+  "supplierCode": "950001",
+  "catalogNum": "612392 shu",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100647",
+  "supplierCode": "950001",
+  "catalogNum": "310898",
+  "isDefault": "Y"
+ },
+ {
+  "code": "100687",
+  "supplierCode": "950001",
+  "catalogNum": "610725",
+  "isDefault": "Y"
+ },
+ {
+  "code": "110140",
+  "supplierCode": "950001",
+  "catalogNum": "810071",
+  "isDefault": "Y"
+ },
+ {
+  "code": "120020",
+  "supplierCode": "950001",
+  "catalogNum": "922294",
+  "isDefault": "Y"
+ },
+ {
+  "code": "120218",
+  "supplierCode": "950001",
+  "catalogNum": "922346",
+  "isDefault": "Y"
+ },
+ {
+  "code": "120219",
+  "supplierCode": "950001",
+  "catalogNum": "922297",
+  "isDefault": "Y"
+ },
+ {
+  "code": "120255",
+  "supplierCode": "950001",
+  "catalogNum": "513081",
+  "isDefault": "Y"
+ },
+ {
+  "code": "120268",
+  "supplierCode": "950001",
+  "catalogNum": "513116",
+  "isDefault": "Y"
+ },
+ {
+  "code": "130025",
+  "supplierCode": "950001",
+  "catalogNum": "513071",
+  "isDefault": "Y"
+ },
+ {
+  "code": "130031",
+  "supplierCode": "950001",
+  "catalogNum": "513171",
+  "isDefault": "Y"
+ },
+ {
+  "code": "130035",
+  "supplierCode": "950001",
+  "catalogNum": "513076",
+  "isDefault": "Y"
+ },
+ {
+  "code": "130036",
+  "supplierCode": "950001",
+  "catalogNum": "513120",
+  "isDefault": "Y"
+ },
+ {
+  "code": "130038",
+  "supplierCode": "950001",
+  "catalogNum": "513268",
+  "isDefault": "Y"
+ },
+ {
+  "code": "130046",
+  "supplierCode": "950001",
+  "catalogNum": "513025",
+  "isDefault": "Y"
+ },
+ {
+  "code": "130049",
+  "supplierCode": "950001",
+  "catalogNum": "513137",
+  "isDefault": "Y"
+ },
+ {
+  "code": "130053",
+  "supplierCode": "950001",
+  "catalogNum": "513211",
+  "isDefault": "Y"
+ },
+ {
+  "code": "130057",
+  "supplierCode": "950001",
+  "catalogNum": "513106",
+  "isDefault": "Y"
+ },
+ {
+  "code": "130077",
+  "supplierCode": "950001",
+  "catalogNum": "813117",
+  "isDefault": "Y"
+ },
+ {
+  "code": "130082",
+  "supplierCode": "950148",
+  "catalogNum": "4401151",
+  "isDefault": "Y"
+ },
+ {
+  "code": "150009",
+  "supplierCode": "950002",
+  "catalogNum": "EC7/100ML",
+  "isDefault": "Y"
+ },
+ {
+  "code": "150040",
+  "supplierCode": "950002",
+  "catalogNum": "CM4/30ML",
+  "isDefault": "Y"
+ },
+ {
+  "code": "150040",
+  "supplierCode": "950002",
+  "catalogNum": "CMS2/50ML",
+  "isDefault": "N"
+ },
+ {
+  "code": "150043",
+  "supplierCode": "950002",
+  "catalogNum": "22046/500ML",
+  "isDefault": "Y"
+ },
+ {
+  "code": "150044",
+  "supplierCode": "950002",
+  "catalogNum": "90/50ML",
+  "isDefault": "Y"
+ },
+ {
+  "code": "150049",
+  "supplierCode": "950002",
+  "catalogNum": "MR4/100ML",
+  "isDefault": "Y"
+ },
+ {
+  "code": "150050",
+  "supplierCode": "950002",
+  "catalogNum": "MP1/500ML",
+  "isDefault": "Y"
+ },
+ {
+  "code": "150053",
+  "supplierCode": "950002",
+  "catalogNum": "TVT2/100ML",
+  "isDefault": "Y"
+ },
+ {
+  "code": "150065",
+  "supplierCode": "950002",
+  "catalogNum": "CS1/250ML",
+  "isDefault": "Y"
+ },
+ {
+  "code": "150067",
+  "supplierCode": "950002",
+  "catalogNum": "OM1/100ML",
+  "isDefault": "Y"
+ },
+ {
+  "code": "150068",
+  "supplierCode": "950002",
+  "catalogNum": "22068/100ML",
+  "isDefault": "Y"
+ },
+ {
+  "code": "160036",
+  "supplierCode": "950280",
+  "catalogNum": "coenzyme Q10",
+  "isDefault": "Y"
+ },
+ {
+  "code": "270061",
+  "supplierCode": "109273",
+  "catalogNum": "קופטרין",
+  "isDefault": "Y"
+ },
+ {
+  "code": "270062",
+  "supplierCode": "109273",
+  "catalogNum": "סקוליגריס",
+  "isDefault": "Y"
+ },
+ {
+  "code": "270063",
+  "supplierCode": "109273",
+  "catalogNum": "גליסיאם",
+  "isDefault": "Y"
+ },
+ {
+  "code": "300008",
+  "supplierCode": "950248",
+  "catalogNum": "סירופ חרובים",
+  "isDefault": "Y"
+ },
+ {
+  "code": "300010",
+  "supplierCode": "950214",
+  "catalogNum": "vc0#TT",
+  "isDefault": "Y"
+ },
+ {
+  "code": "300012",
+  "supplierCode": "950002",
+  "catalogNum": "ABC/900GR",
+  "isDefault": "Y"
+ },
+ {
+  "code": "300014",
+  "supplierCode": "950269",
+  "catalogNum": "מולסה שחורה נטול גופרית ניצת הדובדבן",
+  "isDefault": "Y"
+ },
+ {
+  "code": "300015",
+  "supplierCode": "950002",
+  "catalogNum": "BPUR2/950GR",
+  "isDefault": "Y"
+ },
+ {
+  "code": "300016",
+  "supplierCode": "950002",
+  "catalogNum": "ThCacaoORG",
+  "isDefault": "Y"
+ },
+ {
+  "code": "300018",
+  "supplierCode": "950002",
+  "catalogNum": "BASEGEL/5KG",
+  "isDefault": "Y"
+ },
+ {
+  "code": "400030",
+  "supplierCode": "950047",
+  "catalogNum": "בקבוק זכוכית 30 מ\"ל חום פיה 18",
+  "isDefault": "Y"
+ },
+ {
+  "code": "400050",
+  "supplierCode": "950047",
+  "catalogNum": "בקבוק זכוכית 50 מ\"ל חום פיה 18",
+  "isDefault": "Y"
+ },
+ {
+  "code": "400100",
+  "supplierCode": "950047",
+  "catalogNum": "בקבוק זכוכית 100 מ\"ל חום פיה 18",
+  "isDefault": "Y"
+ },
+ {
+  "code": "401000",
+  "supplierCode": "950047",
+  "catalogNum": "בקבוק זכוכית 1000 מ\"ל חום פיה 28",
+  "isDefault": "Y"
+ },
+ {
+  "code": "410125",
+  "supplierCode": "950047",
+  "catalogNum": "בקבוק פלסטיק 125 מ\"ל PET HEIS",
+  "isDefault": "Y"
+ },
+ {
+  "code": "410200",
+  "supplierCode": "950047",
+  "catalogNum": "בקבוק פלסטיק 200 מ\"ל PET",
+  "isDefault": "Y"
+ },
+ {
+  "code": "410250",
+  "supplierCode": "950047",
+  "catalogNum": "בקבוק פלסטיק 250 מ\"ל PET",
+  "isDefault": "Y"
+ },
+ {
+  "code": "410500",
+  "supplierCode": "950047",
+  "catalogNum": "בקבוק פט עגול מצולע חום 500 מל פיה 28 בר",
+  "isDefault": "Y"
+ },
+ {
+  "code": "410550",
+  "supplierCode": "950047",
+  "catalogNum": "בקבוק פט עגול חום 1 ליטר פיה 28 בר",
+  "isDefault": "Y"
+ },
+ {
+  "code": "411005",
+  "supplierCode": "950047",
+  "catalogNum": "ג'ריקן 5 ליטר לבן פס שקוף",
+  "isDefault": "Y"
+ },
+ {
+  "code": "411010",
+  "supplierCode": "950047",
+  "catalogNum": "ג'ריקן 10 ליטר לבן עם פס שקוף",
+  "isDefault": "Y"
+ },
+ {
+  "code": "421802",
+  "supplierCode": "950047",
+  "catalogNum": "פקק 18+שומרן לבן טפי פנימי איטי0.8",
+  "isDefault": "Y"
+ },
+ {
+  "code": "421803",
+  "supplierCode": "950047",
+  "catalogNum": "מתז 18/410 לבן עם סרט קריעה",
+  "isDefault": "Y"
+ },
+ {
+  "code": "421806",
+  "supplierCode": "950047",
+  "catalogNum": "זלף 100 מל לבן גרמני",
+  "isDefault": "Y"
+ },
+ {
+  "code": "421807",
+  "supplierCode": "950047",
+  "catalogNum": "מזלף 50 מל לבן גרמני",
+  "isDefault": "Y"
+ },
+ {
+  "code": "421808",
+  "supplierCode": "950047",
+  "catalogNum": "מזלף 30 מל לבן גרמני",
+  "isDefault": "Y"
+ },
+ {
+  "code": "422805",
+  "supplierCode": "950047",
+  "catalogNum": "פקק 28 מ\"מ ברמיולי + לבן",
+  "isDefault": "Y"
+ },
+ {
+  "code": "422807",
+  "supplierCode": "950047",
+  "catalogNum": "פיפטה פסטר 1 מ\"ל",
+  "isDefault": "Y"
+ },
+ {
+  "code": "460300",
+  "supplierCode": "950047",
+  "catalogNum": "צנצנת זכוכית פרוסט 30 מ\"\"ל",
+  "isDefault": "Y"
+ },
+ {
+  "code": "460301",
+  "supplierCode": "950047",
+  "catalogNum": "צנצנת זכוכית פרוסט 50 מ\"\"ל",
+  "isDefault": "Y"
+ },
+ {
+  "code": "460302",
+  "supplierCode": "950047",
+  "catalogNum": "צנצנת זכוכית פרוסט 100 מ\"ל",
+  "isDefault": "Y"
+ },
+ {
+  "code": "470150",
+  "supplierCode": "950047",
+  "catalogNum": "צנצנת פט 150/38 חומה + מכסה לינר לבן",
+  "isDefault": "Y"
+ },
+ {
+  "code": "470210",
+  "supplierCode": "950047",
+  "catalogNum": "צנצנת פלסטיק 250 מ\"ל PET חומה + מכסה לינר לבן",
+  "isDefault": "Y"
+ },
+ {
+  "code": "470250",
+  "supplierCode": "950047",
+  "catalogNum": "ביטחונית 1000 מ\"ל לבנה+ מכסה",
+  "isDefault": "Y"
+ },
+ {
+  "code": "470251",
+  "supplierCode": "950047",
+  "catalogNum": "ביטחונית 500 מ\"ל לבנה+ מכסה",
+  "isDefault": "Y"
+ },
+ {
+  "code": "470252",
+  "supplierCode": "950047",
+  "catalogNum": "צנצנת פלסטיק ביטחונית לבנה  250 מ\"ל",
+  "isDefault": "Y"
+ },
+ {
+  "code": "478003",
+  "supplierCode": "950047",
+  "catalogNum": "053410202800",
+  "isDefault": "Y"
+ },
+ {
+  "code": "478003",
+  "supplierCode": "950092",
+  "catalogNum": "053400202800",
+  "isDefault": "Y"
+ },
+ {
+  "code": "478014",
+  "supplierCode": "950047",
+  "catalogNum": "כפיות מידה 2.5-5 מ\"ל",
+  "isDefault": "Y"
+ },
+ {
+  "code": "479110",
+  "supplierCode": "950046",
+  "catalogNum": "POLZ00008",
+  "isDefault": "Y"
+ },
+ {
+  "code": "479111",
+  "supplierCode": "950046",
+  "catalogNum": "POLZ00011",
+  "isDefault": "Y"
+ },
+ {
+  "code": "479112",
+  "supplierCode": "950046",
+  "catalogNum": "POLZ00016",
+  "isDefault": "Y"
+ },
+ {
+  "code": "479113",
+  "supplierCode": "950046",
+  "catalogNum": "POLZ00020",
+  "isDefault": "Y"
+ }
+]

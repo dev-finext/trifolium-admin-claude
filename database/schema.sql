@@ -117,6 +117,16 @@ CREATE TABLE items (
     doc          jsonb NOT NULL,
     updated_at   timestamptz NOT NULL DEFAULT now()
 );
+CREATE TABLE item_supplier_catalog (
+    id           bigserial PRIMARY KEY,
+    parent_id    text NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    line_no      integer NOT NULL,
+    supplier_code text,
+    catalog_num  text,
+    doc          jsonb NOT NULL,
+    UNIQUE (parent_id, line_no)
+);
+CREATE INDEX ON item_supplier_catalog (parent_id);
 
 CREATE TABLE products (
     id           text PRIMARY KEY,

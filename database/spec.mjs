@@ -155,6 +155,23 @@ export const TABLES = [
             col('purchasable', 'boolean', 'flags.purchase'),
             col('sellable', 'boolean', 'flags.sales'),
         ],
+        // 12.11.2026 — what each supplier calls the item: its own catalogue
+        // number, one row per supplier, as SAP keeps it in `OSCN`. The
+        // supplier's Excel file takes the row of the order's supplier for its
+        // "מק״ט ספק" column (config/items.js `supplierCatalogNum`). Item ×
+        // supplier, so a table of its own; the card's single "מק״ט אצל הספק"
+        // (`OITM.SuppCatNum`, `suppliers.catalogNum` in `doc`) is a different
+        // SAP field and stays on the item. In production `supplier_code`
+        // references `suppliers`; the demo declares no key because SAP names a
+        // supplier here (950092) that the demo's sample of suppliers lacks.
+        lines: {
+            field: 'supplierCatalog',
+            name: 'item_supplier_catalog',
+            columns: [
+                col('supplier_code', 'text', 'supplierCode'),
+                col('catalog_num', 'text', 'catalogNum'),
+            ],
+        },
     },
     {
         name: 'products',
@@ -601,7 +618,7 @@ export const SETTINGS_KEY = 'settings';
  * **Bump this whenever a record's fields change.** The date plus a serial is
  * enough; nothing parses it, it only has to differ.
  */
-export const DATA_VERSION = '2026-11-12.4';
+export const DATA_VERSION = '2026-11-12.5';
 
 /** The settings row that carries it. */
 export const DATA_VERSION_KEY = 'data:version';

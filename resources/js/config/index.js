@@ -28,4 +28,5 @@ export * from '@/config/statuses';
 export * from '@/config/stockAnalysis';
 export * from '@/config/stickers';
 export * from '@/config/supplierDocs';
+export * from '@/config/supplierSheet';
 export * from '@/config/suppliers';

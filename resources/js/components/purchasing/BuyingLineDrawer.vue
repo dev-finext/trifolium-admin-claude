@@ -10,6 +10,11 @@
 // item card says now. A list written in March and read in May has to say what
 // the shelf held in March or it is a different document from the one that was
 // written; the link at the foot goes to the live card for whatever is current.
+//
+// One thing here is written, not read (12.11.2026): on an order, the line's
+// note for the supplier — the "הערות לפריט" column of the supplier's Excel file
+// (config/supplierSheet.js). It is open while the order's lines are, like the
+// order's own note for the supplier, and read-only once the order is sent.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -19,8 +24,11 @@ import ACard from '@/components/ui/ACard.vue';
 import AChip from '@/components/ui/AChip.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import AKeyValue from '@/components/ui/AKeyValue.vue';
+import ATextarea from '@/components/ui/ATextarea.vue';
+import { linesEditable } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { ils, num } from '@/lib/money';
+import { useBuyingStore } from '@/stores/buying';
 
 const props = defineProps({
     /** The line, or null while the drawer is closed. */
@@ -33,6 +41,12 @@ const emit = defineEmits(['close']);
 
 const { t } = useI18n();
 const router = useRouter();
+const store = useBuyingStore();
+
+/** An order line's note for the supplier is written while its lines are. */
+const noteEditable = computed(
+    () => props.list?.kind === 'order' && linesEditable(props.list),
+);
 
 const unit = (uom) => (uom ? t(`inventory.unit.${uom}`) : '—');
 
@@ -158,6 +172,11 @@ const working = computed(() => {
         ]);
     }
 
+    // Once the order is sent its note for the supplier is read, not written.
+    if (props.list?.kind === 'order' && !noteEditable.value) {
+        rows.push([t('buying.lineSupplierNote'), text(line.supplierNote)]);
+    }
+
     return rows;
 });
 
@@ -181,6 +200,27 @@ function openItem() {
             <div class="ld-grid">
                 <ACard :title="t('buying.group.working')" icon="edit">
                     <AKeyValue :rows="working" />
+                    <label v-if="noteEditable" class="a-field ld-note">
+                        <span>{{ t('buying.lineSupplierNote') }}</span>
+                        <ATextarea
+                            :model-value="line.supplierNote || ''"
+                            :rows="2"
+                            class="a-w100"
+                            :placeholder="
+                                t('buying.lineSupplierNotePlaceholder')
+                            "
+                            @update:model-value="
+                                store.setLineSupplierNote(
+                                    list.id,
+                                    line.key,
+                                    $event,
+                                )
+                            "
+                        />
+                        <small class="a-hint">{{
+                            t('buying.lineSupplierNoteHint')
+                        }}</small>
+                    </label>
                 </ACard>
 
                 <ACard :title="t('buying.group.identity')" icon="tag">
@@ -256,5 +296,10 @@ function openItem() {
 
 .ld-foot .a-hint {
     margin: 0;
+}
+
+.ld-note {
+    display: block;
+    margin-top: 14px;
 }
 </style>
