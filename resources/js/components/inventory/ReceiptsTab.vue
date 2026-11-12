@@ -251,7 +251,14 @@ const { paged, total } = usePaged(sorted, view);
             <template #cell-supplier="{ row }">
                 <div class="t-strong">{{ loc(row.supplier) }}</div>
                 <div class="t-sub">
-                    {{ t('inventory.receipts.docNum', { n: row.docNum }) }}
+                    {{
+                        t(
+                            row.docType === 'tax_invoice'
+                                ? 'inventory.receipts.invoiceNum'
+                                : 'inventory.receipts.docNum',
+                            { n: row.docNum },
+                        )
+                    }}
                 </div>
             </template>
             <template #cell-lines="{ row }">

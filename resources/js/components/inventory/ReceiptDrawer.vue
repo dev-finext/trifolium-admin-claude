@@ -1,6 +1,13 @@
 <script setup>
 // One goods receipt: what arrived, on which delivery note, and which batches it
 // opened. Each line is a batch, so every row here is a link into the trace.
+//
+// 12.11.2026: a receipt is a supplier document (config/supplierDocs.js), and the
+// head says which — "תעודת משלוח" or "חשבונית מס" — the number the supplier
+// printed on it, and where it stands: an open note waiting for its invoice, or
+// the invoice that billed it. A general line ("פריט כללי") has no item and no
+// batch; a line of an item that is not batch-managed has no batch. The scans of
+// the document are at the foot, and more can be added there.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -10,11 +17,14 @@ import AChip from '@/components/ui/AChip.vue';
 import ADataTable from '@/components/ui/ADataTable.vue';
 import ADrawer from '@/components/ui/ADrawer.vue';
 import ANum from '@/components/ui/ANum.vue';
+import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { CURRENCY_SYMBOL } from '@/config';
+import { CURRENCY_SYMBOL, docRef, isOpenNote } from '@/config';
 import { fmtISO } from '@/lib/dates';
 import { num } from '@/lib/money';
+import { useBuyingStore } from '@/stores/buying';
 import { useInventoryStore } from '@/stores/inventory';
+import { usePurchasingStore } from '@/stores/purchasing';
 
 const props = defineProps({
     /** The receipt to show, or null while the drawer is closed. */
@@ -41,6 +51,42 @@ const emit = defineEmits(['close', 'open-batch']);
 const { t } = useI18n();
 const { loc } = useLocalized();
 const inventory = useInventoryStore();
+const purchasing = usePurchasingStore();
+const buying = useBuyingStore();
+
+/** The order on the desk this receipt was booked against, if any. */
+const order = computed(() =>
+    props.receipt?.po ? buying.listById(props.receipt.po) : null,
+);
+
+/** Where the document stands — the same words as the supplier card's. */
+const docStatus = computed(() => {
+    const receipt = props.receipt;
+
+    if (!receipt) {
+        return '';
+    }
+
+    if (receipt.docType === 'tax_invoice') {
+        return t('supplierDocs.status.invoice');
+    }
+
+    const invoice = purchasing.invoiceOfReceipt(receipt);
+
+    if (invoice) {
+        return t('supplierDocs.status.attached', { num: invoice.num });
+    }
+
+    if (receipt.sapInvoice) {
+        const sap = receipt.sapInvoice;
+
+        return sap.ref || sap.docNum
+            ? t('supplierDocs.status.sap', { num: sap.ref || sap.docNum })
+            : t('supplierDocs.status.sapUnknown');
+    }
+
+    return t('supplierDocs.status.open');
+});
 
 const cols = computed(() => [
     {
@@ -101,6 +147,21 @@ const lines = computed(() =>
                             <AChip tone="green" size="lg">
                                 {{ t('inventory.receipts.drawer.state') }}
                             </AChip>
+                            <AChip
+                                size="lg"
+                                :dot="false"
+                                :tone="
+                                    receipt.docType === 'tax_invoice'
+                                        ? 'blue'
+                                        : 'slate'
+                                "
+                            >
+                                {{
+                                    t(
+                                        `supplierDocs.type.${receipt.docType || 'delivery_note'}`,
+                                    )
+                                }}
+                            </AChip>
                         </div>
                         <div class="a-dhead-m">
                             <span>
@@ -111,9 +172,28 @@ const lines = computed(() =>
                                 }}
                             </span>
                             <span>
-                                {{ t('inventory.receipts.drawer.docNum') }}
-                                <ANum>{{ receipt.docNum }}</ANum>
+                                {{
+                                    receipt.docType === 'tax_invoice'
+                                        ? t('buying.receive.docNumInvoice')
+                                        : t('inventory.receipts.drawer.docNum')
+                                }}
+                                <ANum>{{ docRef(receipt) }}</ANum>
+                                <template v-if="receipt.supplierRef">
+                                    ·
+                                    {{
+                                        t('supplierDocs.sapNum', {
+                                            num: receipt.docNum,
+                                        })
+                                    }}
+                                </template>
                             </span>
+                            <span
+                                v-if="receipt.docType !== 'tax_invoice'"
+                                :class="{
+                                    'rd-open': isOpenNote(receipt),
+                                }"
+                                >{{ docStatus }}</span
+                            >
                             <span>
                                 {{ t('inventory.receipts.drawer.received') }}
                                 <ANum>{{ receipt.when.stamp }}</ANum>
@@ -125,20 +205,27 @@ const lines = computed(() =>
                                     })
                                 }}
                             </span>
-                            <span v-if="receipt.po">
+                            <span v-if="order">
                                 <RouterLink
                                     class="a-linkbtn"
                                     :to="{
-                                        name: 'purchasing',
-                                        query: { po: receipt.po },
+                                        name: 'buyingSheet',
+                                        params: { kind: 'order', id: order.id },
                                     }"
                                 >
                                     {{
                                         t('inventory.receipts.drawer.po', {
-                                            id: receipt.po,
+                                            id: order.number,
                                         })
                                     }}
                                 </RouterLink>
+                            </span>
+                            <span v-else-if="receipt.poNumber">
+                                {{
+                                    t('inventory.receipts.drawer.po', {
+                                        id: receipt.poNumber,
+                                    })
+                                }}
                             </span>
                         </div>
                     </div>
@@ -175,11 +262,19 @@ const lines = computed(() =>
                     </template>
                     <template #cell-name="{ row }">
                         <div class="t-strong">{{ loc(row.name) }}</div>
-                        <div class="t-sub">{{ row.sku }}</div>
+                        <div class="t-sub">
+                            {{
+                                row.general
+                                    ? t('supplierDocs.general')
+                                    : row.sku
+                            }}
+                        </div>
                     </template>
                     <template #cell-qty="{ row }">
                         <ANum>{{ num(row.qty) }}</ANum>
-                        {{ t(`inventory.unit.${row.unit}`) }}
+                        <template v-if="row.unit">
+                            {{ t(`inventory.unit.${row.unit}`) }}
+                        </template>
                     </template>
                     <template #cell-supplierBatch="{ row }">
                         <span v-if="row.supplierBatch" class="ltr">
@@ -192,7 +287,10 @@ const lines = computed(() =>
                         <span v-else class="a-muted">—</span>
                     </template>
                     <template #cell-wh="{ row }">
-                        {{ t(`warehouse.${row.wh}.name`) }}
+                        <template v-if="row.wh">
+                            {{ t(`warehouse.${row.wh}.name`) }}
+                        </template>
+                        <span v-else class="a-muted">—</span>
                     </template>
                     <template #head-price="{ col }">
                         {{ col.label }}
@@ -213,6 +311,14 @@ const lines = computed(() =>
                     </template>
                 </ADataTable>
             </ACard>
+
+            <AttachmentsPanel
+                :key="receipt.id"
+                class="rd-scans"
+                entity="receipt"
+                :ref-id="receipt.id"
+                :title="t('supplierDocs.tab.scans')"
+            />
         </template>
     </ADrawer>
 </template>
@@ -233,5 +339,15 @@ const lines = computed(() =>
 
 .a-muted {
     color: var(--a-ink-4);
+}
+
+/* A delivery note still waiting for its invoice. */
+.rd-open {
+    color: var(--a-amber, var(--a-ink));
+    font-weight: 600;
+}
+
+.rd-scans {
+    margin-top: 16px;
 }
 </style>

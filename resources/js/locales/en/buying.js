@@ -23,6 +23,7 @@ export default {
         new: 'New request',
         file: 'purchase-request',
         ticked: '{done} of {total} done',
+        moved: '{done} of {total} moved to an order',
         emptyTitle: 'No purchase requests yet',
         emptySub:
             'A purchase request is a shopping list: what is wanted, before anybody has been asked for a price.',
@@ -49,6 +50,8 @@ export default {
         closedShort: 'Closed short',
         waiting: 'one line still waiting | {n} lines still waiting',
         closedShortLines: 'one line closed short | {n} lines closed short',
+        awaitingNotes:
+            'one delivery note awaits its invoice: {refs} | {n} delivery notes await their invoice: {refs}',
         gapLines: 'a gap on one line | gaps on {n} lines',
         emptyTitle: 'No purchase orders yet',
         emptySub:
@@ -60,12 +63,14 @@ export default {
     needSupplier: 'Choose a supplier before marking it sent',
     needQty: 'one line has no quantity | {n} lines have no quantity',
 
-    // config/buying.js BUYING_STATES — two states for a request, four for an order
+    // config/buying.js BUYING_STATES — three states for a request, five for an order
     state: {
         open: 'Open',
+        done: 'Done',
         closed: 'Closed',
         draft: 'Draft',
         sent: 'Sent',
+        awaiting_invoice: 'Awaiting tax invoice',
         received: 'Received',
         failed: 'Failed',
     },
@@ -81,6 +86,10 @@ export default {
         requestOpen:
             'The request is open. Add item codes, tick off what is sourced, and export when you need to.',
         requestClosed: 'The request is finished. It can be reopened.',
+        requestDone:
+            'Every line of the request moved to a purchase order — the request is done. The lines stay here to read, each with the order it went to.',
+        awaitingInvoice:
+            'All the goods arrived (last on {when}), but on a delivery note — without prices. The order closes when a tax invoice is attached.',
         draft: 'A draft — not yet sent to the supplier. Export to Excel at any stage, and mark it Sent once it actually goes out.',
         sent: 'Sent to the supplier on {when}. When the goods arrive, book them in.',
         received: 'Received on {when}; stock was updated.',
@@ -108,7 +117,8 @@ export default {
             into: 'one line → {supplier} · added to draft {number} | {n} lines → {supplier} · added to draft {number}',
             noSupplier: 'No supplier (chosen on the order)',
             remain: 'one line stays on the request | {n} lines stay on the request',
-            remainNone: 'Every line moves — the request will be left empty',
+            remainNone: 'Every line moves — the request will be marked Done',
+            kept: 'The lines that move stay on the request to read, each with its order number',
         },
         done: 'Opened purchase order {numbers} | Opened {n} purchase orders: {numbers}',
         doneJoined:
@@ -122,6 +132,8 @@ export default {
         body: 'One line is still waiting for goods. The order closes on what already arrived. | {n} lines are still waiting for goods. The order closes on what already arrived.',
         effectState:
             'The order moves to Received, with the shortfall left marked on its lines',
+        effectStateWait:
+            'The order moves to Awaiting tax invoice — a delivery note of it has no invoice yet — with the shortfall left marked on its lines',
         effectStock:
             'Stock does not change — only what actually arrived was booked in',
         confirm: 'Close the rest',
@@ -149,6 +161,12 @@ export default {
         'These are the values as they were when the line was added, not what the item card says now — a sheet written in March and read in May has to say what the shelf held in March.',
     lineDone: 'Done',
     lineNotDone: 'Not done yet',
+    movedTo: 'On order {number}',
+    quoteHint:
+        'The supplier’s price for this order, per purchase unit, before VAT. Open until the line’s goods arrive; opens the invoice price.',
+    attach: {
+        open: 'Attach a tax invoice',
+    },
     openItemCard: 'Open the item card',
     openItemCardHint: 'For what is current, as against what the line kept.',
     group: {
@@ -172,8 +190,46 @@ export default {
     receive: {
         open: 'Receive goods',
         title: 'Goods receipt · order {number} · {supplier}',
-        docNum: 'Delivery note number',
+        docNum: 'Document number',
         date: 'Receipt date',
+        docType: 'The document the goods came with',
+        docTypePick: 'Choose the document…',
+        docNumNote: 'Delivery note number',
+        docNumInvoice: 'Tax invoice number',
+        noteNoPrices:
+            'Delivery note — the goods are booked in without prices. The prices come in when a tax invoice is attached; until then it is in the supplier’s open delivery notes.',
+        invoicePrices:
+            'Tax invoice — a price is required on every line, per purchase unit, before VAT. The field opens at the line’s quote price.',
+        priceInvoice: 'Price before VAT',
+        priceQuote: 'Per {uom} · quote: {price}',
+        priceNoQuote: 'Per {uom} · no quote on the line',
+        notBatched:
+            'Not batch-managed — booked in with no batch, production date or expiry.',
+        needDocType: 'Choose the document the goods came with',
+        needPrices: 'one line has no price | {n} lines have no price',
+        needGeneral: 'A general line is missing its description, quantity or price',
+        file: 'Document scan',
+        fileHint: 'Optional — it can be added later, on the supplier card.',
+        general: {
+            title: 'General lines',
+            lead: 'A line on the document that is not a catalogue item — shipping, say. It does not enter stock, has no batch and no label, and counts in the document’s value.',
+            add: 'Add a general line',
+            line: 'General line {n}',
+            name: 'Description',
+            namePh: 'e.g. shipping',
+            qty: 'Quantity',
+            price: 'Price before VAT',
+            remove: 'Remove the general line',
+        },
+        effectNote:
+            'Delivery note: no prices — listed under open delivery notes until a tax invoice is attached',
+        effectInvoice:
+            'Tax invoice {num} for {net} before VAT is recorded on the supplier and enters the open balance',
+        effectStateWait: 'The order moves to Awaiting tax invoice',
+        effectGeneral:
+            'one general line on the document, no stock | {n} general lines on the document, no stock',
+        effectNoBatch:
+            'one line of an item that is not batch-managed is booked in without a batch | {n} lines of items that are not batch-managed are booked in without a batch',
         ordered: 'Ordered',
         arrived: 'Arrived',
         batch: 'Supplier batch',
@@ -188,8 +244,6 @@ export default {
         madeOnHint:
             'From the supplier’s certificate, if given. Printed on the label.',
         expiry: 'Expiry date',
-        price: 'Unit price',
-        priceHint: 'Per {uom}; saved as the last purchase price',
         labels: 'How many labels to print',
         labelsNoPack:
             'How many containers the quantity is divided into — one label each.',
@@ -212,7 +266,7 @@ export default {
             'One line will be booked into stock. | {n} lines will be booked into stock.',
         effectStock: 'Stock rises by the quantities recorded',
         effectBatches:
-            'A batch is opened per line, with the supplier number and expiry',
+            'A batch is opened per line of a batch-managed item, with the supplier number and expiry',
         effectState: 'The order moves to Received',
         effectOpen: 'The order stays open for the rest',
         effectDiffer:
@@ -253,6 +307,22 @@ export default {
     foundUpdated: 'Quantity updated: {list}',
     foundAlready: 'Already listed: {list}',
     foundMissing: 'Not found: {list}',
+
+    // Narrowing the sheet list — search, opening-date range, state (as tabs)
+    // and supplier.
+    filterGroup: {
+        who: 'Supplier',
+    },
+    filter: {
+        noun: 'sheets',
+        field: {
+            bsup: 'Supplier',
+        },
+        noSupplier: 'No supplier',
+    },
+    listSearch: 'Number, supplier, note or who opened it…',
+    listCount: 'sheets · of {total}',
+    listEmpty: 'No sheets match the filter',
 
     noLinesTitle: 'The list is empty',
     noLinesSub: 'Paste item codes and press Search, or add a single item.',
@@ -295,6 +365,7 @@ export default {
         packUom: 'Packaging unit',
         packQty: 'Quantity per package',
         lastPrice: 'Last price',
+        quotePrice: 'Quote price',
         lastPriceOn: 'Last bought',
         evalPrice: 'Valuation price',
 

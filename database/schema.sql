@@ -334,6 +334,8 @@ CREATE TABLE receipts (
     po_id        text,
     doc_num      text,
     received_on  date,
+    doc_type     text,
+    invoice_id   text,
     doc          jsonb NOT NULL,
     updated_at   timestamptz NOT NULL DEFAULT now()
 );

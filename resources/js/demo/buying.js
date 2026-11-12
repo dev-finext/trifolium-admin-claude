@@ -23,15 +23,23 @@
 // one request is visibly half-done rather than every sheet looking finished.
 //
 // And the state each order sits in. SAP holds two — open and closed — where the
-// console holds four, and the two it does not hold are exactly the ones that
-// matter on screen: an order still being drafted, and one that fell through. So
-// each order is placed by hand, and the placement is in `ORDER_PLAN` where it
-// can be read.
+// console holds five, and the ones it does not hold are exactly the ones that
+// matter on screen: an order still being drafted, one that fell through, and
+// one whose goods came on a delivery note and still wait for the tax invoice.
+// So each order is placed by hand, and the placement is in `ORDER_PLAN` where
+// it can be read.
 //
 // An order that arrives here already received was received in SAP, not in this
 // console: its lines carry what came in, and `receipts` is empty because no
 // goods-receipt document was ever posted here. That is what a migrated document
-// looks like, and the drawer says so.
+// looks like, and the drawer says so. The two waiting for their invoice are the
+// exception: their goods came on SAP receipts that are still open — real open
+// delivery notes — so those receipts are linked to them (`receipts`).
+//
+// Two things are SAP's and read straight off it (12.11.2026). An order line's
+// quote price ("הצעת מחיר") is the price SAP's order carries. A request line
+// that became an order line in SAP is marked with that order (`movedTo`), so
+// request 2600003, all six of whose lines went to order 2600030, is "בוצע".
 import { ARCHIVE_FIELD, leadTimeOf, lineFromItem } from '@/config';
 import { at } from '@/demo/fixture';
 import { DEMO_ACTORS } from '@/demo/people';
@@ -66,15 +74,17 @@ const REQUEST_PLAN = [
         docNum: 2600003,
         by: DEMO_ACTORS.orit,
         hour: 14,
-        note: 'הועבר לאורית — ממתינים להצעת מחיר',
+        note: 'נשלח מייל 17.2 — הועבר להזמנה',
         ticked: 6,
     },
     {
+        // Closed in SAP with sixteen of its thirty lines ordered: the ticks
+        // are the lines that moved, and the rest were never ordered.
         docNum: 2600001,
         by: DEMO_ACTORS.ella,
         hour: 8,
         note: 'רשימת חידוש לרבעון — מוכן',
-        ticked: 30,
+        ticked: 0,
     },
 ];
 
@@ -128,11 +138,41 @@ const ORDER_PLAN = [
         state: 'received',
         note: 'נשלח מייל 30.7 — סופק במלואו',
     },
+    {
+        // Everything came on SAP receipt 2600067, a delivery note still open.
+        docNum: 2600134,
+        by: DEMO_ACTORS.orit,
+        hour: 11,
+        state: 'awaiting_invoice',
+        note: 'נשלח מייל 2.7, ובוואטסאפ לבירור — הגיע עם תעודת משלוח',
+    },
+    {
+        // Everything came on SAP receipt 2600066, a delivery note still open.
+        docNum: 2600148,
+        by: DEMO_ACTORS.ella,
+        hour: 10,
+        state: 'awaiting_invoice',
+        note: 'נשלח מייל 21.7 — סופק במלואו, החשבונית טרם הגיעה',
+    },
 ];
 
-/** A request has SAP's own two states; an order's is placed in the plan. */
-const stateOf = (doc, plan, kind) =>
-    kind === 'order' ? plan.state : doc.status === 'C' ? 'closed' : 'open';
+/**
+ * A request has SAP's own two states, and "בוצע" when every line of it became
+ * an order line; an order's state is placed in the plan.
+ */
+const stateOf = (doc, plan, kind) => {
+    if (kind === 'order') {
+        return plan.state;
+    }
+
+    const lines = doc.lines || [];
+
+    if (lines.length && lines.every((line) => line.targetPo)) {
+        return 'done';
+    }
+
+    return doc.status === 'C' ? 'closed' : 'open';
+};
 
 /** Round to three places, the way every quantity in the console is held. */
 const qty3 = (value) => Math.round(Number(value) * 1000) / 1000;
@@ -183,7 +223,27 @@ function sheetOf(doc, plan, kind, context) {
             plan.hold !== undefined && index >= doc.lines.length - plan.hold;
 
         row.qty = blank ? null : Number(line.qty) || null;
-        row.done = kind === 'request' && index < (plan.ticked ?? 0);
+
+        // The order this request line became in SAP, when it became one — an
+        // order on the desk can be opened, any other is its number only.
+        if (kind === 'request' && line.targetPo) {
+            const number = String(line.targetPo);
+
+            row.movedTo = {
+                id: context.orderNumbers.has(number) ? `order-${number}` : null,
+                number,
+            };
+        }
+
+        row.done =
+            kind === 'request' &&
+            (Boolean(row.movedTo) || index < (plan.ticked ?? 0));
+
+        // The price SAP's order carries is the order's quote for the line.
+        if (kind === 'order' && Number(line.price) > 0) {
+            row.quotePrice = Number(line.price);
+        }
+
         // Each line its own key: a real sheet may list one item twice (SAP
         // request 2600001 has 130115 on lines 16 and 29), so the item code
         // cannot be what a tick or a quantity is addressed to.
@@ -196,7 +256,7 @@ function sheetOf(doc, plan, kind, context) {
 
     // What came in. Everything the order asked for, unless the plan says one
     // line arrived short.
-    if (state === 'received') {
+    if (['received', 'awaiting_invoice'].includes(state)) {
         lines.forEach((row, index) => {
             const short = plan.shortLast && index === lines.length - 1;
 
@@ -224,8 +284,12 @@ function sheetOf(doc, plan, kind, context) {
         // short — the rest is not coming.
         closedShort: state === 'received' && Boolean(plan.shortLast),
         created: when,
-        sent: ['sent', 'received'].includes(state) ? when : null,
-        received: state === 'received' ? when : null,
+        sent: ['sent', 'awaiting_invoice', 'received'].includes(state)
+            ? when
+            : null,
+        received: ['awaiting_invoice', 'received'].includes(state)
+            ? when
+            : null,
         // Received in SAP, before this console existed: there is no
         // goods-receipt document of its own to point at.
         receipts: [],
@@ -248,8 +312,10 @@ export function buildBuyingLists({
     prepTypes,
     stock,
     boms,
+    receipts = [],
 }) {
     const context = {
+        orderNumbers: new Set(ORDER_PLAN.map((plan) => String(plan.docNum))),
         itemBySku: new Map(items.map((item) => [String(item.sku), item])),
         supplierByCode: new Map(suppliers.map((one) => [one.code, one])),
         groupByCode: new Map(itemGroups.map((one) => [one.code, one.name])),
@@ -265,7 +331,7 @@ export function buildBuyingLists({
 
     // Unordered on purpose: these go into the database and come back in its
     // order, so the screen is what sorts them — see `listsOf` in the store.
-    return [
+    const lists = [
         ...REQUEST_PLAN.filter((plan) => requests.has(plan.docNum)).map(
             (plan) =>
                 sheetOf(requests.get(plan.docNum), plan, 'request', context),
@@ -274,4 +340,49 @@ export function buildBuyingLists({
             sheetOf(orders.get(plan.docNum), plan, 'order', context),
         ),
     ];
+
+    linkReceipts(lists, receipts);
+
+    return lists;
+}
+
+/**
+ * Hang each SAP receipt booked against an order on the desk off that order:
+ * the receipt names the order (`po`), the order lists the receipt, each
+ * receipt line names the order line it arrived against (`poKey`), and the
+ * order says when the goods last came.
+ */
+function linkReceipts(lists, receipts) {
+    lists
+        .filter((list) => list.kind === 'order')
+        .forEach((list) => {
+            const own = receipts.filter(
+                (receipt) => receipt.poNumber === list.number,
+            );
+
+            if (!own.length) {
+                return;
+            }
+
+            own.forEach((receipt) => {
+                const taken = new Set();
+
+                receipt.po = list.id;
+                receipt.lines.forEach((line) => {
+                    const match = list.lines.find(
+                        (row) => row.sku === line.sku && !taken.has(row.key),
+                    );
+
+                    if (match) {
+                        taken.add(match.key);
+                        line.poKey = match.key;
+                    }
+                });
+            });
+
+            list.receipts = own.map((receipt) => receipt.id);
+            list.received = own
+                .map((receipt) => receipt.when)
+                .sort((a, b) => b.iso.localeCompare(a.iso))[0];
+        });
 }

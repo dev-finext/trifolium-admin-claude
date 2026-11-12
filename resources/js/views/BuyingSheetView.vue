@@ -31,11 +31,19 @@
 //
 // Booking goods in takes over the page body rather than opening over it, and
 // it is an address of its own (`?do=receive`) so it survives a reload.
+//
+// 12.11.2026, for production: an order whose goods all came on delivery notes
+// waits in "ממתין לחשבונית מס" — the band says which notes still wait and
+// carries "הצמדת חשבונית מס", which closes the order once nothing else waits;
+// the rail shows that step only on an order that has a delivery note. A request
+// every line of which moved to an order is "בוצע", read-only, its lines marked
+// with the orders they went to.
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 import PageHead from '@/components/layout/PageHead.vue';
+import AttachInvoiceModal from '@/components/purchasing/AttachInvoiceModal.vue';
 import BuyingLinesPanel from '@/components/purchasing/BuyingLinesPanel.vue';
 import BuyingReceive from '@/components/purchasing/BuyingReceive.vue';
 import ReceiptLabelsModal from '@/components/purchasing/ReceiptLabelsModal.vue';
@@ -51,12 +59,14 @@ import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
 import {
     BUYING_KIND,
-    BUYING_RAIL,
     buyingMoves,
+    buyingRailOf,
     buyingSheet,
     canReceive,
+    docRef,
     hasReceipts,
     lineGap,
+    lineMoved,
     lineOutstanding,
     linesEditable,
     missingQty,
@@ -118,7 +128,14 @@ watch(
 
 // ---- where it stands -------------------------------------------------------
 
-const rail = computed(() => BUYING_RAIL[kind.value] || []);
+const rail = computed(() =>
+    buyingRailOf(sheet.value, { hasNotes: store.hasNotes(sheet.value) }),
+);
+
+/** The order's delivery notes still waiting for a tax invoice. */
+const openNotes = computed(() =>
+    sheet.value?.kind === 'order' ? store.openNotesOfList(sheet.value) : [],
+);
 const railIndex = computed(() => rail.value.indexOf(sheet.value?.state));
 const failed = computed(() => sheet.value?.state === 'failed');
 
@@ -166,9 +183,17 @@ const nextStep = computed(() => {
     }
 
     if (one.kind === 'request') {
-        return one.state === 'closed'
-            ? t('buying.step.requestClosed')
-            : t('buying.step.requestOpen');
+        return {
+            open: t('buying.step.requestOpen'),
+            done: t('buying.step.requestDone'),
+            closed: t('buying.step.requestClosed'),
+        }[one.state];
+    }
+
+    if (one.state === 'awaiting_invoice') {
+        return t('buying.step.awaitingInvoice', {
+            when: one.received?.stamp || '',
+        });
     }
 
     if (one.state === 'sent' && hasReceipts(one)) {
@@ -240,6 +265,30 @@ const facts = computed(() => {
                 done: ticked.value,
                 total: one.lines.length,
             }),
+        );
+
+        const moved = one.lines.filter(lineMoved).length;
+
+        if (moved) {
+            out.push(
+                t('buying.request.moved', {
+                    done: moved,
+                    total: one.lines.length,
+                }),
+            );
+        }
+    }
+
+    if (openNotes.value.length) {
+        out.push(
+            t(
+                'buying.order.awaitingNotes',
+                {
+                    n: openNotes.value.length,
+                    refs: openNotes.value.map(docRef).join(', '),
+                },
+                openNotes.value.length,
+            ),
         );
     }
 
@@ -320,7 +369,9 @@ function onSupplier(code) {
  * its supplier and lines stay open until it goes out again.
  */
 const settled = computed(() =>
-    ['received', 'closed'].includes(sheet.value?.state),
+    ['received', 'closed', 'done', 'awaiting_invoice'].includes(
+        sheet.value?.state,
+    ),
 );
 
 /** Who the order goes to is fixed once it went — and open again if it failed. */
@@ -375,12 +426,17 @@ const convertEffects = computed(() => {
         (sum, group) => sum + group.lines.length,
         0,
     );
-    const remaining = (sheet.value?.lines.length || 0) - moving;
+    // Lines that moved before stay on the request; they are not "remaining".
+    const unmoved = (sheet.value?.lines || []).filter(
+        (line) => !lineMoved(line),
+    ).length;
+    const remaining = unmoved - moving;
 
     out.push(
         remaining > 0
             ? t('buying.convert.effect.remain', { n: remaining }, remaining)
             : t('buying.convert.effect.remainNone'),
+        t('buying.convert.effect.kept'),
     );
 
     return out;
@@ -450,19 +506,23 @@ const canCloseRest = computed(
         hasReceipts(sheet.value),
 );
 
-/** Only a sheet nothing happened to may be taken off the list. */
-const canRemove = computed(() => {
-    const one = sheet.value;
-
-    return Boolean(
-        one &&
-        ((one.kind === 'order' && one.state === 'draft') ||
-            (one.kind === 'request' && one.state === 'open')),
-    );
-});
+/**
+ * Only a sheet nothing happened to may be taken off the list — the store's own
+ * rule, which also keeps a request any line of which moved to an order.
+ */
+const canRemove = computed(() => store.removable(sheet.value));
 
 const closingRest = ref(false);
 const removing = ref(false);
+
+// ---- the tax invoice an order waits for --------------------------------------
+
+const attaching = ref(false);
+
+const canAttach = computed(
+    () =>
+        sheet.value?.state === 'awaiting_invoice' && openNotes.value.length > 0,
+);
 
 function onCloseRest(reason) {
     closingRest.value = false;
@@ -615,6 +675,14 @@ function back() {
                         {{ t('buying.receive.open') }}
                     </AButton>
                     <AButton
+                        v-if="canAttach && !receiving"
+                        kind="p"
+                        icon="file_text"
+                        @click="attaching = true"
+                    >
+                        {{ t('buying.attach.open') }}
+                    </AButton>
+                    <AButton
                         v-if="canConvert && !receiving"
                         icon="send"
                         @click="convertOpen = true"
@@ -739,6 +807,14 @@ function back() {
                 @close="labelling = null"
             />
 
+            <AttachInvoiceModal
+                v-if="kind === 'order'"
+                :open="attaching"
+                :supplier-code="sheet.supplierCode || ''"
+                :preselect="openNotes.map((receipt) => receipt.id)"
+                @close="attaching = false"
+            />
+
             <ConfirmDialog
                 :open="convertOpen"
                 :title="t('buying.convert.title')"
@@ -760,7 +836,9 @@ function back() {
                     )
                 "
                 :effects="[
-                    t('buying.closeRest.effectState'),
+                    openNotes.length
+                        ? t('buying.closeRest.effectStateWait')
+                        : t('buying.closeRest.effectState'),
                     t('buying.closeRest.effectStock'),
                 ]"
                 :confirm-label="t('buying.closeRest.confirm')"

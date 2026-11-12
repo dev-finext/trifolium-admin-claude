@@ -196,6 +196,8 @@ export default {
             note: 'Note',
         },
         docNum: 'Delivery note {n}',
+        // 12.11.2026 — a receipt that came on a tax invoice
+        invoiceNum: 'Tax invoice {n}',
         empty: {
             title: 'No goods receipts found',
             sub: 'Clear the filter, or receive new goods',
@@ -406,7 +408,12 @@ export default {
         addLine: 'Add a line',
         hint: 'Each line opens a separate batch with its own batch number and expiry date, and enters stock the moment it is received',
         submit: 'Receive into stock · 1 batch | Receive into stock · {n} batches',
-        need: 'Required: supplier, delivery-note number, and at least one line with an item, a quantity, a batch number and an expiry date',
+        need: 'Required: a supplier, the document and its number, and at least one complete line — an item and a quantity; a batch number and an expiry for a batch-managed item; a price on a tax invoice',
+        // 12.11.2026 — a tax invoice is recorded on a supplier with a card
+        invoicePrices:
+            'Tax invoice — a price is required on every line, per purchase unit, before VAT. The invoice is recorded on the supplier and enters the open balance.',
+        invoiceNeedsCard:
+            'A tax invoice is recorded on a supplier card — choose a supplier from the list',
         aria: {
             madeOn: 'Production date on line {n}',
             qty: 'Quantity on line {n}',

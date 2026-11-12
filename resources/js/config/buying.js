@@ -6,33 +6,62 @@
 //   request  a shopping list. It does nothing on its own — it is what the buyer
 //            wants, written down, before anybody has been asked for a price.
 //            Quantities are optional, and each line is ticked off as it is
-//            sourced.
-//   order    one supplier, and quantities that are not optional, because the
-//            result is a file that gets sent to that supplier.
+//            sourced. Ticked lines move to purchase orders, one per supplier;
+//            a line that moved stays on the request, read-only, marked with
+//            the order it went to, and when every line has moved the request
+//            is "בוצע" on its own (12.11.2026).
+//   order    one supplier, and quantities that are not optional. It is sent to
+//            the supplier, its goods are booked in against it — each delivery
+//            on its own document, a delivery note or a tax invoice — and it is
+//            closed only once every line has a price (see `awaiting_invoice`).
 //
-// Neither posts stock, reserves anything or changes an item. They are lists
-// that end in a spreadsheet. The pharmacy's real purchase documents live in
-// SAP; these are the tools used to decide what goes into them.
+// A request posts nothing. An order posts stock through its goods receipts
+// (`receiveList` in stores/buying.js → `receiveGoods` in stores/inventory.js),
+// and its tax invoices are recorded on the supplier (stores/purchasing.js).
+//
+// **For production:** the states and moves below are the whole lifecycle; the
+// server must enforce the same transitions, never only the screen.
 
 /**
  * What each kind goes through.
  *
- * A request is a list that is either still being worked or finished with. An
- * order has a life: it is drafted, it is sent to the supplier, and then either
- * the goods arrive or they do not. Nothing here advances on its own except
- * `sent`, which the export sets, because exporting the file *is* sending it.
+ * A request:
+ *   open    being worked: lines added, quantities written, lines ticked as
+ *           they are sourced, ticked lines moved to orders.
+ *   done    "בוצע" — every line moved to an order. Set automatically by the
+ *           move that moves the last line (`convertToOrders`); never by hand,
+ *           and nothing moves it on.
+ *   closed  "סגורה" — finished by hand ("סיום הבקשה"), whatever is left on it
+ *           not ordered. Reopened by hand.
  *
- * `failed` is set by hand and by nothing else — the supplier declined, or could
- * not supply, or the order was dropped. The console has no way to learn that.
+ * An order:
+ *   draft             being written. Supplier, lines and quantities are open.
+ *   sent              "נשלחה" — marked sent by hand. The lines are fixed (what
+ *                     was asked of the supplier); goods are booked in against
+ *                     it, in as many deliveries as it takes.
+ *   awaiting_invoice  "ממתין לחשבונית מס" — every line has arrived (or the rest
+ *                     was closed), but at least one delivery came on a delivery
+ *                     note, which carries no prices, and no tax invoice has
+ *                     been attached to it yet. Set automatically, by the
+ *                     receipt that completes the order and by closing the rest.
+ *   received          "התקבלה" — closed: every line arrived and every line has
+ *                     its price. An order whose goods came on a tax invoice
+ *                     goes here straight from `sent`; one waiting for an
+ *                     invoice goes here when the invoice is attached
+ *                     (`settleInvoiced`).
+ *   failed            set by hand and by nothing else — the supplier declined,
+ *                     could not supply, or the order was dropped.
  */
 export const BUYING_STATES = {
     request: [
         { id: 'open', tone: 'blue' },
+        { id: 'done', tone: 'green' },
         { id: 'closed', tone: 'slate' },
     ],
     order: [
         { id: 'draft', tone: 'slate' },
         { id: 'sent', tone: 'amber' },
+        { id: 'awaiting_invoice', tone: 'purple' },
         { id: 'received', tone: 'green' },
         { id: 'failed', tone: 'red' },
     ],
@@ -56,11 +85,27 @@ export const buyingStateTone = (id) =>
 export const buyingFirstState = (kind) =>
     (BUYING_STATES[kind] || BUYING_STATES.request)[0].id;
 
-/** The rail a sheet travels, in order. `failed` is off it — it is a dead end. */
-export const BUYING_RAIL = {
-    request: ['open', 'closed'],
-    order: ['draft', 'sent', 'received'],
-};
+/**
+ * The rail a sheet travels, in order. An order's `failed` is off it — a dead
+ * end, shown beside the rail rather than on it.
+ *
+ * A request ends one of two ways — every line moved to an order ("בוצע"), or
+ * finished by hand ("סגורה") — and its rail shows the way it took, or the way
+ * it is heading while it is open.
+ *
+ * An order's rail shows "ממתין לחשבונית מס" only when the order has a delivery
+ * that came on a delivery note — an order received on a tax invoice never
+ * waits for one, and a rail that shows the step would say it did.
+ */
+export function buyingRailOf(list, { hasNotes = false } = {}) {
+    if (list?.kind !== 'order') {
+        return list?.state === 'closed' ? ['open', 'closed'] : ['open', 'done'];
+    }
+
+    return hasNotes || list.state === 'awaiting_invoice'
+        ? ['draft', 'sent', 'awaiting_invoice', 'received']
+        : ['draft', 'sent', 'received'];
+}
 
 /**
  * The states a person may move this sheet to by hand.
@@ -82,18 +127,51 @@ export function buyingMoves(list) {
     }
 
     if (list.kind !== 'order') {
-        return list.state === 'closed' ? ['open'] : ['closed'];
+        // A request that is "בוצע" is a record of what was ordered from it.
+        return (
+            { open: ['closed'], closed: ['open'], done: [] }[list.state] || []
+        );
     }
 
+    // "ממתין לחשבונית מס" ends only by an invoice being attached — never by hand.
     return (
         {
             draft: ['sent'],
             sent: ['failed'],
+            awaiting_invoice: [],
             received: [],
             failed: ['sent'],
         }[list.state] || []
     );
 }
+
+/**
+ * Has this request line moved to a purchase order? A moved line stays on the
+ * request, read-only, with the order it went to (`movedTo: {id, number}`) —
+ * an order this console wrote has an `id` to open; one SAP wrote before it
+ * carries only its `number`.
+ */
+export const lineMoved = (line) => Boolean(line?.movedTo);
+
+/** Every line of a request has moved to an order — the request is "בוצע". */
+export const allLinesMoved = (list) =>
+    (list?.lines || []).length > 0 && list.lines.every(lineMoved);
+
+/**
+ * May the quote price ("הצעת מחיר") on this order line still be written?
+ *
+ * The supplier's price for this order, written beside the last purchase price
+ * so the buyer sees both. It is open while the order is a draft, after it is
+ * sent (a supplier often confirms prices only once he has the order) and if it
+ * failed — until goods arrive for that line: from then on the price that counts
+ * is the one on the tax invoice. It opens the price field of an invoice
+ * receipt and of an invoice attached later. It is **not** part of the regular
+ * Excel export (12.11.2026).
+ */
+export const quoteEditable = (list, line) =>
+    list?.kind === 'order' &&
+    ['draft', 'sent', 'failed'].includes(list.state) &&
+    !(Number(line?.received) > 0);
 
 /**
  * Can goods be booked in against this sheet? Only one that was sent — and it
@@ -115,6 +193,32 @@ export const isFullyReceived = (list) =>
 /** Has anything at all arrived against this order yet? */
 export const hasReceipts = (list) =>
     (list?.lines || []).some((line) => Number(line.received) > 0);
+
+/**
+ * What the sheet list may be narrowed by, beside its search, its opening-date
+ * range and its state tabs (12.11.2026): the supplier. An order has one; a
+ * request names one on each line, so a request is found by any supplier one of
+ * its lines carries. A line or an order with none is `none`.
+ */
+export const BUYING_FILTER_FIELDS = [
+    {
+        key: 'bsup',
+        group: 'who',
+        kind: 'set',
+        values: (list) =>
+            list.kind === 'order'
+                ? [list.supplierCode || 'none']
+                : [
+                      ...new Set(
+                          (list.lines || []).map(
+                              (line) => line.supplierCode || 'none',
+                          ),
+                      ),
+                  ],
+    },
+];
+
+export const BUYING_FILTER_GROUPS = ['who'];
 
 /** The two kinds, and what each one requires. */
 export const BUYING_KINDS = [
@@ -314,6 +418,11 @@ export function lineFromItem(item, extra = {}) {
         // what the buyer writes on the sheet
         qty: null,
         done: false,
+        // An order line: the supplier's price for this order ("הצעת מחיר"),
+        // per purchase unit, before VAT — see `quoteEditable`.
+        quotePrice: null,
+        // A request line: the order it moved to — see `lineMoved`.
+        movedTo: null,
         // what actually turned up, once the goods are booked in
         received: null,
     };
@@ -343,7 +452,11 @@ export function missingQty(list) {
  * @param {(code: string) => unknown} nameOf  A supplier's code to its name.
  */
 export function groupDoneLines(list, nameOf) {
-    const ready = (list?.lines || []).filter((line) => line.done);
+    // A line that already moved stays ticked on the request as a record, and
+    // never moves twice.
+    const ready = (list?.lines || []).filter(
+        (line) => line.done && !lineMoved(line),
+    );
     const groups = new Map();
 
     for (const line of ready) {

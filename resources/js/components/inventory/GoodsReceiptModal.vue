@@ -11,21 +11,34 @@
 // instead of opening one, the expiry defaults from the family's shelf life, and a
 // line carries the price that becomes the item's last purchase price and the
 // number of item labels to print.
+//
+// **For production — 12.11.2026.** The same document rules as a receipt against
+// an order (BuyingReceive, config/supplierDocs.js): the person chooses which
+// document the goods came on — "תעודת משלוח", no prices; or "חשבונית מס", a
+// price on every line, mandatory, before VAT, and the invoice is recorded on
+// the supplier, so a tax invoice needs a supplier from the list. An item whose
+// card has "ניהול אצוות" off is booked in with no batch, production date or
+// expiry. Any number of "פריט כללי" lines — description, quantity, price
+// before VAT — ride on the document without touching stock. The scan may be
+// attached here. Everything is booked through `purchasing.receiveDocument`.
 import { computed, ref, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import ItemPicker from '@/components/inventory/ItemPicker.vue';
 import AButton from '@/components/ui/AButton.vue';
+import AFilePick from '@/components/ui/AFilePick.vue';
 import AInput from '@/components/ui/AInput.vue';
 import AModal from '@/components/ui/AModal.vue';
 import ASelect from '@/components/ui/ASelect.vue';
 import { useLocalized } from '@/composables/useLocalized';
-import { CURRENCY_SYMBOL, WAREHOUSES } from '@/config';
+import { useToast } from '@/composables/useToast';
+import { CURRENCY_SYMBOL, RECEIPT_DOC_TYPE_IDS, WAREHOUSES } from '@/config';
 import { fmtISO, isoDaysAgo } from '@/lib/dates';
 import { num } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
+import { usePurchasingStore } from '@/stores/purchasing';
 import { supplierSelectable } from '@/stores/system';
 
 /** One field to a row, label beside it: the form no longer needs the width. */
@@ -42,17 +55,47 @@ const emit = defineEmits(['close', 'saved']);
 
 const { t } = useI18n();
 const { loc } = useLocalized();
+const { push } = useToast();
 const dataset = useDatasetStore();
 const inventory = useInventoryStore();
 const items = useItemsStore();
+const purchasing = usePurchasingStore();
 const uid = useId();
 
 const supplierCode = ref('');
 const supplier = ref('');
+// Which document the goods came on — chosen, never assumed.
+const docType = ref('');
 const docNum = ref('');
 const date = ref(isoDaysAgo(0));
 const note = ref('');
+const file = ref(null);
 const lines = ref([]);
+// "פריט כללי" — lines on the document that are not catalogue items.
+const general = ref([]);
+const saving = ref(false);
+
+const invoice = computed(() => docType.value === 'tax_invoice');
+
+const docTypeOptions = computed(() => [
+    { value: '', label: t('buying.receive.docTypePick') },
+    ...RECEIPT_DOC_TYPE_IDS.map((id) => ({
+        value: id,
+        label: t(`supplierDocs.type.${id}`),
+    })),
+]);
+
+/** A price the person typed: a number, zero or more. */
+const isPrice = (value) =>
+    value !== '' &&
+    value !== null &&
+    value !== undefined &&
+    Number.isFinite(Number(value)) &&
+    Number(value) >= 0;
+
+/** Is the line's item kept in batches? "ניהול אצוות" on its card. */
+const batched = (line) =>
+    !line.sku || items.itemBySku(line.sku)?.flags?.batch !== false;
 
 /**
  * The batch number line `i` opens. V3.
@@ -101,10 +144,14 @@ watch(
 
         supplierCode.value = '';
         supplier.value = '';
+        docType.value = '';
         docNum.value = '';
         date.value = isoDaysAgo(0);
         note.value = '';
+        file.value = null;
         lines.value = [emptyLine()];
+        general.value = [];
+        saving.value = false;
     },
     { immediate: true },
 );
@@ -136,23 +183,71 @@ const warehouses = computed(() =>
     })),
 );
 
+// A line of an item that is not batch-managed needs no batch and no expiry; on
+// a tax invoice every line needs its price.
 const lineOk = (line) =>
     Boolean(line.sku) &&
     Number(line.qty) > 0 &&
-    Boolean(line.existingBatch || line.batch) &&
-    Boolean(line.expiry);
+    (!batched(line) ||
+        (Boolean(line.existingBatch || line.batch) && Boolean(line.expiry))) &&
+    (!invoice.value || isPrice(line.price));
 
 const good = computed(() =>
     lines.value
         .map((line, i) => ({ ...line, batch: batchFor(i) }))
         .filter(lineOk),
 );
+
+/** General lines missing their description, quantity or price. */
+const badGeneral = computed(() =>
+    general.value.filter(
+        (line) =>
+            !line.name.trim() ||
+            !(Number(line.qty) > 0) ||
+            !isPrice(line.price),
+    ),
+);
+
+/** A tax invoice is recorded on a supplier card — one from the list. */
+const knownSupplier = computed(
+    () => Boolean(supplierCode.value) && supplierCode.value !== OTHER,
+);
+
 const valid = computed(
     () =>
         Boolean(supplier.value.trim()) &&
+        Boolean(docType.value) &&
         Boolean(docNum.value.trim()) &&
-        good.value.length > 0,
+        good.value.length > 0 &&
+        badGeneral.value.length === 0 &&
+        (!invoice.value || knownSupplier.value) &&
+        !saving.value,
 );
+
+/** The one reason the save button is off, beside it. */
+const blocker = computed(() => {
+    if (!docType.value) {
+        return t('buying.receive.needDocType');
+    }
+
+    if (invoice.value && supplierCode.value === OTHER) {
+        return t('inventory.receipt.invoiceNeedsCard');
+    }
+
+    if (badGeneral.value.length) {
+        return t('buying.receive.needGeneral');
+    }
+
+    return t('inventory.receipt.need');
+});
+
+function addGeneral() {
+    general.value.push({ name: '', qty: '1', price: '' });
+}
+
+function removeGeneral(index) {
+    general.value.splice(index, 1);
+}
 
 /**
  * V3 — nothing is guessed for goods that came from a supplier.
@@ -170,6 +265,8 @@ function onItem(line, sku) {
     line.wh = item ? item.wh : WAREHOUSES[0].id;
     line.existingBatch = '';
     line.expiryMonths = null;
+    // An item that is not batch-managed opens at no labels (12.11.2026).
+    line.labels = batched(line) ? '1' : '0';
 }
 
 function onQty(line, value) {
@@ -264,23 +361,51 @@ async function save() {
         return;
     }
 
-    const receipt = await inventory.receiveGoods({
-        supplier: supplier.value.trim(),
-        supplierCode:
-            supplierCode.value && supplierCode.value !== OTHER
-                ? supplierCode.value
-                : null,
-        docNum: docNum.value,
-        date: date.value,
-        note: note.value,
-        lines: good.value.map((line) => ({
-            ...line,
-            currency: items.itemBySku(line.sku)?.price?.currency || 'ILS',
-        })),
-    });
+    saving.value = true;
 
-    emit('saved', receipt);
-    emit('close');
+    try {
+        const receipt = await purchasing.receiveDocument({
+            supplier: supplier.value.trim(),
+            supplierCode: knownSupplier.value ? supplierCode.value : null,
+            docType: docType.value,
+            docNum: docNum.value,
+            date: date.value,
+            note: note.value,
+            file: file.value,
+            lines: [
+                ...good.value.map((line) => {
+                    const kept = batched(line);
+
+                    return {
+                        ...line,
+                        batched: kept,
+                        existingBatch: kept ? line.existingBatch : '',
+                        supplierBatch: kept ? line.supplierBatch : '',
+                        waste: kept && line.waste,
+                        madeOn: kept ? line.madeOn : '',
+                        expiry: kept ? line.expiry : null,
+                        // A delivery note carries no price; the store drops any.
+                        price: invoice.value ? Number(line.price) : null,
+                        currency:
+                            items.itemBySku(line.sku)?.price?.currency || 'ILS',
+                    };
+                }),
+                ...general.value.map((line) => ({
+                    general: true,
+                    name: line.name.trim(),
+                    qty: Number(line.qty),
+                    price: Number(line.price),
+                })),
+            ],
+        });
+
+        emit('saved', receipt);
+        emit('close');
+    } catch (error) {
+        push({ title: String(error?.message || error), bad: true });
+    } finally {
+        saving.value = false;
+    }
 }
 </script>
 
@@ -313,8 +438,26 @@ async function save() {
                 />
             </div>
             <div>
+                <label class="a-lbl" :for="`${uid}-dt`">
+                    {{ t('buying.receive.docType') }}
+                    <span class="a-req">{{ t('labels.required') }}</span>
+                </label>
+                <ASelect
+                    :id="`${uid}-dt`"
+                    v-model="docType"
+                    :options="docTypeOptions"
+                    class="a-w100"
+                />
+            </div>
+            <div>
                 <label class="a-lbl" :for="`${uid}-doc`">
-                    {{ t('inventory.receipt.docNum') }}
+                    {{
+                        invoice
+                            ? t('buying.receive.docNumInvoice')
+                            : docType
+                              ? t('buying.receive.docNumNote')
+                              : t('inventory.receipt.docNum')
+                    }}
                     <span class="a-req">{{ t('labels.required') }}</span>
                 </label>
                 <AInput
@@ -348,6 +491,20 @@ async function save() {
                     :placeholder="t('inventory.receipt.notePh')"
                 />
             </div>
+            <div>
+                <label class="a-lbl" :for="`${uid}-file`">
+                    {{ t('buying.receive.file') }}
+                </label>
+                <AFilePick v-model="file" :input-id="`${uid}-file`" />
+            </div>
+        </div>
+
+        <div v-if="docType" class="a-note a-note--info rule">
+            {{
+                invoice
+                    ? t('inventory.receipt.invoicePrices')
+                    : t('buying.receive.noteNoPrices')
+            }}
         </div>
 
         <div
@@ -415,7 +572,12 @@ async function save() {
                             <span class="num">{{ after(line) }}</span>
                         </div>
                     </div>
-                    <div>
+                    <div v-if="!batched(line)" class="a-line-wide">
+                        <div class="a-hint">
+                            {{ t('buying.receive.notBatched') }}
+                        </div>
+                    </div>
+                    <div v-if="batched(line)">
                         <label class="a-lbl" :for="`${uid}-e${i}`">
                             {{ t('inventory.receipt.col.existing') }}
                         </label>
@@ -431,7 +593,7 @@ async function save() {
                             @update:model-value="onExisting(line, $event)"
                         />
                     </div>
-                    <div>
+                    <div v-if="batched(line)">
                         <label class="a-lbl" :for="`${uid}-sb${i}`">
                             {{ t('inventory.receipt.col.supplierBatch') }}
                             <span v-if="!line.existingBatch" class="a-req">{{
@@ -459,7 +621,7 @@ async function save() {
                             {{ t('inventory.receipt.batchIsSupplier') }}
                         </div>
                     </div>
-                    <div>
+                    <div v-if="batched(line)">
                         <label class="a-lbl" :for="`${uid}-ws${i}`">
                             {{ t('inventory.receipt.col.waste') }}
                         </label>
@@ -476,7 +638,7 @@ async function save() {
                             {{ t('inventory.receipt.wasteHint') }}
                         </div>
                     </div>
-                    <div>
+                    <div v-if="batched(line)">
                         <label class="a-lbl" :for="`${uid}-md${i}`">
                             {{ t('inventory.receipt.col.madeOn') }}
                         </label>
@@ -493,7 +655,7 @@ async function save() {
                             {{ t('inventory.receipt.madeOnHint') }}
                         </div>
                     </div>
-                    <div>
+                    <div v-if="batched(line)">
                         <label class="a-lbl" :for="`${uid}-x${i}`">
                             {{ t('inventory.receipt.col.expiry') }}
                             <span class="a-req">{{
@@ -534,14 +696,19 @@ async function save() {
                             </option>
                         </select>
                     </div>
-                    <div>
+                    <div v-if="invoice">
                         <label class="a-lbl" :for="`${uid}-p${i}`">
-                            {{ t('inventory.receipt.col.price') }}
+                            {{ t('buying.receive.priceInvoice') }}
+                            <span class="a-req">{{
+                                t('labels.required')
+                            }}</span>
                         </label>
                         <AInput
                             :id="`${uid}-p${i}`"
                             v-model="line.price"
                             type="number"
+                            min="0"
+                            step="0.01"
                             ltr
                             :aria-label="
                                 t('inventory.receipt.aria.price', { n: i + 1 })
@@ -574,7 +741,92 @@ async function save() {
             <AButton sm icon="plus" @click="addLine">
                 {{ t('inventory.receipt.addLine') }}
             </AButton>
+            <AButton sm icon="plus" @click="addGeneral">
+                {{ t('buying.receive.general.add') }}
+            </AButton>
             <span>{{ t('inventory.receipt.hint') }}</span>
+        </div>
+
+        <div v-if="general.length" class="gen">
+            <p class="a-hint gen-lead">
+                {{ t('buying.receive.general.lead') }}
+            </p>
+            <div class="a-lines" role="list">
+                <div
+                    v-for="(line, g) in general"
+                    :key="g"
+                    class="a-line-block"
+                    :class="{
+                        'is-ok':
+                            line.name.trim() &&
+                            Number(line.qty) > 0 &&
+                            isPrice(line.price),
+                    }"
+                    role="listitem"
+                >
+                    <div class="a-line-head">
+                        <span class="a-line-no">
+                            {{ t('buying.receive.general.line', { n: g + 1 }) }}
+                        </span>
+                        <AButton
+                            sm
+                            icon="trash"
+                            class="a-push"
+                            :aria-label="t('buying.receive.general.remove')"
+                            @click="removeGeneral(g)"
+                        />
+                    </div>
+                    <div class="a-line-body a-line-body--stacked">
+                        <div class="a-line-wide">
+                            <label class="a-lbl" :for="`${uid}-gn${g}`">
+                                {{ t('buying.receive.general.name') }}
+                                <span class="a-req">{{
+                                    t('labels.required')
+                                }}</span>
+                            </label>
+                            <AInput
+                                :id="`${uid}-gn${g}`"
+                                v-model="line.name"
+                                class="a-w100"
+                                :placeholder="
+                                    t('buying.receive.general.namePh')
+                                "
+                            />
+                        </div>
+                        <div>
+                            <label class="a-lbl" :for="`${uid}-gq${g}`">
+                                {{ t('buying.receive.general.qty') }}
+                                <span class="a-req">{{
+                                    t('labels.required')
+                                }}</span>
+                            </label>
+                            <AInput
+                                :id="`${uid}-gq${g}`"
+                                v-model="line.qty"
+                                type="number"
+                                min="0"
+                                ltr
+                            />
+                        </div>
+                        <div>
+                            <label class="a-lbl" :for="`${uid}-gp${g}`">
+                                {{ t('buying.receive.general.price') }}
+                                <span class="a-req">{{
+                                    t('labels.required')
+                                }}</span>
+                            </label>
+                            <AInput
+                                :id="`${uid}-gp${g}`"
+                                v-model="line.price"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                ltr
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <template #footer>
@@ -588,8 +840,8 @@ async function save() {
                 }}
             </AButton>
             <AButton @click="emit('close')">{{ t('ui.cancel') }}</AButton>
-            <span v-if="!valid" class="a-rf-need">
-                {{ t('inventory.receipt.need') }}
+            <span v-if="!valid && !saving" class="a-rf-need">
+                {{ blocker }}
             </span>
         </template>
     </AModal>
@@ -621,5 +873,17 @@ async function save() {
 .batch-ro {
     display: inline-block;
     margin-top: 8px;
+}
+
+.rule {
+    margin: 0 0 14px;
+}
+
+.gen {
+    margin-top: 14px;
+}
+
+.gen-lead {
+    margin: 0 0 8px;
 }
 </style>

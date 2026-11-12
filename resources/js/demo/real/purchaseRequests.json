@@ -235,7 +235,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600030
    },
    {
     "line": 2,
@@ -250,7 +251,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600030
    },
    {
     "line": 3,
@@ -265,7 +267,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600030
    },
    {
     "line": 4,
@@ -280,7 +283,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600030
    },
    {
     "line": 5,
@@ -295,7 +299,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600030
    },
    {
     "line": 6,
@@ -310,7 +315,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600030
    }
   ]
  },
@@ -370,7 +376,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600000
    },
    {
     "line": 2,
@@ -385,7 +392,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600000
    },
    {
     "line": 3,
@@ -400,7 +408,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600000
    },
    {
     "line": 4,
@@ -475,7 +484,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 9,
@@ -550,7 +560,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 14,
@@ -565,7 +576,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 15,
@@ -595,7 +607,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 17,
@@ -640,7 +653,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 20,
@@ -655,7 +669,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 21,
@@ -670,7 +685,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 22,
@@ -685,7 +701,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 23,
@@ -730,7 +747,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 26,
@@ -745,7 +763,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 27,
@@ -760,7 +779,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 28,
@@ -790,7 +810,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    },
    {
     "line": 30,
@@ -805,7 +826,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600007
    }
   ]
  },
@@ -850,7 +872,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600003
    },
    {
     "line": 3,
@@ -880,7 +903,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600003
    },
    {
     "line": 5,
@@ -895,7 +919,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600003
    },
    {
     "line": 6,
@@ -985,7 +1010,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600003
    },
    {
     "line": 13,
@@ -1075,7 +1101,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600003
    },
    {
     "line": 22,
@@ -1120,7 +1147,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600003
    },
    {
     "line": 25,
@@ -1150,7 +1178,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600003
    },
    {
     "line": 27,
@@ -1225,7 +1254,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600003
    },
    {
     "line": 33,
@@ -1285,7 +1315,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2600003
    }
   ]
  },
@@ -1315,7 +1346,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500200
    },
    {
     "line": 1,
@@ -1330,7 +1362,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500200
    },
    {
     "line": 2,
@@ -1345,7 +1378,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500200
    },
    {
     "line": 3,
@@ -1360,7 +1394,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500200
    },
    {
     "line": 4,
@@ -1375,7 +1410,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500200
    },
    {
     "line": 5,
@@ -1390,7 +1426,8 @@
     "dueOn": null,
     "status": "C",
     "uom": null,
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500200
    },
    {
     "line": 6,
@@ -1405,7 +1442,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500200
    }
   ]
  },
@@ -1435,7 +1473,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ליטר",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500185
    },
    {
     "line": 1,
@@ -1450,7 +1489,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500185
    },
    {
     "line": 2,
@@ -1465,7 +1505,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500185
    }
   ]
  },
@@ -1495,7 +1536,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ליטר",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500184
    }
   ]
  },
@@ -1540,7 +1582,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500192
    },
    {
     "line": 2,
@@ -1555,7 +1598,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500199
    },
    {
     "line": 3,
@@ -1570,7 +1614,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500199
    },
    {
     "line": 4,
@@ -1585,7 +1630,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500188
    },
    {
     "line": 5,
@@ -1615,7 +1661,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500188
    },
    {
     "line": 7,
@@ -1660,7 +1707,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500199
    },
    {
     "line": 11,
@@ -1675,7 +1723,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500199
    },
    {
     "line": 12,
@@ -1690,7 +1739,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500199
    },
    {
     "line": 13,
@@ -1720,7 +1770,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500192
    },
    {
     "line": 16,
@@ -1735,7 +1786,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500188
    },
    {
     "line": 18,
@@ -1765,7 +1817,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500188
    },
    {
     "line": 20,
@@ -1780,7 +1833,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500188
    },
    {
     "line": 24,
@@ -1795,7 +1849,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500192
    },
    {
     "line": 25,
@@ -1810,7 +1865,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500199
    },
    {
     "line": 28,
@@ -1840,7 +1896,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500188
    },
    {
     "line": 31,
@@ -1855,7 +1912,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500192
    },
    {
     "line": 34,
@@ -1885,7 +1943,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500199
    },
    {
     "line": 37,
@@ -1900,7 +1959,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500199
    },
    {
     "line": 38,
@@ -1930,7 +1990,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500199
    },
    {
     "line": 45,
@@ -1945,7 +2006,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500188
    },
    {
     "line": 46,
@@ -1960,7 +2022,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500188
    },
    {
     "line": 47,
@@ -2215,7 +2278,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 1,
@@ -2230,7 +2294,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500162
    },
    {
     "line": 2,
@@ -2245,7 +2310,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500162
    },
    {
     "line": 3,
@@ -2260,7 +2326,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 4,
@@ -2290,7 +2357,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 6,
@@ -2305,7 +2373,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 7,
@@ -2320,7 +2389,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 8,
@@ -2335,7 +2405,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 9,
@@ -2350,7 +2421,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 10,
@@ -2365,7 +2437,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 12,
@@ -2380,7 +2453,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500162
    },
    {
     "line": 13,
@@ -2395,7 +2469,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500162
    },
    {
     "line": 14,
@@ -2425,7 +2500,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 16,
@@ -2440,7 +2516,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500162
    },
    {
     "line": 17,
@@ -2485,7 +2562,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500162
    },
    {
     "line": 20,
@@ -2500,7 +2578,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500162
    },
    {
     "line": 21,
@@ -2530,7 +2609,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 23,
@@ -2545,7 +2625,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 24,
@@ -2575,7 +2656,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 26,
@@ -2605,7 +2687,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 28,
@@ -2620,7 +2703,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 29,
@@ -2635,7 +2719,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500162
    },
    {
     "line": 30,
@@ -2665,7 +2750,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 32,
@@ -2680,7 +2766,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 33,
@@ -2725,7 +2812,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500163
    },
    {
     "line": 36,
@@ -2815,7 +2903,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500174
    },
    {
     "line": 43,
@@ -2980,7 +3069,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500174
    },
    {
     "line": 56,
@@ -2995,7 +3085,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500174
    },
    {
     "line": 58,
@@ -3070,7 +3161,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500174
    },
    {
     "line": 63,
@@ -3115,7 +3207,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500174
    },
    {
     "line": 66,
@@ -3205,7 +3298,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 1,
@@ -3220,7 +3314,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 2,
@@ -3250,7 +3345,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 4,
@@ -3265,7 +3361,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 5,
@@ -3280,7 +3377,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 6,
@@ -3295,7 +3393,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 7,
@@ -3310,7 +3409,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 8,
@@ -3325,7 +3425,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 9,
@@ -3340,7 +3441,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 10,
@@ -3355,7 +3457,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 11,
@@ -3370,7 +3473,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 12,
@@ -3385,7 +3489,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 13,
@@ -3400,7 +3505,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 14,
@@ -3415,7 +3521,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 15,
@@ -3445,7 +3552,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 17,
@@ -3460,7 +3568,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 18,
@@ -3475,7 +3584,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 19,
@@ -3490,7 +3600,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 20,
@@ -3520,7 +3631,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 22,
@@ -3535,7 +3647,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 23,
@@ -3550,7 +3663,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 24,
@@ -3565,7 +3679,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 25,
@@ -3580,7 +3695,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 26,
@@ -3595,7 +3711,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 27,
@@ -3625,7 +3742,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 29,
@@ -3640,7 +3758,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 30,
@@ -3655,7 +3774,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 31,
@@ -3670,7 +3790,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 32,
@@ -3685,7 +3806,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 33,
@@ -3715,7 +3837,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 35,
@@ -3730,7 +3853,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 36,
@@ -3745,7 +3869,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 37,
@@ -3760,7 +3885,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 38,
@@ -3775,7 +3901,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 39,
@@ -3790,7 +3917,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 40,
@@ -3805,7 +3933,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 41,
@@ -3820,7 +3949,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 42,
@@ -3835,7 +3965,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 43,
@@ -3850,7 +3981,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 44,
@@ -3865,7 +3997,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 45,
@@ -3880,7 +4013,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 46,
@@ -3895,7 +4029,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 47,
@@ -3910,7 +4045,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 48,
@@ -3925,7 +4061,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 49,
@@ -3940,7 +4077,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 50,
@@ -3955,7 +4093,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 51,
@@ -3970,7 +4109,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 52,
@@ -4000,7 +4140,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 54,
@@ -4015,7 +4156,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 55,
@@ -4030,7 +4172,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 56,
@@ -4045,7 +4188,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 57,
@@ -4060,7 +4204,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 58,
@@ -4075,7 +4220,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 59,
@@ -4090,7 +4236,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 60,
@@ -4105,7 +4252,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 61,
@@ -4135,7 +4283,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 63,
@@ -4150,7 +4299,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 64,
@@ -4165,7 +4315,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 65,
@@ -4180,7 +4331,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 66,
@@ -4195,7 +4347,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 67,
@@ -4210,7 +4363,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 68,
@@ -4225,7 +4379,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 69,
@@ -4255,7 +4410,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 71,
@@ -4270,7 +4426,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 72,
@@ -4285,7 +4442,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 73,
@@ -4300,7 +4458,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 74,
@@ -4315,7 +4474,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 75,
@@ -4330,7 +4490,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 76,
@@ -4360,7 +4521,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 78,
@@ -4375,7 +4537,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 79,
@@ -4390,7 +4553,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 80,
@@ -4405,7 +4569,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 81,
@@ -4420,7 +4585,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 82,
@@ -4435,7 +4601,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 83,
@@ -4450,7 +4617,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 84,
@@ -4465,7 +4633,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 85,
@@ -4495,7 +4664,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 87,
@@ -4510,7 +4680,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 88,
@@ -4525,7 +4696,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 89,
@@ -4555,7 +4727,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 91,
@@ -4585,7 +4758,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 93,
@@ -4600,7 +4774,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500168
    },
    {
     "line": 94,
@@ -4615,7 +4790,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 95,
@@ -4645,7 +4821,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500169
    },
    {
     "line": 97,
@@ -4660,7 +4837,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 98,
@@ -4690,7 +4868,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 100,
@@ -4750,7 +4929,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 104,
@@ -4765,7 +4945,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500161
    },
    {
     "line": 105,
@@ -4810,7 +4991,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ליטר",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500156
    },
    {
     "line": 1,
@@ -4825,7 +5007,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500156
    },
    {
     "line": 2,
@@ -4840,7 +5023,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500156
    },
    {
     "line": 3,
@@ -4855,7 +5039,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500156
    }
   ]
  },
@@ -4885,7 +5070,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500154
    },
    {
     "line": 3,
@@ -4900,7 +5086,8 @@
     "dueOn": null,
     "status": "C",
     "uom": null,
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500154
    },
    {
     "line": 5,
@@ -4915,7 +5102,8 @@
     "dueOn": null,
     "status": "C",
     "uom": null,
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500154
    },
    {
     "line": 6,
@@ -4930,7 +5118,8 @@
     "dueOn": null,
     "status": "C",
     "uom": null,
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500154
    },
    {
     "line": 7,
@@ -4945,7 +5134,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500154
    },
    {
     "line": 8,
@@ -4960,7 +5150,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500154
    }
   ]
  },
@@ -6115,7 +6306,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ליטר",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500143
    }
   ]
  },
@@ -6145,7 +6337,8 @@
     "dueOn": null,
     "status": "C",
     "uom": null,
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    },
    {
     "line": 2,
@@ -6160,7 +6353,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    },
    {
     "line": 3,
@@ -6175,7 +6369,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    },
    {
     "line": 4,
@@ -6190,7 +6385,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    },
    {
     "line": 5,
@@ -6205,7 +6401,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    },
    {
     "line": 6,
@@ -6220,7 +6417,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    },
    {
     "line": 8,
@@ -6235,7 +6433,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    },
    {
     "line": 9,
@@ -6250,7 +6449,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    },
    {
     "line": 12,
@@ -6265,7 +6465,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    },
    {
     "line": 14,
@@ -6280,7 +6481,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    },
    {
     "line": 15,
@@ -6295,7 +6497,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    },
    {
     "line": 16,
@@ -6310,7 +6513,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500142
    }
   ]
  },
@@ -6340,7 +6544,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 3,
@@ -6355,7 +6560,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 6,
@@ -6370,7 +6576,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 8,
@@ -6385,7 +6592,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 9,
@@ -6400,7 +6608,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 10,
@@ -6415,7 +6624,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 11,
@@ -6430,7 +6640,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 12,
@@ -6445,7 +6656,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 14,
@@ -6460,7 +6672,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 15,
@@ -6475,7 +6688,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 16,
@@ -6490,7 +6704,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 17,
@@ -6505,7 +6720,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 18,
@@ -6520,7 +6736,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    },
    {
     "line": 19,
@@ -6535,7 +6752,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ליטר",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500140
    }
   ]
  },
@@ -6565,7 +6783,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500136
    },
    {
     "line": 1,
@@ -6580,7 +6799,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500136
    }
   ]
  },
@@ -6610,7 +6830,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 1,
@@ -6625,7 +6846,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 2,
@@ -6640,7 +6862,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 3,
@@ -6655,7 +6878,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 4,
@@ -6670,7 +6894,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 5,
@@ -6685,7 +6910,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 6,
@@ -6700,7 +6926,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 7,
@@ -6715,7 +6942,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 8,
@@ -6730,7 +6958,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 9,
@@ -6745,7 +6974,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 10,
@@ -6760,7 +6990,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 11,
@@ -6775,7 +7006,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 12,
@@ -6790,7 +7022,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 13,
@@ -6805,7 +7038,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 14,
@@ -6820,7 +7054,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 15,
@@ -6835,7 +7070,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 16,
@@ -6850,7 +7086,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 17,
@@ -6865,7 +7102,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    },
    {
     "line": 18,
@@ -6880,7 +7118,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500135
    }
   ]
  },
@@ -6910,7 +7149,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500134
    },
    {
     "line": 1,
@@ -6925,7 +7165,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500134
    },
    {
     "line": 2,
@@ -6940,7 +7181,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500134
    }
   ]
  },
@@ -6970,7 +7212,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500133
    },
    {
     "line": 2,
@@ -6985,7 +7228,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500133
    },
    {
     "line": 3,
@@ -7000,7 +7244,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500133
    },
    {
     "line": 4,
@@ -7015,7 +7260,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500133
    }
   ]
  },
@@ -7690,7 +7936,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 1,
@@ -7705,7 +7952,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 2,
@@ -7720,7 +7968,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500125
    },
    {
     "line": 3,
@@ -7735,7 +7984,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500125
    },
    {
     "line": 4,
@@ -7765,7 +8015,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 6,
@@ -7780,7 +8031,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 7,
@@ -7795,7 +8047,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 8,
@@ -7810,7 +8063,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 9,
@@ -7825,7 +8079,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 10,
@@ -7840,7 +8095,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 11,
@@ -7855,7 +8111,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 12,
@@ -7870,7 +8127,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 13,
@@ -7885,7 +8143,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 14,
@@ -7900,7 +8159,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 15,
@@ -7915,7 +8175,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 16,
@@ -7930,7 +8191,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500125
    },
    {
     "line": 17,
@@ -7945,7 +8207,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 18,
@@ -7960,7 +8223,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 19,
@@ -7975,7 +8239,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 20,
@@ -7990,7 +8255,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 21,
@@ -8020,7 +8286,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 23,
@@ -8035,7 +8302,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 24,
@@ -8050,7 +8318,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 25,
@@ -8065,7 +8334,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 26,
@@ -8080,7 +8350,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 27,
@@ -8095,7 +8366,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 28,
@@ -8110,7 +8382,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 29,
@@ -8125,7 +8398,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500125
    },
    {
     "line": 30,
@@ -8140,7 +8414,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 31,
@@ -8155,7 +8430,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 32,
@@ -8170,7 +8446,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 33,
@@ -8185,7 +8462,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 34,
@@ -8200,7 +8478,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 35,
@@ -8215,7 +8494,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 36,
@@ -8230,7 +8510,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 37,
@@ -8245,7 +8526,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 38,
@@ -8260,7 +8542,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 39,
@@ -8275,7 +8558,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 40,
@@ -8290,7 +8574,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 41,
@@ -8305,7 +8590,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 42,
@@ -8320,7 +8606,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 43,
@@ -8335,7 +8622,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 44,
@@ -8350,7 +8638,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 45,
@@ -8365,7 +8654,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500125
    },
    {
     "line": 46,
@@ -8380,7 +8670,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 47,
@@ -8395,7 +8686,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 48,
@@ -8410,7 +8702,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 49,
@@ -8425,7 +8718,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 50,
@@ -8440,7 +8734,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 51,
@@ -8455,7 +8750,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 52,
@@ -8470,7 +8766,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 53,
@@ -8485,7 +8782,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 54,
@@ -8500,7 +8798,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 55,
@@ -8515,7 +8814,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 56,
@@ -8530,7 +8830,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 57,
@@ -8545,7 +8846,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 58,
@@ -8560,7 +8862,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 59,
@@ -8575,7 +8878,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 60,
@@ -8590,7 +8894,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 61,
@@ -8605,7 +8910,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 62,
@@ -8635,7 +8941,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 64,
@@ -8650,7 +8957,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 65,
@@ -8665,7 +8973,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500126
    },
    {
     "line": 66,
@@ -8680,7 +8989,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 67,
@@ -8695,7 +9005,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 68,
@@ -8710,7 +9021,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 69,
@@ -8725,7 +9037,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 70,
@@ -8740,7 +9053,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 71,
@@ -8755,7 +9069,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 72,
@@ -8770,7 +9085,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 73,
@@ -8800,7 +9116,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 76,
@@ -8815,7 +9132,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 77,
@@ -8830,7 +9148,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 78,
@@ -8860,7 +9179,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 81,
@@ -8875,7 +9195,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 82,
@@ -8905,7 +9226,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 84,
@@ -8920,7 +9242,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 85,
@@ -8950,7 +9273,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 87,
@@ -8965,7 +9289,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 88,
@@ -8980,7 +9305,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 89,
@@ -8995,7 +9321,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 90,
@@ -9010,7 +9337,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 91,
@@ -9025,7 +9353,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500125
    },
    {
     "line": 92,
@@ -9040,7 +9369,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 93,
@@ -9055,7 +9385,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 94,
@@ -9070,7 +9401,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 95,
@@ -9085,7 +9417,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 96,
@@ -9100,7 +9433,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 97,
@@ -9115,7 +9449,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 98,
@@ -9130,7 +9465,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 99,
@@ -9145,7 +9481,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 100,
@@ -9160,7 +9497,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 101,
@@ -9175,7 +9513,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 102,
@@ -9190,7 +9529,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 103,
@@ -9205,7 +9545,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 104,
@@ -9220,7 +9561,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 105,
@@ -9235,7 +9577,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 106,
@@ -9250,7 +9593,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 107,
@@ -9265,7 +9609,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 108,
@@ -9280,7 +9625,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 109,
@@ -9295,7 +9641,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 110,
@@ -9310,7 +9657,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 111,
@@ -9325,7 +9673,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 112,
@@ -9340,7 +9689,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500126
    },
    {
     "line": 113,
@@ -9355,7 +9705,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 114,
@@ -9370,7 +9721,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 115,
@@ -9385,7 +9737,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 116,
@@ -9400,7 +9753,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 117,
@@ -9415,7 +9769,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 118,
@@ -9430,7 +9785,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 119,
@@ -9445,7 +9801,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 120,
@@ -9460,7 +9817,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 121,
@@ -9475,7 +9833,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 122,
@@ -9490,7 +9849,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 123,
@@ -9505,7 +9865,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 124,
@@ -9535,7 +9896,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 126,
@@ -9550,7 +9912,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 127,
@@ -9565,7 +9928,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 128,
@@ -9595,7 +9959,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 130,
@@ -9610,7 +9975,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 131,
@@ -9625,7 +9991,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 132,
@@ -9640,7 +10007,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 133,
@@ -9655,7 +10023,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 134,
@@ -9670,7 +10039,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 135,
@@ -9685,7 +10055,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 136,
@@ -9700,7 +10071,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 137,
@@ -9715,7 +10087,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 138,
@@ -9730,7 +10103,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 139,
@@ -9745,7 +10119,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 140,
@@ -9760,7 +10135,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 141,
@@ -9775,7 +10151,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 142,
@@ -9790,7 +10167,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 143,
@@ -9805,7 +10183,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 144,
@@ -9820,7 +10199,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 145,
@@ -9835,7 +10215,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500132
    },
    {
     "line": 146,
@@ -9850,7 +10231,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 147,
@@ -9865,7 +10247,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 148,
@@ -9880,7 +10263,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 149,
@@ -9895,7 +10279,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500130
    },
    {
     "line": 150,
@@ -9910,7 +10295,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 151,
@@ -9925,7 +10311,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 152,
@@ -9955,7 +10342,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 154,
@@ -9970,7 +10358,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500148
    },
    {
     "line": 155,
@@ -9985,7 +10374,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 156,
@@ -10000,7 +10390,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500126
    },
    {
     "line": 157,
@@ -10015,7 +10406,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 158,
@@ -10030,7 +10422,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 159,
@@ -10045,7 +10438,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500125
    },
    {
     "line": 160,
@@ -10060,7 +10454,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 161,
@@ -10075,7 +10470,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 162,
@@ -10090,7 +10486,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 163,
@@ -10105,7 +10502,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 164,
@@ -10120,7 +10518,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500126
    },
    {
     "line": 165,
@@ -10135,7 +10534,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 166,
@@ -10150,7 +10550,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500122
    },
    {
     "line": 167,
@@ -11920,7 +12321,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 3,
@@ -11935,7 +12337,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 4,
@@ -11950,7 +12353,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 5,
@@ -11965,7 +12369,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 6,
@@ -11980,7 +12385,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 7,
@@ -12025,7 +12431,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500105
    },
    {
     "line": 10,
@@ -12040,7 +12447,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 11,
@@ -12055,7 +12463,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500105
    },
    {
     "line": 12,
@@ -12070,7 +12479,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 13,
@@ -12085,7 +12495,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 14,
@@ -12100,7 +12511,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 15,
@@ -12115,7 +12527,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 16,
@@ -12130,7 +12543,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 17,
@@ -12175,7 +12589,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 20,
@@ -12190,7 +12605,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 21,
@@ -12205,7 +12621,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500105
    },
    {
     "line": 22,
@@ -12295,7 +12712,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 28,
@@ -12325,7 +12743,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500105
    },
    {
     "line": 30,
@@ -12370,7 +12789,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 34,
@@ -12400,7 +12820,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 36,
@@ -12415,7 +12836,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 37,
@@ -12430,7 +12852,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 38,
@@ -12445,7 +12868,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 39,
@@ -12475,7 +12899,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 41,
@@ -12505,7 +12930,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 43,
@@ -12535,7 +12961,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 45,
@@ -12550,7 +12977,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500105
    },
    {
     "line": 46,
@@ -12565,7 +12993,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 47,
@@ -12580,7 +13009,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 48,
@@ -12625,7 +13055,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 51,
@@ -12700,7 +13131,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 56,
@@ -12715,7 +13147,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 57,
@@ -12775,7 +13208,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 61,
@@ -12790,7 +13224,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500105
    },
    {
     "line": 62,
@@ -12805,7 +13240,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 63,
@@ -12820,7 +13256,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 64,
@@ -12835,7 +13272,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 65,
@@ -12865,7 +13303,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 67,
@@ -12880,7 +13319,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 68,
@@ -12895,7 +13335,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 69,
@@ -12910,7 +13351,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 70,
@@ -12970,7 +13412,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    },
    {
     "line": 74,
@@ -13000,7 +13443,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500102
    }
   ]
  },
@@ -13300,7 +13744,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 1,
@@ -13315,7 +13760,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 2,
@@ -13330,7 +13776,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 3,
@@ -13345,7 +13792,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 4,
@@ -13360,7 +13808,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 5,
@@ -13375,7 +13824,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 6,
@@ -13390,7 +13840,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 7,
@@ -13405,7 +13856,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 8,
@@ -13420,7 +13872,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 9,
@@ -13435,7 +13888,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 10,
@@ -13450,7 +13904,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 11,
@@ -13465,7 +13920,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    },
    {
     "line": 12,
@@ -13480,7 +13936,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500096
    }
   ]
  },
@@ -13555,7 +14012,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 1,
@@ -13570,7 +14028,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 2,
@@ -13585,7 +14044,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 3,
@@ -13600,7 +14060,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 4,
@@ -13615,7 +14076,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 5,
@@ -13630,7 +14092,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 6,
@@ -13660,7 +14123,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 8,
@@ -13675,7 +14139,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 9,
@@ -13690,7 +14155,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 10,
@@ -13705,7 +14171,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 11,
@@ -13735,7 +14202,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 13,
@@ -13750,7 +14218,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 14,
@@ -13765,7 +14234,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 15,
@@ -13780,7 +14250,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 16,
@@ -13795,7 +14266,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 17,
@@ -13810,7 +14282,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 18,
@@ -13825,7 +14298,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 19,
@@ -13840,7 +14314,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 20,
@@ -13855,7 +14330,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 21,
@@ -13870,7 +14346,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 22,
@@ -13885,7 +14362,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 23,
@@ -13900,7 +14378,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 24,
@@ -13915,7 +14394,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 25,
@@ -13945,7 +14425,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 27,
@@ -13960,7 +14441,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 28,
@@ -13975,7 +14457,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 29,
@@ -14005,7 +14488,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 31,
@@ -14020,7 +14504,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 32,
@@ -14035,7 +14520,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 33,
@@ -14050,7 +14536,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 34,
@@ -14065,7 +14552,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 35,
@@ -14080,7 +14568,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 36,
@@ -14095,7 +14584,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 37,
@@ -14110,7 +14600,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 38,
@@ -14125,7 +14616,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 39,
@@ -14140,7 +14632,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 40,
@@ -14155,7 +14648,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 41,
@@ -14170,7 +14664,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 42,
@@ -14200,7 +14695,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 44,
@@ -14215,7 +14711,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 45,
@@ -14230,7 +14727,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 46,
@@ -14260,7 +14758,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 48,
@@ -14275,7 +14774,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 49,
@@ -14290,7 +14790,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 50,
@@ -14305,7 +14806,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 51,
@@ -14320,7 +14822,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 52,
@@ -14335,7 +14838,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 53,
@@ -14350,7 +14854,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 54,
@@ -14365,7 +14870,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 55,
@@ -14380,7 +14886,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 56,
@@ -14395,7 +14902,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    },
    {
     "line": 57,
@@ -14410,7 +14918,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 59,
@@ -14425,7 +14934,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500085
    },
    {
     "line": 60,
@@ -14440,7 +14950,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500090
    }
   ]
  },
@@ -14485,7 +14996,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500092
    },
    {
     "line": 2,
@@ -14500,7 +15012,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500092
    },
    {
     "line": 3,
@@ -14605,7 +15118,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500092
    },
    {
     "line": 11,
@@ -14620,7 +15134,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500092
    },
    {
     "line": 12,
@@ -14725,7 +15240,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500092
    },
    {
     "line": 19,
@@ -14800,7 +15316,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500097
    },
    {
     "line": 1,
@@ -14815,7 +15332,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500097
    },
    {
     "line": 3,
@@ -14830,7 +15348,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500097
    },
    {
     "line": 8,
@@ -14845,7 +15364,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500097
    },
    {
     "line": 9,
@@ -14860,7 +15380,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500097
    },
    {
     "line": 10,
@@ -14875,7 +15396,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500097
    },
    {
     "line": 11,
@@ -14890,7 +15412,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500097
    },
    {
     "line": 13,
@@ -14905,7 +15428,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500097
    },
    {
     "line": 15,
@@ -14920,7 +15444,8 @@
     "dueOn": null,
     "status": "C",
     "uom": null,
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500097
    }
   ]
  },
@@ -14950,7 +15475,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500073
    },
    {
     "line": 1,
@@ -14965,7 +15491,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500073
    },
    {
     "line": 2,
@@ -14980,7 +15507,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500073
    },
    {
     "line": 3,
@@ -14995,7 +15523,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500073
    },
    {
     "line": 4,
@@ -15010,7 +15539,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500073
    },
    {
     "line": 5,
@@ -15025,7 +15555,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500073
    },
    {
     "line": 6,
@@ -15040,7 +15571,8 @@
     "dueOn": null,
     "status": "C",
     "uom": null,
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500073
    },
    {
     "line": 7,
@@ -15055,7 +15587,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500073
    }
   ]
  },
@@ -15625,7 +16158,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500070
    },
    {
     "line": 1,
@@ -15685,7 +16219,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500070
    },
    {
     "line": 5,
@@ -15895,7 +16430,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500070
    },
    {
     "line": 19,
@@ -15955,7 +16491,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500070
    },
    {
     "line": 23,
@@ -15985,7 +16522,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500070
    },
    {
     "line": 25,
@@ -16045,7 +16583,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500070
    },
    {
     "line": 29,
@@ -16225,7 +16764,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500068
    },
    {
     "line": 1,
@@ -16240,7 +16780,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500068
    },
    {
     "line": 2,
@@ -16255,7 +16796,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500068
    },
    {
     "line": 3,
@@ -16270,7 +16812,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500068
    },
    {
     "line": 5,
@@ -16285,7 +16828,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500068
    }
   ]
  },
@@ -16345,7 +16889,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 1,
@@ -16375,7 +16920,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 3,
@@ -16390,7 +16936,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500082
    },
    {
     "line": 4,
@@ -16405,7 +16952,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500075
    },
    {
     "line": 5,
@@ -16435,7 +16983,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 7,
@@ -16450,7 +16999,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 8,
@@ -16465,7 +17015,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 9,
@@ -16480,7 +17031,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 10,
@@ -16495,7 +17047,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 11,
@@ -16510,7 +17063,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 12,
@@ -16525,7 +17079,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 13,
@@ -16540,7 +17095,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 14,
@@ -16555,7 +17111,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500075
    },
    {
     "line": 15,
@@ -16630,7 +17187,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500082
    },
    {
     "line": 22,
@@ -16645,7 +17203,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 23,
@@ -16660,7 +17219,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 24,
@@ -16675,7 +17235,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500082
    },
    {
     "line": 25,
@@ -16690,7 +17251,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 26,
@@ -16705,7 +17267,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 27,
@@ -16720,7 +17283,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 28,
@@ -16735,7 +17299,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 29,
@@ -16750,7 +17315,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 30,
@@ -16765,7 +17331,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 31,
@@ -16780,7 +17347,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 32,
@@ -16795,7 +17363,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500075
    },
    {
     "line": 33,
@@ -16825,7 +17394,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 35,
@@ -16840,7 +17410,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 36,
@@ -16855,7 +17426,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500082
    },
    {
     "line": 37,
@@ -16870,7 +17442,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 38,
@@ -16885,7 +17458,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 39,
@@ -16900,7 +17474,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500082
    },
    {
     "line": 40,
@@ -16915,7 +17490,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 41,
@@ -16930,7 +17506,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 42,
@@ -16945,7 +17522,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 44,
@@ -16960,7 +17538,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 45,
@@ -16975,7 +17554,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 46,
@@ -16990,7 +17570,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 47,
@@ -17020,7 +17601,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 49,
@@ -17035,7 +17617,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 50,
@@ -17050,7 +17633,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 51,
@@ -17065,7 +17649,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 52,
@@ -17080,7 +17665,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 53,
@@ -17095,7 +17681,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 54,
@@ -17110,7 +17697,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 55,
@@ -17140,7 +17728,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 57,
@@ -17155,7 +17744,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500082
    },
    {
     "line": 58,
@@ -17170,7 +17760,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500082
    },
    {
     "line": 59,
@@ -17185,7 +17776,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500075
    },
    {
     "line": 60,
@@ -17200,7 +17792,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500082
    },
    {
     "line": 61,
@@ -17230,7 +17823,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 63,
@@ -17245,7 +17839,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 64,
@@ -17260,7 +17855,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500082
    },
    {
     "line": 65,
@@ -17275,7 +17871,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 66,
@@ -17290,7 +17887,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 67,
@@ -17305,7 +17903,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 68,
@@ -17350,7 +17949,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500082
    },
    {
     "line": 71,
@@ -17365,7 +17965,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 72,
@@ -17380,7 +17981,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 73,
@@ -17395,7 +17997,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500082
    },
    {
     "line": 74,
@@ -17425,7 +18028,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    },
    {
     "line": 77,
@@ -17440,7 +18044,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500074
    }
   ]
  },
@@ -17530,7 +18135,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500060
    },
    {
     "line": 6,
@@ -17680,7 +18286,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500060
    },
    {
     "line": 16,
@@ -18160,7 +18767,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500059
    },
    {
     "line": 1,
@@ -18175,7 +18783,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500059
    },
    {
     "line": 3,
@@ -18190,7 +18799,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500059
    },
    {
     "line": 4,
@@ -18205,7 +18815,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500059
    },
    {
     "line": 6,
@@ -18220,7 +18831,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500059
    },
    {
     "line": 7,
@@ -18235,7 +18847,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500059
    },
    {
     "line": 8,
@@ -18250,7 +18863,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500059
    },
    {
     "line": 9,
@@ -18265,7 +18879,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500059
    },
    {
     "line": 10,
@@ -18280,7 +18895,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500059
    }
   ]
  },
@@ -18310,7 +18926,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500053
    },
    {
     "line": 1,
@@ -18325,7 +18942,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500053
    },
    {
     "line": 2,
@@ -18340,7 +18958,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500053
    },
    {
     "line": 3,
@@ -18355,7 +18974,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500053
    }
   ]
  },
@@ -18385,7 +19005,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 1,
@@ -18400,7 +19021,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 2,
@@ -18415,7 +19037,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 3,
@@ -18430,7 +19053,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 4,
@@ -18445,7 +19069,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 5,
@@ -18460,7 +19085,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 6,
@@ -18475,7 +19101,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 9,
@@ -18535,7 +19162,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 19,
@@ -18625,7 +19253,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 25,
@@ -18655,7 +19284,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 27,
@@ -18700,7 +19330,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 30,
@@ -18715,7 +19346,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 32,
@@ -18775,7 +19407,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 36,
@@ -18790,7 +19423,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 37,
@@ -18805,7 +19439,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500057
    },
    {
     "line": 38,
@@ -18820,7 +19455,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 39,
@@ -18835,7 +19471,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 40,
@@ -18865,7 +19502,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 42,
@@ -18880,7 +19518,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500057
    },
    {
     "line": 43,
@@ -18910,7 +19549,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 45,
@@ -18925,7 +19565,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 50,
@@ -18955,7 +19596,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 52,
@@ -18970,7 +19612,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 53,
@@ -19045,7 +19688,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    },
    {
     "line": 60,
@@ -19060,7 +19704,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500056
    }
   ]
  },
@@ -19090,7 +19735,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500052
    },
    {
     "line": 1,
@@ -19105,7 +19751,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500052
    },
    {
     "line": 2,
@@ -19120,7 +19767,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500052
    },
    {
     "line": 3,
@@ -19135,7 +19783,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500052
    },
    {
     "line": 4,
@@ -19150,7 +19799,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500052
    },
    {
     "line": 5,
@@ -19165,7 +19815,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500052
    },
    {
     "line": 6,
@@ -19180,7 +19831,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500052
    },
    {
     "line": 7,
@@ -19195,7 +19847,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500052
    }
   ]
  },
@@ -19225,7 +19878,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500042
    },
    {
     "line": 1,
@@ -19240,7 +19894,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500042
    },
    {
     "line": 2,
@@ -19255,7 +19910,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500042
    },
    {
     "line": 3,
@@ -19270,7 +19926,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500042
    },
    {
     "line": 4,
@@ -19285,7 +19942,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500042
    },
    {
     "line": 5,
@@ -19300,7 +19958,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500042
    },
    {
     "line": 6,
@@ -19315,7 +19974,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500042
    },
    {
     "line": 7,
@@ -19330,7 +19990,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500042
    },
    {
     "line": 8,
@@ -19345,7 +20006,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500042
    },
    {
     "line": 9,
@@ -19360,7 +20022,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500042
    }
   ]
  },
@@ -19675,7 +20338,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500043
    },
    {
     "line": 1,
@@ -19690,7 +20354,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500043
    },
    {
     "line": 2,
@@ -19705,7 +20370,8 @@
     "dueOn": null,
     "status": "C",
     "uom": null,
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500043
    },
    {
     "line": 3,
@@ -19720,7 +20386,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500043
    },
    {
     "line": 4,
@@ -19735,7 +20402,8 @@
     "dueOn": null,
     "status": "C",
     "uom": null,
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500043
    },
    {
     "line": 5,
@@ -19750,7 +20418,8 @@
     "dueOn": null,
     "status": "C",
     "uom": null,
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500043
    }
   ]
  },
@@ -19780,7 +20449,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500035
    },
    {
     "line": 1,
@@ -19795,7 +20465,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500035
    },
    {
     "line": 2,
@@ -19810,7 +20481,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500035
    },
    {
     "line": 3,
@@ -19825,7 +20497,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500035
    },
    {
     "line": 4,
@@ -19840,7 +20513,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500035
    },
    {
     "line": 5,
@@ -19855,7 +20529,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500035
    },
    {
     "line": 6,
@@ -19870,7 +20545,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500035
    }
   ]
  },
@@ -20005,7 +20681,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 1,
@@ -20020,7 +20697,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 2,
@@ -20050,7 +20728,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 4,
@@ -20080,7 +20759,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 9,
@@ -20095,7 +20775,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 10,
@@ -20110,7 +20791,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 11,
@@ -20125,7 +20807,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 15,
@@ -20140,7 +20823,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 16,
@@ -20155,7 +20839,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 19,
@@ -20200,7 +20885,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 22,
@@ -20215,7 +20901,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 23,
@@ -20245,7 +20932,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 29,
@@ -20260,7 +20948,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 30,
@@ -20275,7 +20964,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 31,
@@ -20290,7 +20980,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 32,
@@ -20320,7 +21011,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 34,
@@ -20350,7 +21042,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 36,
@@ -20365,7 +21058,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 37,
@@ -20380,7 +21074,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 38,
@@ -20395,7 +21090,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 39,
@@ -20440,7 +21136,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 42,
@@ -20470,7 +21167,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 44,
@@ -20485,7 +21183,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 45,
@@ -20500,7 +21199,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 46,
@@ -20530,7 +21230,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 48,
@@ -20560,7 +21261,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 50,
@@ -20575,7 +21277,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 51,
@@ -20590,7 +21293,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 52,
@@ -20635,7 +21339,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 55,
@@ -20650,7 +21355,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 56,
@@ -20665,7 +21371,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500048
    },
    {
     "line": 57,
@@ -20680,7 +21387,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500051
    },
    {
     "line": 58,
@@ -20725,7 +21433,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500032
    },
    {
     "line": 1,
@@ -20755,7 +21464,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500032
    },
    {
     "line": 3,
@@ -20830,7 +21540,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500032
    },
    {
     "line": 8,
@@ -20845,7 +21556,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500032
    },
    {
     "line": 9,
@@ -20860,7 +21572,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500032
    },
    {
     "line": 10,
@@ -20950,7 +21663,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500032
    }
   ]
  },
@@ -20980,7 +21694,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500029
    },
    {
     "line": 1,
@@ -20995,7 +21710,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500029
    },
    {
     "line": 2,
@@ -21010,7 +21726,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "מ\"ל",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500029
    }
   ]
  },
@@ -21040,7 +21757,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500022
    },
    {
     "line": 5,
@@ -21055,7 +21773,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500022
    },
    {
     "line": 6,
@@ -21070,7 +21789,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500022
    },
    {
     "line": 7,
@@ -21085,7 +21805,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500022
    },
    {
     "line": 8,
@@ -21100,7 +21821,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500022
    },
    {
     "line": 9,
@@ -21115,7 +21837,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "יח'",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500022
    }
   ]
  },
@@ -21145,7 +21868,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 2,
@@ -21160,7 +21884,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 3,
@@ -21175,7 +21900,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 4,
@@ -21250,7 +21976,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 10,
@@ -21265,7 +21992,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 11,
@@ -21280,7 +22008,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 12,
@@ -21295,7 +22024,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 13,
@@ -21325,7 +22055,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 18,
@@ -21370,7 +22101,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500038
    },
    {
     "line": 22,
@@ -21400,7 +22132,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 24,
@@ -21445,7 +22178,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500038
    },
    {
     "line": 27,
@@ -21460,7 +22194,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500038
    },
    {
     "line": 29,
@@ -21475,7 +22210,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 30,
@@ -21490,7 +22226,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 31,
@@ -21610,7 +22347,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 40,
@@ -21625,7 +22363,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 41,
@@ -21640,7 +22379,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 42,
@@ -21655,7 +22395,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 43,
@@ -21670,7 +22411,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500038
    },
    {
     "line": 44,
@@ -21700,7 +22442,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 48,
@@ -21715,7 +22458,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 50,
@@ -21730,7 +22474,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500038
    },
    {
     "line": 51,
@@ -21745,7 +22490,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500038
    },
    {
     "line": 52,
@@ -21760,7 +22506,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 53,
@@ -21775,7 +22522,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500038
    },
    {
     "line": 54,
@@ -21790,7 +22538,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500038
    },
    {
     "line": 55,
@@ -21805,7 +22554,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 56,
@@ -21820,7 +22570,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 57,
@@ -21835,7 +22586,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 59,
@@ -21865,7 +22617,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500033
    },
    {
     "line": 61,
@@ -21880,7 +22633,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 62,
@@ -21895,7 +22649,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500038
    },
    {
     "line": 63,
@@ -21910,7 +22665,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 64,
@@ -21925,7 +22681,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 65,
@@ -21940,7 +22697,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 67,
@@ -21970,7 +22728,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500038
    },
    {
     "line": 70,
@@ -22000,7 +22759,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 72,
@@ -22030,7 +22790,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500030
    },
    {
     "line": 74,
@@ -22105,7 +22866,8 @@
     "dueOn": null,
     "status": "C",
     "uom": "ק\"ג",
-    "perUom": 1
+    "perUom": 1,
+    "targetPo": 2500021
    },
    {
     "line": 7,

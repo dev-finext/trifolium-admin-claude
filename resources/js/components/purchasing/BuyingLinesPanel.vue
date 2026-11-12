@@ -16,6 +16,19 @@
 // and the quantity. The rest of the card is a click away on the row, and the
 // export still writes every column, because a spreadsheet is the one place
 // where carrying everything costs nothing.
+//
+// Two things on the row are 12.11.2026's, and both are for production:
+//
+//   "הצעת מחיר" — on an order, the supplier's price for this order, beside the
+//   last purchase price so both are read together. Written while the order is
+//   a draft, sent or failed, until goods arrive for the line
+//   (config/buying.js `quoteEditable`); committed when the field is left, not
+//   on every keystroke, because each change is logged. It opens the price of
+//   a tax-invoice receipt and of an invoice attached later. Not exported.
+//
+//   A request line that moved to an order stays on the request, read-only,
+//   ticked, with the order it went to in place of its checkbox — a link when
+//   the order is on the desk, its number when SAP wrote it.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -26,7 +39,7 @@ import AEmpty from '@/components/ui/AEmpty.vue';
 import AInput from '@/components/ui/AInput.vue';
 import ANum from '@/components/ui/ANum.vue';
 import ATextarea from '@/components/ui/ATextarea.vue';
-import { BUYING_KIND, lineGap } from '@/config';
+import { BUYING_KIND, lineGap, lineMoved, quoteEditable } from '@/config';
 import { ils, qtyText } from '@/lib/money';
 import { useBuyingStore } from '@/stores/buying';
 import { useItemsStore } from '@/stores/items';
@@ -139,6 +152,17 @@ const cols = computed(() => {
             align: 'end',
             nowrap: true,
         },
+        ...(props.list.kind === 'order'
+            ? [
+                  {
+                      k: 'quotePrice',
+                      label: label('quotePrice'),
+                      align: 'end',
+                      nowrap: true,
+                      cls: 'bl-work',
+                  },
+              ]
+            : []),
         {
             k: 'qty',
             label: label('qty'),
@@ -215,6 +239,14 @@ const rows = computed(() =>
 );
 
 const openKey = ref('');
+
+/** A moved request line reads as the record it is now, not as work. */
+const rowClass = (row) => (lineMoved(row) ? 'bl-moved' : null);
+
+/** The quote as typed, committed when the field is left. */
+function onQuote(row, event) {
+    store.setQuotePrice(props.list.id, row.key, event.target.value);
+}
 
 const openLine = computed(
     () => rows.value.find((line) => line.key === openKey.value) || null,
@@ -326,6 +358,7 @@ const openLine = computed(
             :rows="rows"
             row-key="key"
             :selected="openKey"
+            :row-class="rowClass"
         >
             <template #cell-sku="{ row }">
                 <ANum class="a-code">{{ row.sku }}</ANum>
@@ -367,9 +400,26 @@ const openLine = computed(
                     row.lastPrice === null ? '—' : ils(row.lastPrice, 2)
                 }}</ANum>
             </template>
+            <template #cell-quotePrice="{ row }">
+                <AInput
+                    v-if="quoteEditable(list, row)"
+                    :model-value="row.quotePrice ?? ''"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    ltr
+                    class="bl-quote"
+                    :aria-label="t('buying.col.quotePrice')"
+                    :title="t('buying.quoteHint')"
+                    @change="onQuote(row, $event)"
+                />
+                <ANum v-else :class="{ 'bl-nil': row.quotePrice == null }">{{
+                    row.quotePrice == null ? '—' : ils(row.quotePrice, 2)
+                }}</ANum>
+            </template>
             <template #cell-qty="{ row }">
                 <AInput
-                    v-if="!readonly"
+                    v-if="!readonly && !lineMoved(row)"
                     :model-value="row.qty ?? ''"
                     type="number"
                     min="0"
@@ -406,7 +456,24 @@ const openLine = computed(
                 >
             </template>
             <template #cell-done="{ row }">
-                <label class="a-checkrow bl-done">
+                <span v-if="lineMoved(row)" class="bl-movedto">
+                    <RouterLink
+                        v-if="row.movedTo.id"
+                        class="a-linkbtn"
+                        :to="{
+                            name: 'buyingSheet',
+                            params: { kind: 'order', id: row.movedTo.id },
+                        }"
+                    >
+                        {{
+                            t('buying.movedTo', { number: row.movedTo.number })
+                        }}
+                    </RouterLink>
+                    <template v-else>{{
+                        t('buying.movedTo', { number: row.movedTo.number })
+                    }}</template>
+                </span>
+                <label v-else class="a-checkrow bl-done">
                     <input
                         type="checkbox"
                         :checked="row.done"
@@ -427,7 +494,11 @@ const openLine = computed(
                         @click="openKey = row.key"
                     />
                     <AButton
-                        v-if="!readonly && !(Number(row.received) > 0)"
+                        v-if="
+                            !readonly &&
+                            !(Number(row.received) > 0) &&
+                            !lineMoved(row)
+                        "
                         sm
                         kind="ghost"
                         icon="x"
@@ -594,6 +665,23 @@ const openLine = computed(
 
 .bl-sheet :deep(.a-code) {
     padding-inline: 8px;
+}
+
+/* The order's own price for the line — as narrow as the quantity beside it. */
+.bl-quote {
+    width: 84px;
+    min-width: 84px;
+}
+
+/* A request line that already became an order line: still on the sheet, as the
+   record of where it went, and quieter than the lines still being worked. */
+.bl-sheet :deep(tr.bl-moved td) {
+    color: var(--a-ink-3, var(--a-ink-4));
+}
+
+.bl-movedto {
+    font-size: 12.5px;
+    white-space: nowrap;
 }
 
 /* A quantity an order cannot leave without. Said on the field, not only in the

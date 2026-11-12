@@ -303,6 +303,8 @@ export const ATTACHMENT_ENTITY_IDS = [
     'supplier_invoice',
     'supplier_payment',
     'document',
+    // A goods receipt — the delivery note or tax invoice the goods came on.
+    'receipt',
 ];
 
 export const ATTACHMENT_RULES = {

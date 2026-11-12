@@ -149,6 +149,8 @@ const ENUM_NAMESPACES = [
     ],
     ['@/config/purchasing', 'PO_STATE_IDS', 'purchasing.state'],
     ['@/config/purchasing', 'SUPPLIER_NOTE_STATE_IDS', 'purchasing.noteState'],
+    ['@/config/buying', 'BUYING_STATE_IDS', 'buying.state'],
+    ['@/config/supplierDocs', 'RECEIPT_DOC_TYPE_IDS', 'supplierDocs.type'],
     ['@/config/stickers', 'STICKER_ALIGN_IDS', 'stickers.align'],
     ['@/config/stickers', 'STICKER_FIELD_IDS', 'stickers.field'],
     ['@/config/stickers', 'STICKER_KIND_IDS', 'stickers.kind'],

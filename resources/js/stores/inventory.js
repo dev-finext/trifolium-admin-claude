@@ -755,11 +755,37 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
 
     /**
-     * Receive goods into stock: one receipt, one batch per line, the item totals
-     * raised, and one ledger row per batch.
+     * Receive goods into stock — one goods receipt, which is one supplier
+     * document (config/supplierDocs.js).
      *
-     * @param {{supplier: *, docNum: string, date: string, note: string,
-     *          lines: Array<object>}} form
+     * **For production.** The receipt says which document the goods came on
+     * (`docType`): a delivery note, whose lines carry no price yet, or a tax
+     * invoice, whose every line carries one (the screens refuse to save it
+     * otherwise). Each line is one of three things:
+     *
+     *   a batch-managed item  ("ניהול אצוות" on, SAP's `ManBtchNum`): opens a
+     *                         batch — the supplier's own batch code, or WV and
+     *                         the date when there is none — or tops up an
+     *                         existing one, with its production date and
+     *                         expiry; one ledger row per batch.
+     *   an item not batch-    (`batched: false`): the quantity goes onto the
+     *   managed               item with no batch, no production date and no
+     *                         expiry; one ledger row with no batch.
+     *   a general line        ("פריט כללי", `general: true`): a free
+     *                         description, a quantity and a price before VAT.
+     *                         It posts no stock, opens no batch, writes no
+     *                         ledger row and prints no label — it is on the
+     *                         document only, and counts in its value.
+     *
+     * Quantities are in the stock unit; a price is per purchase unit, before
+     * VAT, and `perBuy` (the item's `numInBuy`) converts — a batch's cost is
+     * the price per stock unit. A priced line (tax invoice) writes the item
+     * card's last purchase price; a delivery note writes none until its
+     * invoice is attached (stores/purchasing.js `attachInvoice`).
+     *
+     * @param {{supplier: *, supplierCode?: string, po?: string,
+     *          docType?: 'delivery_note'|'tax_invoice', docNum: string,
+     *          date: string, note: string, lines: Array<object>}} form
      * @returns {Promise<{id: string, batches: string[]}>}
      */
     async function receiveGoods(form) {
@@ -776,11 +802,78 @@ export const useInventoryStore = defineStore('inventory', () => {
         );
         const supplier = known ? known.name : form.supplier;
         const supplierCode = known ? known.code : form.supplierCode || null;
+        const docType =
+            form.docType === 'tax_invoice' ? 'tax_invoice' : 'delivery_note';
+        // A delivery note carries no prices — whatever a caller sends.
+        const priceOf = (value) =>
+            docType === 'delivery_note' ||
+            value === '' ||
+            value === null ||
+            value === undefined
+                ? null
+                : Number(value);
         // The keys this receipt hands out, so two of its lines never share one.
         const taken = new Set();
 
         const lines = form.lines.map((line) => {
+            if (line.general) {
+                // "פריט כללי": on the document, never on the shelf. Its price
+                // is typed with it on either document — it is what the line
+                // is — and an invoice attached later may still correct it.
+                const text = String(line.name || '').trim();
+
+                return {
+                    general: true,
+                    sku: null,
+                    name: { he: text, en: text },
+                    unit: null,
+                    qty: Number(line.qty) || 1,
+                    perBuy: 1,
+                    wh: null,
+                    batch: null,
+                    number: null,
+                    price: Number(line.price) || 0,
+                    currency: line.currency || 'ILS',
+                    labels: 0,
+                };
+            }
+
             const item = itemBySku(line.sku);
+            const batched = line.batched !== false;
+            const perBuy = Number(line.perBuy) || 1;
+            const base = {
+                sku: line.sku,
+                name: item ? item.name : line.sku,
+                unit: item ? item.unit : null,
+                qty: Number(line.qty),
+                perBuy,
+                wh: line.wh,
+                // The order line this delivery is against, and the price the
+                // order quoted — what an invoice attached later opens at.
+                poKey: line.key || null,
+                quotePrice:
+                    line.quotePrice === null || line.quotePrice === undefined
+                        ? null
+                        : Number(line.quotePrice),
+                price: priceOf(line.price),
+                currency: line.currency || null,
+                labels: Number(line.labels) || 0,
+            };
+
+            if (!batched) {
+                return {
+                    ...base,
+                    batched: false,
+                    batch: null,
+                    number: null,
+                    waste: false,
+                    madeOn: null,
+                    expiry: null,
+                    supplierBatch: null,
+                    existing: false,
+                };
+            }
+
             // V2: a line may top up an existing batch instead of opening one; it
             // then takes that batch's number, expiry and supplier batch.
             const existing = line.existingBatch
@@ -802,11 +895,8 @@ export const useInventoryStore = defineStore('inventory', () => {
                   });
 
             return {
-                sku: line.sku,
-                name: item ? item.name : line.sku,
-                unit: item ? item.unit : null,
-                qty: Number(line.qty),
-                wh: line.wh,
+                ...base,
+                batched: true,
                 batch: minted.id,
                 number: minted.number,
                 waste: Boolean(line.waste) && !existing,
@@ -818,30 +908,29 @@ export const useInventoryStore = defineStore('inventory', () => {
                     ? existing.supplierBatch
                     : String(line.supplierBatch || '').trim() || null,
                 existing: Boolean(existing),
-                // V2: the price becomes the item card's last purchase price,
-                // and the label count feeds the labels module.
-                price:
-                    line.price === '' ||
-                    line.price === null ||
-                    line.price === undefined
-                        ? null
-                        : Number(line.price),
-                currency: line.currency || null,
-                labels: Number(line.labels) || 0,
             };
         });
+
+        const stockLines = lines.filter((line) => !line.general);
 
         bag('receipts').unshift({
             id,
             supplier,
             supplierCode,
             po: form.po || null,
+            docType,
+            // The number the supplier printed on the document.
             docNum: String(form.docNum).trim(),
+            supplierRef: null,
+            // The supplier invoice that bills this document: its own, for a
+            // tax invoice (stores/purchasing.js records it right after); none
+            // yet for a delivery note — see config/supplierDocs.js `isOpenNote`.
+            invoice: null,
             when,
             by,
             note: form.note.trim() || null,
             lines,
-            batches: lines.map((line) => line.batch),
+            batches: stockLines.map((line) => line.batch).filter(Boolean),
         });
 
         // SAP posts a goods receipt for the delivery; the console does the same
@@ -857,7 +946,8 @@ export const useInventoryStore = defineStore('inventory', () => {
             remarks: form.note.trim() || null,
             when,
             by,
-            lines: lines.map((line) => ({
+            // The stock document lists what moved stock — never a general line.
+            lines: stockLines.map((line) => ({
                 sku: line.sku,
                 name: line.name,
                 unit: line.unit,
@@ -868,7 +958,40 @@ export const useInventoryStore = defineStore('inventory', () => {
             })),
         });
 
-        lines.forEach((line) => {
+        stockLines.forEach((line, index) => {
+            if (!line.batched) {
+                // No batch: the quantity goes onto the item as it is.
+                const item = itemBySku(line.sku);
+
+                if (item) {
+                    item.onHand += line.qty;
+                    syncRow(item);
+                }
+
+                writeMovement({
+                    id: `mv-in-${id}-${line.sku}-${index + 1}`,
+                    kind: 'goods_in',
+                    sku: line.sku,
+                    name: line.name,
+                    unit: line.unit,
+                    wh: line.wh,
+                    qty: line.qty,
+                    batch: null,
+                    ref: id,
+                    when,
+                    by,
+                });
+                writeLog({
+                    act: 'goods_in',
+                    entType: 'item',
+                    ent: line.sku,
+                    to: String(line.qty),
+                    note: form.note.trim() || null,
+                });
+
+                return;
+            }
+
             if (line.existing) {
                 // Topping up: the batch grows, keeps its expiry, and this
                 // receipt is one more document behind it.
@@ -906,7 +1029,13 @@ export const useInventoryStore = defineStore('inventory', () => {
                     daysToExp: line.expiry ? -daysSince(line.expiry) : null,
                     state: 'active',
                     waste: Boolean(line.waste),
-                    unitCost: line.price ?? null,
+                    // Per stock unit; none until the price is known (a
+                    // delivery note's invoice writes it when attached).
+                    unitCost:
+                        line.price === null
+                            ? null
+                            : Math.round((line.price / line.perBuy) * 10000) /
+                              10000,
                     components: null,
                     by,
                 };
@@ -953,7 +1082,7 @@ export const useInventoryStore = defineStore('inventory', () => {
             ? dataset.data.items
             : [];
 
-        lines.forEach((line) => {
+        stockLines.forEach((line) => {
             const card = cards.find((row) => row.sku === line.sku);
 
             if (!card) {
@@ -976,11 +1105,113 @@ export const useInventoryStore = defineStore('inventory', () => {
 
         await persist('inventory/receipts', {
             id,
+            docType,
             docNum: String(form.docNum).trim(),
             lines,
         });
 
-        return { id, batches: lines.map((line) => line.batch) };
+        return {
+            id,
+            batches: stockLines.map((line) => line.batch).filter(Boolean),
+        };
+    }
+
+    /**
+     * Price a receipt that came on a delivery note, once the tax invoice that
+     * bills it is attached (stores/purchasing.js `attachInvoice`).
+     *
+     * **For production.** A delivery note books the stock in with no price;
+     * the invoice brings one per line — per purchase unit, before VAT — and
+     * writing them is the whole of what the stock side does with an invoice:
+     *
+     *   - each line takes its price (a general line may be corrected too);
+     *   - each batch this receipt opened takes its cost per stock unit,
+     *     price ÷ `perBuy` — a batch the delivery only topped up keeps its own;
+     *   - the stock document the receipt posted takes the prices on its lines,
+     *     so the paperwork says what the goods cost;
+     *   - the item card's last purchase price, currency and date are written —
+     *     unless the card already holds a price from a later delivery, which
+     *     stays: an invoice for last month's note does not undo this week's.
+     *
+     * No stock moves and no batch changes quantity: the goods were booked in
+     * when they arrived.
+     *
+     * @param {string} id  the receipt
+     * @param {Array<number|string>} prices  one per receipt line, by position
+     * @returns {Promise<object|null>} the receipt
+     */
+    async function priceReceipt(id, prices) {
+        const receipt = receiptById(id);
+
+        if (!receipt) {
+            return null;
+        }
+
+        const cards = Array.isArray(dataset.data.items)
+            ? dataset.data.items
+            : [];
+        const doc = inventoryDocs.value.find((one) => one.receipt === id);
+        const touched = { batches: new Set(), cards: new Set() };
+
+        receipt.lines.forEach((line, index) => {
+            const raw = prices?.[index];
+            const price = raw === '' || raw === null ? NaN : Number(raw);
+
+            if (!Number.isFinite(price) || price < 0) {
+                return;
+            }
+
+            line.price = price;
+
+            if (line.general) {
+                return;
+            }
+
+            const batch = line.batch ? batchById(line.batch) : null;
+
+            if (batch && !line.existing && batch.receipt === id) {
+                batch.unitCost =
+                    Math.round((price / (Number(line.perBuy) || 1)) * 10000) /
+                    10000;
+                touched.batches.add(batch);
+            }
+
+            const docLine = (doc?.lines || []).find(
+                (one) =>
+                    one.sku === line.sku &&
+                    (one.batch || null) === (line.batch || null),
+            );
+
+            if (docLine) {
+                docLine.price = price;
+            }
+
+            const card = cards.find((row) => row.sku === line.sku);
+            const since = card?.price?.lastPurchaseOn || '';
+
+            if (card && receipt.when.iso >= since) {
+                card.price = {
+                    ...card.price,
+                    lastPurchase: price,
+                    currency: line.currency || card.price?.currency || 'ILS',
+                    lastPurchaseOn: receipt.when.iso,
+                };
+                touched.cards.add(card);
+            }
+        });
+
+        await Promise.all([
+            persist(`inventory/receipts/${id}`, receipt, 'PUT'),
+            ...[...touched.batches].map((batch) =>
+                persist(`batches/${batch.id}`, batch, 'PUT'),
+            ),
+            ...[...touched.cards].map((card) =>
+                persist(`items/${card.sku}`, card, 'PUT'),
+            ),
+            ...(doc ? [persist(`inventoryDocs/${doc.id}`, doc, 'PUT')] : []),
+        ]);
+
+        return receipt;
     }
 
     /**
@@ -1978,6 +2209,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         fifoPlan,
 
         receiveGoods,
+        priceReceipt,
         manualIssue,
         manualReceive,
 

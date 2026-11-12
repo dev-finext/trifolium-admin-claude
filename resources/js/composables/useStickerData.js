@@ -274,6 +274,12 @@ export function useStickerData() {
         const rows = [];
 
         (receipt.lines || []).forEach((line, at) => {
+            // A general line ("פריט כללי") is on the document only — it has no
+            // item, no batch and never a label (12.11.2026).
+            if (line.general) {
+                return;
+            }
+
             const total = stickers.itemCount(line);
 
             for (let i = 1; i <= total; i += 1) {

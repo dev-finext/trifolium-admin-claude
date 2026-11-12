@@ -3,7 +3,10 @@
 // A purchase request is a shopping list and a purchase order is a list with a
 // supplier on it, so they are one record with a `kind` rather than two stores
 // that would share every line of their code. Neither posts stock or reserves
-// anything: they are written, worked through, and exported.
+// anything: they are written, worked through, and exported. An order's goods
+// are booked in through its receipts, each one a supplier document — a
+// delivery note or a tax invoice (config/supplierDocs.js) — and the order
+// closes only once every line carries a price (config/buying.js, the states).
 //
 // The lines carry their own copy of what the item looked like when it was added
 // — see `lineFromItem` in `config/buying.js` for why — and their own `key`: a
@@ -13,6 +16,7 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
 import {
+    allLinesMoved,
     ARCHIVE_FIELD,
     BUYING_KIND,
     BUYING_SERIES,
@@ -20,18 +24,23 @@ import {
     DEFAULT_WAREHOUSE,
     groupDoneLines,
     isFullyReceived,
+    isOpenNote,
     leadTimeOf,
+    lineMoved,
     lineOutstanding,
     linesEditable,
     liveOnly,
     lineFromItem,
     parsePaste,
+    quoteEditable,
+    RECEIPT_DOC_TYPE_IDS,
 } from '@/config';
 import { persist } from '@/data/source';
 import { hm, isoDaysAgo, now, stamp } from '@/lib/dates';
 import { useDatasetStore } from '@/stores/dataset';
 import { useInventoryStore } from '@/stores/inventory';
 import { useItemsStore } from '@/stores/items';
+import { usePurchasingStore } from '@/stores/purchasing';
 
 /** This moment, in the shape every record's `when` field carries. */
 function moment() {
@@ -44,6 +53,7 @@ export const useBuyingStore = defineStore('buying', () => {
     const dataset = useDatasetStore();
     const items = useItemsStore();
     const inventory = useInventoryStore();
+    const purchasing = usePurchasingStore();
 
     /**
      * One row in the system log.
@@ -224,14 +234,19 @@ export const useBuyingStore = defineStore('buying', () => {
 
         keyLines(list);
 
+        // A request line that moved to an order is a record of that order now:
+        // a pasted code never takes its quantity, and an item whose only line
+        // moved is added afresh — the buyer needs it again.
+        const live = list.lines.filter((line) => !lineMoved(line));
+
         for (const { code, qty } of parsePaste(text, (token) =>
             Boolean(items.rowBySku(token)),
         )) {
-            const twin = list.lines.find(
+            const twin = live.find(
                 (line) => line.sku === code && !(Number(line.received) > 0),
             );
 
-            if (twin || list.lines.some((line) => line.sku === code)) {
+            if (twin || live.some((line) => line.sku === code)) {
                 if (twin && qty > 0 && Number(twin.qty) !== qty) {
                     twin.qty = qty;
                     result.updated.push(code);
@@ -282,7 +297,7 @@ export const useBuyingStore = defineStore('buying', () => {
         if (
             !linesEditable(list) ||
             !row ||
-            list.lines.some((line) => line.sku === sku)
+            list.lines.some((line) => line.sku === sku && !lineMoved(line))
         ) {
             return null;
         }
@@ -315,7 +330,12 @@ export const useBuyingStore = defineStore('buying', () => {
         const list = listById(id);
         const line = lineOf(list, key);
 
-        if (!line || !linesEditable(list) || Number(line.received) > 0) {
+        if (
+            !line ||
+            !linesEditable(list) ||
+            Number(line.received) > 0 ||
+            lineMoved(line)
+        ) {
             return null;
         }
 
@@ -335,7 +355,8 @@ export const useBuyingStore = defineStore('buying', () => {
         if (
             !line ||
             !BUYING_KIND[list.kind]?.checklist ||
-            !linesEditable(list)
+            !linesEditable(list) ||
+            lineMoved(line)
         ) {
             return null;
         }
@@ -358,15 +379,62 @@ export const useBuyingStore = defineStore('buying', () => {
         const at = list.lines.findIndex((line) => line.key === key);
 
         // A line goods already arrived against is part of the record of what
-        // came; it stays.
-        if (at < 0 || Number(list.lines[at].received) > 0) {
+        // came, and a request line that moved to an order is the record of
+        // that move; both stay.
+        if (
+            at < 0 ||
+            Number(list.lines[at].received) > 0 ||
+            lineMoved(list.lines[at])
+        ) {
             return null;
         }
 
         list.lines.splice(at, 1);
-        save(list);
+
+        // What is left may be nothing but lines that already moved — which is
+        // a request that is done.
+        if (!settleRequest(list)) {
+            save(list);
+        }
 
         return list;
+    }
+
+    /**
+     * The order's price for one line — "הצעת מחיר", per purchase unit, before
+     * VAT — written beside the last purchase price. Open while `quoteEditable`
+     * (config/buying.js) says so: until goods arrive for the line. It opens the
+     * price of a tax-invoice receipt and of an invoice attached later; it is
+     * not in the regular export.
+     */
+    function setQuotePrice(id, key, value) {
+        const list = listById(id);
+        const line = lineOf(list, key);
+
+        if (!line || !quoteEditable(list, line)) {
+            return null;
+        }
+
+        const amount =
+            value === '' || value === null || value === undefined
+                ? null
+                : Number(value);
+        const next = Number.isFinite(amount) && amount >= 0 ? amount : null;
+
+        if (next === (line.quotePrice ?? null)) {
+            return line;
+        }
+
+        writeLog({
+            act: 'buying_quote',
+            ent: list.id,
+            from: line.quotePrice ?? null,
+            to: next === null ? null : `${line.sku} · ${next}`,
+        });
+        line.quotePrice = next;
+        save(list);
+
+        return line;
     }
 
     /**
@@ -429,21 +497,26 @@ export const useBuyingStore = defineStore('buying', () => {
     }
 
     /**
+     * May this sheet be taken off the lists? Only one nothing happened to: a
+     * draft order, or an open request none of whose lines moved to an order —
+     * a moved line is the record of an order, and the order points back at it.
+     */
+    const removable = (list) =>
+        Boolean(list) &&
+        ((list.kind === 'order' && list.state === 'draft') ||
+            (list.kind === 'request' &&
+                list.state === 'open' &&
+                !list.lines.some(lineMoved)));
+
+    /**
      * Take a sheet off the lists. Nothing is deleted — see
-     * `config/archive.js` — and only a sheet nothing happened to may go: a
-     * draft order, or a request still open. Anything sent or received stays
-     * on record.
+     * `config/archive.js` — and only a sheet nothing happened to may go
+     * (`removable`). Anything sent or received stays on record.
      */
     function removeList(id, { by, reason } = {}) {
         const list = listById(id);
 
-        if (
-            !list ||
-            !(
-                (list.kind === 'order' && list.state === 'draft') ||
-                (list.kind === 'request' && list.state === 'open')
-            )
-        ) {
+        if (!removable(list)) {
             return null;
         }
 
@@ -558,6 +631,13 @@ export const useBuyingStore = defineStore('buying', () => {
      * An item a draft already holds is not listed twice there: the quantities
      * are added together.
      *
+     * **For production (12.11.2026).** A line that moved is not taken off the
+     * request: it stays, read-only, marked with the order it went to
+     * (`movedTo: {id, number}`), so the request remains the record of what was
+     * asked for and where each item went. When this move leaves no line
+     * unmoved, the request is "בוצע" (`settleRequest`) — automatically, never
+     * by hand. A request moved in part stays open, the rest editable.
+     *
      * @returns {Array<{order: object, merged: boolean, lines: number}>}
      */
     function convertToOrders(id) {
@@ -600,10 +680,15 @@ export const useBuyingStore = defineStore('buying', () => {
                             ...line,
                             done: false,
                             received: null,
+                            movedTo: null,
                         }),
                     );
                 });
                 save(order);
+
+                lines.forEach((line) => {
+                    line.movedTo = { id: order.id, number: order.number };
+                });
 
                 writeLog({
                     act: 'buying_convert',
@@ -616,20 +701,96 @@ export const useBuyingStore = defineStore('buying', () => {
             },
         );
 
-        const moved = new Set(
-            plan.flatMap((group) => group.lines.map((line) => line.key)),
-        );
-
-        list.lines = list.lines.filter((line) => !moved.has(line.key));
-
         writeLog({
             act: 'buying_convert',
             ent: list.id,
             to: results.map(({ order }) => order.number).join(', '),
         });
-        save(list);
+
+        if (!settleRequest(list)) {
+            save(list);
+        }
 
         return results;
+    }
+
+    /**
+     * A request every line of which has moved to an order is "בוצע". Called by
+     * whatever can make that true — moving lines, and removing the last line
+     * that had not moved. Returns whether it moved the request.
+     */
+    function settleRequest(list) {
+        if (
+            list?.kind !== 'request' ||
+            list.state !== 'open' ||
+            !allLinesMoved(list)
+        ) {
+            return false;
+        }
+
+        setState(list.id, 'done');
+
+        return true;
+    }
+
+    // ---- an order's goods and its documents -----------------------------------
+
+    /** The goods receipts booked against an order, as records. */
+    const receiptsOfList = (list) =>
+        (list?.receipts || [])
+            .map((id) => inventory.receiptById(id))
+            .filter(Boolean);
+
+    /** Its delivery notes still waiting for a tax invoice. */
+    const openNotesOfList = (list) => receiptsOfList(list).filter(isOpenNote);
+
+    /** Did any of its deliveries come on a delivery note? */
+    const hasNotes = (list) =>
+        receiptsOfList(list).some(
+            (receipt) => receipt.docType === 'delivery_note',
+        );
+
+    /**
+     * Where an order goes once nothing more is coming — its last goods booked
+     * in, or the rest closed: "ממתין לחשבונית מס" while a delivery note of it
+     * still has no tax invoice, "התקבלה" when every line has its price.
+     */
+    const closingState = (list) =>
+        openNotesOfList(list).length ? 'awaiting_invoice' : 'received';
+
+    /**
+     * Close the orders an attached invoice may have finished: each one that
+     * was "ממתין לחשבונית מס" and has no open delivery note left moves to
+     * "התקבלה". An order still holding another open note keeps waiting.
+     *
+     * @param {string[]} ids  buying-list ids, as `purchasing.attachInvoice`
+     *   hands them back
+     * @returns {object[]} the orders that closed
+     */
+    function settleInvoiced(ids) {
+        return [...new Set(ids || [])]
+            .map((id) => listById(id))
+            .filter(
+                (list) =>
+                    list?.kind === 'order' &&
+                    list.state === 'awaiting_invoice' &&
+                    !openNotesOfList(list).length,
+            )
+            .map((list) => setState(list.id, 'received'));
+    }
+
+    /**
+     * Attach one tax invoice to open delivery notes, and close what it
+     * finished — the whole of "הצמדת חשבונית מס", from wherever it is pressed
+     * (the suppliers screen's open-notes tab, an order waiting for its invoice).
+     * The invoice itself is stores/purchasing.js `attachInvoice`.
+     *
+     * @returns {Promise<{invoice: object, closed: object[]}>}
+     */
+    async function attachInvoice(form) {
+        const { invoice, orders } = await purchasing.attachInvoice(form);
+
+        return { invoice, closed: settleInvoiced(orders) };
     }
 
     /**
@@ -639,21 +800,52 @@ export const useBuyingStore = defineStore('buying', () => {
      * sent eight of ten is recorded as eight, and the line keeps both figures.
      * Receipts add up: the order stays sent, and receivable, until every line
      * has arrived in full, so the two missing are booked against it when they
-     * come. The shelf is raised by `inventory.receiveGoods`, the one place
-     * that opens batches and posts the goods-receipt document, so what lands
-     * here lands exactly as a receipt entered by hand does.
+     * come. The shelf is raised by `inventory.receiveGoods` — through
+     * `purchasing.receiveDocument`, the one door every receipt goes through —
+     * so what lands here lands exactly as a receipt entered by hand does.
+     *
+     * **For production (12.11.2026).** Each delivery is one supplier document,
+     * chosen at the top of the receipt screen (config/supplierDocs.js):
+     *
+     *   "תעודת משלוח"  the lines are booked with no price. If this delivery
+     *                  completes the order, the order waits in "ממתין לחשבונית
+     *                  מס" until a tax invoice is attached to its notes.
+     *   "חשבונית מס"   every line carries its price — per purchase unit,
+     *                  before VAT, opened at the line's quote price — the
+     *                  invoice is recorded on the supplier, and an order this
+     *                  delivery completes closes on it ("התקבלה"), unless an
+     *                  earlier delivery note of it is still without an invoice.
+     *
+     * A general line ("פריט כללי": free description, quantity, price before
+     * VAT) rides on the document only — no order line, no stock, no batch, no
+     * label. An item whose card has "ניהול אצוות" off is booked in with no
+     * batch, no production date and no expiry.
+     *
+     * The item card's "בהזמנה" (stores/items.js `onOrderOf`, config/items.js
+     * `sentOrderQtyBySku`) is every SENT order's outstanding quantity —
+     * ordered less received, in the stock unit; drafts do not count. Each
+     * receipt here raises `received` on the order line, so the figure drops by
+     * exactly what arrived, and an order that leaves "נשלחה" — complete,
+     * waiting for its invoice, closed short — drops out of it altogether.
+     * Nothing on the card is written for it: the card reads the orders.
      *
      * @param {string} id
-     * @param {{docNum?: string, date: string, note?: string,
+     * @param {{docType: 'delivery_note'|'tax_invoice', docNum?: string,
+     *          date: string, note?: string, file?: File|null,
      *          lines: Array<{key: string, qty: number, supplierBatch?: string,
      *                        madeOn?: string, expiry?: string, price?: number,
-     *                        labels?: number}>}} form
+     *                        labels?: number}>,
+     *          general?: Array<{name: string, qty: number, price: number}>}} form
      */
     async function receiveList(id, form) {
         const list = listById(id);
 
         if (!list || list.kind !== 'order' || list.state !== 'sent') {
             throw new Error(`${id} is not a sent purchase order`);
+        }
+
+        if (!RECEIPT_DOC_TYPE_IDS.includes(form.docType)) {
+            throw new Error('A goods receipt says which document it came on');
         }
 
         keyLines(list);
@@ -666,34 +858,60 @@ export const useBuyingStore = defineStore('buying', () => {
             throw new Error('A goods receipt needs at least one quantity');
         }
 
-        const receipt = await inventory.receiveGoods({
+        const invoice = form.docType === 'tax_invoice';
+        const general = (form.general || []).filter((line) =>
+            String(line.name || '').trim(),
+        );
+
+        const booked = await purchasing.receiveDocument({
             supplier: list.supplier,
             supplierCode: list.supplierCode,
             po: list.id,
+            docType: form.docType,
             docNum: form.docNum || list.number,
             date: form.date,
             note: form.note || '',
+            file: form.file || null,
             // The sheet counts in the purchase unit and the shelf counts in the
             // stock unit; `numInBuy` off the item card is what sits between.
-            lines: arrived.map((line) => {
-                const row = list.lines.find((one) => one.key === line.key);
-                const perBuy = Number(row?.numInBuy) || 1;
+            lines: [
+                ...arrived.map((line) => {
+                    const row = list.lines.find((one) => one.key === line.key);
+                    const perBuy = Number(row?.numInBuy) || 1;
+                    const card = items.itemBySku(row?.sku || line.sku);
+                    const batched = card?.flags?.batch !== false;
 
-                return {
-                    sku: row?.sku || line.sku,
-                    qty: Number(line.qty) * perBuy,
-                    wh: line.wh || DEFAULT_WAREHOUSE,
-                    supplierBatch: line.supplierBatch || '',
-                    // The supplier's manufacturing date, off the certificate —
-                    // the label's "תאריך ייצור".
-                    madeOn: line.madeOn || null,
-                    expiry: line.expiry || null,
-                    price: line.price ?? row?.lastPrice ?? null,
-                    // How many containers the quantity is divided into: one
-                    // batch label for each, numbered 1/n … n/n.
-                    labels: Math.max(0, Math.round(Number(line.labels) || 0)),
-                };
-            }),
+                    return {
+                        sku: row?.sku || line.sku,
+                        key: line.key,
+                        qty: Number(line.qty) * perBuy,
+                        perBuy,
+                        wh: line.wh || DEFAULT_WAREHOUSE,
+                        batched,
+                        supplierBatch: batched ? line.supplierBatch || '' : '',
+                        // The supplier's manufacturing date, off the
+                        // certificate — the label's "תאריך ייצור".
+                        madeOn: batched ? line.madeOn || null : null,
+                        expiry: batched ? line.expiry || null : null,
+                        // A tax invoice's price, as typed; a delivery note has
+                        // none (`receiveGoods` drops whatever it is handed).
+                        price: invoice ? line.price : null,
+                        quotePrice: row?.quotePrice ?? null,
+                        // How many containers the quantity is divided into:
+                        // one batch label for each, numbered 1/n … n/n.
+                        labels: Math.max(
+                            0,
+                            Math.round(Number(line.labels) || 0),
+                        ),
+                    };
+                }),
+                ...general.map((line) => ({
+                    general: true,
+                    name: String(line.name).trim(),
+                    qty: Number(line.qty) || 1,
+                    price: line.price,
+                })),
+            ],
         });
 
         arrived.forEach((line) => {
@@ -706,27 +924,29 @@ export const useBuyingStore = defineStore('buying', () => {
             }
         });
 
-        list.receipts = [...(list.receipts || []), receipt.id];
+        list.receipts = [...(list.receipts || []), booked.id];
         list.received = moment();
 
-        writeLog({ act: 'buying_receive', ent: list.id, to: receipt.id });
+        writeLog({ act: 'buying_receive', ent: list.id, to: booked.id });
 
         if (isFullyReceived(list)) {
-            setState(id, 'received');
+            setState(id, closingState(list));
         } else {
             save(list);
         }
 
-        return receipt;
+        return booked;
     }
 
     /**
      * The rest is not coming: close an order part of which arrived.
      *
-     * It moves to `received` on what was booked in, and claims nothing more —
-     * the lines keep what came, and the shortfall stays visible on them. Only
-     * for an order something actually arrived on; one nothing arrived on is
-     * `failed`, which says that.
+     * It closes on what was booked in, and claims nothing more — the lines
+     * keep what came, and the shortfall stays visible on them. Only for an
+     * order something actually arrived on; one nothing arrived on is `failed`,
+     * which says that. Closed means "התקבלה" only when every delivery is
+     * priced; a delivery note still without its invoice makes it "ממתין
+     * לחשבונית מס" (`closingState`).
      */
     function closeRemainder(id, reason = '') {
         const list = listById(id);
@@ -749,7 +969,7 @@ export const useBuyingStore = defineStore('buying', () => {
             note: reason.trim() || null,
         });
 
-        return setState(id, 'received');
+        return setState(id, closingState(list));
     }
 
     return {
@@ -760,11 +980,13 @@ export const useBuyingStore = defineStore('buying', () => {
         addSkus,
         addItem,
         setQty,
+        setQuotePrice,
         toggleDone,
         removeLine,
         setSupplier,
         setNote,
         setSupplierNote,
+        removable,
         removeList,
         setState,
         markExported,
@@ -773,5 +995,10 @@ export const useBuyingStore = defineStore('buying', () => {
         convertToOrders,
         receiveList,
         closeRemainder,
+        receiptsOfList,
+        openNotesOfList,
+        hasNotes,
+        settleInvoiced,
+        attachInvoice,
     };
 });

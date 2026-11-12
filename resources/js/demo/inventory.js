@@ -366,23 +366,47 @@ const RECEIVERS = [
  * its real supplier, delivery-note reference and lines. The lines carry no
  * batch: this source does not join to demo/real/batches.json by any shared
  * key, so a receipt's batch column stays empty rather than a guessed one.
+ *
+ * Each is a supplier document (config/supplierDocs.js). SAP books every
+ * delivery as a goods receipt PO and bills it afterwards with an A/P invoice
+ * — which is exactly a delivery note and the tax invoice attached to it:
+ *
+ *   open in SAP (9)  an open delivery note: no invoice yet, so its lines carry
+ *                    no price. The price SAP copied onto the line from the
+ *                    order is kept as the line's quote, which is what "הצמדת
+ *                    חשבונית מס" opens at. Three of them are named as the base
+ *                    of an A/P invoice that billed none of their quantity —
+ *                    every line is still open in SAP — so they stay open.
+ *   closed in SAP    a delivery note attached to the invoice that billed it
+ *                    (`sapInvoice`: SAP's number for it, the supplier's own
+ *                    number on it, its date) — or, for the few SAP closed some
+ *                    other way, attached to an invoice it does not name.
+ *
+ * `docNum` is SAP's number for the receipt and `supplierRef` the number the
+ * supplier printed on the paper (`NumAtCard`). `po` is filled when the order
+ * is on the buyer's desk (demo/buying.js links it); `poNumber` always.
  */
 export function buildReceipts(stock = []) {
     const bySku = new Map(stock.map((row) => [row.sku, row]));
 
     return REAL_GOODS_RECEIPTS.map((real) => {
+        const open = real.status === 'O';
         const when = momentOf(real.docDate, `gr:${real.docNum}`);
         const lines = real.lines.map((line) => {
             const row = bySku.get(line.code);
+            const price = Number(line.price) > 0 ? Number(line.price) : null;
 
             return {
                 sku: line.code,
                 name: row ? row.name : { he: line.name, en: line.name },
                 unit: row ? row.unit : uomOf(line.uom),
                 qty: line.qty,
+                perBuy: Number(line.perUom) || 1,
                 wh: line.warehouse || DEFAULT_WAREHOUSE,
                 batch: null,
-                price: line.price || null,
+                poKey: null,
+                quotePrice: price,
+                price: open ? null : price,
             };
         });
 
@@ -391,7 +415,20 @@ export function buildReceipts(stock = []) {
             supplier: real.supplier,
             supplierCode: real.supplierCode,
             po: null,
+            poNumber: real.poNumber ? String(real.poNumber) : null,
+            docType: 'delivery_note',
             docNum: String(real.docNum),
+            supplierRef: real.supplierRef || null,
+            invoice: null,
+            sapInvoice: open
+                ? null
+                : {
+                      docNum: real.invoice?.docNum
+                          ? String(real.invoice.docNum)
+                          : null,
+                      ref: real.invoice?.ref || null,
+                      date: real.invoice?.date || null,
+                  },
             when,
             by: null,
             note: real.comments || null,

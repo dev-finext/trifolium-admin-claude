@@ -3,6 +3,9 @@ export default {
     title: 'קבצים',
     sub: '{n} קבצים',
     add: 'הוספת קובץ',
+    // A file picked for a form not saved yet (AFilePick).
+    replace: 'החלפת הקובץ',
+    clear: 'הסרת הקובץ שנבחר',
     empty: 'אין קבצים מצורפים',
     emptyHint: 'PDF, תמונות, Word ו-Excel · עד {mb} MB',
     demoNote:
@@ -28,6 +31,8 @@ export default {
         supplier: 'הספק',
         purchase_order: 'הזמנת הרכש',
         supplier_invoice: 'חשבונית הספק',
+        // קבלת סחורה — תעודת המשלוח או חשבונית המס שהסחורה הגיעה איתה
+        receipt: 'מסמך הספק',
         supplier_payment: 'התשלום לספק',
         document: 'המסמך',
         practitioner: 'המטפל',

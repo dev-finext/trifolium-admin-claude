@@ -8,10 +8,21 @@
 // The card owns its own confirmations and its own editor: suspending a supplier
 // or saving a change to his card is a logged action, and this component reports
 // each one rather than handing it up.
+//
+// "תעודות וחשבוניות" (12.11.2026, for production) — every document this
+// supplier's goods came on (stores/purchasing.js `documentsOf`): each goods
+// receipt as the delivery note or tax invoice it was, and each tax invoice
+// attached to notes afterwards. A row says its type, number, date, order,
+// value before VAT and where it stands — an open note, a note attached to
+// invoice X (ours, or SAP's for a migrated one), an invoice and what it covers.
+// Clicking a row opens it underneath: its lines with their prices, and its
+// scans — added at receipt or here, any time later. Open notes can take their
+// invoice from here too ("הצמדת חשבונית מס").
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
+import AttachInvoiceModal from '@/components/purchasing/AttachInvoiceModal.vue';
 import SupplierEditor from '@/components/system/SupplierEditor.vue';
 import AButton from '@/components/ui/AButton.vue';
 import ACard from '@/components/ui/ACard.vue';
@@ -27,12 +38,21 @@ import AttachmentsPanel from '@/components/ui/AttachmentsPanel.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { useLocalized } from '@/composables/useLocalized';
 import { useToast } from '@/composables/useToast';
-import { buyingStateTone, CURRENCY_SYMBOL, liveOnly } from '@/config';
+import {
+    buyingStateTone,
+    CURRENCY_SYMBOL,
+    docRef,
+    isOpenNote,
+    lineBuyQty,
+    lineNet,
+    liveOnly,
+} from '@/config';
 import { fmtISO } from '@/lib/dates';
-import { num } from '@/lib/money';
+import { ils, num, qtyText } from '@/lib/money';
 import { useBuyingStore } from '@/stores/buying';
 import { useCrmStore } from '@/stores/crm';
 import { useItemsStore } from '@/stores/items';
+import { usePurchasingStore } from '@/stores/purchasing';
 import { supplierDocsOk, useSystemStore } from '@/stores/system';
 
 const props = defineProps({
@@ -47,6 +67,7 @@ const { push } = useToast();
 const system = useSystemStore();
 const items = useItemsStore();
 const buying = useBuyingStore();
+const purchasing = usePurchasingStore();
 const crm = useCrmStore();
 const router = useRouter();
 
@@ -57,7 +78,120 @@ const ask = ref(null);
 const supplier = computed(() => props.supplier);
 const isActive = computed(() => supplier.value.status === 'active');
 const docsOk = computed(() => supplierDocsOk(supplier.value));
-const receipts = computed(() => system.supplierReceipts(supplier.value.code));
+
+// ---- תעודות וחשבוניות — the supplier's documents (12.11.2026) ----------------
+
+const documents = computed(() => purchasing.documentsOf(supplier.value.code));
+const openNotes = computed(() =>
+    documents.value.filter((row) => isOpenNote(row.receipt)),
+);
+const docKey = ref('');
+const openDoc = computed(
+    () => documents.value.find((row) => row.key === docKey.value) || null,
+);
+const attaching = ref(false);
+
+const documentCols = computed(() => [
+    { k: 'kind', label: t('supplierDocs.col.kind'), nowrap: true },
+    { k: 'ref', label: t('supplierDocs.col.ref'), nowrap: true },
+    { k: 'when', label: t('supplierDocs.col.when'), nowrap: true },
+    { k: 'po', label: t('supplierDocs.col.po'), nowrap: true },
+    { k: 'net', label: t('supplierDocs.col.net'), align: 'end', nowrap: true },
+    { k: 'status', label: t('supplierDocs.col.status') },
+    { k: 'files', label: t('supplierDocs.col.files'), nowrap: true },
+]);
+
+/** The order a receipt was booked against, by its number. */
+const poNumberOf = (receipt) =>
+    receipt
+        ? buying.listById(receipt.po)?.number || receipt.poNumber || ''
+        : '';
+
+/** Where a document stands, in a sentence. */
+function documentStatus(row) {
+    if (row.kind === 'tax_invoice') {
+        return row.receipt
+            ? t('supplierDocs.status.invoice')
+            : t('supplierDocs.status.covers', {
+                  refs: row.notes.map(docRef).join(', '),
+              });
+    }
+
+    if (row.invoice) {
+        return t('supplierDocs.status.attached', { num: row.invoice.num });
+    }
+
+    if (row.receipt?.sapInvoice) {
+        const sap = row.receipt.sapInvoice;
+
+        return sap.ref || sap.docNum
+            ? t('supplierDocs.status.sap', { num: sap.ref || sap.docNum })
+            : t('supplierDocs.status.sapUnknown');
+    }
+
+    return t('supplierDocs.status.open');
+}
+
+/** The scans on a document: the receipt's own, or the attached invoice's. */
+const scansOf = (row) =>
+    row.receipt
+        ? items.attachmentsOf('receipt', row.receipt.id)
+        : items.attachmentsOf('supplier_invoice', row.invoice?.id);
+
+/** A document's lines, for the panel under the table. */
+const docLines = computed(() => {
+    const row = openDoc.value;
+
+    if (!row) {
+        return [];
+    }
+
+    const receipts = row.receipt ? [row.receipt] : row.notes;
+
+    return receipts.flatMap((receipt) =>
+        receipt.lines.map((line, index) => ({
+            key: `${receipt.id}-${index}`,
+            ref: docRef(receipt),
+            sku: line.sku,
+            name: line.name,
+            general: Boolean(line.general),
+            qty: lineBuyQty(line),
+            unit: line.unit,
+            price: line.price ?? null,
+            net: lineNet(line),
+        })),
+    );
+});
+
+const docLineCols = computed(() => [
+    ...(openDoc.value?.notes.length
+        ? [{ k: 'ref', label: t('supplierDocs.col.ref'), nowrap: true }]
+        : []),
+    {
+        k: 'sku',
+        label: t('systemContacts.suppliers.items.col.code'),
+        nowrap: true,
+    },
+    { k: 'name', label: t('systemContacts.suppliers.items.col.name') },
+    {
+        k: 'qty',
+        label: t('supplierDocs.col.qty'),
+        align: 'end',
+        nowrap: true,
+    },
+    {
+        k: 'price',
+        label: t('supplierDocs.attach.price'),
+        align: 'end',
+        nowrap: true,
+    },
+    {
+        k: 'net',
+        label: t('supplierDocs.attach.net'),
+        align: 'end',
+        nowrap: true,
+    },
+]);
 
 // V2 — what the item cards and the purchase orders say about this supplier
 const linkedItems = computed(() =>
@@ -71,7 +205,7 @@ const linkedItems = computed(() =>
 // lists — not the legacy purchase-order fixture, which nothing writes to any
 // more. An order is still open while it is a draft or on its way; received
 // and failed are where it ends.
-const OPEN_ORDER_STATES = ['draft', 'sent'];
+const OPEN_ORDER_STATES = ['draft', 'sent', 'awaiting_invoice'];
 const supplierPos = computed(() =>
     buying
         .listsOf('order')
@@ -162,10 +296,12 @@ const tabs = computed(() => [
         icon: 'file_text',
     },
     {
+        // The supplier's documents — the goods receipts, as the delivery notes
+        // and tax invoices they came on, and the invoices attached to notes.
         id: 'receipts',
-        label: t('systemContacts.suppliers.tab.receipts'),
+        label: t('supplierDocs.tab.title'),
         icon: 'package',
-        n: receipts.value.length,
+        n: documents.value.length,
     },
     // V2
     {
@@ -346,23 +482,6 @@ const docRows = computed(() => {
 
     return rows;
 });
-
-const receiptCols = [
-    { k: 'id', label: t('systemContacts.suppliers.receipts.id'), nowrap: true },
-    {
-        k: 'doc',
-        label: t('systemContacts.suppliers.receipts.doc'),
-        nowrap: true,
-    },
-    {
-        k: 'when',
-        label: t('systemContacts.suppliers.receipts.when'),
-        nowrap: true,
-    },
-    { k: 'lines', label: t('systemContacts.suppliers.receipts.lines') },
-    { k: 'by', label: t('systemContacts.suppliers.receipts.by'), nowrap: true },
-    { k: 'note', label: t('systemContacts.suppliers.receipts.note') },
-];
 
 function docStatus(row) {
     if (row.ok) {
@@ -820,66 +939,177 @@ function onSaved(changed) {
             :ref-id="supplier.code"
         />
 
-        <template v-else>
+        <div v-else class="sp-stack">
             <ACard
-                v-if="receipts.length"
-                :title="t('systemContacts.suppliers.card.receipts')"
+                :title="t('supplierDocs.tab.title')"
                 icon="package"
                 :pad="false"
             >
-                <ADataTable :cols="receiptCols" :rows="receipts" row-key="id">
-                    <template #cell-id="{ row }">
-                        <span class="t-strong"
-                            ><ANum>{{ row.id }}</ANum></span
+                <template #right>
+                    <span v-if="openNotes.length" class="t-sub">{{
+                        t(
+                            'supplierDocs.tab.openNotes',
+                            { n: openNotes.length },
+                            openNotes.length,
+                        )
+                    }}</span>
+                    <AButton
+                        v-if="openNotes.length"
+                        sm
+                        kind="p"
+                        icon="file_text"
+                        @click="attaching = true"
+                    >
+                        {{ t('buying.attach.open') }}
+                    </AButton>
+                </template>
+                <p class="a-hint sp-pad">{{ t('supplierDocs.tab.lead') }}</p>
+                <ADataTable
+                    v-if="documents.length"
+                    :cols="documentCols"
+                    :rows="documents"
+                    row-key="key"
+                    :selected="docKey"
+                    @row="docKey = docKey === $event.key ? '' : $event.key"
+                >
+                    <template #cell-kind="{ row }">
+                        <AChip
+                            size="sm"
+                            :dot="false"
+                            :tone="
+                                row.kind === 'tax_invoice' ? 'blue' : 'slate'
+                            "
                         >
+                            {{ t(`supplierDocs.type.${row.kind}`) }}
+                        </AChip>
                     </template>
-                    <template #cell-doc="{ row }">
-                        <ANum>{{ row.docNum }}</ANum>
+                    <template #cell-ref="{ row }">
+                        <ANum class="a-code">{{ row.ref || '—' }}</ANum>
+                        <div v-if="row.receipt?.supplierRef" class="t-sub">
+                            {{
+                                t('supplierDocs.sapNum', {
+                                    num: row.receipt.docNum,
+                                })
+                            }}
+                        </div>
                     </template>
                     <template #cell-when="{ row }">
-                        <ANum>{{ fmtISO(row.when.iso) }}</ANum>
+                        <ANum>{{ fmtISO(row.when?.iso) }}</ANum>
                     </template>
-                    <template #cell-lines="{ row }">
-                        <ANum>{{
-                            t(
-                                'systemContacts.suppliers.receipts.lineCount',
-                                { n: num(row.lines.length) },
-                                row.lines.length,
-                            )
+                    <template #cell-po="{ row }">
+                        <ANum v-if="poNumberOf(row.receipt)">{{
+                            poNumberOf(row.receipt)
                         }}</ANum>
-                        <span class="t-sub">
-                            ·
-                            {{
-                                row.lines
-                                    .slice(0, 2)
-                                    .map((line) => loc(line.name))
-                                    .join(', ')
-                            }}
-                        </span>
-                    </template>
-                    <template #cell-by="{ row }">
-                        {{ loc(row.by) }}
-                    </template>
-                    <template #cell-note="{ row }">
-                        <span v-if="loc(row.note)">{{ loc(row.note) }}</span>
                         <span v-else class="sp-dash">—</span>
                     </template>
+                    <template #cell-net="{ row }">
+                        <ANum v-if="row.net !== null">{{
+                            ils(row.net, 2)
+                        }}</ANum>
+                        <span
+                            v-else-if="isOpenNote(row.receipt)"
+                            class="t-sub"
+                            >{{ t('supplierDocs.netPending') }}</span
+                        >
+                        <span v-else class="sp-dash">—</span>
+                    </template>
+                    <template #cell-status="{ row }">
+                        <span
+                            :class="{
+                                'sp-open': isOpenNote(row.receipt),
+                            }"
+                            >{{ documentStatus(row) }}</span
+                        >
+                    </template>
+                    <template #cell-files="{ row }">
+                        <span class="t-sub">{{
+                            t(
+                                'supplierDocs.files',
+                                { n: scansOf(row).length },
+                                scansOf(row).length,
+                            )
+                        }}</span>
+                    </template>
                 </ADataTable>
-            </ACard>
-            <ACard v-else>
                 <AEmpty
+                    v-else
                     icon="package"
-                    :title="t('systemContacts.suppliers.receipts.empty')"
-                    :sub="
-                        supplier.skus
-                            ? t('systemContacts.suppliers.receipts.emptyNone')
-                            : t(
-                                  'systemContacts.suppliers.receipts.emptyService',
-                              )
-                    "
+                    :title="t('supplierDocs.tab.empty')"
+                    :sub="t('supplierDocs.tab.emptySub')"
                 />
+                <p v-if="documents.length && !openDoc" class="a-hint sp-pad">
+                    {{ t('supplierDocs.tab.pick') }}
+                </p>
             </ACard>
-        </template>
+
+            <template v-if="openDoc">
+                <ACard
+                    :title="
+                        t('supplierDocs.tab.detail', {
+                            kind: t(`supplierDocs.type.${openDoc.kind}`),
+                            ref: openDoc.ref,
+                        })
+                    "
+                    icon="file_text"
+                    :pad="false"
+                >
+                    <template #right>
+                        <span class="t-sub">{{ documentStatus(openDoc) }}</span>
+                    </template>
+                    <ADataTable
+                        :cols="docLineCols"
+                        :rows="docLines"
+                        row-key="key"
+                    >
+                        <template #cell-ref="{ row }">
+                            <ANum>{{ row.ref }}</ANum>
+                        </template>
+                        <template #cell-sku="{ row }">
+                            <ANum v-if="row.sku" class="a-code">{{
+                                row.sku
+                            }}</ANum>
+                            <span v-else class="t-sub">{{
+                                t('supplierDocs.general')
+                            }}</span>
+                        </template>
+                        <template #cell-name="{ row }">{{
+                            loc(row.name)
+                        }}</template>
+                        <template #cell-qty="{ row }">
+                            <ANum>{{ qtyText(row.qty, 3) }}</ANum>
+                        </template>
+                        <template #cell-price="{ row }">
+                            <ANum v-if="row.price !== null">{{
+                                ils(row.price, 2)
+                            }}</ANum>
+                            <span v-else class="sp-dash">—</span>
+                        </template>
+                        <template #cell-net="{ row }">
+                            <ANum v-if="row.net !== null">{{
+                                ils(row.net, 2)
+                            }}</ANum>
+                            <span v-else class="sp-dash">—</span>
+                        </template>
+                    </ADataTable>
+                </ACard>
+                <AttachmentsPanel
+                    :key="openDoc.key"
+                    :entity="openDoc.receipt ? 'receipt' : 'supplier_invoice'"
+                    :ref-id="
+                        openDoc.receipt
+                            ? openDoc.receipt.id
+                            : openDoc.invoice.id
+                    "
+                    :title="t('supplierDocs.tab.scans')"
+                />
+            </template>
+
+            <AttachInvoiceModal
+                :open="attaching"
+                :supplier-code="supplier.code"
+                @close="attaching = false"
+            />
+        </div>
 
         <SupplierEditor
             :open="editing"
@@ -972,5 +1202,11 @@ function onSaved(changed) {
 
 .sp-dash {
     color: var(--a-ink-4);
+}
+
+/* A delivery note still waiting for its invoice. */
+.sp-open {
+    color: var(--a-amber, var(--a-ink));
+    font-weight: 600;
 }
 </style>

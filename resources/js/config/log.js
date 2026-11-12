@@ -60,6 +60,8 @@ export const LOG_ACTION_IDS = [
     'buying_supplier',
     'buying_close_short',
     'buying_archive',
+    // 12.11.2026 — the order's own price for a line ("הצעת מחיר")
+    'buying_quote',
     'production_create',
     'production_issue',
     'production_due',
@@ -69,6 +71,8 @@ export const LOG_ACTION_IDS = [
     'production_cancel',
     'supplier_note_close',
     'supplier_invoice_capture',
+    // 12.11.2026 — one tax invoice attached to open delivery notes
+    'supplier_invoice_attach',
     'supplier_invoice_dispute',
     'supplier_invoice_sent',
     'supplier_payment',

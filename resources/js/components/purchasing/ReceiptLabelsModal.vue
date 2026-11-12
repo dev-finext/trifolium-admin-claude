@@ -39,12 +39,15 @@ const labels = computed(() =>
 
 /** What each line prints, in the receipt's order. */
 const rows = computed(() =>
-    (props.receipt?.lines || []).map((line, at) => ({
-        key: `${line.batch}-${at}`,
-        sku: line.sku,
-        batch: inventory.batchNo(line.batch) || line.number || '',
-        count: stickers.itemCount(line),
-    })),
+    // A general line ("פריט כללי") never prints a label.
+    (props.receipt?.lines || [])
+        .filter((line) => !line.general)
+        .map((line, at) => ({
+            key: `${line.batch}-${at}`,
+            sku: line.sku,
+            batch: inventory.batchNo(line.batch) || line.number || '',
+            count: stickers.itemCount(line),
+        })),
 );
 
 /** The first label, so the person sees what is about to come out. */

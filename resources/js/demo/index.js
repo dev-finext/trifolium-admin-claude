@@ -177,6 +177,9 @@ export function buildDataset() {
         prepTypes: PREP_TYPES,
         stock,
         boms,
+        // An order on the desk is linked to the SAP receipts booked against
+        // it — the two waiting for their invoice are the real open notes.
+        receipts,
     });
 
     // SAP's `OnOrder` is frozen the day the catalogue was read, and part of it

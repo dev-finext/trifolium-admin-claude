@@ -72,7 +72,41 @@ def purchase_requests(conn, dicts, clean, limit):
         )
     ]
 
-    return _with_lines(conn, dicts, clean, heads, 'PRQ1')
+    heads = _with_lines(conn, dicts, clean, heads, 'PRQ1')
+
+    # Which purchase order each line became, when it became one: `PRQ1`
+    # records its target (`TargetType` 22 = `OPOR`), and the console keeps a
+    # line that moved on its request, marked with the order it went to, rather
+    # than deleting it (12.11.2026). Request 2600003 is a real "בוצע" — all six
+    # lines went to order 2600030; 2600001 was closed with 17 of 30 ordered.
+    for chunk in _chunks([head['docEntry'] for head in heads]):
+        entries = ','.join(str(e) for e in chunk)
+        targets = {
+            (row['docEntry'], row['line']): row['targetPo']
+            for row in dicts(
+                conn,
+                f"""
+                SELECT L.DocEntry AS docEntry, L.LineNum AS line,
+                       P.DocNum AS targetPo
+                FROM PRQ1 L
+                JOIN OPOR P ON P.DocEntry = L.TrgetEntry AND L.TargetType = 22
+                WHERE L.DocEntry IN ({entries})
+                """,
+            )
+        }
+        by_entry = {head['docEntry']: head for head in heads}
+
+        for (entry, line_no), po in targets.items():
+            head = by_entry.get(entry)
+
+            if not head:
+                continue
+
+            for line in head['lines']:
+                if line['line'] == line_no:
+                    line['targetPo'] = po
+
+    return heads
 
 
 def purchase_orders(conn, dicts, clean, limit):
@@ -121,7 +155,66 @@ def goods_receipts(conn, dicts, clean, limit):
         )
     ]
 
-    return _with_lines(conn, dicts, clean, heads, 'PDN1', base=True)
+    heads = _with_lines(conn, dicts, clean, heads, 'PDN1', base=True)
+
+    # Two joins the console reads every receipt by (12.11.2026):
+    #
+    #   poNumber  the purchase order the receipt was booked against — the
+    #             `DocNum` behind its lines' base (`BaseType` 22 = `OPOR`).
+    #   invoice   the A/P invoice that billed it — an `OPCH` whose lines name
+    #             this receipt as their base (`BaseType` 20 = `OPDN`): its
+    #             number, the supplier's own number on it (`NumAtCard`) and
+    #             its date. A closed receipt with no such invoice was closed
+    #             another way (an invoice straight off the order, or by hand);
+    #             an open one (`DocStatus` O) is a delivery note still waiting
+    #             for its invoice — exactly what "תעודות משלוח פתוחות" lists.
+    by_entry = {head['docEntry']: head for head in heads}
+
+    for head in heads:
+        head['poNumber'] = None
+        head['invoice'] = None
+
+    for chunk in _chunks(list(by_entry)):
+        entries = ','.join(str(e) for e in chunk)
+
+        for row in dicts(
+            conn,
+            f"""
+            SELECT DISTINCT L.DocEntry AS docEntry, P.DocNum AS poNumber
+            FROM PDN1 L
+            JOIN OPOR P ON P.DocEntry = L.BaseEntry AND L.BaseType = 22
+            WHERE L.DocEntry IN ({entries})
+            """,
+        ):
+            head = by_entry.get(row['docEntry'])
+
+            if head and head['poNumber'] is None:
+                head['poNumber'] = plain_int(row['poNumber'])
+
+        for row in dicts(
+            conn,
+            f"""
+            SELECT DISTINCT L.BaseEntry AS docEntry, I.DocNum AS docNum,
+                   I.NumAtCard AS ref, I.DocDate AS date
+            FROM PCH1 L
+            JOIN OPCH I ON I.DocEntry = L.DocEntry
+            WHERE L.BaseType = 20 AND L.BaseEntry IN ({entries})
+              AND I.CANCELED = 'N'
+            """,
+        ):
+            head = by_entry.get(row['docEntry'])
+
+            if head and head['invoice'] is None:
+                invoice = clean(row)
+                invoice.pop('docEntry', None)
+                head['invoice'] = invoice
+
+    return heads
+
+
+def plain_int(value):
+    """A document number as SAP hands it back, as a plain integer."""
+    return None if value is None else int(value)
 
 
 def supplier_invoices(conn, dicts, clean, limit):

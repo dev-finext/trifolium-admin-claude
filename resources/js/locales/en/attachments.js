@@ -3,6 +3,9 @@ export default {
     title: 'Files',
     sub: '{n} files',
     add: 'Add a file',
+    // A file picked for a form not saved yet (AFilePick).
+    replace: 'Replace the file',
+    clear: 'Remove the picked file',
     empty: 'No files attached',
     emptyHint: 'PDF, images, Word and Excel · up to {mb} MB',
     demoNote:
@@ -28,6 +31,8 @@ export default {
         supplier: 'the supplier',
         purchase_order: 'the purchase order',
         supplier_invoice: 'the supplier invoice',
+        // a goods receipt — the delivery note or tax invoice the goods came on
+        receipt: 'the supplier document',
         supplier_payment: 'the supplier payment',
         document: 'the document',
         practitioner: 'the practitioner',

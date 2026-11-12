@@ -87,6 +87,10 @@ const supply = computed(() => {
             t('buying.col.lastPriceOn'),
             line.lastPriceOn ? fmtISO(line.lastPriceOn) : '—',
         ],
+        // The order's own price, beside the last one — orders only.
+        ...(props.list?.kind === 'order'
+            ? [[t('buying.col.quotePrice'), money(line.quotePrice ?? null)]]
+            : []),
         [t('buying.col.evalPrice'), money(line.evalPrice)],
     ];
 });
@@ -139,7 +143,11 @@ const working = computed(() => {
     if (props.list?.kind === 'request') {
         rows.push([
             t('buying.col.done'),
-            line.done ? t('buying.lineDone') : t('buying.lineNotDone'),
+            line.movedTo
+                ? t('buying.movedTo', { number: line.movedTo.number })
+                : line.done
+                  ? t('buying.lineDone')
+                  : t('buying.lineNotDone'),
         ]);
     }
 

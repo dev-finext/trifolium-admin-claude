@@ -4,13 +4,22 @@
 //
 // Stock itself still moves only through the inventory store's goods receipt —
 // receiving against an order calls it and then records what the order got.
+//
+// Supplier documents (12.11.2026) live here too: every goods receipt is booked
+// in through `receiveDocument`, a tax invoice is recorded on the supplier the
+// moment it arrives, and `attachInvoice` attaches one tax invoice to open
+// delivery notes. The whole model is written out in config/supplierDocs.js.
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
 import {
+    ATTACHMENT_RULES,
+    docRef,
     invoiceDueState,
+    isOpenNote,
     PAYMENT_TERM,
     PO_RECEIVABLE_STATE_IDS,
+    receiptNet,
     SETTINGS,
     supplierInvoiceOpen,
     supplierInvoiceState,
@@ -34,6 +43,30 @@ const SOLD_STATUS_IDS = ['shipped', 'collected'];
 
 const PO_SERIES = 'PO-';
 const NOTE_SERIES = 'SDN-';
+
+/**
+ * The expense category a goods invoice is filed under, by the kind of supplier
+ * it came from — the accountant's split, never asked of the receiver.
+ */
+const CATEGORY_BY_SUPPLIER_KIND = {
+    raw_materials: 'raw_materials',
+    packaging: 'packaging',
+    logistics: 'shipping',
+};
+
+/** A price the person typed: a number, zero or more. */
+const isPrice = (value) =>
+    value !== '' &&
+    value !== null &&
+    value !== undefined &&
+    Number.isFinite(Number(value)) &&
+    Number(value) >= 0;
+
+/** A file's extension, the attachment record's `type`. */
+const extensionOf = (name) =>
+    (String(name)
+        .toLowerCase()
+        .match(/\.([a-z0-9]+)$/) || [])[1] || '';
 
 function moment(iso = null) {
     const at = iso || isoDaysAgo(0);
@@ -238,6 +271,83 @@ export const usePurchasingStore = defineStore('purchasing', () => {
         supplierNotes.value.filter((note) => note.state === 'open'),
     );
 
+    // ---- supplier documents (config/supplierDocs.js) --------------------------
+
+    /** The supplier invoice that bills a receipt, when it is one of ours. */
+    const invoiceOfReceipt = (receipt) =>
+        receipt?.invoice ? invoiceById(receipt.invoice) : null;
+
+    /**
+     * "תעודות משלוח פתוחות" — every delivery note no tax invoice is attached to
+     * yet, across suppliers, newest first. What the suppliers screen's tab of
+     * that name lists, and what "הצמדת חשבונית מס" picks from.
+     */
+    const openDeliveryNotes = computed(() =>
+        inventory.receipts
+            .filter(isOpenNote)
+            .sort((a, b) =>
+                `${b.when?.iso}${b.id}`.localeCompare(`${a.when?.iso}${a.id}`),
+            ),
+    );
+
+    /** One supplier's open delivery notes — the notes one invoice may cover. */
+    const openNotesOf = (code) =>
+        openDeliveryNotes.value.filter((note) => note.supplierCode === code);
+
+    /**
+     * Everything one supplier's goods came on, newest first — the supplier
+     * card's "מסמכים" tab, one row per paper the supplier printed:
+     *
+     *   each goods receipt, as the document it came on — a delivery note
+     *   (open, or attached to the invoice that billed it) or a tax invoice;
+     *
+     *   each tax invoice attached to delivery notes afterwards, which is a
+     *   paper of its own (`source: 'attach'`).
+     *
+     * A tax-invoice receipt is listed once: the supplier invoice it records is
+     * the same paper, not a second one.
+     *
+     * @returns {Array<{key: string, kind: 'delivery_note'|'tax_invoice',
+     *   ref: string, when: object, receipt: object|null, invoice: object|null,
+     *   notes: object[], net: number|null}>}
+     */
+    function documentsOf(code) {
+        const receipts = inventory.receipts.filter(
+            (receipt) => receipt.supplierCode === code,
+        );
+        const rows = receipts.map((receipt) => ({
+            key: receipt.id,
+            kind: receipt.docType || 'delivery_note',
+            ref: docRef(receipt),
+            when: receipt.when,
+            receipt,
+            invoice: invoiceOfReceipt(receipt),
+            notes: [],
+            net: receiptNet(receipt),
+        }));
+
+        invoicesOf(code)
+            .filter((invoice) => invoice.source === 'attach')
+            .forEach((invoice) => {
+                rows.push({
+                    key: invoice.id,
+                    kind: 'tax_invoice',
+                    ref: invoice.num,
+                    when: invoice.date,
+                    receipt: null,
+                    invoice,
+                    notes: (invoice.receipts || [])
+                        .map((id) => inventory.receiptById(id))
+                        .filter(Boolean),
+                    net: invoice.net,
+                });
+            });
+
+        return rows.sort((a, b) =>
+            `${b.when?.iso}${b.key}`.localeCompare(`${a.when?.iso}${a.key}`),
+        );
+    }
+
     /** The default expiry a new batch of an item takes, from its family. */
     const defaultExpiryFor = (sku) => {
         const item = items.itemBySku(sku);
@@ -299,6 +409,273 @@ export const usePurchasingStore = defineStore('purchasing', () => {
             ip: null,
             ...row,
         });
+    }
+
+    // ---- supplier documents: booking in, invoicing --------------------------
+
+    /**
+     * Record one supplier invoice that bills goods receipts, and put it on the
+     * supplier's open balance. The value is what the receipts' lines come to —
+     * every line priced by now — before VAT; VAT is added at the console's
+     * rate; it falls due by the supplier's payment terms from its date.
+     *
+     * `source` says how it came: `receipt` — the goods came on the invoice
+     * itself; `attach` — it was attached to delivery notes afterwards.
+     */
+    async function bookInvoice({
+        supplier,
+        num,
+        date,
+        receipts,
+        source,
+        file = null,
+        note = null,
+    }) {
+        const rows = bag('supplierInvoices');
+        const when = moment(date || null);
+        const terms = PAYMENT_TERM[supplier.terms]?.days ?? 30;
+        const net = round2(
+            receipts.reduce(
+                (sum, receipt) => sum + (receiptNet(receipt) || 0),
+                0,
+            ),
+        );
+        const vat = round2(net * SETTINGS.vatRate);
+        const invoice = {
+            id: nextSerial(
+                rows.map((row) => row.id),
+                'SI-',
+            ),
+            supplierCode: supplier.code,
+            supplier: supplier.name,
+            num: String(num).trim(),
+            date: when,
+            dueOn: isoDaysAgo(when.daysAgo - terms),
+            notes: [],
+            // The goods receipts this invoice bills — see config/supplierDocs.js.
+            receipts: receipts.map((receipt) => receipt.id),
+            source,
+            category:
+                CATEGORY_BY_SUPPLIER_KIND[supplier.kind] || 'raw_materials',
+            currency: 'ILS',
+            net,
+            vat,
+            total: round2(net + vat),
+            paid: 0,
+            state: 'open',
+            file: null,
+            accounting: { sent: false, when: null, by: null },
+            by: dataset.me?.name || null,
+            note: String(note || '').trim() || null,
+        };
+
+        if (file) {
+            const attachment = await items.addAttachment({
+                entity: 'supplier_invoice',
+                ref: invoice.id,
+                file,
+                type: extensionOf(file.name),
+            });
+
+            invoice.file = attachment.id;
+        }
+
+        receipts.forEach((receipt) => {
+            receipt.invoice = invoice.id;
+        });
+
+        rows.unshift(invoice);
+        refreshSupplierMoney(supplier.code);
+        await persist('supplier-invoices', invoice);
+        await Promise.all(
+            receipts.map((receipt) =>
+                persist(`inventory/receipts/${receipt.id}`, receipt, 'PUT'),
+            ),
+        );
+
+        return invoice;
+    }
+
+    /**
+     * The supplier invoice a tax-invoice receipt is.
+     *
+     * **For production.** When the goods came on "חשבונית מס" the document in
+     * the receiver's hand is the invoice: it is recorded on the supplier the
+     * moment the receipt is booked — the number and date typed on the receipt,
+     * the value its lines come to (every one priced, the screen does not save
+     * otherwise) — and it enters his open balance at once. Nothing waits for
+     * it, so the order it was received against closes on it ("התקבלה").
+     */
+    async function recordReceiptInvoice(receiptId) {
+        const receipt = inventory.receiptById(receiptId);
+        const supplier = supplierByCode(receipt?.supplierCode);
+
+        if (
+            !receipt ||
+            !supplier ||
+            receipt.docType !== 'tax_invoice' ||
+            receipt.invoice
+        ) {
+            return null;
+        }
+
+        const invoice = await bookInvoice({
+            supplier,
+            num: receipt.docNum,
+            date: receipt.when?.iso,
+            receipts: [receipt],
+            source: 'receipt',
+        });
+
+        writeLog({
+            act: 'supplier_invoice_capture',
+            entType: 'supplier_invoice',
+            ent: invoice.id,
+            to: `${invoice.num} · ${invoice.total}`,
+        });
+
+        return invoice;
+    }
+
+    /**
+     * Book a supplier document in — the one door every goods receipt goes
+     * through, against an order (stores/buying.js `receiveList`) or without
+     * one (the purchasing screen's goods-receipt dialog).
+     *
+     *   1. `inventory.receiveGoods` posts the stock, by the document's rules:
+     *      a delivery note with no prices, a tax invoice priced on every line,
+     *      a general line ("פריט כללי") on the document only, an item that is
+     *      not batch-managed with no batch (config/supplierDocs.js);
+     *   2. a tax invoice is recorded on the supplier there and then
+     *      (`recordReceiptInvoice`);
+     *   3. the document's scan, when one was attached, is filed on the receipt
+     *      — the supplier card's "מסמכים" tab shows it, and more can be added
+     *      there later.
+     *
+     * @param {object} form  `inventory.receiveGoods`'s form, plus `file`
+     * @returns {Promise<{id: string, batches: string[]}>}
+     */
+    async function receiveDocument(form) {
+        if (form.docType === 'tax_invoice') {
+            const unpriced = (form.lines || []).some(
+                (line) => !isPrice(line.price),
+            );
+
+            if (unpriced || !supplierByCode(form.supplierCode)) {
+                throw new Error(
+                    'A tax invoice needs a known supplier and a price on every line',
+                );
+            }
+        }
+
+        const booked = await inventory.receiveGoods(form);
+
+        if (form.docType === 'tax_invoice') {
+            await recordReceiptInvoice(booked.id);
+        }
+
+        if (form.file) {
+            await items.addAttachment({
+                entity: 'receipt',
+                ref: booked.id,
+                file: form.file,
+                type: extensionOf(form.file.name),
+            });
+        }
+
+        return booked;
+    }
+
+    /**
+     * הצמדת חשבונית מס — one tax invoice for one or more open delivery notes
+     * of one supplier.
+     *
+     * **For production.** The person picks the notes, types the invoice's
+     * number and date, and a price for every line of every note (mandatory —
+     * per purchase unit, before VAT — opened at the order's quote price, and a
+     * general line at its own). On saving, in one go:
+     *
+     *   - the prices are written onto the notes' lines, the batches they
+     *     opened take their cost and the item cards their last purchase price
+     *     (`inventory.priceReceipt`);
+     *   - one supplier invoice is recorded, billing those notes, and enters the
+     *     supplier's open balance (`bookInvoice`, `source: 'attach'`);
+     *   - the notes are closed — attached to that invoice — and leave the
+     *     "תעודות משלוח פתוחות" list;
+     *   - the purchase orders they were received against are handed back, so
+     *     the buying store can close each one that has no open note left
+     *     (stores/buying.js `attachInvoice` → `settleInvoiced`). On the server
+     *     this is one transaction.
+     *
+     * @param {{supplierCode: string, num: string, date: string,
+     *          receipts: string[], prices: Object<string, Array>,
+     *          file?: File|null, note?: string}} form
+     * @returns {Promise<{invoice: object, orders: string[]}>}
+     */
+    async function attachInvoice(form) {
+        const supplier = supplierByCode(form.supplierCode);
+        const num = String(form.num || '').trim();
+        const notes = (form.receipts || [])
+            .map((id) => inventory.receiptById(id))
+            .filter(Boolean);
+
+        if (!supplier || !num || !notes.length) {
+            throw new Error(
+                'An invoice needs a supplier, a number and at least one delivery note',
+            );
+        }
+
+        if (
+            notes.some(
+                (note) =>
+                    !isOpenNote(note) || note.supplierCode !== supplier.code,
+            )
+        ) {
+            throw new Error('Only open delivery notes of this supplier attach');
+        }
+
+        if (
+            notes.some((note) =>
+                note.lines.some(
+                    (line, index) => !isPrice(form.prices?.[note.id]?.[index]),
+                ),
+            )
+        ) {
+            throw new Error('Every line of every note needs its price');
+        }
+
+        if (
+            form.file &&
+            !ATTACHMENT_RULES.extensions.includes(extensionOf(form.file.name))
+        ) {
+            throw new Error('The invoice file is not a type that can be kept');
+        }
+
+        for (const note of notes) {
+            await inventory.priceReceipt(note.id, form.prices[note.id]);
+        }
+
+        const invoice = await bookInvoice({
+            supplier,
+            num,
+            date: form.date,
+            receipts: notes,
+            source: 'attach',
+            file: form.file || null,
+            note: form.note,
+        });
+
+        writeLog({
+            act: 'supplier_invoice_attach',
+            entType: 'supplier_invoice',
+            ent: invoice.id,
+            to: `${invoice.num} · ${notes.map(docRef).join(', ')}`,
+        });
+
+        return {
+            invoice,
+            orders: [...new Set(notes.map((note) => note.po).filter(Boolean))],
+        };
     }
 
     /** Create or update an order. Only an order nothing has been received on is edited. */
@@ -900,6 +1277,14 @@ export const usePurchasingStore = defineStore('purchasing', () => {
         supplierByCode,
         receivable,
         defaultExpiryFor,
+
+        invoiceOfReceipt,
+        openDeliveryNotes,
+        openNotesOf,
+        documentsOf,
+        receiveDocument,
+        recordReceiptInvoice,
+        attachInvoice,
 
         savePo,
         cancelPo,

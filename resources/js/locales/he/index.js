@@ -36,6 +36,7 @@ import safety from '@/locales/he/safety';
 import shell from '@/locales/he/shell';
 import stickers from '@/locales/he/stickers';
 import stockAnalysis from '@/locales/he/stockAnalysis';
+import supplierDocs from '@/locales/he/supplierDocs';
 import suppliers from '@/locales/he/suppliers';
 import systemContacts from '@/locales/he/systemContacts';
 import ui from '@/locales/he/ui';
@@ -77,6 +78,7 @@ export default {
     shell,
     stickers,
     stockAnalysis,
+    supplierDocs,
     suppliers,
     ui,
     users,

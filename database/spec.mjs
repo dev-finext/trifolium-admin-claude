@@ -308,6 +308,11 @@ export const TABLES = [
             col('po_id', 'text', 'po'),
             col('doc_num', 'text', 'docNum'),
             col('received_on', 'date', 'when.iso'),
+            // 12.11.2026 — which supplier document the goods came on
+            // (delivery_note | tax_invoice), and the supplier invoice that
+            // bills it: none on a delivery note still open.
+            col('doc_type', 'text', 'docType'),
+            col('invoice_id', 'text', 'invoice'),
         ],
         lines: {
             field: 'lines',
@@ -596,7 +601,7 @@ export const SETTINGS_KEY = 'settings';
  * **Bump this whenever a record's fields change.** The date plus a serial is
  * enough; nothing parses it, it only has to differ.
  */
-export const DATA_VERSION = '2026-11-12.3';
+export const DATA_VERSION = '2026-11-12.4';
 
 /** The settings row that carries it. */
 export const DATA_VERSION_KEY = 'data:version';

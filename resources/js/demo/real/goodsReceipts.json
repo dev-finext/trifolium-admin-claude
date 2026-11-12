@@ -103,7 +103,9 @@
     "baseEntry": 977,
     "baseRef": "75792"
    }
-  ]
+  ],
+  "poNumber": 2600159,
+  "invoice": null
  },
  {
   "docEntry": 293,
@@ -137,7 +139,13 @@
     "baseEntry": 969,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600151,
+  "invoice": {
+   "docNum": 2600157,
+   "ref": "SI266000259",
+   "date": "2026-08-03"
+  }
  },
  {
   "docEntry": 290,
@@ -171,7 +179,9 @@
     "baseEntry": 952,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600134,
+  "invoice": null
  },
  {
   "docEntry": 292,
@@ -259,7 +269,9 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": null
  },
  {
   "docEntry": 291,
@@ -491,7 +503,9 @@
     "baseEntry": 965,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600147,
+  "invoice": null
  },
  {
   "docEntry": 288,
@@ -597,7 +611,9 @@
     "baseEntry": 954,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600136,
+  "invoice": null
  },
  {
   "docEntry": 289,
@@ -811,7 +827,13 @@
     "baseEntry": 966,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600148,
+  "invoice": {
+   "docNum": 2600154,
+   "ref": "68848",
+   "date": "2026-07-30"
+  }
  },
  {
   "docEntry": 287,
@@ -899,7 +921,13 @@
     "baseEntry": 963,
     "baseRef": "11474"
    }
-  ]
+  ],
+  "poNumber": 2600145,
+  "invoice": {
+   "docNum": 2600153,
+   "ref": "16419",
+   "date": "2026-07-22"
+  }
  },
  {
   "docEntry": 286,
@@ -951,7 +979,13 @@
     "baseEntry": 960,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600142,
+  "invoice": {
+   "docNum": 2600147,
+   "ref": "SI2660679",
+   "date": "2026-07-21"
+  }
  },
  {
   "docEntry": 285,
@@ -1021,7 +1055,13 @@
     "baseEntry": 962,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600144,
+  "invoice": {
+   "docNum": 2600158,
+   "ref": "7558693",
+   "date": "2026-07-15"
+  }
  },
  {
   "docEntry": 284,
@@ -1055,7 +1095,13 @@
     "baseEntry": 956,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600138,
+  "invoice": {
+   "docNum": 2600144,
+   "ref": "SI266001901",
+   "date": "2026-07-15"
+  }
  },
  {
   "docEntry": 282,
@@ -1089,7 +1135,13 @@
     "baseEntry": 953,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600135,
+  "invoice": {
+   "docNum": 2600140,
+   "ref": "SI266000239",
+   "date": "2026-07-12"
+  }
  },
  {
   "docEntry": 283,
@@ -1321,7 +1373,13 @@
     "baseEntry": 945,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600127,
+  "invoice": {
+   "docNum": 2600141,
+   "ref": "68813",
+   "date": "2026-07-15"
+  }
  },
  {
   "docEntry": 281,
@@ -1355,7 +1413,9 @@
     "baseEntry": 946,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600128,
+  "invoice": null
  },
  {
   "docEntry": 280,
@@ -1389,7 +1449,13 @@
     "baseEntry": 937,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600119,
+  "invoice": {
+   "docNum": 2600134,
+   "ref": "7557456",
+   "date": "2026-06-24"
+  }
  },
  {
   "docEntry": 279,
@@ -1459,7 +1525,13 @@
     "baseEntry": 938,
     "baseRef": "11390"
    }
-  ]
+  ],
+  "poNumber": 2600120,
+  "invoice": {
+   "docNum": 2600125,
+   "ref": "16331",
+   "date": "2026-06-25"
+  }
  },
  {
   "docEntry": 278,
@@ -1493,7 +1565,13 @@
     "baseEntry": 942,
     "baseRef": "14205"
    }
-  ]
+  ],
+  "poNumber": 2600124,
+  "invoice": {
+   "docNum": 2600126,
+   "ref": "68777",
+   "date": "2026-06-28"
+  }
  },
  {
   "docEntry": 277,
@@ -1545,7 +1623,13 @@
     "baseEntry": 932,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600114,
+  "invoice": {
+   "docNum": 2600126,
+   "ref": "68777",
+   "date": "2026-06-28"
+  }
  },
  {
   "docEntry": 275,
@@ -1579,7 +1663,13 @@
     "baseEntry": 927,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600109,
+  "invoice": {
+   "docNum": 2600117,
+   "ref": "SI266001552",
+   "date": "2026-06-15"
+  }
  },
  {
   "docEntry": 276,
@@ -1613,7 +1703,13 @@
     "baseEntry": 923,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600105,
+  "invoice": {
+   "docNum": 2600130,
+   "ref": "SI266000193",
+   "date": "2026-06-10"
+  }
  },
  {
   "docEntry": 273,
@@ -1647,7 +1743,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2600127,
+   "ref": "68761",
+   "date": "2026-06-21"
+  }
  },
  {
   "docEntry": 272,
@@ -1681,7 +1783,13 @@
     "baseEntry": 929,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600111,
+  "invoice": {
+   "docNum": 2600127,
+   "ref": "68761",
+   "date": "2026-06-21"
+  }
  },
  {
   "docEntry": 274,
@@ -1931,7 +2039,13 @@
     "baseEntry": 924,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600106,
+  "invoice": {
+   "docNum": 2600133,
+   "ref": "36218",
+   "date": "2026-06-30"
+  }
  },
  {
   "docEntry": 269,
@@ -2127,7 +2241,13 @@
     "baseEntry": 922,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600104,
+  "invoice": {
+   "docNum": 2600127,
+   "ref": "68761",
+   "date": "2026-06-21"
+  }
  },
  {
   "docEntry": 270,
@@ -2215,7 +2335,9 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600107,
+  "invoice": null
  },
  {
   "docEntry": 268,
@@ -2249,7 +2371,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2600127,
+   "ref": "68761",
+   "date": "2026-06-21"
+  }
  },
  {
   "docEntry": 267,
@@ -2283,7 +2411,13 @@
     "baseEntry": 919,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600101,
+  "invoice": {
+   "docNum": 2600106,
+   "ref": "SI266001320",
+   "date": "2026-06-01"
+  }
  },
  {
   "docEntry": 264,
@@ -2317,7 +2451,13 @@
     "baseEntry": 909,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600091,
+  "invoice": {
+   "docNum": 2600100,
+   "ref": "12/115182",
+   "date": "2026-05-28"
+  }
  },
  {
   "docEntry": 266,
@@ -2459,7 +2599,13 @@
     "baseEntry": 887,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600069,
+  "invoice": {
+   "docNum": 2600112,
+   "ref": "16251",
+   "date": "2026-06-01"
+  }
  },
  {
   "docEntry": 271,
@@ -2493,7 +2639,9 @@
     "baseEntry": 916,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600098,
+  "invoice": null
  },
  {
   "docEntry": 261,
@@ -2527,7 +2675,13 @@
     "baseEntry": 908,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600090,
+  "invoice": {
+   "docNum": 2600097,
+   "ref": "SI66000170",
+   "date": "2026-05-20"
+  }
  },
  {
   "docEntry": 263,
@@ -2561,7 +2715,13 @@
     "baseEntry": 917,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600099,
+  "invoice": {
+   "docNum": 2600102,
+   "ref": "68735",
+   "date": "2026-05-31"
+  }
  },
  {
   "docEntry": 262,
@@ -2775,7 +2935,13 @@
     "baseEntry": 912,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600094,
+  "invoice": {
+   "docNum": 2600103,
+   "ref": "68734",
+   "date": "2026-05-31"
+  }
  },
  {
   "docEntry": 260,
@@ -2809,7 +2975,13 @@
     "baseEntry": 900,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600082,
+  "invoice": {
+   "docNum": 2600093,
+   "ref": "SI266001259",
+   "date": "2026-05-17"
+  }
  },
  {
   "docEntry": 265,
@@ -2933,7 +3105,9 @@
     "baseEntry": 906,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600088,
+  "invoice": null
  },
  {
   "docEntry": 258,
@@ -3003,7 +3177,13 @@
     "baseEntry": 902,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600084,
+  "invoice": {
+   "docNum": 2600099,
+   "ref": "68721",
+   "date": "2026-05-27"
+  }
  },
  {
   "docEntry": 259,
@@ -3037,7 +3217,13 @@
     "baseEntry": 907,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600089,
+  "invoice": {
+   "docNum": 2600097,
+   "ref": "SI66000170",
+   "date": "2026-05-20"
+  }
  },
  {
   "docEntry": 256,
@@ -3089,7 +3275,13 @@
     "baseEntry": 894,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600076,
+  "invoice": {
+   "docNum": 2600094,
+   "ref": "26600714",
+   "date": "2026-05-19"
+  }
  },
  {
   "docEntry": 254,
@@ -3285,7 +3477,13 @@
     "baseEntry": 898,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600080,
+  "invoice": {
+   "docNum": 2600088,
+   "ref": "68703",
+   "date": "2026-05-14"
+  }
  },
  {
   "docEntry": 255,
@@ -3319,7 +3517,9 @@
     "baseEntry": 897,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600079,
+  "invoice": null
  },
  {
   "docEntry": 253,
@@ -3353,7 +3553,9 @@
     "baseEntry": 868,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600050,
+  "invoice": null
  },
  {
   "docEntry": 252,
@@ -3423,7 +3625,13 @@
     "baseEntry": 893,
     "baseRef": "11185"
    }
-  ]
+  ],
+  "poNumber": 2600075,
+  "invoice": {
+   "docNum": 2600081,
+   "ref": "16123",
+   "date": "2026-04-30"
+  }
  },
  {
   "docEntry": 251,
@@ -3547,7 +3755,13 @@
     "baseEntry": 886,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600068,
+  "invoice": {
+   "docNum": 2600080,
+   "ref": "SI2660407",
+   "date": "2026-05-01"
+  }
  },
  {
   "docEntry": 257,
@@ -3653,7 +3867,9 @@
     "baseEntry": 885,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600067,
+  "invoice": null
  },
  {
   "docEntry": 249,
@@ -3687,7 +3903,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2600082,
+   "ref": "12/115069",
+   "date": "2026-04-30"
+  }
  },
  {
   "docEntry": 247,
@@ -3721,7 +3943,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2600082,
+   "ref": "12/115069",
+   "date": "2026-04-30"
+  }
  },
  {
   "docEntry": 248,
@@ -3755,7 +3983,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2600076,
+   "ref": "SI266000135",
+   "date": "2026-04-20"
+  }
  },
  {
   "docEntry": 246,
@@ -4113,7 +4347,9 @@
     "baseEntry": 877,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600059,
+  "invoice": null
  },
  {
   "docEntry": 250,
@@ -4309,7 +4545,9 @@
     "baseEntry": 878,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600060,
+  "invoice": null
  },
  {
   "docEntry": 245,
@@ -4343,7 +4581,13 @@
     "baseEntry": 879,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600061,
+  "invoice": {
+   "docNum": 2600124,
+   "ref": "SI266000124",
+   "date": "2026-04-14"
+  }
  },
  {
   "docEntry": 244,
@@ -4431,7 +4675,13 @@
     "baseEntry": 876,
     "baseRef": "11088"
    }
-  ]
+  ],
+  "poNumber": 2600058,
+  "invoice": {
+   "docNum": 2600068,
+   "ref": "16028",
+   "date": "2026-03-31"
+  }
  },
  {
   "docEntry": 243,
@@ -4465,7 +4715,9 @@
     "baseEntry": 1237,
     "baseRef": "2500218"
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": null
  },
  {
   "docEntry": 242,
@@ -4589,7 +4841,9 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600047,
+  "invoice": null
  },
  {
   "docEntry": 241,
@@ -4623,7 +4877,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2600062,
+   "ref": "116003",
+   "date": "2026-03-16"
+  }
  },
  {
   "docEntry": 240,
@@ -4657,7 +4917,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2600062,
+   "ref": "116003",
+   "date": "2026-03-16"
+  }
  },
  {
   "docEntry": 239,
@@ -4691,7 +4957,9 @@
     "baseEntry": 1237,
     "baseRef": "2500218"
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": null
  },
  {
   "docEntry": 238,
@@ -4761,7 +5029,13 @@
     "baseEntry": 854,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600036,
+  "invoice": {
+   "docNum": 2600059,
+   "ref": "000557",
+   "date": "2026-03-04"
+  }
  },
  {
   "docEntry": 237,
@@ -4795,7 +5069,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2600063,
+   "ref": "15997",
+   "date": "2026-03-01"
+  }
  },
  {
   "docEntry": 236,
@@ -4865,7 +5145,13 @@
     "baseEntry": 849,
     "baseRef": "640165"
    }
-  ]
+  ],
+  "poNumber": 2600031,
+  "invoice": {
+   "docNum": 2600042,
+   "ref": "IN2640165",
+   "date": "2026-02-23"
+  }
  },
  {
   "docEntry": 235,
@@ -5007,7 +5293,13 @@
     "baseEntry": 846,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600028,
+  "invoice": {
+   "docNum": 2600039,
+   "ref": "15911",
+   "date": "2026-02-22"
+  }
  },
  {
   "docEntry": 234,
@@ -5095,7 +5387,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600026,
+  "invoice": {
+   "docNum": 2600051,
+   "ref": "12/114784",
+   "date": "2026-02-28"
+  }
  },
  {
   "docEntry": 233,
@@ -5129,7 +5427,13 @@
     "baseEntry": 839,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600021,
+  "invoice": {
+   "docNum": 2600036,
+   "ref": "15888",
+   "date": "2026-02-17"
+  }
  },
  {
   "docEntry": 232,
@@ -5307,7 +5611,13 @@
     "baseEntry": 840,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600022,
+  "invoice": {
+   "docNum": 2600029,
+   "ref": "68558",
+   "date": "2026-02-11"
+  }
  },
  {
   "docEntry": 231,
@@ -5341,7 +5651,13 @@
     "baseEntry": 827,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600009,
+  "invoice": {
+   "docNum": 2600024,
+   "ref": "22602033",
+   "date": "2026-02-09"
+  }
  },
  {
   "docEntry": 230,
@@ -5375,7 +5691,9 @@
     "baseEntry": 1237,
     "baseRef": "2500218"
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": null
  },
  {
   "docEntry": 229,
@@ -5427,7 +5745,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600006,
+  "invoice": {
+   "docNum": 2600016,
+   "ref": "12/114551",
+   "date": "2026-01-26"
+  }
  },
  {
   "docEntry": 228,
@@ -5461,7 +5785,13 @@
     "baseEntry": 820,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600002,
+  "invoice": {
+   "docNum": 2600014,
+   "ref": "SI266000018",
+   "date": "2026-01-11"
+  }
  },
  {
   "docEntry": 226,
@@ -5513,7 +5843,13 @@
     "baseEntry": 822,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600004,
+  "invoice": {
+   "docNum": 2600010,
+   "ref": "7548142",
+   "date": "2026-01-14"
+  }
  },
  {
   "docEntry": 224,
@@ -5547,7 +5883,9 @@
     "baseEntry": 813,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500198,
+  "invoice": null
  },
  {
   "docEntry": 225,
@@ -5617,7 +5955,13 @@
     "baseEntry": 818,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2600000,
+  "invoice": {
+   "docNum": 2600007,
+   "ref": "15738",
+   "date": "2026-01-14"
+  }
  },
  {
   "docEntry": 223,
@@ -5903,7 +6247,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500202,
+  "invoice": {
+   "docNum": 2600012,
+   "ref": "68496",
+   "date": "2026-01-19"
+  }
  },
  {
   "docEntry": 222,
@@ -5937,7 +6287,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2600002,
+   "ref": "15721",
+   "date": "2026-01-06"
+  }
  },
  {
   "docEntry": 227,
@@ -6079,7 +6435,9 @@
     "baseEntry": 815,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500200,
+  "invoice": null
  },
  {
   "docEntry": 221,
@@ -6167,7 +6525,13 @@
     "baseEntry": 808,
     "baseRef": "SH25003035"
    }
-  ]
+  ],
+  "poNumber": 2500193,
+  "invoice": {
+   "docNum": 2600000,
+   "ref": "SI266000014",
+   "date": "2026-01-01"
+  }
  },
  {
   "docEntry": 220,
@@ -6201,7 +6565,13 @@
     "baseEntry": 811,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500196,
+  "invoice": {
+   "docNum": 2500220,
+   "ref": "12/114417",
+   "date": "2025-12-31"
+  }
  },
  {
   "docEntry": 219,
@@ -6271,7 +6641,13 @@
     "baseEntry": 800,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500185,
+  "invoice": {
+   "docNum": 2500213,
+   "ref": "SI2561241",
+   "date": "2025-12-24"
+  }
  },
  {
   "docEntry": 218,
@@ -6305,7 +6681,13 @@
     "baseEntry": 794,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500179,
+  "invoice": {
+   "docNum": 2500211,
+   "ref": "SI256003531",
+   "date": "2025-12-21"
+  }
  },
  {
   "docEntry": 217,
@@ -6537,7 +6919,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500183,
+  "invoice": {
+   "docNum": 2500207,
+   "ref": "68444",
+   "date": "2025-12-23"
+  }
  },
  {
   "docEntry": 216,
@@ -6571,7 +6959,13 @@
     "baseEntry": 792,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500177,
+  "invoice": {
+   "docNum": 2500198,
+   "ref": "SI256003406",
+   "date": "2025-12-08"
+  }
  },
  {
   "docEntry": 215,
@@ -6605,7 +6999,13 @@
     "baseEntry": 793,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500178,
+  "invoice": {
+   "docNum": 2500193,
+   "ref": "si2560000465",
+   "date": "2025-12-03"
+  }
  },
  {
   "docEntry": 214,
@@ -6639,7 +7039,9 @@
     "baseEntry": 776,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500161,
+  "invoice": null
  },
  {
   "docEntry": 213,
@@ -6709,7 +7111,13 @@
     "baseEntry": 788,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500173,
+  "invoice": {
+   "docNum": 2500189,
+   "ref": "si256e003143",
+   "date": "2025-11-27"
+  }
  },
  {
   "docEntry": 212,
@@ -6869,7 +7277,13 @@
     "baseEntry": 782,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500167,
+  "invoice": {
+   "docNum": 2500187,
+   "ref": "68411",
+   "date": "2025-11-30"
+  }
  },
  {
   "docEntry": 211,
@@ -6903,7 +7317,13 @@
     "baseEntry": 773,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500158,
+  "invoice": {
+   "docNum": 2500184,
+   "ref": "sh25003316",
+   "date": "2025-11-27"
+  }
  },
  {
   "docEntry": 210,
@@ -6937,7 +7357,13 @@
     "baseEntry": 787,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500172,
+  "invoice": {
+   "docNum": 2500194,
+   "ref": "12/114251",
+   "date": "2025-11-30"
+  }
  },
  {
   "docEntry": 209,
@@ -7025,7 +7451,13 @@
     "baseEntry": 781,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500166,
+  "invoice": {
+   "docNum": 2500188,
+   "ref": "SI2561138",
+   "date": "2025-11-24"
+  }
  },
  {
   "docEntry": 208,
@@ -7095,7 +7527,13 @@
     "baseEntry": 786,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500171,
+  "invoice": {
+   "docNum": 2500192,
+   "ref": "35679",
+   "date": "2025-11-30"
+  }
  },
  {
   "docEntry": 207,
@@ -7291,7 +7729,13 @@
     "baseEntry": 777,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500162,
+  "invoice": {
+   "docNum": 2500185,
+   "ref": "15563",
+   "date": "2025-11-20"
+  }
  },
  {
   "docEntry": 205,
@@ -7325,7 +7769,13 @@
     "baseEntry": 770,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500155,
+  "invoice": {
+   "docNum": 2500178,
+   "ref": "si256003145",
+   "date": "2025-11-12"
+  }
  },
  {
   "docEntry": 206,
@@ -7359,7 +7809,13 @@
     "baseEntry": 772,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500157,
+  "invoice": {
+   "docNum": 2500176,
+   "ref": "SI250289",
+   "date": "2025-11-10"
+  }
  },
  {
   "docEntry": 202,
@@ -7483,7 +7939,13 @@
     "baseEntry": 771,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500156,
+  "invoice": {
+   "docNum": 2500175,
+   "ref": "Sl2561101",
+   "date": "2025-11-12"
+  }
  },
  {
   "docEntry": 203,
@@ -7769,7 +8231,13 @@
     "baseEntry": 767,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500152,
+  "invoice": {
+   "docNum": 2500180,
+   "ref": "68367",
+   "date": "2025-11-18"
+  }
  },
  {
   "docEntry": 204,
@@ -7893,7 +8361,13 @@
     "baseEntry": 769,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500154,
+  "invoice": {
+   "docNum": 2500192,
+   "ref": "35679",
+   "date": "2025-11-30"
+  }
  },
  {
   "docEntry": 199,
@@ -7945,7 +8419,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2500180,
+   "ref": "68367",
+   "date": "2025-11-18"
+  }
  },
  {
   "docEntry": 200,
@@ -7979,7 +8459,13 @@
     "baseEntry": 764,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500149,
+  "invoice": {
+   "docNum": 2500177,
+   "ref": "SI256000422",
+   "date": "2025-11-05"
+  }
  },
  {
   "docEntry": 201,
@@ -8031,7 +8517,9 @@
     "baseEntry": 759,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500144,
+  "invoice": null
  },
  {
   "docEntry": 198,
@@ -8245,7 +8733,13 @@
     "baseEntry": 755,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500140,
+  "invoice": {
+   "docNum": 2500166,
+   "ref": "SH211442",
+   "date": "2025-11-03"
+  }
  },
  {
   "docEntry": 197,
@@ -8279,7 +8773,13 @@
     "baseEntry": 756,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500141,
+  "invoice": {
+   "docNum": 2500161,
+   "ref": "15457",
+   "date": "2025-10-16"
+  }
  },
  {
   "docEntry": 196,
@@ -8313,7 +8813,13 @@
     "baseEntry": 752,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500137,
+  "invoice": {
+   "docNum": 2500153,
+   "ref": "Sl256002832",
+   "date": "2025-10-15"
+  }
  },
  {
   "docEntry": 195,
@@ -8347,7 +8853,13 @@
     "baseEntry": 746,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500131,
+  "invoice": {
+   "docNum": 2500147,
+   "ref": "22509144",
+   "date": "2025-09-29"
+  }
  },
  {
   "docEntry": 194,
@@ -8399,7 +8911,13 @@
     "baseEntry": 739,
     "baseRef": "22/012445"
    }
-  ]
+  ],
+  "poNumber": 2500124,
+  "invoice": {
+   "docNum": 2500149,
+   "ref": "12/113961",
+   "date": "2025-09-30"
+  }
  },
  {
   "docEntry": 193,
@@ -8433,7 +8951,13 @@
     "baseEntry": 735,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500120,
+  "invoice": {
+   "docNum": 2500148,
+   "ref": "Sl256000363",
+   "date": "2025-09-17"
+  }
  },
  {
   "docEntry": 192,
@@ -8485,7 +9009,13 @@
     "baseEntry": 742,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500127,
+  "invoice": {
+   "docNum": 2500140,
+   "ref": "si2560922",
+   "date": "2025-09-16"
+  }
  },
  {
   "docEntry": 191,
@@ -8519,7 +9049,13 @@
     "baseEntry": 731,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500116,
+  "invoice": {
+   "docNum": 2500136,
+   "ref": "Sl256E002396",
+   "date": "2025-09-04"
+  }
  },
  {
   "docEntry": 190,
@@ -8571,7 +9107,13 @@
     "baseEntry": 733,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500118,
+  "invoice": {
+   "docNum": 2500143,
+   "ref": "15314",
+   "date": "2025-09-03"
+  }
  },
  {
   "docEntry": 189,
@@ -8641,7 +9183,13 @@
     "baseEntry": 728,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500113,
+  "invoice": {
+   "docNum": 2500131,
+   "ref": "Sl256002163",
+   "date": "2025-08-26"
+  }
  },
  {
   "docEntry": 186,
@@ -8675,7 +9223,13 @@
     "baseEntry": 709,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500094,
+  "invoice": {
+   "docNum": 2500132,
+   "ref": "SI256002383",
+   "date": "2025-08-21"
+  }
  },
  {
   "docEntry": 185,
@@ -8709,7 +9263,9 @@
     "baseEntry": 725,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500110,
+  "invoice": null
  },
  {
   "docEntry": 188,
@@ -8743,7 +9299,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2500133,
+   "ref": "Sl256002382",
+   "date": "2025-08-21"
+  }
  },
  {
   "docEntry": 187,
@@ -8939,7 +9501,13 @@
     "baseEntry": 726,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500111,
+  "invoice": {
+   "docNum": 2500134,
+   "ref": "68231",
+   "date": "2025-08-28"
+  }
  },
  {
   "docEntry": 184,
@@ -8991,7 +9559,13 @@
     "baseEntry": 722,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500107,
+  "invoice": {
+   "docNum": 2500125,
+   "ref": "Sl250212",
+   "date": "2025-08-20"
+  }
  },
  {
   "docEntry": 183,
@@ -9025,7 +9599,13 @@
     "baseEntry": 724,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500109,
+  "invoice": {
+   "docNum": 2500130,
+   "ref": "15267",
+   "date": "2025-08-19"
+  }
  },
  {
   "docEntry": 181,
@@ -9059,7 +9639,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": null,
+  "invoice": {
+   "docNum": 2500128,
+   "ref": "15250",
+   "date": "2025-08-14"
+  }
  },
  {
   "docEntry": 182,
@@ -9093,7 +9679,13 @@
     "baseEntry": 721,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500106,
+  "invoice": {
+   "docNum": 2500127,
+   "ref": "15243",
+   "date": "2025-08-18"
+  }
  },
  {
   "docEntry": 180,
@@ -9199,7 +9791,13 @@
     "baseEntry": 707,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500092,
+  "invoice": {
+   "docNum": 2500129,
+   "ref": "Sl256002054",
+   "date": "2025-08-13"
+  }
  },
  {
   "docEntry": 179,
@@ -9251,7 +9849,13 @@
     "baseEntry": null,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500099,
+  "invoice": {
+   "docNum": 2500110,
+   "ref": "25600951",
+   "date": "2025-07-31"
+  }
  },
  {
   "docEntry": 178,
@@ -9483,7 +10087,13 @@
     "baseEntry": 711,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500096,
+  "invoice": {
+   "docNum": 2500109,
+   "ref": "68194",
+   "date": "2025-07-31"
+  }
  },
  {
   "docEntry": 177,
@@ -9661,7 +10271,13 @@
     "baseEntry": 712,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500097,
+  "invoice": {
+   "docNum": 2500112,
+   "ref": "35369",
+   "date": "2025-07-31"
+  }
  },
  {
   "docEntry": 176,
@@ -9695,7 +10311,13 @@
     "baseEntry": 701,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500086,
+  "invoice": {
+   "docNum": 2500103,
+   "ref": "12/113550",
+   "date": "2025-07-15"
+  }
  },
  {
   "docEntry": 175,
@@ -9729,7 +10351,13 @@
     "baseEntry": 698,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500083,
+  "invoice": {
+   "docNum": 2500105,
+   "ref": "Sl256001952",
+   "date": "2025-07-10"
+  }
  },
  {
   "docEntry": 174,
@@ -9763,7 +10391,13 @@
     "baseEntry": 694,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500079,
+  "invoice": {
+   "docNum": 2500116,
+   "ref": "Sl256000263",
+   "date": "2025-07-07"
+  }
  },
  {
   "docEntry": 173,
@@ -9797,7 +10431,13 @@
     "baseEntry": 696,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500081,
+  "invoice": {
+   "docNum": 2500097,
+   "ref": "Sl256001921",
+   "date": "2025-07-08"
+  }
  },
  {
   "docEntry": 172,
@@ -9975,7 +10615,9 @@
     "baseEntry": 688,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500073,
+  "invoice": null
  },
  {
   "docEntry": 171,
@@ -10027,7 +10669,13 @@
     "baseEntry": 646,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500031,
+  "invoice": {
+   "docNum": 2500106,
+   "ref": "15042",
+   "date": "2025-06-19"
+  }
  },
  {
   "docEntry": 169,
@@ -10079,7 +10727,13 @@
     "baseEntry": 687,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500072,
+  "invoice": {
+   "docNum": 2500092,
+   "ref": "15012",
+   "date": "2025-06-12"
+  }
  },
  {
   "docEntry": 170,
@@ -10113,7 +10767,13 @@
     "baseEntry": 684,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500069,
+  "invoice": {
+   "docNum": 2500088,
+   "ref": "si256001654",
+   "date": "2025-06-11"
+  }
  },
  {
   "docEntry": 168,
@@ -10219,7 +10879,13 @@
     "baseEntry": 683,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500068,
+  "invoice": {
+   "docNum": 2500091,
+   "ref": "SI2560567",
+   "date": "2025-06-11"
+  }
  },
  {
   "docEntry": 167,
@@ -10253,7 +10919,13 @@
     "baseEntry": 681,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500066,
+  "invoice": {
+   "docNum": 2500111,
+   "ref": "12/113322",
+   "date": "2025-05-29"
+  }
  },
  {
   "docEntry": 166,
@@ -10287,7 +10959,13 @@
     "baseEntry": 677,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500062,
+  "invoice": {
+   "docNum": 2500073,
+   "ref": "Sl256001462",
+   "date": "2025-05-22"
+  }
  },
  {
   "docEntry": 165,
@@ -10447,7 +11125,13 @@
     "baseEntry": 676,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500061,
+  "invoice": {
+   "docNum": 2500072,
+   "ref": "35129",
+   "date": "2025-05-25"
+  }
  },
  {
   "docEntry": 164,
@@ -10625,7 +11309,13 @@
     "baseEntry": 674,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500059,
+  "invoice": {
+   "docNum": 2500066,
+   "ref": "68034",
+   "date": "2025-05-12"
+  }
  },
  {
   "docEntry": 163,
@@ -10695,7 +11385,13 @@
     "baseEntry": 670,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500055,
+  "invoice": {
+   "docNum": 2500074,
+   "ref": "14874",
+   "date": "2025-05-07"
+  }
  },
  {
   "docEntry": 162,
@@ -10873,7 +11569,13 @@
     "baseEntry": 667,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500052,
+  "invoice": {
+   "docNum": 2500062,
+   "ref": "67999",
+   "date": "2025-04-28"
+  }
  },
  {
   "docEntry": 160,
@@ -10907,7 +11609,13 @@
     "baseEntry": 665,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500050,
+  "invoice": {
+   "docNum": 2500061,
+   "ref": "Sl256001108",
+   "date": "2025-04-22"
+  }
  },
  {
   "docEntry": 161,
@@ -10995,7 +11703,13 @@
     "baseEntry": 668,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500053,
+  "invoice": {
+   "docNum": 2500060,
+   "ref": "Sl2560367",
+   "date": "2025-04-21"
+  }
  },
  {
   "docEntry": 159,
@@ -11029,7 +11743,13 @@
     "baseEntry": 661,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500046,
+  "invoice": {
+   "docNum": 2500056,
+   "ref": "si256000141",
+   "date": "2025-04-08"
+  }
  },
  {
   "docEntry": 158,
@@ -11063,7 +11783,13 @@
     "baseEntry": 662,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500047,
+  "invoice": {
+   "docNum": 2500057,
+   "ref": "14748",
+   "date": "2025-04-06"
+  }
  },
  {
   "docEntry": 157,
@@ -11277,7 +12003,13 @@
     "baseEntry": 660,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500045,
+  "invoice": {
+   "docNum": 2500050,
+   "ref": "67945",
+   "date": "2025-03-25"
+  }
  },
  {
   "docEntry": 156,
@@ -11311,7 +12043,13 @@
     "baseEntry": 656,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500041,
+  "invoice": {
+   "docNum": 2500051,
+   "ref": "14706",
+   "date": "2025-03-24"
+  }
  },
  {
   "docEntry": 155,
@@ -11345,6 +12083,12 @@
     "baseEntry": 654,
     "baseRef": null
    }
-  ]
+  ],
+  "poNumber": 2500039,
+  "invoice": {
+   "docNum": 2500049,
+   "ref": "Sl256000855",
+   "date": "2025-03-24"
+  }
  }
 ]

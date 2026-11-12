@@ -184,13 +184,16 @@ const ruleLines = computed(() => {
 
         return [
             t('stickers.print.ruleItem'),
-            ...(receipt.lines || []).map((line, i) =>
-                t('stickers.print.line', {
-                    i: i + 1,
-                    name: inventory.batchNo(line.batch) || line.sku,
-                    n: stickers.itemCount(line),
-                }),
-            ),
+            // A general line ("פריט כללי") is on the document only — no label.
+            ...(receipt.lines || [])
+                .filter((line) => !line.general)
+                .map((line, i) =>
+                    t('stickers.print.line', {
+                        i: i + 1,
+                        name: inventory.batchNo(line.batch) || line.sku,
+                        n: stickers.itemCount(line),
+                    }),
+                ),
         ];
     }
 
