@@ -14,7 +14,6 @@ export default {
     template: {
         prep: 'מדבקת הכנה',
         item: 'מדבקת פריט',
-        shipping: 'מדבקת משלוח',
         production: 'מדבקת הוראת ייצור',
     },
 
@@ -59,10 +58,6 @@ export default {
         supplier: 'ספק',
         receivedOn: 'נקלט בתאריך',
         qty: 'כמות',
-        address: 'כתובת',
-        phone: 'טלפון',
-        courier: 'חברת שליחויות',
-        tracking: 'מספר מעקב',
         productionOrder: 'הוראת ייצור',
         productionDate: 'תאריך ייצור',
         dueOn: 'תאריך יעד',
@@ -121,7 +116,6 @@ export default {
         rulePrep: '{packages} יחידות בהכנה → {n} מדבקות',
         ruleCapsule: ' (כולל {spare} ספייר לקפסולות)',
         ruleItem: 'לפי כמות המדבקות שנקבעה בכל שורת קליטה',
-        ruleShipping: 'מדבקה אחת לחבילה',
         ruleProduction:
             'מדבקה אחת להוראה — מזהה את החומר במעבדה עד שיקבל אצווה ותוקף',
         ruleProductionReceipt:

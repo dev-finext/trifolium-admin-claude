@@ -10,8 +10,6 @@
 // run.
 import { useI18n } from 'vue-i18n';
 
-import { useCourierName } from '@/components/deliveries/useCourierName';
-import { formatAddress } from '@/components/users/address';
 import { useLocalized } from '@/composables/useLocalized';
 import {
     batchBarcode,
@@ -43,7 +41,6 @@ function addMonths(iso, months) {
 export function useStickerData() {
     const { t } = useI18n();
     const { loc } = useLocalized();
-    const { courierName } = useCourierName();
     const items = useItemsStore();
     const orders = useOrdersStore();
     const inventory = useInventoryStore();
@@ -251,23 +248,6 @@ export function useStickerData() {
         }));
     }
 
-    /** Field values for package `index` of `total` on one order's shipment. */
-    function shippingData(order, index = 1, total = 1) {
-        return {
-            ...pharmacy(),
-            patient: loc(order.patient.name),
-            address: formatAddress(order.address, t, loc),
-            phone: order.recipientPhone || order.patient.phone || '',
-            courier: order.courier
-                ? courierName(order.courier)
-                : t('fulfilment.pickup'),
-            tracking: order.tracking || '',
-            orderId: order.id,
-            split: `${index}/${total}`,
-            barcode: order.id,
-        };
-    }
-
     /** Every preparation label an order needs, in print order. */
     function labelsForOrder(order) {
         const rows = [];
@@ -306,16 +286,6 @@ export function useStickerData() {
         });
 
         return rows;
-    }
-
-    /** One shipping label per package (SHIPPING_STATION_SPEC.md §8). */
-    function labelsForShipping(order) {
-        const total = Math.max(1, Number(order.packagesCount) || 1);
-
-        return Array.from({ length: total }, (_, i) => ({
-            key: `${order.id}-${i + 1}`,
-            data: shippingData(order, i + 1, total),
-        }));
     }
 
     /**
@@ -429,11 +399,9 @@ export function useStickerData() {
     return {
         prepData,
         itemData,
-        shippingData,
         productionData,
         labelsForOrder,
         labelsForReceipt,
-        labelsForShipping,
         labelsForProduction,
         labelsForProductionReceipt,
         productionLabelCount,

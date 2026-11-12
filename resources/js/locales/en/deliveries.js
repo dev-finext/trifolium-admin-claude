@@ -7,10 +7,10 @@ export default {
     title: 'Shipping station',
 
     tab: {
-        in_production: 'In production',
+        in_production: 'In preparation',
         packing: 'Packing',
         awaiting_courier: 'Awaiting courier',
-        pickup: 'Self pickup',
+        pickup: 'Awaiting self-pickup',
         shipped: 'Shipped',
         couriers: 'Courier company management',
     },
@@ -50,25 +50,25 @@ export default {
         belongsToAnotherOrder:
             'This item belongs to order {id}, not the open order',
         badBarcode: 'Not a valid barcode',
-        allScannedShipping: '✓ Everything is scanned — ready to link a courier',
+        allScannedShipping:
+            '✓ Every item is marked — ready to pass to a courier company',
         allScannedPickup:
-            '✓ Everything is scanned — ready to mark ready for pickup',
+            '✓ Every item is marked — ready to pass to self-pickup',
     },
 
     col: {
-        select: 'Select',
         actions: 'Actions',
         order: 'Order',
         sentToLab: 'Sent to the lab',
         practitioner: 'Practitioner',
         recipient: 'Recipient',
         city: 'City',
-        scanned: 'Scanned',
+        ship: 'Delivery / pickup',
+        marked: 'Marked',
         courier: 'Company',
         packages: 'Packages',
         trackingNumber: 'Tracking number',
-        linkedAt: 'Linked on',
-        status: 'Status',
+        linkedAt: 'Passed on',
         payer: 'Practitioner / payer',
         phone: 'Phone',
         readySince: 'Ready since',
@@ -77,26 +77,14 @@ export default {
     },
 
     ship: {
+        delivery: 'Delivery',
         pickup: 'Self pickup',
     },
 
-    select: {
-        all: 'Select every shown row',
-        row: 'Select order {id}',
-    },
-
-    bulk: {
-        selected: 'One order selected | {n} orders selected',
-        clear: 'Clear selection',
-        movedToPacking: 'One order moved to packing | {n} orders moved to packing',
-    },
-
     action: {
-        moveToPacking: 'Move to packing',
-        linkCourier: 'Link to courier',
-        markReady: 'Ready for pickup',
+        linkCourier: 'Pass to a courier company',
+        markReady: 'Pass to self-pickup',
         markCollected: 'Collected',
-        reprintLabel: 'Reprint shipping labels',
         printPickupList: 'Print pickup list',
     },
 
@@ -107,8 +95,7 @@ export default {
     },
 
     toast: {
-        readyForPickup: 'Marked as ready for pickup',
-        movedToPacking: 'Moved to packing',
+        readyForPickup: 'The order is awaiting self-pickup',
     },
 
     // StationOrderCard.vue — the order card at the station
@@ -118,7 +105,8 @@ export default {
         phone: 'Phone',
         address: 'Address',
         city: 'City',
-        street: 'Street and number',
+        street: 'Street',
+        houseNum: 'House number',
         apt: 'Apartment',
         floor: 'Floor',
         entry: 'Entrance',
@@ -129,9 +117,6 @@ export default {
         poa: 'Power of attorney',
         poaSigned: 'Signed',
         poaMissing: 'Missing',
-        poaRequestedAt: 'Sent on {stamp}',
-        requestPoa: 'Send request to patient',
-        poaRequestSent: 'Power-of-attorney request sent',
         shipTo: {
             me: 'To me (the practitioner)',
             patient: 'To the patient',
@@ -139,43 +124,41 @@ export default {
             none: 'Unknown',
         },
 
-        packingTitle: 'Packing checklist',
+        packingTitle: 'Marking items · {k} of {n}',
+        allMarked: 'Every item is marked',
+        shelfQty: 'one unit | {n} units',
         col: {
             item: 'Item',
             containers: 'Containers',
         },
         num: '{k} of {n}',
-        tick: 'Tick',
-        manualTick: 'Manual tick',
-        manualTickBody:
-            'The container will be marked as scanned by hand, with no barcode.',
+        manualTick: 'Mark manually',
 
         shipmentTitle: 'Shipment',
         courier: 'Courier company',
         packages: 'Number of packages',
         editPackages: 'Change package count',
         linkBlocked: {
-            wrongStatus: "The order isn't in packing yet — it can't be linked to a courier.",
-            notFullyPacked:
-                'Not every item has been scanned — finish packing first.',
-            isPickupOrder: 'This is a self-pickup order — no courier link applies.',
+            wrongStatus:
+                'The order is no longer in preparation — it cannot pass to a courier company.',
+            notFullyPacked: 'Not every item is marked — mark them all first.',
+            isPickupOrder:
+                'This is a self-pickup order — it does not go to a courier company.',
             gateBlocked:
-                'The order is blocked: the address is incomplete, or the power of attorney has not been signed yet.',
-            noCourier: 'No active courier company to link to.',
+                'The order is blocked: the address is incomplete, or the recipient is unknown.',
+            noCourier: 'No active courier company.',
         },
-        link: 'Link to courier',
-        linking: 'Linking to courier…',
-        linked: 'Linked to courier',
+        link: 'Pass to a courier company',
+        linking: 'Passing to the courier company…',
+        linked: 'Passed to the courier company',
         linkedBody: 'Tracking number {tracking} · {courier}',
-        linkFailed: 'The link failed',
+        linkFailed: 'Passing to the courier company failed',
         tracking: 'Tracking number',
         trackingNumber: 'Tracking number',
-        linkedAt: 'Linked on {stamp} by {by}',
         manual: 'Manual',
         retry: 'Retry',
         manualTracking: 'Enter tracking number by hand',
         trackingRequired: 'Enter a tracking number',
-        reprintLabel: 'Reprint shipping labels',
 
         contentTitle: "The order's content",
 
@@ -188,28 +171,26 @@ export default {
 
         stepBack: 'Step back',
         stepBackDestroyLabel:
-            'If a shipping label was already printed, destroy it — a new one prints on the next link.',
+            'If the courier company already issued a label, destroy it — a new one is issued on the next pass.',
         cancelOrder: 'Cancel order',
-        markReady: 'Ready for pickup',
+        markReady: 'Pass to self-pickup',
         markCollected: 'Collected',
         collectedByName: 'Collected by (optional)',
         openInOrders: 'Open in the orders screen',
     },
 
     event: {
-        packing_started: 'Packing started',
-        container_scanned_manual: 'A container was ticked by hand',
-        shipment_linked: 'Linked to courier, tracking {tracking}',
-        shipment_link_failed: 'The courier link failed: {message}',
+        container_scanned_manual: 'A container was marked manually',
+        shipment_linked: 'Passed to the courier company, tracking {tracking}',
+        shipment_link_failed:
+            'Passing to the courier company failed: {message}',
         shipment_manual: 'A tracking number was entered by hand',
         shipment_cancelled: 'The shipment was cancelled',
-        label_printed: 'The shipping label was printed',
         pickup_list_printed: 'The order joined a pickup list',
         handed_to_courier: 'Handed to the courier',
-        ready_for_pickup: 'Marked as ready for pickup',
+        ready_for_pickup: 'Passed to self-pickup',
         collected: 'Collected',
         address_updated: 'The address was updated',
-        delivery_auth_requested: 'A power-of-attorney request was sent',
         delivery_auth_signed: 'The power of attorney was signed',
         status_reverted: 'Stepped back one stage',
         cancelled_by_station: 'The order was cancelled at the station',

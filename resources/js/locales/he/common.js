@@ -76,11 +76,12 @@ export default {
     // the key, `a` and `b` fill it. Never build a duration string by hand.
     duration: {
         sub_minute: 'פחות מדקה',
-        minutes: '{a} דקות',
-        hours: '{a} שעות',
-        hours_minutes: '{a} שעות ו-{b} דקות',
-        days: '{a} ימים',
-        days_hours: '{a} ימים ו-{b} שעות',
+        // Plural on {a}, the leading figure: "יום אחד", not "1 ימים".
+        minutes: 'דקה אחת | {a} דקות',
+        hours: 'שעה אחת | {a} שעות',
+        hours_minutes: 'שעה ו-{b} דקות | {a} שעות ו-{b} דקות',
+        days: 'יום אחד | {a} ימים',
+        days_hours: 'יום ו-{b} שעות | {a} ימים ו-{b} שעות',
     },
 
     relative: {

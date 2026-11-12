@@ -32,7 +32,8 @@
   "warehouseStock": 1302,
   "stockCounts": 25,
   "batches": 2356,
-  "batchMovements": 12908
+  "batchMovements": 12908,
+  "stationWebOrders": 92
  },
  "pseudonymised": [
   "practitioners",

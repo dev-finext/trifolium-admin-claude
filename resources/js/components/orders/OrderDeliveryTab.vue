@@ -34,7 +34,10 @@ const isPickup = computed(() => props.order.shipTo === 'pickup');
 /** Whoever physically receives the order. */
 const recipient = computed(() => {
     if (props.order.shipTo === 'patient') {
-        return { name: loc(props.order.patient.name), phone: props.order.recipientPhone || props.order.patient.phone };
+        return {
+            name: loc(props.order.patient.name),
+            phone: props.order.recipientPhone || props.order.patient.phone,
+        };
     }
 
     if (props.order.shipTo === 'me') {
@@ -45,7 +48,10 @@ const recipient = computed(() => {
     }
 
     return props.order.payer === 'patient'
-        ? { name: loc(props.order.patient.name), phone: props.order.patient.phone }
+        ? {
+              name: loc(props.order.patient.name),
+              phone: props.order.patient.phone,
+          }
         : {
               name: `${loc(props.order.practitioner.first)} ${loc(props.order.practitioner.last)}`,
               phone: props.order.practitioner.phone,
@@ -53,7 +59,9 @@ const recipient = computed(() => {
 });
 
 const address = computed(() =>
-    props.order.addressProvided ? formatAddress(props.order.address, t, loc) : '',
+    props.order.addressProvided
+        ? formatAddress(props.order.address, t, loc)
+        : '',
 );
 
 /** The order's own shipments, newest first — the handover history. */
@@ -65,7 +73,10 @@ const shipments = computed(() =>
     ),
 );
 const activeShipment = computed(
-    () => shipments.value.find((s) => s.status === 'active' || s.status === 'handed') || null,
+    () =>
+        shipments.value.find(
+            (s) => s.status === 'active' || s.status === 'handed',
+        ) || null,
 );
 
 function shipmentStateLabel(shipment) {
@@ -87,7 +98,10 @@ function openInStation() {
             <AKeyValue
                 :rows="[
                     [t('orders.delivery.method'), null],
-                    [t('orders.delivery.pickupPoint'), `${loc(ORG.name)} · ${loc(ORG.address)}`],
+                    [
+                        t('orders.delivery.pickupPoint'),
+                        `${loc(ORG.name)} · ${loc(ORG.address)}`,
+                    ],
                     [t('orders.delivery.hours'), loc(ORG.hours)],
                     [t('orders.delivery.collector'), recipient.name],
                     [t('orders.delivery.phone'), null],
@@ -107,14 +121,19 @@ function openInStation() {
                 {{
                     t('orders.delivery.collectedNote', {
                         stamp: order.collectedAt.stamp,
-                        by: order.collectedByName ? loc(order.collectedByName) : t('orders.value.none'),
+                        by: order.collectedByName
+                            ? loc(order.collectedByName)
+                            : t('orders.value.none'),
                     })
                 }}
             </div>
         </ACard>
 
         <template v-else>
-            <div v-if="order.shipTo === 'patient' && !order.addressProvided" class="a-note a-note--warn">
+            <div
+                v-if="order.shipTo === 'patient' && !order.addressProvided"
+                class="a-note a-note--warn"
+            >
                 {{ t('orders.delivery.addressPending') }}
             </div>
             <div v-if="!order.shipTo" class="a-note a-note--danger">
@@ -127,8 +146,16 @@ function openInStation() {
                         :rows="[
                             [t('orders.delivery.recipient'), recipient.name],
                             [t('orders.delivery.phone'), null],
-                            [t('orders.delivery.address'), address || t('orders.delivery.notReceived')],
-                            [t('orders.delivery.notes'), order.deliveryNotes ? loc(order.deliveryNotes) : t('orders.value.none')],
+                            [
+                                t('orders.delivery.address'),
+                                address || t('orders.delivery.notReceived'),
+                            ],
+                            [
+                                t('orders.delivery.notes'),
+                                order.deliveryNotes
+                                    ? loc(order.deliveryNotes)
+                                    : t('orders.value.none'),
+                            ],
                             [t('orders.delivery.poa'), null],
                         ]"
                     >
@@ -137,14 +164,15 @@ function openInStation() {
                         </template>
                         <template #value-4>
                             <AChip
-                                v-if="order.shipTo === 'me' ? order.courierAuth : order.poa?.status === 'signed'"
+                                v-if="
+                                    order.shipTo === 'me'
+                                        ? order.courierAuth
+                                        : order.poa?.status === 'signed'
+                                "
                                 tone="green"
                                 size="sm"
                             >
                                 {{ t('orders.delivery.poaSigned') }}
-                            </AChip>
-                            <AChip v-else-if="order.poa?.requestedAt" tone="amber" size="sm">
-                                {{ t('orders.delivery.poaRequested') }}
                             </AChip>
                             <AChip v-else tone="red" size="sm">
                                 {{ t('orders.delivery.poaMissing') }}
@@ -165,7 +193,12 @@ function openInStation() {
                         <template #value-0>
                             <template v-if="order.courier">
                                 {{ courierName(order.courier) }}
-                                <AChip v-if="activeShipment?.isManual" tone="gray" size="sm" :dot="false">
+                                <AChip
+                                    v-if="activeShipment?.isManual"
+                                    tone="gray"
+                                    size="sm"
+                                    :dot="false"
+                                >
                                     {{ t('orders.delivery.manualShipment') }}
                                 </AChip>
                             </template>
@@ -174,22 +207,34 @@ function openInStation() {
                             </span>
                         </template>
                         <template #value-1>
-                            <ANum v-if="order.tracking">{{ order.tracking }}</ANum>
+                            <ANum v-if="order.tracking">{{
+                                order.tracking
+                            }}</ANum>
                             <span v-else>—</span>
                         </template>
                         <template #value-2>
                             <ANum>{{ order.packagesCount || 1 }}</ANum>
                         </template>
                         <template #value-3>
-                            <ANum v-if="order.shippedAt">{{ order.shippedAt.stamp }}</ANum>
+                            <ANum v-if="order.shippedAt">{{
+                                order.shippedAt.stamp
+                            }}</ANum>
                             <span v-else>—</span>
                         </template>
                     </AKeyValue>
 
                     <div v-if="shipments.length" class="od-shiphist">
-                        <div class="a-sect-t">{{ t('orders.delivery.shipmentHistory') }}</div>
-                        <div v-for="shipment in shipments" :key="shipment.id" class="od-shiprow">
-                            <AChip size="sm" :dot="false">{{ shipmentStateLabel(shipment) }}</AChip>
+                        <div class="a-sect-t">
+                            {{ t('orders.delivery.shipmentHistory') }}
+                        </div>
+                        <div
+                            v-for="shipment in shipments"
+                            :key="shipment.id"
+                            class="od-shiprow"
+                        >
+                            <AChip size="sm" :dot="false">{{
+                                shipmentStateLabel(shipment)
+                            }}</AChip>
                             <span class="t-sub">
                                 {{ courierName(shipment.courierCode) }} ·
                                 <ANum>{{ shipment.trackingNumber }}</ANum> ·

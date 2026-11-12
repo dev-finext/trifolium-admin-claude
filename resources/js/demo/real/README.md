@@ -27,6 +27,7 @@ local restore.
 | `batches.json` | 120 | `OBTN`+`OBTQ` |
 | `suppliers.json` | 40 | `OCRD` CardType S — company data |
 | `orders.json` | 50 | `ORDR`+`RDR1`, all eight states represented, 250 real lines |
+| `stationWebOrders.json` | 52 + 40 | `ORDR`+`RDR1`, 2026 website orders joined on `U_DocEntryWeb` — each its one or two formula documents — and 40 shelf-product documents (50xxxx/55xxxx). The shipping station's sample: some orders get a shelf document added, which SAP never shows together and the new cart allows. Free-text comments and internal notes are not read. |
 
 Item stock levels, minimum and maximum levels, units of measure, last purchase
 prices, alcohol and oil percentages, extraction ratios, pregnancy /
@@ -44,6 +45,7 @@ reaches this repository:
 | `practitioners.json` | name, national ID, phone, email, clinic name, street |
 | `patients.json` | the same |
 | `orders.json` | only the names, phone and ID on the order |
+| `stationWebOrders.json` | the same as `orders.json` |
 | `suppliers.json` | the contact person, phone, email and company number |
 
 The replacement is deterministic — one real card code always yields the same

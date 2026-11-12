@@ -8,13 +8,16 @@
 // the output.
 
 /**
- * The label templates: a preparation, a stock item (the batch label), a
- * parcel, and a production order — the label that names material at the bench
- * until it has a batch. Noam, in the internal-production note: "זו לא מדבקה
+ * The label templates: a preparation, a stock item (the batch label), and a
+ * production order — the label that names material at the bench until it has
+ * a batch. There is no shipping label of the pharmacy's own: the courier
+ * company issues it once the station is integrated with it (12.11.2026). The
+ * old site printed none either — each package carried its order barcode, and
+ * that number went to the courier as "ברקוד שלכם". Noam, in the internal-production note: "זו לא מדבקה
  * זמנית אלא מדבקה של הוראת היצור, עם מספר המסמך של הוראת היצור ... תמיד חייבת
  * להיות מדבקה מזהה לכל חומר בכל שלב בית המרקחת".
  */
-export const STICKER_TEMPLATE_IDS = ['prep', 'item', 'shipping', 'production'];
+export const STICKER_TEMPLATE_IDS = ['prep', 'item', 'production'];
 
 /** Default label sizes, millimetres. The template carries its own copy. */
 export const STICKER_SIZES = {
@@ -22,9 +25,6 @@ export const STICKER_SIZES = {
     // V3 — the batch label, at the size the pharmacy prints it. Natalie's note
     // shows the label and says "גודל 120-60 בדומה לשאר המדבקות שלנו כיום".
     item: { w: 120, h: 60 },
-    // Spec §8: 100×100 or 100×150 mm, final size per the office's own label
-    // stock (§20.2) — 100×100 until that's confirmed.
-    shipping: { w: 100, h: 100 },
     // The pharmacy's own production-order label is the same 120×60 stock.
     production: { w: 120, h: 60 },
 };
@@ -40,12 +40,9 @@ export const STICKER_ALIGN_IDS = ['start', 'center', 'end'];
  * Labels at `stickers.field.<id>`; the value comes from useStickerData.
  */
 export const STICKER_FIELDS = [
-    { id: 'pharmacy', templates: ['prep', 'item', 'shipping', 'production'] },
-    {
-        id: 'pharmacyPhone',
-        templates: ['prep', 'item', 'shipping', 'production'],
-    },
-    { id: 'patient', templates: ['prep', 'shipping'] },
+    { id: 'pharmacy', templates: ['prep', 'item', 'production'] },
+    { id: 'pharmacyPhone', templates: ['prep', 'item', 'production'] },
+    { id: 'patient', templates: ['prep'] },
     { id: 'practitioner', templates: ['prep'] },
     { id: 'formula', templates: ['prep'] },
     { id: 'prepType', templates: ['prep'] },
@@ -57,7 +54,7 @@ export const STICKER_FIELDS = [
     { id: 'regulatory', templates: ['prep'] },
     { id: 'madeOn', templates: ['prep', 'item'] },
     { id: 'expiry', templates: ['prep', 'item'] },
-    { id: 'orderId', templates: ['prep', 'shipping'] },
+    { id: 'orderId', templates: ['prep'] },
     { id: 'split', templates: ['prep', 'item'] },
     { id: 'itemName', templates: ['item', 'production'] },
     // V3 — the label in Natalie's note carries the botanical name and the
@@ -70,10 +67,6 @@ export const STICKER_FIELDS = [
     { id: 'supplier', templates: ['item'] },
     { id: 'receivedOn', templates: ['item'] },
     { id: 'qty', templates: ['item'] },
-    { id: 'address', templates: ['shipping'] },
-    { id: 'phone', templates: ['shipping'] },
-    { id: 'courier', templates: ['shipping'] },
-    { id: 'tracking', templates: ['shipping'] },
     // The production order's label: its number, the day it went to the lab,
     // and the target date Yaron asks to see beside it ("התוית תכלול את תאריך
     // הייצור בפועל ואת תאריך היעד שמוגדר").

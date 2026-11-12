@@ -50,7 +50,6 @@ export const TEMPLATE_CATEGORY_IDS = [
     'debt_notice',
     'status_update',
     'registration',
-    'address_request',
     'collection',
 ];
 

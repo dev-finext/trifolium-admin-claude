@@ -1,6 +1,6 @@
 // The stickers module — second-version fixture content.
 //
-// Four templates as data, a pool of notes keyed by preparation type, and a
+// Three templates as data, a pool of notes keyed by preparation type, and a
 // print log. The layout is mine from scratch: Natalie asked "how do you see
 // it", and the existing SAP stickers were not available as text.
 import { STICKER_SIZES } from '@/config/stickers';
@@ -234,72 +234,6 @@ export const STICKER_TEMPLATES = [
         updatedBy: DEMO_ACTORS.orit,
     },
     {
-        // Spec §8: 100×100 mm (§20.2 picks the final size against the
-        // office's own label stock). The tracking number is large on
-        // purpose — "the courier's name, and the tracking number in large
-        // text" is one of the two things the old label never carried at all.
-        id: 'shipping',
-        size: { ...STICKER_SIZES.shipping },
-        elements: [
-            el('logo', 'logo', { x: 2, y: 2, w: 26, h: 9 }),
-            field('phone', 'pharmacyPhone', {
-                x: 2,
-                y: 12,
-                w: 26,
-                size: 6,
-                align: 'center',
-            }),
-            field('patient', 'patient', {
-                x: 31,
-                y: 3,
-                w: 67,
-                size: 13,
-                bold: true,
-                label: true,
-            }),
-            field('address', 'address', { x: 31, y: 14, w: 67, size: 9.5 }),
-            field('phone2', 'phone', {
-                x: 31,
-                y: 25,
-                w: 40,
-                size: 9,
-                label: true,
-            }),
-            field('courier', 'courier', {
-                x: 2,
-                y: 36,
-                w: 45,
-                size: 9,
-                label: true,
-            }),
-            field('order', 'orderId', {
-                x: 50,
-                y: 36,
-                w: 48,
-                size: 9,
-                label: true,
-            }),
-            el('barcode', 'barcode', { x: 8, y: 46, w: 84, h: 20 }),
-            field('tracking', 'tracking', {
-                x: 8,
-                y: 70,
-                w: 84,
-                size: 16,
-                bold: true,
-                align: 'center',
-            }),
-            field('split', 'split', {
-                x: 8,
-                y: 88,
-                w: 84,
-                size: 9,
-                align: 'center',
-            }),
-        ],
-        updated: at(60, 14, 5),
-        updatedBy: DEMO_ACTORS.orit,
-    },
-    {
         // The production order's label, after the pharmacy's own (the
         // internal-production note): item code large across the top with its
         // caption in the corner, the item's name under it, the order's number
@@ -454,7 +388,7 @@ const PRINTERS = [DEMO_ACTORS.amitLab, DEMO_ACTORS.hadarPharmacist];
 const prepCount = (item) =>
     Math.max(1, Number(item.packages) || 1) + (item.unit === 'capsule' ? 1 : 0);
 
-/** The print log: prep labels for orders that reached the lab, item labels per receipt, a parcel label per shipment. */
+/** The print log: prep labels for orders that reached the lab, and item labels per receipt. */
 export function buildStickerPrints(orders, receipts) {
     const rows = [];
     let n = 0;
@@ -498,19 +432,6 @@ export function buildStickerPrints(orders, receipts) {
                 count,
                 `${live.length}`,
                 `sticker:${order.id}:prep`,
-            );
-        }
-
-        if (
-            ['awaiting_courier', 'shipped'].includes(order.status) &&
-            order.courier
-        ) {
-            push(
-                'shipping',
-                order.id,
-                order.packagesCount || 1,
-                order.courier,
-                `sticker:${order.id}:ship`,
             );
         }
     });

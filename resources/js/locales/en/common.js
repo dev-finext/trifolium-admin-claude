@@ -71,11 +71,11 @@ export default {
     // the key, `a` and `b` fill it. Never build a duration string by hand.
     duration: {
         sub_minute: 'less than a minute',
-        minutes: '{a} minutes',
-        hours: '{a} hours',
-        hours_minutes: '{a} hours and {b} minutes',
-        days: '{a} days',
-        days_hours: '{a} days and {b} hours',
+        minutes: 'one minute | {a} minutes',
+        hours: 'one hour | {a} hours',
+        hours_minutes: 'one hour and {b} minutes | {a} hours and {b} minutes',
+        days: 'one day | {a} days',
+        days_hours: 'one day and {b} hours | {a} days and {b} hours',
     },
 
     relative: {

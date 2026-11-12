@@ -39,7 +39,11 @@ function downFor(service) {
     );
 
     return t('integrations.row.downFor', {
-        duration: t(`duration.${parts.unit}`, { a: parts.a, b: parts.b }),
+        duration: t(
+            `duration.${parts.unit}`,
+            { a: parts.a, b: parts.b },
+            parts.a || 1,
+        ),
     });
 }
 </script>

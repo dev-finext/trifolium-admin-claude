@@ -20,7 +20,7 @@ import { useI18n } from 'vue-i18n';
 import ACard from '@/components/ui/ACard.vue';
 import AIcon from '@/components/ui/AIcon.vue';
 import ANum from '@/components/ui/ANum.vue';
-import { flowFor, flowIdOf } from '@/config';
+import { flowFor, flowIdOf, SKIPPED_STATUS_IDS } from '@/config';
 import { statusOf, trackedItems, useOrdersStore } from '@/stores/orders';
 
 const props = defineProps({
@@ -48,12 +48,17 @@ const activeIndex = computed(() => {
 
 const stamps = computed(() => orders.flowStamps(props.order));
 
+/** A step nobody passes through any more ("באריזה"), unless this order stands on it. */
+const skipped = (id) =>
+    SKIPPED_STATUS_IDS.includes(id) && flowIdOf(status.value) !== id;
+
 const steps = computed(() =>
     flow.value.map((id, index) => ({
         id,
         label: t(`status.${id}`),
         stamp: stamps.value[id] || '',
-        done: index <= activeIndex.value,
+        skipped: skipped(id),
+        done: !skipped(id) && index <= activeIndex.value,
         now: index === activeIndex.value,
     })),
 );
@@ -69,7 +74,11 @@ const steps = computed(() =>
                 v-for="step in steps"
                 :key="step.id"
                 class="a-tl-step"
-                :class="{ done: step.done, now: step.now }"
+                :class="{
+                    done: step.done,
+                    now: step.now,
+                    'is-skipped': step.skipped,
+                }"
             >
                 <div class="a-tl-mark">
                     <AIcon v-if="step.done" name="check" :size="14" />
@@ -85,3 +94,10 @@ const steps = computed(() =>
         </div>
     </ACard>
 </template>
+
+<style scoped>
+/* A step the flow no longer uses: shown, greyed, never ticked. */
+.a-tl-step.is-skipped {
+    opacity: 0.45;
+}
+</style>

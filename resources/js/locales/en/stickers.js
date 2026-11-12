@@ -14,7 +14,6 @@ export default {
     template: {
         prep: 'Preparation label',
         item: 'Item label',
-        shipping: 'Parcel label',
         production: 'Production order label',
     },
 
@@ -59,10 +58,6 @@ export default {
         supplier: 'Supplier',
         receivedOn: 'Received on',
         qty: 'Quantity',
-        address: 'Address',
-        phone: 'Phone',
-        courier: 'Courier',
-        tracking: 'Tracking no.',
         productionOrder: 'Production order',
         productionDate: 'Production date',
         dueOn: 'Target date',
@@ -121,7 +116,6 @@ export default {
         rulePrep: '{packages} units in the preparation → {n} labels',
         ruleCapsule: ' (including {spare} spare for capsules)',
         ruleItem: 'By the label count set on each receipt line',
-        ruleShipping: 'One label per parcel',
         ruleProduction:
             'One label per order — it names the material at the lab until it has a batch and an expiry',
         ruleProductionReceipt:

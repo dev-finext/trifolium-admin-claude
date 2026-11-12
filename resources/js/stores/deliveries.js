@@ -10,11 +10,17 @@
 //   1. Only the station moves an order once it is "בהכנה" — see
 //      `stores/orders.js`'s own `STATUS_ACTIONS`, which offers nothing past
 //      `paid`/`credit` for exactly this reason.
-//   2. Every container is scanned before a courier link or a "מוכן לאיסוף" —
-//      `lib/containers.js` is the one place that counts them, so the label
-//      that gets printed and the number the station expects to scan can never
-//      disagree.
-//   3. A courier link keeps its tracking number. The old site's never did.
+//   2. Every container is marked — scanned, or "סימון ידני" in one click —
+//      before an order goes to a courier or waits for pickup. `lib/containers.js`
+//      is the one place that counts them, so the label that gets printed and
+//      the number the station expects can never disagree.
+//   3. There is no "באריזה" stage (12.11.2026): the marking happens while the
+//      order is "בהכנה", and a fully marked order moves straight on — to
+//      "ממתין לשליח" when it is handed to a courier company, or to
+//      "ממתין לאיסוף עצמי". The status stays in the model, unused and grey.
+//   4. A courier link keeps its tracking number. The old site's never did.
+//      The shipping label is the courier company's, returned once the
+//      integration exists; the station prints none of its own.
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 
@@ -83,6 +89,12 @@ function ageInStatus(order) {
     return order.daysAgo || 0;
 }
 
+/**
+ * Where an order is marked and from where it moves on. "באריזה" is listed only
+ * so an order that reached it before the stage was dropped is not stranded.
+ */
+export const PREP_STATUSES = ['in_production', 'packing'];
+
 /** Statuses still open to station action — a shipped/collected/cancelled
  * order has nothing left to fix. */
 const STATION_OPEN = [
@@ -105,27 +117,12 @@ export function stationExceptionsOf(order) {
         list.push('address');
     }
 
-    if (
-        order.shipTo &&
-        order.shipTo !== 'pickup' &&
-        ['in_production', 'packing'].includes(status)
-    ) {
-        const gated =
-            order.shipTo === 'me'
-                ? !order.courierAuth
-                : order.poa?.status !== 'signed';
-
-        if (gated) {
-            list.push('poa');
-        }
-    }
-
     if (!order.shipTo && STATION_OPEN.includes(status)) {
         list.push('unknown_recipient');
     }
 
     if (
-        status === 'packing' &&
+        PREP_STATUSES.includes(status) &&
         allPacked(order) &&
         !activeShipmentOf(order) &&
         (order.events || []).some((e) => e.type === 'shipment_link_failed')
@@ -142,10 +139,14 @@ export function stationExceptionsOf(order) {
     return list;
 }
 
-/** `'ok'` while nothing blocks a courier link; `'blocked'` otherwise. */
+/**
+ * `'ok'` while nothing blocks a courier link; `'blocked'` otherwise. What
+ * blocks is a missing address or an unknown recipient — the power of attorney
+ * is collected before the order reaches the lab, and the station only shows it.
+ */
 export function stationGateOf(order) {
     return stationExceptionsOf(order).some((id) =>
-        ['address', 'poa', 'unknown_recipient'].includes(id),
+        ['address', 'unknown_recipient'].includes(id),
     )
         ? 'blocked'
         : 'ok';
@@ -313,17 +314,10 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
             ),
         ),
     );
-    const pickupOrders = computed(() =>
-        sortStation(
-            stationOrders.value.filter(
-                (o) =>
-                    o.shipTo === 'pickup' &&
-                    ['in_production', 'packing', 'ready_for_pickup'].includes(
-                        statusOf(o),
-                    ),
-            ),
-        ),
-    );
+    // "ממתין לאיסוף עצמי": only what is ready and waiting for its customer. A
+    // pickup order still being prepared is in "בהכנה" (with its chip), and one
+    // that was collected is in "נשלחו" with everything else that is done.
+    const pickupOrders = readyForPickup;
     // Shipped, collected, or cancelled from the station itself — the "נשלחו"
     // tab's own rows (spec §5.3). A pre-production cancellation (the orders
     // screen's own, before anything was ever packed) does not belong here.
@@ -425,16 +419,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
 
     // ---- packing ------------------------------------------------------------
 
-    /** The first scan of any barcode on a "בהכנה" order starts packing. */
-    async function startPacking(order) {
-        if (statusOf(order) !== 'in_production') {
-            return;
-        }
-
-        await orders.setStatus(order.id, 'packing');
-        pushEvent(order, { type: 'packing_started' });
-    }
-
     function findOrderByBarcode(code) {
         const orderId = ORDER_BARCODE_RE.test(code)
             ? code
@@ -470,10 +454,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
                     params: { status: statusOf(order) },
                     order,
                 };
-            }
-
-            if (statusOf(order) === 'in_production') {
-                await startPacking(order);
             }
 
             return { ok: true, sound: 'ok', message: 'orderOpened', order };
@@ -518,10 +498,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
 
         if (!row || Number(containerNo) > row.count) {
             return { ok: false, sound: 'error', message: 'badBarcode' };
-        }
-
-        if (statusOf(order) === 'in_production') {
-            await startPacking(order);
         }
 
         const already = (order.packChecks || []).some(
@@ -573,8 +549,11 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         };
     }
 
-    /** A container whose label cannot be scanned. */
-    async function tickManually(order, orderItemId, containerNo, reason) {
+    /**
+     * "סימון ידני" — one click in place of a scan, for any container. It is
+     * the same mark a scan makes; the history records that it was manual.
+     */
+    async function tickManually(order, orderItemId, containerNo) {
         const row = orderContainers(order).find(
             (r) => r.item.id === orderItemId,
         );
@@ -600,50 +579,17 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
             checkedAt: moment(),
             checkedBy: actor.value,
             isManual: true,
-            manualReason: reason,
         });
 
         pushEvent(order, {
             type: 'container_scanned_manual',
-            data: { orderItemId, containerNo, reason },
+            data: { orderItemId, containerNo },
         });
 
         await persist(`orders/${order.id}/pack-checks`, {
             barcode,
             manual: true,
         });
-    }
-
-    /** A shelf line has no printed label of its own — a plain click confirms it. */
-    async function tickShelfContainer(order, orderItemId, containerNo) {
-        const row = orderContainers(order).find(
-            (r) => r.item.id === orderItemId,
-        );
-
-        if (!row) {
-            return;
-        }
-
-        const barcode = containerBarcode(order.id, row.lineNo, containerNo);
-
-        if ((order.packChecks || []).some((c) => c.barcode === barcode)) {
-            return;
-        }
-
-        if (!Array.isArray(order.packChecks)) {
-            order.packChecks = [];
-        }
-
-        order.packChecks.push({
-            orderItemId,
-            containerNo,
-            barcode,
-            checkedAt: moment(),
-            checkedBy: actor.value,
-            isManual: false,
-        });
-
-        await persist(`orders/${order.id}/pack-checks`, { barcode });
     }
 
     /**
@@ -672,7 +618,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
     // ---- courier link (SHIPPING_STATION_SPEC.md §7) --------------------------
 
     function linkPreconditions(order) {
-        if (statusOf(order) !== 'packing') {
+        if (!PREP_STATUSES.includes(statusOf(order))) {
             return 'wrongStatus';
         }
 
@@ -684,11 +630,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
             return 'isPickupOrder';
         }
 
-        if (
-            stationExceptionsOf(order).some((id) =>
-                ['address', 'poa', 'unknown_recipient'].includes(id),
-            )
-        ) {
+        if (stationGateOf(order) === 'blocked') {
             return 'gateBlocked';
         }
 
@@ -747,7 +689,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
             data: { courier: company.code, tracking },
             visibleToCustomer: true,
         });
-        pushEvent(order, { type: 'label_printed' });
 
         company.lastSuccessAt = moment();
         await persist(`couriers/${courierCode}`, company, 'PUT');
@@ -799,7 +740,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
             data: { courier: company.code, tracking: trackingNumber, reason },
             visibleToCustomer: true,
         });
-        pushEvent(order, { type: 'label_printed' });
 
         return { ok: true };
     }
@@ -897,7 +837,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
 
     async function markReadyForPickup(order) {
         if (
-            statusOf(order) !== 'packing' ||
+            !PREP_STATUSES.includes(statusOf(order)) ||
             !allPacked(order) ||
             order.shipTo !== 'pickup'
         ) {
@@ -945,28 +885,15 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         await persist(`orders/${order.id}/ship-to`, { shipTo }, 'PUT');
     }
 
-    /** (Re)send the power-of-attorney request to the patient. */
-    async function requestPoa(order) {
-        if (!order.poa || order.poa.status === 'signed') {
-            return;
-        }
-
-        order.poa.requestedAt = moment();
-        pushEvent(order, {
-            type: 'delivery_auth_requested',
-            visibleToCustomer: true,
-        });
-        await persist(`orders/${order.id}/poa-request`, {});
-    }
-
     // ---- corrections (SHIPPING_STATION_SPEC.md §3.3, §3.4) --------------------
 
     /** "החזר צעד" — one step back, with the system password and a reason. */
     async function stepBack(order, reason, { phoneConfirmed = false } = {}) {
         const status = statusOf(order);
 
+        // Back to "בהכנה" in every case — there is no "באריזה" to return to —
+        // and the marks stay: the containers are still in their box.
         if (status === 'packing') {
-            order.packChecks = [];
             await orders.setStatus(order.id, 'in_production', reason);
         } else if (status === 'awaiting_courier') {
             // Tapuz has no cancel call yet (spec §3.3, §7.4) — the agent has
@@ -986,10 +913,10 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
 
             order.courier = null;
             order.tracking = null;
-            await orders.setStatus(order.id, 'packing', reason);
+            await orders.setStatus(order.id, 'in_production', reason);
             pushEvent(order, { type: 'shipment_cancelled', data: { reason } });
         } else if (status === 'ready_for_pickup') {
-            await orders.setStatus(order.id, 'packing', reason);
+            await orders.setStatus(order.id, 'in_production', reason);
         } else {
             return;
         }
@@ -1001,7 +928,7 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
     }
 
     /** Statuses at which the station itself may still cancel an order — up to
-     * "מוכן לאיסוף". There is no cancelling "נשלח" or "נאסף" (spec §3.4). */
+     * "ממתין לאיסוף עצמי". There is no cancelling "נשלח" or "נאסף" (spec §3.4). */
     const STATION_CANCELLABLE = [
         'in_production',
         'packing',
@@ -1070,11 +997,9 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
         allPacked,
         historyOf,
 
-        startPacking,
         findOrderByBarcode,
         scanBarcode,
         tickManually,
-        tickShelfContainer,
         setPackagesCount,
 
         linkPreconditions,
@@ -1090,7 +1015,6 @@ export const useDeliveriesStore = defineStore('deliveries', () => {
 
         updateAddress,
         setShipTo,
-        requestPoa,
 
         stepBack,
         cancelFromStation,

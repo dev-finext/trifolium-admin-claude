@@ -8,7 +8,10 @@
 import AIcon from '@/components/ui/AIcon.vue';
 
 defineProps({
-    /** `[{ id, label, icon?, n? }]` — `n` is the count badge. */
+    /**
+     * `[{ id, label, icon?, n?, disabled? }]` — `n` is the count badge; a
+     * disabled tab is shown, greyed out, and cannot be opened.
+     */
     tabs: { type: Array, required: true },
     modelValue: { type: [String, Number], default: '' },
 });
@@ -24,9 +27,10 @@ const emit = defineEmits(['update:modelValue']);
             type="button"
             role="tab"
             class="a-tab"
-            :class="{ 'is-on': modelValue === tab.id }"
+            :class="{ 'is-on': modelValue === tab.id, 'is-off': tab.disabled }"
             :aria-selected="modelValue === tab.id"
-            @click="emit('update:modelValue', tab.id)"
+            :disabled="tab.disabled || undefined"
+            @click="tab.disabled || emit('update:modelValue', tab.id)"
         >
             <AIcon v-if="tab.icon" :name="tab.icon" :size="16" />
             {{ tab.label }}

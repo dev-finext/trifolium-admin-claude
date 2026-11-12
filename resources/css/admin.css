@@ -1137,6 +1137,13 @@ textarea {
     background: var(--a-tint-2);
     color: var(--a-accent-2);
 }
+/* A step that exists in the flow but is not used — shown, greyed, inert. */
+.a-tab.is-off,
+.a-tab.is-off:hover {
+    color: var(--a-ink-4);
+    opacity: 0.55;
+    cursor: default;
+}
 
 /* ---------- filters ---------- */
 .a-filters {

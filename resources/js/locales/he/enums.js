@@ -8,7 +8,7 @@ export default {
         packing: 'באריזה',
         awaiting_courier: 'ממתין לשליח',
         shipped: 'נשלח',
-        ready_for_pickup: 'מוכן לאיסוף',
+        ready_for_pickup: 'ממתין לאיסוף עצמי',
         collected: 'נאסף',
         cancelled: 'בוטל',
     },
@@ -49,7 +49,7 @@ export default {
         address: {
             label: 'חסרה כתובת משלוח',
             short: 'חסרה כתובת',
-            fix: 'בקשת כתובת מהלקוח ב-WhatsApp',
+            fix: 'עריכת כתובת בכרטיס ההזמנה בעמדת המשלוחים',
         },
         msg: {
             label: 'הודעה ללקוח נכשלה',
@@ -66,19 +66,14 @@ export default {
             short: 'אינטראקציה לאישור',
             fix: 'אישור רוקח בלשונית בטיחות',
         },
-        poa: {
-            label: 'חסר ייפוי כוח לשליח',
-            short: 'חסר ייפוי כוח',
-            fix: 'שליחת בקשה למטופל',
-        },
         unknown_recipient: {
             label: 'לא ידוע מי מקבל את ההזמנה',
             short: 'נמען לא ידוע',
             fix: 'בחירת הנמען בכרטיס ההזמנה',
         },
         shipment_error: {
-            label: 'שיוך לשליח נכשל',
-            short: 'שגיאת שיוך',
+            label: 'ההעברה לחברת המשלוחים נכשלה',
+            short: 'שגיאת העברה',
             fix: 'ניסיון חוזר או הזנת מספר מעקב ידנית',
         },
         stuck: {
@@ -167,7 +162,6 @@ export default {
         debt_notice: 'התראת חוב',
         status_update: 'עדכון סטטוס',
         registration: 'אישור הרשמה / דחייה',
-        address_request: 'בקשת כתובת/ייפוי כוח',
         collection: 'גבייה',
     },
     messaging: {

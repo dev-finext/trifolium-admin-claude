@@ -29,6 +29,7 @@ import {
     PAY_LINK,
     PREPARATION_FORM,
     SETTINGS,
+    SKIPPED_STATUS_IDS,
 } from '@/config';
 import { PAY_PROVIDER } from '@/config/integrations';
 import { DOSE_TIMING_IDS, EVAPORATION_IDS } from '@/demo/catalog';
@@ -40,13 +41,18 @@ import {
     SUPPORT_ACTORS,
 } from '@/demo/people';
 import REAL_ORDERS from '@/demo/real/orders.json';
+import STATION_WEB_ORDERS from '@/demo/real/stationWebOrders.json';
 import { orderContainers, totalContainers } from '@/lib/containers';
 import { daysSince } from '@/lib/dates';
 import { L } from '@/lib/localized';
 
-/** Statuses at which packing has at least started — see `buildStationState`. */
-const PAST_PACKING = [
-    'packing',
+/**
+ * Statuses an order reaches only with every container marked — see
+ * `buildStationState`. An order still "בהכנה" is being marked: some of its
+ * containers, all of them (green, ready to move on) or none yet. There is no
+ * "באריזה" stage (12.11.2026).
+ */
+const FULLY_MARKED = [
     'awaiting_courier',
     'shipped',
     'ready_for_pickup',
@@ -69,7 +75,8 @@ function buildStationState(order, slot) {
     const containers = orderContainers(order);
     const total = totalContainers(order);
     const isPickup = order.shipTo === 'pickup';
-    const pastPacking = PAST_PACKING.includes(order.status);
+    const marking = order.status === 'in_production';
+    const pastPacking = FULLY_MARKED.includes(order.status) || marking;
     const courierLinked = COURIER_LINKED.includes(order.status);
 
     const recipientPhone =
@@ -82,10 +89,6 @@ function buildStationState(order, slot) {
     // order has neither.
     const courierAuth = order.shipTo === 'me' ? order.poaSigned : null;
     const poaWillSign = order.shipTo === 'patient' && order.poaSigned;
-    const poaRequested =
-        order.shipTo === 'patient' &&
-        !order.poaSigned &&
-        chance(`${slot}:poa:asked`, 0.5);
     const poa =
         order.shipTo === 'patient'
             ? {
@@ -99,10 +102,6 @@ function buildStationState(order, slot) {
                   signedAt: poaWillSign
                       ? at(Math.max(0, order.daysAgo - 1), 10, 5)
                       : null,
-                  requestedAt:
-                      poaWillSign || poaRequested
-                          ? at(Math.max(0, order.daysAgo - 1), 9, 40)
-                          : null,
               }
             : null;
 
@@ -121,22 +120,21 @@ function buildStationState(order, slot) {
     let collectedByName = null;
 
     if (pastPacking && total > 0) {
-        events.push({
-            type: 'packing_started',
-            at: at(Math.max(0, order.daysAgo - 1), 8, 50),
-            user: DEMO_ACTORS.ellaSupport,
-            visibleToCustomer: false,
-        });
-
-        // A "באריזה" order mid-scan leaves some containers open on purpose —
-        // the partial-scan case the station's own checklist has to show.
+        // An order still "בהכנה" is somewhere in its marking: untouched, part
+        // of the way, or done and green — the three things the list shows.
+        const roll = marking ? spread(`${slot}:marked`, 0, 2) : 2;
         const scanned =
-            order.status === 'packing'
-                ? Math.max(
-                      0,
-                      total - 1 - (chance(`${slot}:partial`, 0.4) ? 1 : 0),
-                  )
-                : total;
+            roll === 0
+                ? 0
+                : roll === 1
+                  ? Math.max(
+                        1,
+                        total - 1 - (chance(`${slot}:partial`, 0.4) ? 1 : 0),
+                    )
+                  : total;
+        const manualFrom = chance(`${slot}:manual`, 0.35)
+            ? Math.max(0, scanned - 1)
+            : scanned;
 
         containers.forEach((row) => {
             row.barcodes.forEach((barcode, i) => {
@@ -149,6 +147,10 @@ function buildStationState(order, slot) {
                     return;
                 }
 
+                // The last container of some orders was marked by hand —
+                // "סימון ידני", one click where a scan did not take.
+                const manual = index >= manualFrom;
+
                 packChecks.push({
                     orderItemId: row.item.id,
                     containerNo: i + 1,
@@ -159,8 +161,18 @@ function buildStationState(order, slot) {
                         10 + index,
                     ),
                     checkedBy: DEMO_ACTORS.ellaSupport,
-                    isManual: false,
+                    isManual: manual,
                 });
+
+                if (manual) {
+                    events.push({
+                        type: 'container_scanned_manual',
+                        at: at(Math.max(0, order.daysAgo - 1), 9, 10 + index),
+                        user: DEMO_ACTORS.ellaSupport,
+                        data: { orderItemId: row.item.id, containerNo: i + 1 },
+                        visibleToCustomer: false,
+                    });
+                }
             });
         });
     }
@@ -193,12 +205,6 @@ function buildStationState(order, slot) {
             user: DEMO_ACTORS.ellaSupport,
             data: { courier: order.courier, tracking: order.tracking },
             visibleToCustomer: true,
-        });
-        events.push({
-            type: 'label_printed',
-            at: at(Math.max(0, order.daysAgo - 1), 11, 6),
-            user: DEMO_ACTORS.ellaSupport,
-            visibleToCustomer: false,
         });
 
         if (order.status === 'shipped') {
@@ -388,9 +394,18 @@ const DELIVERY_NOTES = [
     L('להתקשר לפני ההגעה', 'Call before arrival'),
     L('הכניסה מהצד האחורי של הבניין', 'Entrance from the back of the building'),
     L('אין מעלית בבניין', 'No elevator in the building'),
-    L('להשאיר אצל השכנים מול, דירה סמוכה', 'Leave with the neighbors across the hall'),
-    L('המטופל/ת מוגבל/ת בניידות — נא להמתין בסבלנות בדלת', 'The patient has limited mobility — please wait patiently at the door'),
-    L('יש כלב בחצר, נא לא להיכנס דרך השער הראשי', "There's a dog in the yard — please don't enter through the main gate"),
+    L(
+        'להשאיר אצל השכנים מול, דירה סמוכה',
+        'Leave with the neighbors across the hall',
+    ),
+    L(
+        'המטופל/ת מוגבל/ת בניידות — נא להמתין בסבלנות בדלת',
+        'The patient has limited mobility — please wait patiently at the door',
+    ),
+    L(
+        'יש כלב בחצר, נא לא להיכנס דרך השער הראשי',
+        "There's a dog in the yard — please don't enter through the main gate",
+    ),
     L('ניתן להשאיר בתיבת הדואר', 'May be left in the mailbox'),
 ];
 
@@ -701,7 +716,12 @@ function buildAudit(order) {
 
     // `paid` is the flow's own label for the position; a credit order reached
     // the same position by `credit` instead, and the history must say which.
-    const sequence = flowFor(order);
+    // "באריזה" is no longer a step anybody passes through (12.11.2026).
+    const sequence = flowFor(order).filter(
+        (status) =>
+            !SKIPPED_STATUS_IDS.includes(status) ||
+            status === flowIdOf(order.status),
+    );
     const stepId = (status) =>
         status === 'paid' && order.credit ? 'credit' : status;
     const reached = sequence.indexOf(flowIdOf(order.status));
@@ -912,9 +932,10 @@ function statusFromState(code, { credit, creditPaid, paid, deliveryType }) {
         case 7:
             return byPayment();
         case 3:
-            return 'in_production';
+        // SAP's "ארוז" — everything in the box, not yet with a courier. There
+        // is no "באריזה" stage any more: it is an order still "בהכנה".
         case 4:
-            return 'packing';
+            return 'in_production';
         case 5:
         case 6:
             return deliveryType === 'pickup' ? 'collected' : 'shipped';
@@ -941,10 +962,11 @@ function realOrder(source, practitioners, patients) {
     const stateCode = Number(source.state);
     const daysAgo = Math.max(0, daysSince(source.docDate));
     // SAP stores the document's date but not its hour; the clock time is the
-    // fixture's, so the audit trail reads in a sensible order.
+    // fixture's, so the audit trail reads in a sensible order. An order from
+    // today came in before now — the demo clock stands at 14:05.
     const placed = at(
         daysAgo,
-        spread(`${slot}:hh`, 8, 19),
+        spread(`${slot}:hh`, 8, daysAgo === 0 ? 13 : 19),
         spread(`${slot}:mm`, 0, 59),
     );
 
@@ -1188,6 +1210,130 @@ function realOrder(source, practitioners, patients) {
     return order;
 }
 
+/**
+ * One website order as the new system holds it: its one or two formula
+ * documents from SAP (joined on `U_DocEntryWeb`) as one order, and, for some,
+ * a real document of shelf products in the same cart — which the new site's
+ * cart allows and SAP's split documents never show together. The first
+ * formula document gives the header (who, where, how it was paid); the totals
+ * are all the documents' own, added up.
+ */
+function composedOrder(formulaSources, shelfSource, practitioners, patients) {
+    const [first, second] = formulaSources;
+    const order = realOrder(first, practitioners, patients);
+    const sources = [...formulaSources, ...(shelfSource ? [shelfSource] : [])];
+
+    if (second) {
+        order.formula2 = realFormula(
+            second,
+            second.lines.filter(isIngredientLine),
+            second.lines.filter(isMaterialLine),
+            `order:${second.docEntry}`,
+        );
+    }
+
+    if (shelfSource) {
+        order.shelfLines = [
+            ...order.shelfLines,
+            ...shelfSource.lines
+                .filter((line) => !isFeeLine(line))
+                .map((line) => ({
+                    sku: line.code,
+                    name: L(line.name),
+                    size: null,
+                    unit: line.unit === 'gr' ? 'g' : line.unit || 'unit',
+                    qty: line.quantity,
+                    price: line.price,
+                    lineTotal: line.lineTotal ?? null,
+                })),
+        ];
+    }
+
+    const content = sources.flatMap((one) =>
+        one.lines.filter((line) => !isFeeLine(line)),
+    );
+    const fees = sources.flatMap((one) => one.lines.filter(isFeeLine));
+    const total = round2(
+        sources.reduce((sum, one) => sum + (Number(one.total) || 0), 0),
+    );
+    const vat = round2(total - total / (1 + VAT_RATE));
+    const base = sumOf(content);
+    const shipFee = sumOf(fees);
+    const pointsUsed = sources.reduce(
+        (sum, one) => sum + (Number(one.pointsUsed) || 0),
+        0,
+    );
+    const baseDisc = Math.max(
+        0,
+        round2(base + shipFee - pointsUsed - round2(total - vat)),
+    );
+
+    order.type = 'formula';
+    order.feeLines = fees.map((line) => ({
+        code: line.code,
+        name: L(line.name),
+        qty: line.quantity,
+        price: line.price,
+        lineTotal: line.lineTotal ?? null,
+    }));
+    order.discPct = base > 0 ? Math.round((baseDisc / base) * 100) : 0;
+    order.pricing = {
+        ...order.pricing,
+        base,
+        baseDisc,
+        pointsUsed,
+        pointsEarn: sources.reduce(
+            (sum, one) => sum + (Number(one.pointsEarned) || 0),
+            0,
+        ),
+        shipFee,
+        vat,
+        total,
+    };
+
+    return order;
+}
+
+/**
+ * Where each composed order stands at the station, in order, and how old the
+ * order is there — about fifteen to a tab (12.11.2026). Pickup orders wait in
+ * "ממתין לאיסוף עצמי"; the rest are being prepared, are with a courier
+ * company, or went out this week.
+ */
+const STATION_PLAN = [
+    ...Array.from({ length: 8 }, () => ({
+        status: 'in_production',
+        days: [0, 1],
+    })),
+    ...Array.from({ length: 13 }, () => ({
+        status: 'awaiting_courier',
+        days: [0, 2],
+    })),
+    ...Array.from({ length: 15 }, () => ({
+        status: 'ready_for_pickup',
+        shipTo: 'pickup',
+        days: [0, 5],
+    })),
+    ...Array.from({ length: 11 }, () => ({ status: 'shipped', days: [1, 6] })),
+    ...Array.from({ length: 5 }, () => ({
+        status: 'collected',
+        shipTo: 'pickup',
+        days: [1, 6],
+    })),
+];
+
+/** The companies an order waits on, most of them with Tapuz. */
+const STATION_COURIERS = [
+    'tapuz',
+    'tapuz',
+    'tapuz',
+    'tapuz',
+    'special_delivery',
+    'tapuz',
+    'focus',
+    'special_delivery',
+];
+
 /** Build the order book. Practitioner cards are embedded by reference. */
 export function buildOrders(practitioners, patients) {
     const orders = REAL_ORDERS.map((source) =>
@@ -1295,26 +1441,9 @@ export function buildOrders(practitioners, patients) {
     );
 
     if (partialScan) {
-        partialScan.status = 'packing';
+        partialScan.status = 'in_production';
         fillPackChecks(partialScan);
         partialScan.packChecks = partialScan.packChecks.slice(0, -1);
-    }
-
-    /** Repeats `claimOrder`, collecting up to `n` matches instead of one. */
-    function claimMany(filter, n) {
-        const found = [];
-
-        for (let i = 0; i < n; i += 1) {
-            const next = claimOrder(filter);
-
-            if (!next) {
-                break;
-            }
-
-            found.push(next);
-        }
-
-        return found;
     }
 
     /** Forces an order onto a station status, rebuilding everything that
@@ -1349,27 +1478,73 @@ export function buildOrders(practitioners, patients) {
     }
 
     // The station has to look like a pharmacy mid-shift, not a handful of
-    // leftovers: a 50-order draw settles most of its volume into "נשלחו" once
-    // enough days have passed, which starves every earlier tab — "מוכן
-    // לאיסוף" can easily land on zero. A chunk of that settled volume is
-    // pulled back onto the bench here, the same claim-and-override idiom as
-    // the named scenarios above (08.11.2026 follow-up: the dashboard must
-    // carry a believable count in every stage).
-    claimMany((order) => order.status === 'shipped', 2).forEach((order) =>
-        promoteToStation(order, 'in_production'),
-    );
-    claimMany((order) => order.status === 'shipped', 3).forEach((order) =>
-        promoteToStation(order, 'packing'),
-    );
-    claimMany((order) => order.status === 'shipped', 3).forEach((order) =>
-        promoteToStation(order, 'awaiting_courier'),
-    );
-    claimMany((order) => order.status === 'collected', 1).forEach((order) =>
-        promoteToStation(order, 'ready_for_pickup'),
-    );
-    claimMany((order) => order.status === 'shipped', 4).forEach((order) =>
-        promoteToStation(order, 'ready_for_pickup', 'pickup'),
-    );
+    // leftovers — and its orders have to look like the new site's: several
+    // formulas in one order, shelf products beside them. Real 2026 website
+    // orders from SAP, composed as `composedOrder` describes, fill every tab
+    // to about fifteen (12.11.2026).
+    const taken = new Set(orders.map((order) => order.id));
+    let shelfAt = 0;
+
+    STATION_WEB_ORDERS.formulaOrders.forEach((sources, i) => {
+        const plan = STATION_PLAN[i];
+
+        if (!plan) {
+            return;
+        }
+
+        // Every third order is formulas alone; the rest carry shelf products.
+        const shelf =
+            i % 3 === 2
+                ? null
+                : STATION_WEB_ORDERS.shelfDocs[
+                      shelfAt++ % STATION_WEB_ORDERS.shelfDocs.length
+                  ];
+        const order = composedOrder(sources, shelf, practitioners, patients);
+
+        if (taken.has(order.id)) {
+            return;
+        }
+
+        taken.add(order.id);
+
+        const slot = `${order.id}:composed`;
+        const placed = at(
+            spread(`${slot}:d`, plan.days[0], plan.days[1]),
+            spread(`${slot}:hh`, 8, 13),
+            spread(`${slot}:mm`, 0, 59),
+        );
+
+        Object.assign(order, placed, { placed });
+
+        // Anything at the station is settled: paid, or on the practitioner's
+        // credit terms, with its tax document.
+        if (!order.paid && !order.credit) {
+            order.paid = true;
+            order.linkState = order.payer === 'patient' ? 'paid' : null;
+            order.linkExpires = null;
+            order.docNum = String(spread(`${slot}:doc`, 21000, 21999));
+            order.docAlloc = String(
+                spread(`${slot}:alloc`, 10000000, 99999999),
+            );
+            order.docStatus = 'issued';
+            order.gcTxn = `gc_txn_${spread(`${slot}:gct`, 1000000, 9999999)}`;
+        }
+
+        order.cancelCause = null;
+
+        if (plan.shipTo !== 'pickup') {
+            order.deliveryType = 'courier';
+            order.shipTo = order.payer === 'patient' ? 'patient' : 'me';
+            order.addressProvided = true;
+            order.courier = pickFrom(`${slot}:courier`, STATION_COURIERS);
+            order.tracking = `${COURIER[order.courier].code}${spread(`${slot}:tr`, 1000000, 9999999)}IL`;
+        }
+
+        order.items = buildItems(order);
+        orders.push(order);
+        claimed.add(order.id);
+        promoteToStation(order, plan.status, plan.shipTo);
+    });
 
     /** A shipment row, as `linkCourier`/`enterManualTracking` would build one. */
     function shipmentFor(order, { manual = false } = {}) {

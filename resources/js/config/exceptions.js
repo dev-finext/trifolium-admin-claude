@@ -17,8 +17,9 @@ export const EXCEPTION_TYPES = [
     { id: 'interaction', tone: 'amber' },
     // The shipping station's own exceptions (SHIPPING_STATION_SPEC.md §5.7) —
     // shared through this one registry rather than a tab of its own, so an
-    // order stuck at the station shows on the same bell as every other.
-    { id: 'poa', tone: 'red' },
+    // order stuck at the station shows on the same bell as every other. A
+    // missing power of attorney is not one of them: it is collected before the
+    // order reaches the lab, and the station only shows it.
     { id: 'unknown_recipient', tone: 'red' },
     { id: 'shipment_error', tone: 'red' },
     { id: 'stuck', tone: 'amber' },

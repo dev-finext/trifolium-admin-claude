@@ -8,7 +8,7 @@ export default {
         packing: 'Packing',
         awaiting_courier: 'Awaiting courier',
         shipped: 'Shipped',
-        ready_for_pickup: 'Ready for pickup',
+        ready_for_pickup: 'Awaiting self-pickup',
         collected: 'Collected',
         cancelled: 'Cancelled',
     },
@@ -49,7 +49,7 @@ export default {
         address: {
             label: 'Delivery address is missing',
             short: 'No address',
-            fix: 'Request the address from the customer on WhatsApp',
+            fix: 'Edit the address on the order card at the shipping station',
         },
         msg: {
             label: 'Message to the customer failed',
@@ -66,18 +66,13 @@ export default {
             short: 'Interaction to approve',
             fix: 'Pharmacist approval on the Safety tab',
         },
-        poa: {
-            label: 'Missing a signed power of attorney for the courier',
-            short: 'Missing POA',
-            fix: 'Send a request to the patient',
-        },
         unknown_recipient: {
             label: "The order's recipient is not known",
             short: 'Unknown recipient',
             fix: 'Choose the recipient on the order card',
         },
         shipment_error: {
-            label: 'The courier link failed',
+            label: 'Passing to the courier company failed',
             short: 'Shipment error',
             fix: 'Retry, or enter a tracking number by hand',
         },
@@ -167,7 +162,6 @@ export default {
         debt_notice: 'Debt notice',
         status_update: 'Status update',
         registration: 'Registration approval / rejection',
-        address_request: 'Address / power-of-attorney request',
         collection: 'Collection',
     },
     messaging: {

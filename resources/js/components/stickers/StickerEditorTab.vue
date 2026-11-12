@@ -41,12 +41,8 @@ const stickers = useStickersStore();
 const orders = useOrdersStore();
 const inventory = useInventoryStore();
 const production = useProductionStore();
-const {
-    labelsForOrder,
-    labelsForReceipt,
-    labelsForShipping,
-    labelsForProduction,
-} = useStickerData();
+const { labelsForOrder, labelsForReceipt, labelsForProduction } =
+    useStickerData();
 
 const view = useUrlState({ tpl: 'prep' });
 
@@ -102,7 +98,7 @@ const fieldOptions = computed(() =>
     })),
 );
 
-/** A real record to draw the preview from: the first order on the bench, the newest receipt, the first parcel, the first production order at the lab. */
+/** A real record to draw the preview from: the first order on the bench, the newest receipt, the first production order at the lab. */
 const sample = computed(() => {
     if (view.tpl === 'production') {
         const order = production.openOrders[0];
@@ -137,15 +133,7 @@ const sample = computed(() => {
             : null;
     }
 
-    const order = orders.all.find(
-        (row) =>
-            row.courier &&
-            ['awaiting_courier', 'shipped'].includes(statusOf(row)),
-    );
-
-    return order
-        ? { ref: order.id, data: labelsForShipping(order)[0].data }
-        : null;
+    return null;
 });
 
 const previewTemplate = computed(() => ({

@@ -65,6 +65,14 @@ export const ORDER_FLOW = {
     ],
 };
 
+/**
+ * Steps of the flow no order passes through any more. "באריזה" was dropped on
+ * 12.11.2026 — containers are marked while an order is "בהכנה", which then
+ * moves straight to "ממתין לשליח" or "ממתין לאיסוף עצמי" — but the step stays
+ * on the rail, greyed, so the flow still reads in its order.
+ */
+export const SKIPPED_STATUS_IDS = ['packing'];
+
 /** `credit` sits where `paid` does on every flow — the two are one position. */
 const FLOW_ALIAS = { credit: 'paid' };
 

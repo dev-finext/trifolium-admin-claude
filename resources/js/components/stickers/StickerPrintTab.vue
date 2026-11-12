@@ -34,7 +34,6 @@ const production = useProductionStore();
 const {
     labelsForOrder,
     labelsForReceipt,
-    labelsForShipping,
     labelsForProduction,
     labelsForProductionReceipt,
     productionLabelCount,
@@ -65,14 +64,6 @@ const benchOrders = computed(() =>
                 trackedItems(order).some((item) => !item.cancelled),
         )
         .sort((a, b) => Number(Boolean(b.urgent)) - Number(Boolean(a.urgent))),
-);
-
-const parcelOrders = computed(() =>
-    orders.all.filter(
-        (order) =>
-            order.courier &&
-            ['awaiting_courier', 'shipped'].includes(statusOf(order)),
-    ),
 );
 
 const receipts = computed(() => inventory.receipts);
@@ -116,9 +107,7 @@ const targets = computed(() => {
         }));
     }
 
-    const list = view.src === 'prep' ? benchOrders.value : parcelOrders.value;
-
-    return list.map((order) => ({
+    return benchOrders.value.map((order) => ({
         value: order.id,
         label: `${order.id} · ${loc(order.patient.name)} · ${t(`status.${statusOf(order)}`)}`,
         record: order,
@@ -151,11 +140,7 @@ const labels = computed(() => {
             : labelsForReceipt(receipt);
     }
 
-    if (view.src === 'production') {
-        return labelsForProduction(selected.value.record);
-    }
-
-    return labelsForShipping(selected.value.record);
+    return labelsForProduction(selected.value.record);
 });
 
 /** The count rule, spelled out per line. */
@@ -209,11 +194,7 @@ const ruleLines = computed(() => {
         ];
     }
 
-    if (view.src === 'production') {
-        return [t('stickers.print.ruleProduction')];
-    }
-
-    return [t('stickers.print.ruleShipping')];
+    return [t('stickers.print.ruleProduction')];
 });
 
 const shown = computed(() => labels.value.slice(0, PREVIEW_LIMIT));

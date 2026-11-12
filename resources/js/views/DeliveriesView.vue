@@ -1,11 +1,15 @@
 <script setup>
 // עמדת משלוחים — the shipping station (SHIPPING_STATION_SPEC.md,
 // DEMO_SHIPPING_STATION_PROMPT.md, DEMO_SHIPPING_STATION_ADDENDUM.md). One
-// page: the worker never leaves it. The dashboard counts and opens tabs; the
-// scan bar drives packing; each tab is the one list that status needs, now
-// with the console's own list standard (search, field filters, saved views —
-// addendum §2.1); the order card (StationOrderCard) is a drawer over the
-// page, never a navigation.
+// page: the worker never leaves it. The scan bar marks containers; each tab is
+// the one list that status needs, with the console's own list standard
+// (search, field filters, saved views — addendum §2.1); the order card
+// (StationOrderCard) is a drawer over the page, never a navigation.
+//
+// 12.11.2026: there is no "באריזה" stage. Containers are marked — scanned, or
+// "סימון ידני" — while the order is "בהכנה"; a fully marked order turns green
+// and moves straight on, to a courier company or to "ממתין לאיסוף עצמי". The
+// "באריזה" tab stays on the strip, grey, so the flow still reads in order.
 //
 // New locale keys this addendum pass adds, on top of what the first pass
 // already authored in locales/{he,en}/deliveries.js:
@@ -15,7 +19,7 @@
 // Two keys from the first pass are now dead and should be removed, not
 // reauthored: deliveries.card.urgent, deliveries.export.*.
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { I18nT, useI18n } from 'vue-i18n';
+import { useI18n } from 'vue-i18n';
 
 import CollectModal from '@/components/deliveries/CollectModal.vue';
 import CourierSettingsTab from '@/components/deliveries/CourierSettingsTab.vue';
@@ -37,28 +41,25 @@ import FilterBar from '@/components/ui/FilterBar.vue';
 import FilterChips from '@/components/ui/FilterChips.vue';
 import FilterDrawer from '@/components/ui/FilterDrawer.vue';
 import SavedViews from '@/components/ui/SavedViews.vue';
-import StatusChip from '@/components/ui/StatusChip.vue';
 import { filterDefaults, useListFilters } from '@/composables/useListFilters';
 import { useLocalized } from '@/composables/useLocalized';
-import { useStickerData } from '@/composables/useStickerData';
 import { useToast } from '@/composables/useToast';
 import { useUrlState } from '@/composables/useUrlState';
 import { ACTIVE_COURIER_IDS } from '@/config';
 import { totalContainers } from '@/lib/containers';
 import { inRange, presetRange } from '@/lib/dateRange';
-import { durationParts } from '@/lib/dates';
+import { durationParts, now } from '@/lib/dates';
 import { useDatasetStore } from '@/stores/dataset';
 import {
     STATION_FILTER_FIELDS,
     STATION_FILTER_GROUPS,
     useDeliveriesStore,
 } from '@/stores/deliveries';
-import { statusOf, useOrdersStore } from '@/stores/orders';
+import { useOrdersStore } from '@/stores/orders';
 
 const { t } = useI18n();
 const { loc } = useLocalized();
 const { push } = useToast();
-const { labelsForShipping, printStickers } = useStickerData();
 const { courierName } = useCourierName();
 const dataset = useDatasetStore();
 const orders = useOrdersStore();
@@ -108,7 +109,8 @@ function removeChip(chip) {
 
 const TABS = [
     { id: 'in_production', icon: 'clipboard_list' },
-    { id: 'packing', icon: 'package' },
+    // Not a stage any more: shown, greyed out, never opened.
+    { id: 'packing', icon: 'package', disabled: true },
     { id: 'awaiting_courier', icon: 'truck' },
     { id: 'pickup', icon: 'map_pin' },
     { id: 'shipped', icon: 'check' },
@@ -120,16 +122,26 @@ const tabs = computed(() =>
         id: tab.id,
         icon: tab.icon,
         label: t(`deliveries.tab.${tab.id}`),
-        n: countFor(tab.id),
+        n: tab.disabled ? undefined : countFor(tab.id),
+        disabled: Boolean(tab.disabled),
     })),
+);
+
+// An old link to the "באריזה" tab opens "בהכנה", where that work now happens.
+watch(
+    () => state.tab,
+    (tab) => {
+        if (tab === 'packing') {
+            state.tab = 'in_production';
+        }
+    },
+    { immediate: true },
 );
 
 function countFor(id) {
     switch (id) {
         case 'in_production':
             return store.inProduction.length;
-        case 'packing':
-            return store.packing.length;
         case 'awaiting_courier':
             return store.awaitingCourier.length;
         case 'pickup':
@@ -192,10 +204,31 @@ const filters = useListFilters(SPEC, state, currentTabRows);
 
 // ---- age -------------------------------------------------------------------
 
+/**
+ * How long ago the order came in. An order from today is counted from its own
+ * hour — "3 hours", not "less than a minute" — since the day alone says
+ * nothing about it.
+ */
 function ageText(order) {
-    const parts = durationParts(Math.max(0, order.daysAgo || 0) * 86400000);
+    let ms = Math.max(0, order.daysAgo || 0) * 86400000;
 
-    return t(`duration.${parts.unit}`, { a: parts.a, b: parts.b });
+    if (!ms && order.time) {
+        const [h, m] = String(order.time).split(':').map(Number);
+        const clock = now();
+
+        ms = Math.max(
+            0,
+            (clock.getHours() * 60 + clock.getMinutes() - (h * 60 + m)) * 60000,
+        );
+    }
+
+    const parts = durationParts(ms);
+
+    return t(
+        `duration.${parts.unit}`,
+        { a: parts.a, b: parts.b },
+        parts.a || 1,
+    );
 }
 
 // ---- tab 1: בהכנה ------------------------------------------------------------
@@ -214,84 +247,16 @@ const sharedCols = computed(() => [
 ]);
 
 const inProductionCols = computed(() => [
-    { k: 'sel', label: t('deliveries.col.select'), w: '40px' },
     ...sharedCols.value,
+    { k: 'ship', label: t('deliveries.col.ship'), nowrap: true },
+    { k: 'marked', label: t('deliveries.col.marked'), nowrap: true },
     { k: 'act', label: '', nowrap: true },
 ]);
 
-/** Ids ticked in the "בהכנה" tab, for the bulk "העבר לאריזה" bar. Scratch
- * state, not URL state — it means nothing once the tab or the filter changes. */
-const inProductionSelection = ref([]);
+/** A fully marked order is green: it is ready to move on. */
+const readyRowClass = (order) => (store.allPacked(order) ? 'dv-ready' : null);
 
-watch(
-    () => state.tab,
-    (tab) => {
-        if (tab !== 'in_production') {
-            inProductionSelection.value = [];
-        }
-    },
-);
-
-const isTicked = (order) => inProductionSelection.value.includes(order.id);
-
-const allTicked = computed(
-    () =>
-        inProductionRows.value.length > 0 &&
-        inProductionRows.value.every((order) => isTicked(order)),
-);
-
-function toggleSelected(id) {
-    inProductionSelection.value = inProductionSelection.value.includes(id)
-        ? inProductionSelection.value.filter((row) => row !== id)
-        : [...inProductionSelection.value, id];
-}
-
-function toggleAllSelected() {
-    const ids = inProductionRows.value.map((order) => order.id);
-    const all = ids.every((id) => inProductionSelection.value.includes(id));
-
-    inProductionSelection.value = all ? [] : ids;
-}
-
-async function onMoveToPacking(order) {
-    await store.startPacking(order);
-    push({ title: t('deliveries.toast.movedToPacking'), body: order.id });
-}
-
-async function onBulkMoveToPacking() {
-    const ids = [...inProductionSelection.value];
-
-    await Promise.all(
-        ids
-            .map((id) => orders.byId(id))
-            .filter(Boolean)
-            .map((order) => store.startPacking(order)),
-    );
-    inProductionSelection.value = [];
-    push({
-        title: t('deliveries.bulk.movedToPacking', { n: ids.length }, ids.length),
-    });
-}
-
-// ---- tab 2: באריזה ------------------------------------------------------------
-
-const packingRows = computed(() =>
-    state.tab === 'packing' ? filters.rows : [],
-);
-
-const packingCols = computed(() => [
-    ...sharedCols.value,
-    { k: 'scanned', label: t('deliveries.col.scanned'), nowrap: true },
-    { k: 'courier', label: t('deliveries.col.courier'), nowrap: true },
-    { k: 'packages', label: t('deliveries.col.packages'), nowrap: true },
-    { k: 'act', label: '', nowrap: true },
-]);
-
-function openForLink(order) {
-    state.order = order.id;
-}
-
-// ---- tab 3: ממתין לשליח, grouped by company ----------------------------------
+// ---- ממתין לשליח, grouped by company ----------------------------------
 
 const awaitingGroups = computed(() => {
     if (state.tab !== 'awaiting_courier') {
@@ -336,7 +301,7 @@ function openPickupList(group) {
     };
 }
 
-// ---- tab 4: איסוף עצמי --------------------------------------------------------
+// ---- ממתין לאיסוף עצמי ---------------------------------------------------------
 
 const pickupRows = computed(() => (state.tab === 'pickup' ? filters.rows : []));
 
@@ -344,8 +309,6 @@ const pickupCols = computed(() => [
     { k: 'order', label: t('deliveries.col.order'), nowrap: true },
     { k: 'payer', label: t('deliveries.col.payer') },
     { k: 'phone', label: t('deliveries.col.phone'), nowrap: true },
-    { k: 'status', label: t('deliveries.col.status'), nowrap: true },
-    { k: 'scanned', label: t('deliveries.col.scanned'), nowrap: true },
     { k: 'readySince', label: t('deliveries.col.readySince'), nowrap: true },
     { k: 'act', label: '', nowrap: true },
 ]);
@@ -361,7 +324,7 @@ function onMarkCollected(order) {
     collectModal.value = { open: true, order };
 }
 
-// ---- tab 5: נשלחו --------------------------------------------------------------
+// ---- נשלחו --------------------------------------------------------------------
 
 const shippedRange = computed({
     get: () => ({
@@ -403,7 +366,6 @@ const shippedCols = computed(() => [
     { k: 'packages', label: t('deliveries.col.packages'), nowrap: true },
     { k: 'handedAt', label: t('deliveries.col.handedAt'), nowrap: true },
     { k: 'by', label: t('deliveries.col.by'), nowrap: true },
-    { k: 'act', label: '', nowrap: true },
 ]);
 
 const courierFilterOptions = computed(() => [
@@ -413,19 +375,6 @@ const courierFilterOptions = computed(() => [
         label: t(`courier.${id}`),
     })),
 ]);
-
-async function reprintLabel(order) {
-    const labels = labelsForShipping(order);
-    const template = dataset.data.stickerTemplates?.find(
-        (row) => row.id === 'shipping',
-    );
-
-    if (!template) {
-        return;
-    }
-
-    await printStickers(template, labels, order.id);
-}
 
 // ---- the scan bar --------------------------------------------------------------
 
@@ -562,112 +511,20 @@ async function onScanEnter() {
                 />
             </template>
 
-            <!-- in production -->
-            <template v-if="state.tab === 'in_production'">
-                <div
-                    v-if="inProductionSelection.length"
-                    class="a-card a-bulkbar"
-                >
-                    <I18nT
-                        keypath="deliveries.bulk.selected"
-                        tag="strong"
-                        scope="global"
-                        :plural="inProductionSelection.length"
-                    >
-                        <template #n>
-                            <ANum>{{ inProductionSelection.length }}</ANum>
-                        </template>
-                    </I18nT>
-
-                    <AButton sm icon="package" @click="onBulkMoveToPacking">
-                        {{ t('deliveries.action.moveToPacking') }}
-                    </AButton>
-                    <AButton
-                        sm
-                        kind="ghost"
-                        @click="inProductionSelection = []"
-                    >
-                        {{ t('deliveries.bulk.clear') }}
-                    </AButton>
-                </div>
-
-                <ADataTable
-                    :cols="inProductionCols"
-                    :rows="inProductionRows"
-                    row-key="id"
-                    :selected="state.order"
-                    @row="state.order = $event.id"
-                >
-                    <template #head-sel>
-                        <input
-                            type="checkbox"
-                            class="a-check"
-                            :checked="allTicked"
-                            :aria-label="t('deliveries.select.all')"
-                            @change="toggleAllSelected"
-                        />
-                    </template>
-                    <template #head-act>
-                        <span class="a-sr">{{
-                            t('deliveries.col.actions')
-                        }}</span>
-                    </template>
-                    <template #cell-sel="{ row }">
-                        <input
-                            type="checkbox"
-                            class="a-check"
-                            :checked="isTicked(row)"
-                            :aria-label="
-                                t('deliveries.select.row', { id: row.id })
-                            "
-                            @click.stop
-                            @change="toggleSelected(row.id)"
-                        />
-                    </template>
-                    <template #cell-order="{ row }">
-                        <div class="t-strong">{{ row.id }}</div>
-                    </template>
-                    <template #cell-sentToLab="{ row }"
-                        ><ANum>{{ ageText(row) }}</ANum></template
-                    >
-                    <template #cell-practitioner="{ row }">{{
-                        loc(row.practitioner.name)
-                    }}</template>
-                    <template #cell-recipient="{ row }">{{
-                        loc(row.patient.name)
-                    }}</template>
-                    <template #cell-city="{ row }">{{
-                        loc(row.address?.city)
-                    }}</template>
-                    <template #cell-act="{ row }">
-                        <div class="a-rowbtns" @click.stop>
-                            <AButton
-                                sm
-                                icon="package"
-                                @click="onMoveToPacking(row)"
-                            >
-                                {{ t('deliveries.action.moveToPacking') }}
-                            </AButton>
-                        </div>
-                    </template>
-                    <template #empty>
-                        <AEmpty
-                            icon="clipboard_list"
-                            :title="t('deliveries.empty.title')"
-                        />
-                    </template>
-                </ADataTable>
-            </template>
-
-            <!-- packing -->
+            <!-- in preparation: marking happens here, and a fully marked order
+                 turns green and moves straight on -->
             <ADataTable
-                v-else-if="state.tab === 'packing'"
-                :cols="packingCols"
-                :rows="packingRows"
+                v-if="state.tab === 'in_production'"
+                :cols="inProductionCols"
+                :rows="inProductionRows"
                 row-key="id"
                 :selected="state.order"
+                :row-class="readyRowClass"
                 @row="state.order = $event.id"
             >
+                <template #head-act>
+                    <span class="a-sr">{{ t('deliveries.col.actions') }}</span>
+                </template>
                 <template #cell-order="{ row }">
                     <div class="t-strong">{{ row.id }}</div>
                 </template>
@@ -681,21 +538,28 @@ async function onScanEnter() {
                     loc(row.patient.name)
                 }}</template>
                 <template #cell-city="{ row }">{{
-                    loc(row.address?.city)
+                    row.shipTo === 'pickup' ? '—' : loc(row.address?.city)
                 }}</template>
-                <template #cell-scanned="{ row }">
-                    <ANum
+                <template #cell-ship="{ row }">
+                    <AChip
+                        :tone="row.shipTo === 'pickup' ? 'blue' : 'gray'"
+                        size="sm"
+                        :dot="false"
+                    >
+                        {{
+                            row.shipTo === 'pickup'
+                                ? t('deliveries.ship.pickup')
+                                : t('deliveries.ship.delivery')
+                        }}
+                    </AChip>
+                </template>
+                <template #cell-marked="{ row }">
+                    <ANum :class="{ 'dv-done': store.allPacked(row) }"
                         >{{ store.packedCount(row) }}/{{
                             totalContainers(row)
                         }}</ANum
                     >
                 </template>
-                <template #cell-courier="{ row }">
-                    {{ row.courier ? courierName(row.courier) : '—' }}
-                </template>
-                <template #cell-packages="{ row }"
-                    ><ANum>{{ row.packagesCount || 1 }}</ANum></template
-                >
                 <template #cell-act="{ row }">
                     <div class="a-rowbtns" @click.stop>
                         <AButton
@@ -704,7 +568,7 @@ async function onScanEnter() {
                             "
                             sm
                             kind="p"
-                            icon="check"
+                            icon="map_pin"
                             @click="onMarkReady(row)"
                         >
                             {{ t('deliveries.action.markReady') }}
@@ -714,7 +578,7 @@ async function onScanEnter() {
                             sm
                             kind="p"
                             icon="truck"
-                            @click="openForLink(row)"
+                            @click="state.order = row.id"
                         >
                             {{ t('deliveries.action.linkCourier') }}
                         </AButton>
@@ -722,7 +586,7 @@ async function onScanEnter() {
                 </template>
                 <template #empty>
                     <AEmpty
-                        icon="package"
+                        icon="clipboard_list"
                         :title="t('deliveries.empty.title')"
                     />
                 </template>
@@ -816,39 +680,12 @@ async function onScanEnter() {
                 <template #cell-phone="{ row }"
                     ><ANum>{{ row.recipientPhone }}</ANum></template
                 >
-                <template #cell-status="{ row }"
-                    ><StatusChip :status="statusOf(row)"
-                /></template>
-                <template #cell-scanned="{ row }">
-                    <ANum
-                        >{{ store.packedCount(row) }}/{{
-                            totalContainers(row)
-                        }}</ANum
-                    >
-                </template>
                 <template #cell-readySince="{ row }">
-                    {{
-                        statusOf(row) === 'ready_for_pickup'
-                            ? ageText(row)
-                            : '—'
-                    }}
+                    <ANum>{{ ageText(row) }}</ANum>
                 </template>
                 <template #cell-act="{ row }">
                     <div class="a-rowbtns" @click.stop>
                         <AButton
-                            v-if="
-                                statusOf(row) === 'packing' &&
-                                store.allPacked(row)
-                            "
-                            sm
-                            kind="p"
-                            icon="check"
-                            @click="onMarkReady(row)"
-                        >
-                            {{ t('deliveries.action.markReady') }}
-                        </AButton>
-                        <AButton
-                            v-if="statusOf(row) === 'ready_for_pickup'"
                             sm
                             kind="p"
                             icon="check"
@@ -915,18 +752,6 @@ async function onScanEnter() {
                                     row.collectedBy,
                             )
                         }}
-                    </template>
-                    <template #cell-act="{ row }">
-                        <div class="a-rowbtns" @click.stop>
-                            <AButton
-                                v-if="row.courier"
-                                sm
-                                icon="printer"
-                                @click="reprintLabel(row)"
-                            >
-                                {{ t('deliveries.action.reprintLabel') }}
-                            </AButton>
-                        </div>
                     </template>
                     <template #empty>
                         <AEmpty
@@ -1038,5 +863,15 @@ async function onScanEnter() {
 
 .dv-courier-filter {
     max-width: 220px;
+}
+
+/* Every container marked: the order is ready to move on. */
+.dv-done {
+    color: var(--a-green);
+    font-weight: 700;
+}
+
+:deep(tr.dv-ready > td) {
+    background: var(--a-green-bg, #e8f5ec);
 }
 </style>

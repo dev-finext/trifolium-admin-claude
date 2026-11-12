@@ -1,8 +1,15 @@
 <script setup>
 // The station's own order card (SHIPPING_STATION_SPEC.md §5.4): recipient and
-// address, the packing checklist, the courier shipment, the order's content
-// read-only, and its full history — everything the station needs for one
-// order, in a drawer that never leaves the page.
+// address, the checklist of containers, the courier shipment, the order's
+// content read-only, and its full history — everything the station needs for
+// one order, in a drawer that never leaves the page.
+//
+// While the card is open a scan marks a container; "סימון ידני" beside it does
+// the same in one click. A marked container turns green, a line whose
+// containers are all marked turns green, and when the whole order is marked
+// the card says so and the next step opens: "העבר לחברת משלוחים", or
+// "העבר לאיסוף עצמי". There is no shipping label of our own to print — the
+// courier company issues it once the station is integrated with it.
 import { computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -21,14 +28,13 @@ import ExceptionChip from '@/components/ui/ExceptionChip.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import { formatAddress } from '@/components/users/address';
 import { useLocalized } from '@/composables/useLocalized';
-import { useStickerData } from '@/composables/useStickerData';
 import { useToast } from '@/composables/useToast';
 import { totalContainers } from '@/lib/containers';
 import { L } from '@/lib/localized';
+import { qtyText } from '@/lib/money';
 import { useDatasetStore } from '@/stores/dataset';
-import { useDeliveriesStore } from '@/stores/deliveries';
+import { PREP_STATUSES, useDeliveriesStore } from '@/stores/deliveries';
 import { statusOf } from '@/stores/orders';
-import { useStickersStore } from '@/stores/stickers';
 
 const props = defineProps({
     order: { type: Object, default: null },
@@ -42,8 +48,6 @@ const { push } = useToast();
 const router = useRouter();
 const dataset = useDatasetStore();
 const store = useDeliveriesStore();
-const stickers = useStickersStore();
-const { labelsForShipping, printStickers } = useStickerData();
 
 const pin = computed(() => dataset.session?.pin || true);
 
@@ -68,6 +72,42 @@ const totalN = computed(() => (props.order ? totalContainers(props.order) : 0));
 const checkedN = computed(() =>
     props.order ? store.packedCount(props.order) : 0,
 );
+
+/** Still being prepared — where marking happens. */
+const inPrep = computed(() => PREP_STATUSES.includes(status.value));
+
+/** Every container marked, while the order is still being prepared. */
+const allMarked = computed(
+    () => inPrep.value && Boolean(props.order) && store.allPacked(props.order),
+);
+
+/** A formula's ingredients, small: `Huang Qi 30 גרם · Dang Gui 20 גרם`. */
+function ingredientsOf(item) {
+    return (item.herbs || [])
+        .map(
+            (herb) =>
+                `${loc(herb.name)} ${qtyText(herb.qty, 3)} ${t(
+                    `orders.unit.${herb.unit || item.unit}`,
+                )}`,
+        )
+        .join(' · ');
+}
+
+/** What one line is, under its name: a formula's form and size, a product's count. */
+function itemFacts(item) {
+    if (item.kind === 'shelf') {
+        return t('deliveries.card.shelfQty', { n: item.qty || 1 });
+    }
+
+    return [
+        t(`preparationForm.${item.typeId}`),
+        item.vol
+            ? `${qtyText(item.vol, 3)} ${t(`orders.unit.${item.unit}`)}`
+            : '',
+    ]
+        .filter(Boolean)
+        .join(' · ');
+}
 const activeShipment = computed(
     () => props.order && store.activeShipmentOf(props.order),
 );
@@ -165,33 +205,9 @@ async function confirmShipTo() {
 
 // ---- packing ----------------------------------------------------------------
 
-const manualTarget = ref(null);
-
-function askManual(row, containerNo) {
-    manualTarget.value = {
-        orderItemId: row.item.id,
-        containerNo,
-        name: loc(row.item.name),
-    };
-}
-
-async function confirmManual(reason) {
-    const target = manualTarget.value;
-
-    manualTarget.value = null;
-
-    if (target) {
-        await store.tickManually(
-            props.order,
-            target.orderItemId,
-            target.containerNo,
-            reason,
-        );
-    }
-}
-
-function tickShelf(row, containerNo) {
-    store.tickShelfContainer(props.order, row.item.id, containerNo);
+/** "סימון ידני" — one click, the same mark a scan makes. */
+function markManually(row, containerNo) {
+    store.tickManually(props.order, row.item.id, containerNo);
 }
 
 // ---- courier shipment ---------------------------------------------------------
@@ -248,7 +264,6 @@ async function doLink() {
                 courier: t(`courier.${result.courier}`),
             }),
         });
-        printShippingLabels();
     } else {
         push({
             title: t('deliveries.card.linkFailed'),
@@ -269,7 +284,6 @@ async function doRetry() {
 
     if (result.ok) {
         push({ title: t('deliveries.card.linked'), body: result.tracking });
-        printShippingLabels();
     } else {
         push({
             title: t('deliveries.card.linkFailed'),
@@ -301,16 +315,6 @@ async function confirmManualTracking(reason) {
         trackingNumber: manualForm.trackingNumber,
         reason,
     });
-    printShippingLabels();
-}
-
-function printShippingLabels() {
-    const template = stickers.templateById('shipping');
-    const labels = labelsForShipping(props.order);
-
-    if (template) {
-        printStickers(template, labels, props.order.id);
-    }
 }
 
 // ---- package count: known in advance, changed only with the system password ---
@@ -329,21 +333,6 @@ async function confirmPackagesEdit(reason) {
     packagesInput.value = props.order?.packagesCount || 1;
 }
 
-// ---- power of attorney ----------------------------------------------------
-
-const requestingPoa = ref(false);
-
-async function doRequestPoa() {
-    if (!props.order || requestingPoa.value) {
-        return;
-    }
-
-    requestingPoa.value = true;
-    await store.requestPoa(props.order);
-    requestingPoa.value = false;
-    push({ title: t('deliveries.card.poaRequestSent') });
-}
-
 // ---- self pickup --------------------------------------------------------------
 
 const collectedByName = ref('');
@@ -351,6 +340,7 @@ const collectAsk = ref(false);
 
 async function doMarkReady() {
     await store.markReadyForPickup(props.order);
+    push({ title: t('deliveries.toast.readyForPickup'), body: props.order.id });
 }
 
 async function confirmCollect() {
@@ -367,7 +357,7 @@ const stepBackAsk = ref(false);
 const cancelAsk = ref(false);
 
 const canStepBack = computed(() =>
-    ['packing', 'awaiting_courier', 'ready_for_pickup'].includes(status.value),
+    ['awaiting_courier', 'ready_for_pickup'].includes(status.value),
 );
 const canCancel = computed(() =>
     [
@@ -405,7 +395,12 @@ function eventSentence(row) {
         });
     }
 
-    return t(`deliveries.event.${row.type}`);
+    // An event carries what it is about — the tracking number, the courier's
+    // message — and the sentence names it.
+    return t(`deliveries.event.${row.type}`, {
+        tracking: row.data?.tracking || '',
+        message: row.data?.message || '',
+    });
 }
 </script>
 
@@ -420,6 +415,9 @@ function eventSentence(row) {
                                 <span class="a-code a-tag">{{ order.id }}</span>
                             </h2>
                             <StatusChip :status="status" size="lg" />
+                            <AChip v-if="allMarked" tone="green">
+                                {{ t('deliveries.card.allMarked') }}
+                            </AChip>
                             <ExceptionChip
                                 v-for="id in exceptions"
                                 :key="id"
@@ -442,6 +440,7 @@ function eventSentence(row) {
                         <AButton
                             v-if="
                                 order.shipTo !== 'pickup' &&
+                                inPrep &&
                                 !activeShipment &&
                                 !handedShipment
                             "
@@ -456,6 +455,16 @@ function eventSentence(row) {
                                     ? t('deliveries.card.linking')
                                     : t('deliveries.card.link')
                             }}
+                        </AButton>
+                        <AButton
+                            v-if="order.shipTo === 'pickup' && inPrep"
+                            sm
+                            kind="p"
+                            icon="map_pin"
+                            :disabled="!allMarked"
+                            @click="doMarkReady"
+                        >
+                            {{ t('deliveries.card.markReady') }}
                         </AButton>
                         <AButton sm icon="x" @click="emit('close')">
                             {{ t('actions.cancel') }}
@@ -567,30 +576,6 @@ function eventSentence(row) {
                                     {{ maskedId(order.poa.idNumber) }} ·
                                     {{ order.poa.signedAt?.stamp }}
                                 </div>
-                                <template v-else>
-                                    <div
-                                        v-if="order.poa?.requestedAt"
-                                        class="t-sub"
-                                    >
-                                        {{
-                                            t(
-                                                'deliveries.card.poaRequestedAt',
-                                                {
-                                                    stamp: order.poa
-                                                        .requestedAt.stamp,
-                                                },
-                                            )
-                                        }}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        class="a-linkbtn"
-                                        :disabled="requestingPoa"
-                                        @click="doRequestPoa"
-                                    >
-                                        {{ t('deliveries.card.requestPoa') }}
-                                    </button>
-                                </template>
                             </template>
                             <span v-else>—</span>
                         </template>
@@ -615,30 +600,30 @@ function eventSentence(row) {
                     </AButton>
 
                     <div v-if="editingAddress" class="soc-addr-form soc-gap">
-                        <AInput
-                            v-model="addressForm.city"
-                            :placeholder="t('deliveries.card.city')"
-                        />
-                        <AInput
-                            v-model="addressForm.street"
-                            :placeholder="t('deliveries.card.street')"
-                        />
-                        <AInput
-                            v-model="addressForm.num"
-                            :placeholder="t('deliveries.card.num')"
-                        />
-                        <AInput
-                            v-model="addressForm.apt"
-                            :placeholder="t('deliveries.card.apt')"
-                        />
-                        <AInput
-                            v-model="addressForm.floor"
-                            :placeholder="t('deliveries.card.floor')"
-                        />
-                        <AInput
-                            v-model="addressForm.entry"
-                            :placeholder="t('deliveries.card.entry')"
-                        />
+                        <label class="a-field">
+                            <span>{{ t('deliveries.card.city') }}</span>
+                            <AInput v-model="addressForm.city" />
+                        </label>
+                        <label class="a-field">
+                            <span>{{ t('deliveries.card.street') }}</span>
+                            <AInput v-model="addressForm.street" />
+                        </label>
+                        <label class="a-field">
+                            <span>{{ t('deliveries.card.houseNum') }}</span>
+                            <AInput v-model="addressForm.num" />
+                        </label>
+                        <label class="a-field">
+                            <span>{{ t('deliveries.card.apt') }}</span>
+                            <AInput v-model="addressForm.apt" />
+                        </label>
+                        <label class="a-field">
+                            <span>{{ t('deliveries.card.floor') }}</span>
+                            <AInput v-model="addressForm.floor" />
+                        </label>
+                        <label class="a-field">
+                            <span>{{ t('deliveries.card.entry') }}</span>
+                            <AInput v-model="addressForm.entry" />
+                        </label>
                         <div class="soc-row-actions">
                             <AButton
                                 sm
@@ -659,7 +644,7 @@ function eventSentence(row) {
                     </div>
                 </ACard>
 
-                <!-- 2. packing checklist -->
+                <!-- 2. the checklist: a scan, or a manual mark, marks a container -->
                 <ACard
                     :title="
                         t('deliveries.card.packingTitle', {
@@ -669,6 +654,7 @@ function eventSentence(row) {
                     "
                     icon="package"
                     :pad="false"
+                    :class="{ 'soc-ready': allMarked }"
                 >
                     <table class="a-table">
                         <thead>
@@ -682,13 +668,30 @@ function eventSentence(row) {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="row in packing" :key="row.item.id">
+                            <tr
+                                v-for="row in packing"
+                                :key="row.item.id"
+                                :class="{
+                                    'soc-line-done': row.checked === row.count,
+                                }"
+                            >
                                 <td>
                                     <div class="t-strong">
                                         {{ loc(row.item.name) }}
                                     </div>
                                     <div class="t-sub">
-                                        {{ row.checked }}/{{ row.count }}
+                                        {{ itemFacts(row.item) }} ·
+                                        <ANum
+                                            >{{ row.checked }}/{{
+                                                row.count
+                                            }}</ANum
+                                        >
+                                    </div>
+                                    <div
+                                        v-if="row.item.kind !== 'shelf'"
+                                        class="soc-herbs"
+                                    >
+                                        {{ ingredientsOf(row.item) }}
                                     </div>
                                 </td>
                                 <td>
@@ -696,7 +699,6 @@ function eventSentence(row) {
                                         v-for="b in row.barcodes"
                                         :key="b.barcode"
                                         class="soc-container"
-                                        :class="{ 'is-checked': b.checked }"
                                     >
                                         <AChip
                                             :tone="b.checked ? 'green' : 'gray'"
@@ -706,24 +708,11 @@ function eventSentence(row) {
                                             {{ b.containerNo }}
                                         </AChip>
                                         <button
-                                            v-if="
-                                                !b.checked &&
-                                                row.item.kind === 'shelf'
-                                            "
+                                            v-if="!b.checked && inPrep"
                                             type="button"
                                             class="a-btn a-btn--sm a-btn--ghost"
                                             @click="
-                                                tickShelf(row, b.containerNo)
-                                            "
-                                        >
-                                            {{ t('deliveries.card.tick') }}
-                                        </button>
-                                        <button
-                                            v-else-if="!b.checked"
-                                            type="button"
-                                            class="a-btn a-btn--sm a-btn--ghost"
-                                            @click="
-                                                askManual(row, b.containerNo)
+                                                markManually(row, b.containerNo)
                                             "
                                         >
                                             {{
@@ -783,7 +772,7 @@ function eventSentence(row) {
                             v-if="
                                 (order.events || []).some(
                                     (e) => e.type === 'shipment_link_failed',
-                                ) && status === 'packing'
+                                ) && inPrep
                             "
                             class="a-note a-note--danger soc-gap"
                         >
@@ -815,7 +804,7 @@ function eventSentence(row) {
                             :rows="[
                                 [t('deliveries.card.tracking'), null],
                                 [
-                                    t('deliveries.card.linkedAt'),
+                                    t('deliveries.col.linkedAt'),
                                     (activeShipment || handedShipment)?.linkedAt
                                         ?.stamp,
                                 ],
@@ -840,14 +829,6 @@ function eventSentence(row) {
                                 </AChip>
                             </template>
                         </AKeyValue>
-                        <AButton
-                            sm
-                            icon="printer"
-                            class="soc-gap"
-                            @click="printShippingLabels"
-                        >
-                            {{ t('deliveries.card.reprintLabel') }}
-                        </AButton>
                     </template>
                 </ACard>
 
@@ -865,13 +846,19 @@ function eventSentence(row) {
                                 )"
                                 :key="item.id"
                             >
-                                <td class="t-strong">{{ loc(item.name) }}</td>
-                                <td class="t-sub">
-                                    {{
-                                        item.kind === 'shelf'
-                                            ? `${item.qty}`
-                                            : loc(item.name)
-                                    }}
+                                <td>
+                                    <div class="t-strong">
+                                        {{ loc(item.name) }}
+                                    </div>
+                                    <div
+                                        v-if="item.kind !== 'shelf'"
+                                        class="soc-herbs"
+                                    >
+                                        {{ ingredientsOf(item) }}
+                                    </div>
+                                </td>
+                                <td class="t-sub nowrap">
+                                    {{ itemFacts(item) }}
                                 </td>
                             </tr>
                         </tbody>
@@ -906,15 +893,6 @@ function eventSentence(row) {
             </div>
 
             <div class="soc-footer">
-                <AButton
-                    v-if="order.shipTo === 'pickup' && status === 'packing'"
-                    kind="p"
-                    icon="check"
-                    :disabled="!store.allPacked(order)"
-                    @click="doMarkReady"
-                >
-                    {{ t('deliveries.card.markReady') }}
-                </AButton>
                 <AButton
                     v-if="
                         order.shipTo === 'pickup' &&
@@ -953,22 +931,6 @@ function eventSentence(row) {
             </div>
         </template>
     </ADrawer>
-
-    <ConfirmDialog
-        :open="Boolean(manualTarget)"
-        :pin="pin"
-        reason
-        :title="t('deliveries.card.manualTick')"
-        :body="
-            manualTarget
-                ? t('deliveries.card.manualTickBody', {
-                      name: manualTarget.name,
-                  })
-                : ''
-        "
-        @close="manualTarget = null"
-        @confirm="confirmManual"
-    />
 
     <ConfirmDialog
         :open="manualTrackingOpen"
@@ -1129,8 +1091,27 @@ function eventSentence(row) {
 
 .soc-addr-form {
     display: grid;
-    gap: 10px;
-    max-width: 420px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px 14px;
+}
+
+/* A formula's ingredients, small, under its name. */
+.soc-herbs {
+    margin-top: 3px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--a-ink-4);
+}
+
+/* A line whose containers are all marked. */
+.soc-line-done > td {
+    background: var(--a-green-bg);
+}
+
+/* The whole order marked: ready for its next step. */
+.soc-ready {
+    border-color: var(--a-green);
+    box-shadow: 0 0 0 1px var(--a-green);
 }
 
 .a-timeline-list {

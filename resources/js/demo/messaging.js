@@ -120,18 +120,6 @@ export const DEMO_TEMPLATES = [
         on: true,
     },
     {
-        id: 't9',
-        name: L('בקשת כתובת וייפוי כוח', 'Address & power of attorney request'),
-        cat: 'address_request',
-        ch: 'whatsapp',
-        body: L(
-            'שלום {{שם}}, כדי לשלוח את ההזמנה {{מספר הזמנה}} נדרשת כתובת למשלוח וחתימה על ייפוי כוח לשליח: {{קישור תשלום}}',
-            'Hello {{name}}, to ship order {{order_no}} we need a delivery address and a signed power of attorney for the courier: {{pay_link}}',
-        ),
-        uses: 302,
-        on: true,
-    },
-    {
         id: 't10',
         name: L(
             'לינק גבייה מרוכז למטפל',
@@ -215,18 +203,6 @@ export const DEMO_TRIGGERS = [
         on: true,
         retries: 2,
         quiet: null,
-    },
-    {
-        id: 'g7',
-        event: L(
-            'הזמנה עם משלוח ללא ייפוי כוח חתום',
-            'Order for delivery without a signed power of attorney',
-        ),
-        template: 't9',
-        channels: ['whatsapp'],
-        on: true,
-        retries: 3,
-        quiet: { from: '21:00', to: '08:00' },
     },
     {
         id: 'g8',
@@ -316,9 +292,7 @@ export function buildMessages(orders) {
                 ? 'delivered'
                 : 'sent';
         const toPatient =
-            template.cat === 'pay_link' ||
-            template.cat === 'address_request' ||
-            chance(`${slot}:to`, 0.5);
+            template.cat === 'pay_link' || chance(`${slot}:to`, 0.5);
         const values = {
             name: toPatient ? order.patient.first : order.practitioner.first,
             order_no: order.id,
@@ -391,14 +365,6 @@ export function buildScheduledMessages() {
                 trigger: null,
                 actor: DEMO_ACTORS.oritSupport,
             },
-        },
-        {
-            id: 's3',
-            when: at(-1, 12, 0),
-            template: 't9',
-            recipients: { count: 4, names: null },
-            ch: 'whatsapp',
-            source: { kind: 'trigger', trigger: 'g7', actor: null },
         },
         {
             id: 's4',
